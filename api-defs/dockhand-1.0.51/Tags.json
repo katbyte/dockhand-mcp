@@ -1,0 +1,277 @@
+{
+  "Name": "Tags",
+  "Tag": "tags",
+  "Operations": [
+    {
+      "Name": "DeleteTagsById",
+      "OperationId": "delete_api_tags_id",
+      "Method": "DELETE",
+      "Path": "/api/tags/{id}",
+      "Description": "Delete a catalog tag (removes it from every container and stack)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteTagsByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetTags",
+      "OperationId": "get_api_tags",
+      "Method": "GET",
+      "Path": "/api/tags",
+      "Description": "List the global tag catalog (name + colour)",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetTagsResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostTags",
+      "OperationId": "post_api_tags",
+      "Method": "POST",
+      "Path": "/api/tags",
+      "Description": "Create a tag (or return the existing one with the same name) in the global catalog",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostTagsRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostTagsResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PutTagsById",
+      "OperationId": "put_api_tags_id",
+      "Method": "PUT",
+      "Path": "/api/tags/{id}",
+      "Description": "Update a global catalog tag's name and/or colour",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutTagsByIdRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutTagsByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "DeleteTagsByIdResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetTagsResponse",
+      "Fields": [
+        {
+          "Name": "Tags",
+          "JsonName": "tags",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetTagsResponseTags"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetTagsResponseTags",
+      "Fields": [
+        {
+          "Name": "Color",
+          "JsonName": "color",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Icon",
+          "JsonName": "icon",
+          "Description": "null for a tag given none",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostTagsRequest",
+      "Fields": [
+        {
+          "Name": "Color",
+          "JsonName": "color",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Icon",
+          "JsonName": "icon",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostTagsResponse",
+      "Fields": [
+        {
+          "Name": "Color",
+          "JsonName": "color",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Icon",
+          "JsonName": "icon",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutTagsByIdRequest",
+      "Fields": [
+        {
+          "Name": "Color",
+          "JsonName": "color",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Icon",
+          "JsonName": "icon",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutTagsByIdResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

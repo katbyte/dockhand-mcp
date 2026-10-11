@@ -1,0 +1,925 @@
+{
+  "Name": "Volumes",
+  "Tag": "volumes",
+  "Operations": [
+    {
+      "Name": "DeleteVolumesByName",
+      "OperationId": "delete_api_volumes_name",
+      "Method": "DELETE",
+      "Path": "/api/volumes/{name}",
+      "Description": "Remove a Docker volume by name, optionally forcing removal",
+      "PathParameters": [
+        {
+          "Name": "name",
+          "Argument": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment ID the volume belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "force",
+          "Field": "Force",
+          "In": "Query",
+          "Description": "Force removal of the volume",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteVolumesByNameResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetVolumes",
+      "OperationId": "get_api_volumes",
+      "Method": "GET",
+      "Path": "/api/volumes",
+      "Description": "List Docker volumes for an environment; returns an empty array when no environment is specified",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment ID to list volumes for (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetVolumesResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetVolumesByName",
+      "OperationId": "get_api_volumes_name",
+      "Method": "GET",
+      "Path": "/api/volumes/{name}",
+      "Description": "Inspect a single Docker volume by name (the name is validated as a Docker identifier)",
+      "PathParameters": [
+        {
+          "Name": "name",
+          "Argument": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment ID the volume belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetVolumesByNameResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetVolumesByNameBrowse",
+      "OperationId": "get_api_volumes_name_browse",
+      "Method": "GET",
+      "Path": "/api/volumes/{name}/browse",
+      "Description": "Browse a directory inside a Docker volume via a cached helper container; the volume is mounted read-only when in use by other containers",
+      "PathParameters": [
+        {
+          "Name": "name",
+          "Argument": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment ID the volume belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "path",
+          "Field": "Path",
+          "In": "Query",
+          "Description": "Directory path inside the volume to list (defaults to \"/\")",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetVolumesByNameBrowseResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetVolumesByNameBrowseContent",
+      "OperationId": "get_api_volumes_name_browse_content",
+      "Method": "GET",
+      "Path": "/api/volumes/{name}/browse/content",
+      "Description": "Read the content of a single file inside a Docker volume (files larger than 1MB are rejected)",
+      "PathParameters": [
+        {
+          "Name": "name",
+          "Argument": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "path",
+          "Field": "Path",
+          "In": "Query",
+          "Description": "File path inside the volume to read",
+          "Required": true,
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment ID the volume belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetVolumesByNameBrowseContentResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetVolumesByNameExport",
+      "OperationId": "get_api_volumes_name_export",
+      "Method": "GET",
+      "Path": "/api/volumes/{name}/export",
+      "Description": "Export a Docker volume (or a sub-path) as a downloadable archive — streaming tar, gzip-compressed tar.gz, or raw single-file bytes",
+      "PathParameters": [
+        {
+          "Name": "name",
+          "Argument": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment ID the volume belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "path",
+          "Field": "Path",
+          "In": "Query",
+          "Description": "Sub-path inside the volume to export (defaults to \"/\")",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "format",
+          "Field": "Format",
+          "In": "Query",
+          "Description": "Archive format: \"tar\" (default), \"tar.gz\", or \"raw\" (single file)",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/x-tar",
+        "Type": {
+          "Type": "RawFile"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetVolumesByNameInspect",
+      "OperationId": "get_api_volumes_name_inspect",
+      "Method": "GET",
+      "Path": "/api/volumes/{name}/inspect",
+      "Description": "Inspect a Docker volume by name, returning the raw Docker volume inspect object",
+      "PathParameters": [
+        {
+          "Name": "name",
+          "Argument": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment ID the volume belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetVolumesByNameInspectResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostVolumes",
+      "OperationId": "post_api_volumes",
+      "Method": "POST",
+      "Path": "/api/volumes",
+      "Description": "Create a Docker volume in an environment",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment ID to create the volume in (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostVolumesRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostVolumesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostVolumesByNameBrowseRelease",
+      "OperationId": "post_api_volumes_name_browse_release",
+      "Method": "POST",
+      "Path": "/api/volumes/{name}/browse/release",
+      "Description": "Release the cached helper container used to browse a Docker volume",
+      "PathParameters": [
+        {
+          "Name": "name",
+          "Argument": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment ID the volume belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostVolumesByNameBrowseReleaseResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostVolumesByNameClone",
+      "OperationId": "post_api_volumes_name_clone",
+      "Method": "POST",
+      "Path": "/api/volumes/{name}/clone",
+      "Description": "Clone a Docker volume into a new named volume, copying the data with a temporary helper container and preserving driver/options/labels",
+      "PathParameters": [
+        {
+          "Name": "name",
+          "Argument": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment ID the volume belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostVolumesByNameCloneRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostVolumesByNameCloneResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "DeleteVolumesByNameResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetVolumesByNameBrowseContentResponse",
+      "Fields": [
+        {
+          "Name": "Content",
+          "JsonName": "content",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetVolumesByNameBrowseResponse",
+      "Fields": [
+        {
+          "Name": "Entries",
+          "JsonName": "entries",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetVolumesByNameBrowseResponseEntries"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "HelperId",
+          "JsonName": "helperId",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "IsInUse",
+          "JsonName": "isInUse",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Usage",
+          "JsonName": "usage",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetVolumesByNameBrowseResponseUsage"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetVolumesByNameBrowseResponseEntries",
+      "Fields": [
+        {
+          "Name": "Group",
+          "JsonName": "group",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Modified",
+          "JsonName": "modified",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Owner",
+          "JsonName": "owner",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Permissions",
+          "JsonName": "permissions",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Readonly",
+          "JsonName": "readonly",
+          "Description": "whether the volume was opened for reading alone, as it is while a container uses it",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Size",
+          "JsonName": "size",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetVolumesByNameBrowseResponseUsage",
+      "Fields": [
+        {
+          "Name": "ContainerId",
+          "JsonName": "containerId",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ContainerName",
+          "JsonName": "containerName",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "State",
+          "JsonName": "state",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetVolumesByNameInspectResponse",
+      "Fields": [
+        {
+          "Name": "CreatedAt",
+          "JsonName": "CreatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Driver",
+          "JsonName": "Driver",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "Labels",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Mountpoint",
+          "JsonName": "Mountpoint",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "Name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Options",
+          "JsonName": "Options",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Scope",
+          "JsonName": "Scope",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetVolumesByNameResponse",
+      "Fields": [
+        {
+          "Name": "CreatedAt",
+          "JsonName": "CreatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Driver",
+          "JsonName": "Driver",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "Labels",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Mountpoint",
+          "JsonName": "Mountpoint",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "Name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Options",
+          "JsonName": "Options",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Scope",
+          "JsonName": "Scope",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetVolumesResponse",
+      "Fields": [
+        {
+          "Name": "Created",
+          "JsonName": "created",
+          "Description": "when the volume was made, as 2006-01-02T15:04:05Z",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Driver",
+          "JsonName": "driver",
+          "Description": "local, for a volume kept on the host's own disk",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Mountpoint",
+          "JsonName": "mountpoint",
+          "Description": "where the volume's files are on the host",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Scope",
+          "JsonName": "scope",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UsedBy",
+          "JsonName": "usedBy",
+          "Description": "the containers that mount the volume, running or not; none for a volume nothing uses",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetVolumesResponseUsedBy"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetVolumesResponseUsedBy",
+      "Fields": [
+        {
+          "Name": "ContainerId",
+          "JsonName": "containerId",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ContainerName",
+          "JsonName": "containerName",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostVolumesByNameBrowseReleaseResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostVolumesByNameCloneRequest",
+      "Fields": [
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostVolumesByNameCloneResponse",
+      "Fields": [
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostVolumesRequest",
+      "Fields": [
+        {
+          "Name": "Driver",
+          "JsonName": "driver",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "DriverOpts",
+          "JsonName": "driverOpts",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostVolumesResponse",
+      "Fields": [
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+{
+  "Name": "Host",
+  "Tag": "host",
+  "Operations": [
+    {
+      "Name": "GetHost",
+      "OperationId": "get_api_host",
+      "Method": "GET",
+      "Path": "/api/host",
+      "Description": "Return host info (hostname, IP, CPU, memory, uptime, Docker counts) for the daemon behind an environment",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "ID of the environment to describe (basic local info is returned when omitted) (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetHostResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "GetHostResponse",
+      "Fields": [
+        {
+          "Name": "Arch",
+          "JsonName": "arch",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Cpus",
+          "JsonName": "cpus",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "DockerContainers",
+          "JsonName": "dockerContainers",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "DockerContainersRunning",
+          "JsonName": "dockerContainersRunning",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "DockerImages",
+          "JsonName": "dockerImages",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "DockerVersion",
+          "JsonName": "dockerVersion",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Environment",
+          "JsonName": "environment",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "FreeMemory",
+          "JsonName": "freeMemory",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Hostname",
+          "JsonName": "hostname",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "IpAddress",
+          "JsonName": "ipAddress",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Platform",
+          "JsonName": "platform",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "TotalMemory",
+          "JsonName": "totalMemory",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Uptime",
+          "JsonName": "uptime",
+          "Description": "how long the host has been up, in seconds",
+          "Type": {
+            "Type": "Double"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

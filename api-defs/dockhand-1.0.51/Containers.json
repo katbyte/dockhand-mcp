@@ -1,0 +1,4144 @@
+{
+  "Name": "Containers",
+  "Tag": "containers",
+  "Operations": [
+    {
+      "Name": "DeleteContainersById",
+      "OperationId": "delete_api_containers_id",
+      "Method": "DELETE",
+      "Path": "/api/containers/{id}",
+      "Description": "Remove a container and clean up its auto-update schedule and pending-update record",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "force",
+          "Field": "Force",
+          "In": "Query",
+          "Description": "Force removal of a running container (Docker force flag)",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteContainersByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "DeleteContainersByIdFilesDelete",
+      "OperationId": "delete_api_containers_id_files_delete",
+      "Method": "DELETE",
+      "Path": "/api/containers/{id}/files/delete",
+      "Description": "Delete a file or directory inside a container (requires the 'exec' permission)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "path",
+          "Field": "Path",
+          "In": "Query",
+          "Description": "Absolute path inside the container to delete",
+          "Required": true,
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteContainersByIdFilesDeleteResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "DeleteContainersPendingUpdates",
+      "OperationId": "delete_api_containers_pending-updates",
+      "Method": "DELETE",
+      "Path": "/api/containers/pending-updates",
+      "Description": "Clear pending-update records for an environment, or for a single container when containerId is given",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID (required) (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "containerId",
+          "Field": "ContainerId",
+          "In": "Query",
+          "Description": "The container to clear; omit to clear ALL pending updates in the environment (from GET /api/containers)",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteContainersPendingUpdatesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainers",
+      "OperationId": "get_api_containers",
+      "Method": "GET",
+      "Path": "/api/containers",
+      "Description": "List containers for one environment (dockhand.hidden=true label is filtered out)",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment id — an empty array is returned if omitted (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "all",
+          "Field": "All",
+          "In": "Query",
+          "Description": "Include stopped containers (default true; pass \"false\" to only show running ones)",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetContainersResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainersById",
+      "OperationId": "get_api_containers_id",
+      "Method": "GET",
+      "Path": "/api/containers/{id}",
+      "Description": "Return the full Docker inspect payload for a single container",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "RawObject"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainersByIdCompose",
+      "OperationId": "get_api_containers_id_compose",
+      "Method": "GET",
+      "Path": "/api/containers/{id}/compose",
+      "Description": "Generate a docker-compose service definition from a running container's inspect (requires the 'view' permission)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetContainersByIdComposeResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainersByIdFiles",
+      "OperationId": "get_api_containers_id_files",
+      "Method": "GET",
+      "Path": "/api/containers/{id}/files",
+      "Description": "List the contents of a directory inside a container's filesystem",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "path",
+          "Field": "Path",
+          "In": "Query",
+          "Description": "Absolute directory path inside the container (default \"/\")",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "simpleLs",
+          "Field": "SimpleLs",
+          "In": "Query",
+          "Description": "Use a lightweight `ls` listing instead of a full stat of each entry",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetContainersByIdFilesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainersByIdFilesContent",
+      "OperationId": "get_api_containers_id_files_content",
+      "Method": "GET",
+      "Path": "/api/containers/{id}/files/content",
+      "Description": "Read the content of a single file inside a container (max 1 MB)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "path",
+          "Field": "Path",
+          "In": "Query",
+          "Description": "Absolute file path inside the container",
+          "Required": true,
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetContainersByIdFilesContentResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainersByIdFilesDownload",
+      "OperationId": "get_api_containers_id_files_download",
+      "Method": "GET",
+      "Path": "/api/containers/{id}/files/download",
+      "Description": "Download a file or directory from a container as a tar (optionally gzip-compressed) archive attachment",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "path",
+          "Field": "Path",
+          "In": "Query",
+          "Description": "Absolute path inside the container to archive and download",
+          "Required": true,
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "format",
+          "Field": "Format",
+          "In": "Query",
+          "Description": "Archive format, \"tar\" (default) or \"tar.gz\"",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/x-tar",
+        "Type": {
+          "Type": "RawFile"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainersByIdInspect",
+      "OperationId": "get_api_containers_id_inspect",
+      "Method": "GET",
+      "Path": "/api/containers/{id}/inspect",
+      "Description": "Return the full Docker inspect payload for a container (requires the 'inspect' permission)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "RawObject"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainersByIdLogs",
+      "OperationId": "get_api_containers_id_logs",
+      "Method": "GET",
+      "Path": "/api/containers/{id}/logs",
+      "Description": "Return the last N lines of a container's combined stdout/stderr logs as a single string",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "tail",
+          "Field": "Tail",
+          "In": "Query",
+          "Description": "Number of trailing log lines to return (default 100)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "since",
+          "Field": "Since",
+          "In": "Query",
+          "Description": "Only return logs since this time (Unix timestamp or Docker duration, e.g. 10m)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "until",
+          "Field": "Until",
+          "In": "Query",
+          "Description": "Only return logs before this time (Unix timestamp or Docker duration)",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetContainersByIdLogsResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainersByIdLogsStream",
+      "OperationId": "get_api_containers_id_logs_stream",
+      "Method": "GET",
+      "Path": "/api/containers/{id}/logs/stream",
+      "Description": "Stream a container's logs live as Server-Sent Events (connected/log/end/error events, with keepalive heartbeats)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "tail",
+          "Field": "Tail",
+          "In": "Query",
+          "Description": "Number of trailing log lines to prime the stream with (default \"100\")",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "since",
+          "Field": "Since",
+          "In": "Query",
+          "Description": "Only stream logs since this time (Unix timestamp or Docker duration, e.g. 10m)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "until",
+          "Field": "Until",
+          "In": "Query",
+          "Description": "Only stream logs before this time (Unix timestamp or Docker duration)",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "text/event-stream",
+        "Type": {
+          "Type": "RawFile"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainersByIdShells",
+      "OperationId": "get_api_containers_id_shells",
+      "Method": "GET",
+      "Path": "/api/containers/{id}/shells",
+      "Description": "Probe a container for available shells (bash/sh/zsh/ash) and report the preferred default (requires the 'exec' permission)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetContainersByIdShellsResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainersByIdStats",
+      "OperationId": "get_api_containers_id_stats",
+      "Method": "GET",
+      "Path": "/api/containers/{id}/stats",
+      "Description": "Return a one-shot CPU/memory/network/block-IO stats snapshot for a container (Docker-CLI-equivalent memory accounting)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetContainersByIdStatsResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainersByIdTop",
+      "OperationId": "get_api_containers_id_top",
+      "Method": "GET",
+      "Path": "/api/containers/{id}/top",
+      "Description": "List the processes running inside a container (via `ps` in the container, falling back to the Docker top API)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetContainersByIdTopResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainersByIdVersionNotes",
+      "OperationId": "get_api_containers_id_version-notes",
+      "Method": "GET",
+      "Path": "/api/containers/{id}/version-notes",
+      "Description": "Resolve GitHub release notes for the versions a semver update-check surfaced (requires the 'view' permission)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "versions",
+          "Field": "Versions",
+          "In": "Query",
+          "Description": "Comma-separated version tags to fetch notes for (target + skipped), e.g. \"16.3-alpine,16.4-alpine\"",
+          "Required": true,
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetContainersByIdVersionNotesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainersCheckUpdates",
+      "OperationId": "get_api_containers_check-updates",
+      "Method": "GET",
+      "Path": "/api/containers/check-updates",
+      "Description": "Read the cached pending image-update records for an environment (no fresh check; requires the 'view' permission)",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetContainersCheckUpdatesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainersPendingUpdates",
+      "OperationId": "get_api_containers_pending-updates",
+      "Method": "GET",
+      "Path": "/api/containers/pending-updates",
+      "Description": "List the containers in an environment that have a pending image update recorded (requires the 'view' permission)",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID (required) (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetContainersPendingUpdatesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainersSizes",
+      "OperationId": "get_api_containers_sizes",
+      "Method": "GET",
+      "Path": "/api/containers/sizes",
+      "Description": "List all containers in an environment together with their writable-layer and root-filesystem sizes (requires the 'view' permission)",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Dictionary",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetContainersSizesResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainersStats",
+      "OperationId": "get_api_containers_stats",
+      "Method": "GET",
+      "Path": "/api/containers/stats",
+      "Description": "Return a CPU/memory/network/block-IO stats snapshot for every running container in an environment (requires the 'view' permission)",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "debug",
+          "Field": "Debug",
+          "In": "Query",
+          "Description": "Return raw Docker stats for the single container with this name instead of the aggregate list",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetContainersStatsResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainersStatsStream",
+      "OperationId": "get_api_containers_stats_stream",
+      "Method": "GET",
+      "Path": "/api/containers/stats/stream",
+      "Description": "Stream live CPU/memory/network/block-IO stats for all running containers in an environment (one snapshot round, then closes)",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment id — an immediate \"done\" event is sent if omitted or no environments are configured (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "text/event-stream",
+        "Type": {
+          "Type": "RawFile"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainers",
+      "OperationId": "post_api_containers",
+      "Method": "POST",
+      "Path": "/api/containers",
+      "Description": "Create a new container in an environment (auto-pulls the image first if it isn't present locally), optionally starting it right away",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment id (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainersBatchUpdate",
+      "OperationId": "post_api_containers_batch-update",
+      "Method": "POST",
+      "Path": "/api/containers/batch-update",
+      "Description": "Recreate a set of containers with their latest images, preserving all settings (requires the 'create' permission)",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersBatchUpdateRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersBatchUpdateResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainersBatchUpdateStream",
+      "OperationId": "post_api_containers_batch-update-stream",
+      "Method": "POST",
+      "Path": "/api/containers/batch-update-stream",
+      "Description": "Recreate a set of containers with live streaming progress (Server-Sent Events), optionally blocking on vulnerability criteria (requires the 'create' permission)",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersBatchUpdateStreamRequest"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainersByIdExec",
+      "OperationId": "post_api_containers_id_exec",
+      "Method": "POST",
+      "Path": "/api/containers/{id}/exec",
+      "Description": "Create a Docker exec instance in a container and return its ID plus the Docker connection info for a terminal WebSocket",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "envId",
+          "Field": "EnvId",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdExecRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdExecResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainersByIdExecRun",
+      "OperationId": "post_api_containers_id_exec_run",
+      "Method": "POST",
+      "Path": "/api/containers/{id}/exec/run",
+      "Description": "Run a finite command in a container and wait for the result, returning stdout, stderr and the exit code (a non-interactive alternative to the terminal exec endpoint). Intended for short commands - the request is bounded by a ~30s ceiling on remote (Hawser/TCP) environments; use the interactive terminal for long-running work.",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "envId",
+          "Field": "EnvId",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdExecRunRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdExecRunResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainersByIdFilesChmod",
+      "OperationId": "post_api_containers_id_files_chmod",
+      "Method": "POST",
+      "Path": "/api/containers/{id}/files/chmod",
+      "Description": "Change the mode (permissions) of a file or directory inside a container (requires the 'exec' permission)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdFilesChmodRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdFilesChmodResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainersByIdFilesChown",
+      "OperationId": "post_api_containers_id_files_chown",
+      "Method": "POST",
+      "Path": "/api/containers/{id}/files/chown",
+      "Description": "Change the owner (and optional group) of a file or directory inside a container (requires the 'exec' permission)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdFilesChownRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdFilesChownResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainersByIdFilesCreate",
+      "OperationId": "post_api_containers_id_files_create",
+      "Method": "POST",
+      "Path": "/api/containers/{id}/files/create",
+      "Description": "Create an empty file or a directory inside a container (requires the 'exec' permission)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdFilesCreateRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdFilesCreateResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainersByIdFilesRename",
+      "OperationId": "post_api_containers_id_files_rename",
+      "Method": "POST",
+      "Path": "/api/containers/{id}/files/rename",
+      "Description": "Rename or move a file or directory inside a container (requires the 'exec' permission)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdFilesRenameRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdFilesRenameResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainersByIdFilesUpload",
+      "OperationId": "post_api_containers_id_files_upload",
+      "Method": "POST",
+      "Path": "/api/containers/{id}/files/upload",
+      "Description": "Upload one or more files into a container directory (requires the 'exec' permission)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "path",
+          "Field": "Path",
+          "In": "Query",
+          "Description": "Absolute target directory inside the container",
+          "Required": true,
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "multipart/form-data",
+        "Type": {
+          "Type": "RawFile"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdFilesUploadResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainersByIdPause",
+      "OperationId": "post_api_containers_id_pause",
+      "Method": "POST",
+      "Path": "/api/containers/{id}/pause",
+      "Description": "Pause all processes in a running container (requires the container 'stop' permission)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdPauseResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainersByIdRename",
+      "OperationId": "post_api_containers_id_rename",
+      "Method": "POST",
+      "Path": "/api/containers/{id}/rename",
+      "Description": "Rename a container and update any associated auto-update schedule (requires the 'create' permission)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdRenameRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdRenameResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainersByIdRestart",
+      "OperationId": "post_api_containers_id_restart",
+      "Method": "POST",
+      "Path": "/api/containers/{id}/restart",
+      "Description": "Restart a container",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdRestartResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainersByIdStart",
+      "OperationId": "post_api_containers_id_start",
+      "Method": "POST",
+      "Path": "/api/containers/{id}/start",
+      "Description": "Start a stopped container",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdStartResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainersByIdStop",
+      "OperationId": "post_api_containers_id_stop",
+      "Method": "POST",
+      "Path": "/api/containers/{id}/stop",
+      "Description": "Stop a running container",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdStopResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainersByIdUnpause",
+      "OperationId": "post_api_containers_id_unpause",
+      "Method": "POST",
+      "Path": "/api/containers/{id}/unpause",
+      "Description": "Resume all processes in a paused container (requires the container 'start' permission)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdUnpauseResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainersByIdUpdate",
+      "OperationId": "post_api_containers_id_update",
+      "Method": "POST",
+      "Path": "/api/containers/{id}/update",
+      "Description": "Recreate a container with updated create-options (optionally re-pulling the image first), preserving its configuration (requires the 'create' permission)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdUpdateRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdUpdateResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainersByIdUpdateRuntime",
+      "OperationId": "post_api_containers_id_update-runtime",
+      "Method": "POST",
+      "Path": "/api/containers/{id}/update-runtime",
+      "Description": "Update a running container's restart policy and/or CPU/memory/blkio/pids limits in-place (no recreate)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment id (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdUpdateRuntimeRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersByIdUpdateRuntimeResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainersCheckUpdates",
+      "OperationId": "post_api_containers_check-updates",
+      "Method": "POST",
+      "Path": "/api/containers/check-updates",
+      "Description": "Trigger a fresh image-update check across all (non-hidden, non-podman-infra) containers in an environment",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainersCheckUpdatesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PutContainersByIdFilesContent",
+      "OperationId": "put_api_containers_id_files_content",
+      "Method": "PUT",
+      "Path": "/api/containers/{id}/files/content",
+      "Description": "Overwrite the content of a file inside a container (max 1 MB, requires the 'exec' permission)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "The target environment ID the container lives in (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "path",
+          "Field": "Path",
+          "In": "Query",
+          "Description": "Absolute file path inside the container",
+          "Required": true,
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutContainersByIdFilesContentRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutContainersByIdFilesContentResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "DeleteContainersByIdFilesDeleteResponse",
+      "Fields": [
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "DeleteContainersByIdResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "DeleteContainersPendingUpdatesResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersByIdComposeResponse",
+      "Fields": [
+        {
+          "Name": "Compose",
+          "JsonName": "compose",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ComposeFullEnv",
+          "JsonName": "composeFullEnv",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ServiceName",
+          "JsonName": "serviceName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "StackProject",
+          "JsonName": "stackProject",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersByIdFilesContentResponse",
+      "Fields": [
+        {
+          "Name": "Content",
+          "JsonName": "content",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersByIdFilesResponse",
+      "Fields": [
+        {
+          "Name": "Entries",
+          "JsonName": "entries",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetContainersByIdFilesResponseEntries"
+            }
+          }
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersByIdFilesResponseEntries",
+      "Fields": [
+        {
+          "Name": "Group",
+          "JsonName": "group",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LinkTarget",
+          "JsonName": "linkTarget",
+          "Description": "what a symlink points to",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Modified",
+          "JsonName": "modified",
+          "Description": "when it last changed, in the container's own time and to the minute: 2006-01-02T15:04:00",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Owner",
+          "JsonName": "owner",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Permissions",
+          "JsonName": "permissions",
+          "Description": "as ls writes them, without the kind: rwxr-xr-x",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Readonly",
+          "JsonName": "readonly",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Size",
+          "JsonName": "size",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Description": "file, directory or symlink",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersByIdLogsResponse",
+      "Fields": [
+        {
+          "Name": "Logs",
+          "JsonName": "logs",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersByIdShellsResponse",
+      "Fields": [
+        {
+          "Name": "AllShells",
+          "JsonName": "allShells",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetContainersByIdShellsResponseAllShells"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "DefaultShell",
+          "JsonName": "defaultShell",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Shells",
+          "JsonName": "shells",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersByIdShellsResponseAllShells",
+      "Fields": [
+        {
+          "Name": "Available",
+          "JsonName": "available",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Label",
+          "JsonName": "label",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersByIdStatsResponse",
+      "Fields": [
+        {
+          "Name": "BlockRead",
+          "JsonName": "blockRead",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "BlockWrite",
+          "JsonName": "blockWrite",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "CpuPercent",
+          "JsonName": "cpuPercent",
+          "Type": {
+            "Type": "Double"
+          },
+          "Required": true
+        },
+        {
+          "Name": "MemoryCache",
+          "JsonName": "memoryCache",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "MemoryLimit",
+          "JsonName": "memoryLimit",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "MemoryPercent",
+          "JsonName": "memoryPercent",
+          "Type": {
+            "Type": "Double"
+          },
+          "Required": true
+        },
+        {
+          "Name": "MemoryRaw",
+          "JsonName": "memoryRaw",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "MemoryUsage",
+          "JsonName": "memoryUsage",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "NetworkRx",
+          "JsonName": "networkRx",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "NetworkTx",
+          "JsonName": "networkTx",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Timestamp",
+          "JsonName": "timestamp",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersByIdTopResponse",
+      "Fields": [
+        {
+          "Name": "Processes",
+          "JsonName": "Processes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "List",
+              "NestedItem": {
+                "Type": "String"
+              }
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Titles",
+          "JsonName": "Titles",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Source",
+          "JsonName": "source",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersByIdVersionNotesResponse",
+      "Fields": [
+        {
+          "Name": "ChangelogUrl",
+          "JsonName": "changelogUrl",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Notes",
+          "JsonName": "notes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetContainersByIdVersionNotesResponseNotes"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "RateLimited",
+          "JsonName": "rateLimited",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Source",
+          "JsonName": "source",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersByIdVersionNotesResponseNotes",
+      "Fields": [
+        {
+          "Name": "Body",
+          "JsonName": "body",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "GithubTag",
+          "JsonName": "githubTag",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "PublishedAt",
+          "JsonName": "publishedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Version",
+          "JsonName": "version",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersCheckUpdatesResponse",
+      "Fields": [
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "PendingUpdates",
+          "JsonName": "pendingUpdates",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetContainersCheckUpdatesResponsePendingUpdates"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersCheckUpdatesResponsePendingUpdates",
+      "Fields": [
+        {
+          "Name": "CheckedAt",
+          "JsonName": "checkedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ContainerId",
+          "JsonName": "containerId",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ContainerName",
+          "JsonName": "containerName",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "CurrentImage",
+          "JsonName": "currentImage",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersPendingUpdatesResponse",
+      "Fields": [
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "PendingUpdates",
+          "JsonName": "pendingUpdates",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetContainersPendingUpdatesResponsePendingUpdates"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersPendingUpdatesResponsePendingUpdates",
+      "Fields": [
+        {
+          "Name": "CheckedAt",
+          "JsonName": "checkedAt",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ContainerId",
+          "JsonName": "containerId",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ContainerName",
+          "JsonName": "containerName",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "CurrentImage",
+          "JsonName": "currentImage",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "HasImageUpdate",
+          "JsonName": "hasImageUpdate",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "NewerVersion",
+          "JsonName": "newerVersion",
+          "Description": "a newer version tag of the image, when Dockhand is set to look for them and found one",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetContainersPendingUpdatesResponsePendingUpdatesNewerVersion"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersPendingUpdatesResponsePendingUpdatesNewerVersion",
+      "Description": "a newer version tag of the image, when Dockhand is set to look for them and found one",
+      "Fields": [
+        {
+          "Name": "Bump",
+          "JsonName": "bump",
+          "Description": "how far a step it is from the tag in use: patch, minor or major",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Digest",
+          "JsonName": "digest",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Skipped",
+          "JsonName": "skipped",
+          "Description": "the version tags between the one in use and the newest, the newest among them",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Tag",
+          "JsonName": "tag",
+          "Description": "the newest version tag the registry has for the image",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersResponse",
+      "Fields": [
+        {
+          "Name": "Command",
+          "JsonName": "command",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Created",
+          "JsonName": "created",
+          "Description": "when the container was made, in seconds since 1970",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Health",
+          "JsonName": "health",
+          "Description": "healthy, unhealthy or starting; empty for a container with no health check",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Description": "the container's whole id, sixty-four characters",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Image",
+          "JsonName": "image",
+          "Description": "the image as the container was started with it: a name and tag, or a digest",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ImageId",
+          "JsonName": "imageId",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Mounts",
+          "JsonName": "mounts",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetContainersResponseMounts"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Networks",
+          "JsonName": "networks",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetContainersResponseNetworks"
+            }
+          }
+        },
+        {
+          "Name": "Ports",
+          "JsonName": "ports",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetContainersResponsePorts"
+            }
+          }
+        },
+        {
+          "Name": "RestartCount",
+          "JsonName": "restartCount",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "State",
+          "JsonName": "state",
+          "Description": "running, exited, restarting, paused, created or dead",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Description": "Docker's own words for the state: Up 2 hours (healthy), Exited (3) 11 seconds ago",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SystemContainer",
+          "JsonName": "systemContainer",
+          "Description": "dockhand or hawser for a container that is Dockhand itself or one of its agents, told by its image's name; nothing for any other",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersResponseMounts",
+      "Fields": [
+        {
+          "Name": "Destination",
+          "JsonName": "destination",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Mode",
+          "JsonName": "mode",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Description": "the volume's name; empty for a bind",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Rw",
+          "JsonName": "rw",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Source",
+          "JsonName": "source",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Description": "bind or volume",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersResponseNetworks",
+      "Fields": [
+        {
+          "Name": "IpAddress",
+          "JsonName": "ipAddress",
+          "Description": "the container's address on the network; empty while it is not running",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersResponsePorts",
+      "Fields": [
+        {
+          "Name": "IP",
+          "JsonName": "IP",
+          "Description": "the address on the host the port is published on",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "PrivatePort",
+          "JsonName": "PrivatePort",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "PublicPort",
+          "JsonName": "PublicPort",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "Type",
+          "Description": "tcp or udp",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersSizesResponse",
+      "Fields": [
+        {
+          "Name": "SizeRootFs",
+          "JsonName": "sizeRootFs",
+          "Description": "what its whole filesystem takes, image included, in bytes",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "SizeRw",
+          "JsonName": "sizeRw",
+          "Description": "what the container has written over its image, in bytes",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersStatsResponse",
+      "Fields": [
+        {
+          "Name": "BlockRead",
+          "JsonName": "blockRead",
+          "Description": "bytes read from disk since it started",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "BlockWrite",
+          "JsonName": "blockWrite",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "CpuPercent",
+          "JsonName": "cpuPercent",
+          "Description": "the share of the host's processors it is using, where 100 is one whole processor",
+          "Type": {
+            "Type": "Double"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "MemoryCache",
+          "JsonName": "memoryCache",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "MemoryLimit",
+          "JsonName": "memoryLimit",
+          "Description": "the most memory it may hold, in bytes: the host's own when it has no limit",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "MemoryPercent",
+          "JsonName": "memoryPercent",
+          "Type": {
+            "Type": "Double"
+          }
+        },
+        {
+          "Name": "MemoryRaw",
+          "JsonName": "memoryRaw",
+          "Description": "the memory it holds with the file cache counted, in bytes",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "MemoryUsage",
+          "JsonName": "memoryUsage",
+          "Description": "the memory it holds, less what is only file cache, in bytes",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NetworkRx",
+          "JsonName": "networkRx",
+          "Description": "bytes received since it started",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "NetworkTx",
+          "JsonName": "networkTx",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersBatchUpdateRequest",
+      "Fields": [
+        {
+          "Name": "ContainerIds",
+          "JsonName": "containerIds",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersBatchUpdateResponse",
+      "Fields": [
+        {
+          "Name": "Results",
+          "JsonName": "results",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostContainersBatchUpdateResponseResults"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Summary",
+          "JsonName": "summary",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostContainersBatchUpdateResponseSummary"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersBatchUpdateResponseResults",
+      "Fields": [
+        {
+          "Name": "ContainerId",
+          "JsonName": "containerId",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ContainerName",
+          "JsonName": "containerName",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersBatchUpdateResponseSummary",
+      "Fields": [
+        {
+          "Name": "Failed",
+          "JsonName": "failed",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Total",
+          "JsonName": "total",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersBatchUpdateStreamRequest",
+      "Fields": [
+        {
+          "Name": "ContainerIds",
+          "JsonName": "containerIds",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "VulnerabilityCriteria",
+          "JsonName": "vulnerabilityCriteria",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdExecRequest",
+      "Fields": [
+        {
+          "Name": "Shell",
+          "JsonName": "shell",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "User",
+          "JsonName": "user",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdExecResponse",
+      "Fields": [
+        {
+          "Name": "ConnectionInfo",
+          "JsonName": "connectionInfo",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostContainersByIdExecResponseConnectionInfo"
+          }
+        },
+        {
+          "Name": "ExecId",
+          "JsonName": "execId",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdExecResponseConnectionInfo",
+      "Fields": [
+        {
+          "Name": "Host",
+          "JsonName": "host",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Port",
+          "JsonName": "port",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdExecRunRequest",
+      "Fields": [
+        {
+          "Name": "Cmd",
+          "JsonName": "cmd",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "User",
+          "JsonName": "user",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "WorkingDir",
+          "JsonName": "workingDir",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdExecRunResponse",
+      "Fields": [
+        {
+          "Name": "ExitCode",
+          "JsonName": "exitCode",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Stderr",
+          "JsonName": "stderr",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Stdout",
+          "JsonName": "stdout",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdFilesChmodRequest",
+      "Fields": [
+        {
+          "Name": "Mode",
+          "JsonName": "mode",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Recursive",
+          "JsonName": "recursive",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdFilesChmodResponse",
+      "Fields": [
+        {
+          "Name": "Mode",
+          "JsonName": "mode",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Recursive",
+          "JsonName": "recursive",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdFilesChownRequest",
+      "Fields": [
+        {
+          "Name": "Owner",
+          "JsonName": "owner",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Recursive",
+          "JsonName": "recursive",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdFilesChownResponse",
+      "Fields": [
+        {
+          "Name": "Owner",
+          "JsonName": "owner",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Recursive",
+          "JsonName": "recursive",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdFilesCreateRequest",
+      "Fields": [
+        {
+          "Name": "Owner",
+          "JsonName": "owner",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdFilesCreateResponse",
+      "Fields": [
+        {
+          "Name": "Owner",
+          "JsonName": "owner",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdFilesRenameRequest",
+      "Fields": [
+        {
+          "Name": "NewPath",
+          "JsonName": "newPath",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "OldPath",
+          "JsonName": "oldPath",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdFilesRenameResponse",
+      "Fields": [
+        {
+          "Name": "NewPath",
+          "JsonName": "newPath",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "OldPath",
+          "JsonName": "oldPath",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdFilesUploadResponse",
+      "Fields": [
+        {
+          "Name": "Errors",
+          "JsonName": "errors",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Uploaded",
+          "JsonName": "uploaded",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdPauseResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdRenameRequest",
+      "Fields": [
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdRenameResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdRestartResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdStartResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdStopResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdUnpauseResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdUpdateRequest",
+      "Fields": [
+        {
+          "Name": "AdditionalNetworks",
+          "JsonName": "additionalNetworks",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Cmd",
+          "JsonName": "cmd",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Entrypoint",
+          "JsonName": "entrypoint",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Env",
+          "JsonName": "env",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Image",
+          "JsonName": "image",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NetworkAliases",
+          "JsonName": "networkAliases",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "NetworkIpv4Address",
+          "JsonName": "networkIpv4Address",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NetworkIpv6Address",
+          "JsonName": "networkIpv6Address",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NetworkMode",
+          "JsonName": "networkMode",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Ports",
+          "JsonName": "ports",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "RepullImage",
+          "JsonName": "repullImage",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "RestartMaxRetries",
+          "JsonName": "restartMaxRetries",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "RestartPolicy",
+          "JsonName": "restartPolicy",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "StartAfterUpdate",
+          "JsonName": "startAfterUpdate",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "VolumeBinds",
+          "JsonName": "volumeBinds",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Volumes",
+          "JsonName": "volumes",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "WorkingDir",
+          "JsonName": "workingDir",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdUpdateResponse",
+      "Fields": [
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdUpdateRuntimeRequest",
+      "Fields": [
+        {
+          "Name": "BlkioDeviceReadBps",
+          "JsonName": "BlkioDeviceReadBps",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "BlkioDeviceReadIOps",
+          "JsonName": "BlkioDeviceReadIOps",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "BlkioDeviceWriteBps",
+          "JsonName": "BlkioDeviceWriteBps",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "BlkioDeviceWriteIOps",
+          "JsonName": "BlkioDeviceWriteIOps",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "BlkioWeight",
+          "JsonName": "BlkioWeight",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "BlkioWeightDevice",
+          "JsonName": "BlkioWeightDevice",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "CpuPeriod",
+          "JsonName": "CpuPeriod",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "CpuQuota",
+          "JsonName": "CpuQuota",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "CpuRealtimePeriod",
+          "JsonName": "CpuRealtimePeriod",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "CpuRealtimeRuntime",
+          "JsonName": "CpuRealtimeRuntime",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "CpuShares",
+          "JsonName": "CpuShares",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "CpusetCpus",
+          "JsonName": "CpusetCpus",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CpusetMems",
+          "JsonName": "CpusetMems",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "KernelMemory",
+          "JsonName": "KernelMemory",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Memory",
+          "JsonName": "Memory",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "MemoryReservation",
+          "JsonName": "MemoryReservation",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "MemorySwap",
+          "JsonName": "MemorySwap",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "MemorySwappiness",
+          "JsonName": "MemorySwappiness",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "NanoCpus",
+          "JsonName": "NanoCpus",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "PidsLimit",
+          "JsonName": "PidsLimit",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "RestartPolicy",
+          "JsonName": "RestartPolicy",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdUpdateRuntimeResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Warnings",
+          "JsonName": "warnings",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersCheckUpdatesResponse",
+      "Fields": [
+        {
+          "Name": "Results",
+          "JsonName": "results",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostContainersCheckUpdatesResponseResults"
+            }
+          }
+        },
+        {
+          "Name": "Total",
+          "JsonName": "total",
+          "Description": "how many containers were checked",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "UpdatesFound",
+          "JsonName": "updatesFound",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersCheckUpdatesResponseResults",
+      "Fields": [
+        {
+          "Name": "ContainerId",
+          "JsonName": "containerId",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ContainerName",
+          "JsonName": "containerName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CurrentDigest",
+          "JsonName": "currentDigest",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Description": "why the registry could not be asked, when it could not",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HasUpdate",
+          "JsonName": "hasUpdate",
+          "Description": "whether the registry has another image under the name than the one the container was made from",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ImageName",
+          "JsonName": "imageName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "IsLocalImage",
+          "JsonName": "isLocalImage",
+          "Description": "the image was built on the host and no registry has it",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "NewDigest",
+          "JsonName": "newDigest",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NewerVersion",
+          "JsonName": "newerVersion",
+          "Description": "a newer version tag of the image, when Dockhand is set to look for them and found one",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostContainersCheckUpdatesResponseResultsNewerVersion"
+          }
+        },
+        {
+          "Name": "SystemContainer",
+          "JsonName": "systemContainer",
+          "Description": "dockhand or hawser for a container that is Dockhand itself or one of its agents",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdateDisabled",
+          "JsonName": "updateDisabled",
+          "Description": "the container carries the label dockhand.update=false, and was not looked at",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersCheckUpdatesResponseResultsNewerVersion",
+      "Description": "a newer version tag of the image, when Dockhand is set to look for them and found one",
+      "Fields": [
+        {
+          "Name": "Bump",
+          "JsonName": "bump",
+          "Description": "how far a step it is from the tag in use: patch, minor or major",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Digest",
+          "JsonName": "digest",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Skipped",
+          "JsonName": "skipped",
+          "Description": "the version tags between the one in use and the newest, the newest among them",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Tag",
+          "JsonName": "tag",
+          "Description": "the newest version tag the registry has for the image",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersRequest",
+      "Fields": [
+        {
+          "Name": "AdditionalNetworks",
+          "JsonName": "additionalNetworks",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Cmd",
+          "JsonName": "cmd",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Entrypoint",
+          "JsonName": "entrypoint",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Env",
+          "JsonName": "env",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Image",
+          "JsonName": "image",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "NetworkAliases",
+          "JsonName": "networkAliases",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "NetworkIpv4Address",
+          "JsonName": "networkIpv4Address",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NetworkIpv6Address",
+          "JsonName": "networkIpv6Address",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NetworkMode",
+          "JsonName": "networkMode",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Ports",
+          "JsonName": "ports",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "RestartMaxRetries",
+          "JsonName": "restartMaxRetries",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "RestartPolicy",
+          "JsonName": "restartPolicy",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "StartAfterCreate",
+          "JsonName": "startAfterCreate",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "VolumeBinds",
+          "JsonName": "volumeBinds",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Volumes",
+          "JsonName": "volumes",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "WorkingDir",
+          "JsonName": "workingDir",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersResponse",
+      "Fields": [
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ImagePulled",
+          "JsonName": "imagePulled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutContainersByIdFilesContentRequest",
+      "Fields": [
+        {
+          "Name": "Content",
+          "JsonName": "content",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutContainersByIdFilesContentResponse",
+      "Fields": [
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

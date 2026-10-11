@@ -1,0 +1,1431 @@
+{
+  "Name": "Notifications",
+  "Tag": "notifications",
+  "Operations": [
+    {
+      "Name": "DeleteNotificationsById",
+      "OperationId": "delete_api_notifications_id",
+      "Method": "DELETE",
+      "Path": "/api/notifications/{id}",
+      "Description": "Delete a notification setting by ID",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteNotificationsByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetNotifications",
+      "OperationId": "get_api_notifications",
+      "Method": "GET",
+      "Path": "/api/notifications",
+      "Description": "List all notification settings (SMTP and Apprise) with SMTP passwords masked",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetNotificationsResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetNotificationsById",
+      "OperationId": "get_api_notifications_id",
+      "Method": "GET",
+      "Path": "/api/notifications/{id}",
+      "Description": "Get a single notification setting by ID, with any SMTP password masked",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetNotificationsByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetNotificationsTriggerTest",
+      "OperationId": "get_api_notifications_trigger-test",
+      "Method": "GET",
+      "Path": "/api/notifications/trigger-test",
+      "Description": "List all available notification event types, grouped into categories",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetNotificationsTriggerTestResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostNotifications",
+      "OperationId": "post_api_notifications",
+      "Method": "POST",
+      "Path": "/api/notifications",
+      "Description": "Create a notification setting (SMTP or Apprise); the response masks any SMTP password",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostNotificationsRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostNotificationsResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostNotificationsByIdTest",
+      "OperationId": "post_api_notifications_id_test",
+      "Method": "POST",
+      "Path": "/api/notifications/{id}/test",
+      "Description": "Send a test notification through an already-saved notification setting",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostNotificationsByIdTestResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostNotificationsTest",
+      "OperationId": "post_api_notifications_test",
+      "Method": "POST",
+      "Path": "/api/notifications/test",
+      "Description": "Send a test notification using an ad-hoc config supplied in the body (nothing is saved)",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostNotificationsTestRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostNotificationsTestResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostNotificationsTriggerTest",
+      "OperationId": "post_api_notifications_trigger-test",
+      "Method": "POST",
+      "Path": "/api/notifications/trigger-test",
+      "Description": "Trigger a real notification for a given event type (development/testing helper)",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostNotificationsTriggerTestRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostNotificationsTriggerTestResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PutNotificationsById",
+      "OperationId": "put_api_notifications_id",
+      "Method": "PUT",
+      "Path": "/api/notifications/{id}",
+      "Description": "Update a notification setting; a masked SMTP password (\"********\") keeps the stored value",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutNotificationsByIdRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutNotificationsByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "DeleteNotificationsByIdResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetNotificationsByIdResponse",
+      "Fields": [
+        {
+          "Name": "Config",
+          "JsonName": "config",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetNotificationsByIdResponseConfig"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "EventTypes",
+          "JsonName": "eventTypes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetNotificationsByIdResponseConfig",
+      "Fields": [
+        {
+          "Name": "FromEmail",
+          "JsonName": "from_email",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "FromName",
+          "JsonName": "from_name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Host",
+          "JsonName": "host",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Password",
+          "JsonName": "password",
+          "Description": "for mail: eight asterisks where a password is kept, never the password",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Port",
+          "JsonName": "port",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Secure",
+          "JsonName": "secure",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ToEmails",
+          "JsonName": "to_emails",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Urls",
+          "JsonName": "urls",
+          "Description": "for a channel that is not mail: the addresses it sends to, in full, with whatever token or login each carries",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetNotificationsResponse",
+      "Fields": [
+        {
+          "Name": "Config",
+          "JsonName": "config",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetNotificationsResponseConfig"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "EventTypes",
+          "JsonName": "eventTypes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetNotificationsResponseConfig",
+      "Fields": [
+        {
+          "Name": "FromEmail",
+          "JsonName": "from_email",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "FromName",
+          "JsonName": "from_name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Host",
+          "JsonName": "host",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Password",
+          "JsonName": "password",
+          "Description": "for mail: eight asterisks where a password is kept, never the password",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Port",
+          "JsonName": "port",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Secure",
+          "JsonName": "secure",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ToEmails",
+          "JsonName": "to_emails",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Urls",
+          "JsonName": "urls",
+          "Description": "for a channel that is not mail: the addresses it sends to, in full, with whatever token or login each carries",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetNotificationsTriggerTestResponse",
+      "Fields": [
+        {
+          "Name": "Categories",
+          "JsonName": "categories",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetNotificationsTriggerTestResponseCategories"
+          }
+        },
+        {
+          "Name": "EventTypes",
+          "JsonName": "eventTypes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetNotificationsTriggerTestResponseEventTypes"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetNotificationsTriggerTestResponseCategories",
+      "Fields": [
+        {
+          "Name": "AutoUpdate",
+          "JsonName": "autoUpdate",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Container",
+          "JsonName": "container",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "GitStack",
+          "JsonName": "gitStack",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Security",
+          "JsonName": "security",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Stack",
+          "JsonName": "stack",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "System",
+          "JsonName": "system",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetNotificationsTriggerTestResponseEventTypes",
+      "Fields": [
+        {
+          "Name": "Description",
+          "JsonName": "description",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Group",
+          "JsonName": "group",
+          "Description": "container, auto_update, git_stack, stack, security or system",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Label",
+          "JsonName": "label",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Scope",
+          "JsonName": "scope",
+          "Description": "environment for what happens on a host, which a channel is told of through its link to that environment, or system",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostNotificationsByIdTestResponse",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Message",
+          "JsonName": "message",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostNotificationsRequest",
+      "Fields": [
+        {
+          "Name": "Config",
+          "JsonName": "config",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostNotificationsRequestConfig"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "EventTypes",
+          "JsonName": "eventTypes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostNotificationsRequestConfig",
+      "Fields": [
+        {
+          "Name": "FromEmail",
+          "JsonName": "from_email",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "FromName",
+          "JsonName": "from_name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Host",
+          "JsonName": "host",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Password",
+          "JsonName": "password",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Port",
+          "JsonName": "port",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Secure",
+          "JsonName": "secure",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ToEmails",
+          "JsonName": "to_emails",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Urls",
+          "JsonName": "urls",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostNotificationsResponse",
+      "Fields": [
+        {
+          "Name": "Config",
+          "JsonName": "config",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostNotificationsResponseConfig"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "EventTypes",
+          "JsonName": "eventTypes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostNotificationsResponseConfig",
+      "Fields": [
+        {
+          "Name": "FromEmail",
+          "JsonName": "from_email",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "FromName",
+          "JsonName": "from_name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Host",
+          "JsonName": "host",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Password",
+          "JsonName": "password",
+          "Description": "for mail: eight asterisks where a password is kept, never the password",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Port",
+          "JsonName": "port",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Secure",
+          "JsonName": "secure",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ToEmails",
+          "JsonName": "to_emails",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Urls",
+          "JsonName": "urls",
+          "Description": "for a channel that is not mail: the addresses it sends to, in full, with whatever token or login each carries",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostNotificationsTestRequest",
+      "Fields": [
+        {
+          "Name": "Config",
+          "JsonName": "config",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostNotificationsTestRequestConfig"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostNotificationsTestRequestConfig",
+      "Fields": [
+        {
+          "Name": "FromEmail",
+          "JsonName": "from_email",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "FromName",
+          "JsonName": "from_name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Host",
+          "JsonName": "host",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Password",
+          "JsonName": "password",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Port",
+          "JsonName": "port",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Secure",
+          "JsonName": "secure",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ToEmails",
+          "JsonName": "to_emails",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Urls",
+          "JsonName": "urls",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostNotificationsTestResponse",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Message",
+          "JsonName": "message",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostNotificationsTriggerTestRequest",
+      "Fields": [
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "EventType",
+          "JsonName": "eventType",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Payload",
+          "JsonName": "payload",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostNotificationsTriggerTestRequestPayload"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostNotificationsTriggerTestRequestPayload",
+      "Fields": [
+        {
+          "Name": "Message",
+          "JsonName": "message",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Title",
+          "JsonName": "title",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostNotificationsTriggerTestResponse",
+      "Fields": [
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "EventType",
+          "JsonName": "eventType",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Sent",
+          "JsonName": "sent",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutNotificationsByIdRequest",
+      "Fields": [
+        {
+          "Name": "Config",
+          "JsonName": "config",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PutNotificationsByIdRequestConfig"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "EventTypes",
+          "JsonName": "eventTypes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutNotificationsByIdRequestConfig",
+      "Fields": [
+        {
+          "Name": "FromEmail",
+          "JsonName": "from_email",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "FromName",
+          "JsonName": "from_name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Host",
+          "JsonName": "host",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Password",
+          "JsonName": "password",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Port",
+          "JsonName": "port",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Secure",
+          "JsonName": "secure",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ToEmails",
+          "JsonName": "to_emails",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Urls",
+          "JsonName": "urls",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutNotificationsByIdResponse",
+      "Fields": [
+        {
+          "Name": "Config",
+          "JsonName": "config",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PutNotificationsByIdResponseConfig"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "EventTypes",
+          "JsonName": "eventTypes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutNotificationsByIdResponseConfig",
+      "Fields": [
+        {
+          "Name": "FromEmail",
+          "JsonName": "from_email",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "FromName",
+          "JsonName": "from_name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Host",
+          "JsonName": "host",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Password",
+          "JsonName": "password",
+          "Description": "for mail: eight asterisks where a password is kept, never the password",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Port",
+          "JsonName": "port",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Secure",
+          "JsonName": "secure",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ToEmails",
+          "JsonName": "to_emails",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Urls",
+          "JsonName": "urls",
+          "Description": "for a channel that is not mail: the addresses it sends to, in full, with whatever token or login each carries",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    }
+  ]
+}

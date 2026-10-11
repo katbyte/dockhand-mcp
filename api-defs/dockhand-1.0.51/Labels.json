@@ -1,0 +1,209 @@
+{
+  "Name": "Labels",
+  "Tag": "labels",
+  "Operations": [
+    {
+      "Name": "GetLabels",
+      "OperationId": "get_api_labels",
+      "Method": "GET",
+      "Path": "/api/labels",
+      "Description": "List all unique environment labels with their usage counts, the environments carrying each label, and any custom color",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetLabelsResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostLabels",
+      "OperationId": "post_api_labels",
+      "Method": "POST",
+      "Path": "/api/labels",
+      "Description": "Perform a bulk label operation on environments — rename, delete, add to environments, or set a custom color — selected via the action field",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostLabelsRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostLabelsResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "GetLabelsResponse",
+      "Fields": [
+        {
+          "Name": "Colors",
+          "JsonName": "colors",
+          "Description": "the colour of each label that has one, by the label's name",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetLabelsResponseLabels"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetLabelsResponseLabels",
+      "Fields": [
+        {
+          "Name": "Color",
+          "JsonName": "color",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Count",
+          "JsonName": "count",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Environments",
+          "JsonName": "environments",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetLabelsResponseLabelsEnvironments"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Label",
+          "JsonName": "label",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetLabelsResponseLabelsEnvironments",
+      "Fields": [
+        {
+          "Name": "EnvId",
+          "JsonName": "envId",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "EnvName",
+          "JsonName": "envName",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostLabelsRequest",
+      "Fields": [
+        {
+          "Name": "Action",
+          "JsonName": "action",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Color",
+          "JsonName": "color",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvironmentIds",
+          "JsonName": "environmentIds",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Integer"
+            }
+          }
+        },
+        {
+          "Name": "Label",
+          "JsonName": "label",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NewLabel",
+          "JsonName": "newLabel",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "OldLabel",
+          "JsonName": "oldLabel",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostLabelsResponse",
+      "Fields": [
+        {
+          "Name": "Affected",
+          "JsonName": "affected",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

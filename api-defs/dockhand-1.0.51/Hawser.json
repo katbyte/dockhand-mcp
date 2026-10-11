@@ -1,0 +1,381 @@
+{
+  "Name": "Hawser",
+  "Tag": "hawser",
+  "Operations": [
+    {
+      "Name": "DeleteHawserTokens",
+      "OperationId": "delete_api_hawser_tokens",
+      "Method": "DELETE",
+      "Path": "/api/hawser/tokens",
+      "Description": "Revoke a Hawser agent token by ID",
+      "Options": [
+        {
+          "Name": "id",
+          "Field": "Id",
+          "In": "Query",
+          "Description": "ID of the token to revoke (from GET /api/hawser/tokens)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteHawserTokensResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetHawserConnect",
+      "OperationId": "get_api_hawser_connect",
+      "Method": "GET",
+      "Path": "/api/hawser/connect",
+      "Description": "Report the Hawser Edge WebSocket endpoint status and list currently connected agents",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetHawserConnectResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetHawserTokens",
+      "OperationId": "get_api_hawser_tokens",
+      "Method": "GET",
+      "Path": "/api/hawser/tokens",
+      "Description": "List all Hawser agent tokens (only the prefix is returned, never the full token)",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetHawserTokensResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostHawserConnect",
+      "OperationId": "post_api_hawser_connect",
+      "Method": "POST",
+      "Path": "/api/hawser/connect",
+      "Description": "Fallback for non-WebSocket clients; always advises upgrading to a WebSocket connection",
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostHawserTokens",
+      "OperationId": "post_api_hawser_tokens",
+      "Method": "POST",
+      "Path": "/api/hawser/tokens",
+      "Description": "Generate a new Hawser agent token for an environment (the plaintext token is returned only once)",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostHawserTokensRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostHawserTokensResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "DeleteHawserTokensResponse",
+      "Fields": [
+        {
+          "Name": "Message",
+          "JsonName": "message",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetHawserConnectResponse",
+      "Fields": [
+        {
+          "Name": "ActiveConnections",
+          "JsonName": "activeConnections",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Connections",
+          "JsonName": "connections",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetHawserConnectResponseConnections"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Message",
+          "JsonName": "message",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Protocol",
+          "JsonName": "protocol",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetHawserConnectResponseConnections",
+      "Fields": [
+        {
+          "Name": "AgentId",
+          "JsonName": "agentId",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "AgentName",
+          "JsonName": "agentName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "AgentVersion",
+          "JsonName": "agentVersion",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Capabilities",
+          "JsonName": "capabilities",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "ConnectedAt",
+          "JsonName": "connectedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "DockerVersion",
+          "JsonName": "dockerVersion",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Hostname",
+          "JsonName": "hostname",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LastHeartbeat",
+          "JsonName": "lastHeartbeat",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetHawserTokensResponse",
+      "Fields": [
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ExpiresAt",
+          "JsonName": "expiresAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "IsActive",
+          "JsonName": "isActive",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "LastUsed",
+          "JsonName": "lastUsed",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "TokenPrefix",
+          "JsonName": "tokenPrefix",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostHawserTokensRequest",
+      "Fields": [
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ExpiresAt",
+          "JsonName": "expiresAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "RawToken",
+          "JsonName": "rawToken",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostHawserTokensResponse",
+      "Fields": [
+        {
+          "Name": "Message",
+          "JsonName": "message",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Token",
+          "JsonName": "token",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "TokenId",
+          "JsonName": "tokenId",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1456 @@
+{
+  "Name": "Images",
+  "Tag": "images",
+  "Operations": [
+    {
+      "Name": "DeleteImagesById",
+      "OperationId": "delete_api_images_id",
+      "Method": "DELETE",
+      "Path": "/api/images/{id}",
+      "Description": "Remove a Docker image by ID or name (optionally forced), scoped to an environment",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "ID of the environment the image belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "force",
+          "Field": "Force",
+          "In": "Query",
+          "Description": "Force removal even if the image is tagged or referenced (default false)",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteImagesByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetImages",
+      "OperationId": "get_api_images",
+      "Method": "GET",
+      "Path": "/api/images",
+      "Description": "List the Docker images of an environment (returns an empty array when no env is given or Docker is unreachable)",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "ID of the environment whose images to list (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetImagesResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetImagesByIdExport",
+      "OperationId": "get_api_images_id_export",
+      "Method": "GET",
+      "Path": "/api/images/{id}/export",
+      "Description": "Export a Docker image as a downloadable tar (or tar.gz) stream",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "ID of the environment the image belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "tag",
+          "Field": "Tag",
+          "In": "Query",
+          "Description": "Which of the image's tags to name the download after (defaults to its first tag)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "compress",
+          "Field": "Compress",
+          "In": "Query",
+          "Description": "Gzip the tar stream and serve it as .tar.gz (default false)",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/x-tar",
+        "Type": {
+          "Type": "RawFile"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetImagesByIdHistory",
+      "OperationId": "get_api_images_id_history",
+      "Method": "GET",
+      "Path": "/api/images/{id}/history",
+      "Description": "Return the layer build history of a Docker image",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "ID of the environment the image belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetImagesByIdHistoryResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetImagesScan",
+      "OperationId": "get_api_images_scan",
+      "Method": "GET",
+      "Path": "/api/images/scan",
+      "Description": "Return the latest cached vulnerability scan for an image, resolving its tag to a SHA256 ID",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "ID of the environment the image belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "image",
+          "Field": "Image",
+          "In": "Query",
+          "Description": "Image name or ID to look up cached results for",
+          "Required": true,
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "scanner",
+          "Field": "Scanner",
+          "In": "Query",
+          "Description": "Restrict the lookup to a specific scanner (e.g. grype or trivy)",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetImagesScanResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetImagesScanExport",
+      "OperationId": "get_api_images_scan_export",
+      "Method": "GET",
+      "Path": "/api/images/scan/export",
+      "Description": "Export the cached vulnerability findings for a single image as json, csv, or sarif",
+      "Options": [
+        {
+          "Name": "imageId",
+          "Field": "ImageId",
+          "In": "Query",
+          "Description": "Image SHA/ID to export (falls back to the \"image\" param when omitted) (from GET /api/images)",
+          "Required": true,
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "image",
+          "Field": "Image",
+          "In": "Query",
+          "Description": "Image name/ID used as a fallback when imageId is not given",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "format",
+          "Field": "Format",
+          "In": "Query",
+          "Description": "Output format — json (default), csv, or sarif",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "the environment the image is on",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/octet-stream",
+        "Type": {
+          "Type": "RawFile"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostImagesByIdTag",
+      "OperationId": "post_api_images_id_tag",
+      "Method": "POST",
+      "Path": "/api/images/{id}/tag",
+      "Description": "Tag a Docker image into a repository (defaults the tag to \"latest\")",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "ID of the environment the image belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostImagesByIdTagRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostImagesByIdTagResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostImagesLoad",
+      "OperationId": "post_api_images_load",
+      "Method": "POST",
+      "Path": "/api/images/load",
+      "Description": "Load a Docker image from an uploaded tar (docker load) for air-gapped hosts",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Target environment id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/x-tar",
+        "Type": {
+          "Type": "RawFile"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostImagesLoadResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostImagesPull",
+      "OperationId": "post_api_images_pull",
+      "Method": "POST",
+      "Path": "/api/images/pull",
+      "Description": "Pull a Docker image and stream pull (and optional scan-on-pull) progress as Server-Sent Events",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "ID of the environment to pull into (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Accept",
+          "Field": "Accept",
+          "In": "Header",
+          "Description": "what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostImagesPullRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostImagesPullResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostImagesPush",
+      "OperationId": "post_api_images_push",
+      "Method": "POST",
+      "Path": "/api/images/push",
+      "Description": "Tag a local image and push it to a configured registry (streams progress, or runs synchronously for Accept: application/json)",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "ID of the environment the source image belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Accept",
+          "Field": "Accept",
+          "In": "Header",
+          "Description": "what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostImagesPushRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostImagesPushResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostImagesScan",
+      "OperationId": "post_api_images_scan",
+      "Method": "POST",
+      "Path": "/api/images/scan",
+      "Description": "Start a vulnerability scan of an image and stream scan progress as Server-Sent Events, persisting the results",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "ID of the environment the image belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Accept",
+          "Field": "Accept",
+          "In": "Header",
+          "Description": "what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostImagesScanRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostImagesScanResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "DeleteImagesByIdResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetImagesByIdHistoryResponse",
+      "Fields": [
+        {
+          "Name": "Comment",
+          "JsonName": "Comment",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Created",
+          "JsonName": "Created",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "CreatedBy",
+          "JsonName": "CreatedBy",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "Id",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Size",
+          "JsonName": "Size",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Tags",
+          "JsonName": "Tags",
+          "Description": "the names and tags that point at this layer; none for a layer beneath the top one",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetImagesResponse",
+      "Fields": [
+        {
+          "Name": "Containers",
+          "JsonName": "containers",
+          "Description": "how many containers on the host were made from it, running or not",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Created",
+          "JsonName": "created",
+          "Description": "when the image was built, in seconds since 1970",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Description": "the image's whole id: sha256: and sixty-four characters",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "RepoDigests",
+          "JsonName": "repoDigests",
+          "Description": "the image by the digest it was pulled as, for each repository it came from",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "RepoTags",
+          "JsonName": "repoTags",
+          "Description": "every name and tag the image goes by on the host; none for an image left behind by a newer one of the same name",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Size",
+          "JsonName": "size",
+          "Description": "bytes",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Tags",
+          "JsonName": "tags",
+          "Description": "the same again",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "VirtualSize",
+          "JsonName": "virtualSize",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetImagesScanResponse",
+      "Fields": [
+        {
+          "Name": "Found",
+          "JsonName": "found",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Result",
+          "JsonName": "result",
+          "Description": "the latest scan kept of the image, by the scanner asked for or by whichever ran last; absent when none is kept",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetImagesScanResponseResult"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetImagesScanResponseResult",
+      "Description": "the latest scan kept of the image, by the scanner asked for or by whichever ran last; absent when none is kept",
+      "Fields": [
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CriticalCount",
+          "JsonName": "criticalCount",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Description": "why the scan failed; null for one that did not",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HighCount",
+          "JsonName": "highCount",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ImageId",
+          "JsonName": "imageId",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ImageName",
+          "JsonName": "imageName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LowCount",
+          "JsonName": "lowCount",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "MediumCount",
+          "JsonName": "mediumCount",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "NegligibleCount",
+          "JsonName": "negligibleCount",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ScanDuration",
+          "JsonName": "scanDuration",
+          "Description": "how long the scan took, in milliseconds",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ScannedAt",
+          "JsonName": "scannedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Scanner",
+          "JsonName": "scanner",
+          "Description": "grype or trivy",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UnknownCount",
+          "JsonName": "unknownCount",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Vulnerabilities",
+          "JsonName": "vulnerabilities",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetImagesScanResponseResultVulnerabilities"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetImagesScanResponseResultVulnerabilities",
+      "Fields": [
+        {
+          "Name": "Description",
+          "JsonName": "description",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "FixedVersion",
+          "JsonName": "fixedVersion",
+          "Description": "the version it is put right in; absent when none is known",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Description": "the CVE, or the scanner's own id for what it found",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Link",
+          "JsonName": "link",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Package",
+          "JsonName": "package",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Scanner",
+          "JsonName": "scanner",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Severity",
+          "JsonName": "severity",
+          "Description": "critical, high, medium, low, negligible or unknown",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Version",
+          "JsonName": "version",
+          "Description": "the version of the package the image has",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostImagesByIdTagRequest",
+      "Fields": [
+        {
+          "Name": "Repo",
+          "JsonName": "repo",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Tag",
+          "JsonName": "tag",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostImagesByIdTagResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostImagesLoadResponse",
+      "Fields": [
+        {
+          "Name": "Loaded",
+          "JsonName": "loaded",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostImagesPullRequest",
+      "Fields": [
+        {
+          "Name": "Image",
+          "JsonName": "image",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ScanAfterPull",
+          "JsonName": "scanAfterPull",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostImagesPullResponse",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Description": "why not, when the image could not be pulled",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "JobId",
+          "JsonName": "jobId",
+          "Description": "the job the pull runs as, for a caller that did not ask for JSON alone and so was not made to wait: GET /api/jobs/{id} says how it goes",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Description": "complete, or error; an error comes with HTTP 200 all the same",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostImagesPushRequest",
+      "Fields": [
+        {
+          "Name": "ImageId",
+          "JsonName": "imageId",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ImageName",
+          "JsonName": "imageName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NewTag",
+          "JsonName": "newTag",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "RegistryId",
+          "JsonName": "registryId",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostImagesPushResponse",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "JobId",
+          "JsonName": "jobId",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Message",
+          "JsonName": "message",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Description": "complete, or error with why",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TargetTag",
+          "JsonName": "targetTag",
+          "Description": "the whole name the image was pushed under, its registry first",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostImagesScanRequest",
+      "Fields": [
+        {
+          "Name": "ImageName",
+          "JsonName": "imageName",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Scanner",
+          "JsonName": "scanner",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostImagesScanResponse",
+      "Fields": [
+        {
+          "Name": "JobId",
+          "JsonName": "jobId",
+          "Description": "the job the scan runs as, for a caller that did not ask for JSON alone",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Message",
+          "JsonName": "message",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Progress",
+          "JsonName": "progress",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Result",
+          "JsonName": "result",
+          "Description": "the first scanner's scan; absent when the environment scans with nothing",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostImagesScanResponseResult"
+          }
+        },
+        {
+          "Name": "Results",
+          "JsonName": "results",
+          "Description": "one scan for each scanner that ran: none when the environment scans with nothing, which is answered as complete all the same",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostImagesScanResponseResults"
+            }
+          }
+        },
+        {
+          "Name": "Stage",
+          "JsonName": "stage",
+          "Description": "complete, or error with why in message",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostImagesScanResponseResult",
+      "Description": "the first scanner's scan; absent when the environment scans with nothing",
+      "Fields": [
+        {
+          "Name": "ImageId",
+          "JsonName": "imageId",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ImageName",
+          "JsonName": "imageName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ScanDuration",
+          "JsonName": "scanDuration",
+          "Description": "how long the scan took, in milliseconds",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ScannedAt",
+          "JsonName": "scannedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Scanner",
+          "JsonName": "scanner",
+          "Description": "grype or trivy",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Summary",
+          "JsonName": "summary",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostImagesScanResponseResultSummary"
+          }
+        },
+        {
+          "Name": "Vulnerabilities",
+          "JsonName": "vulnerabilities",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostImagesScanResponseResultVulnerabilities"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostImagesScanResponseResultSummary",
+      "Fields": [
+        {
+          "Name": "Critical",
+          "JsonName": "critical",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "High",
+          "JsonName": "high",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Low",
+          "JsonName": "low",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Medium",
+          "JsonName": "medium",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Negligible",
+          "JsonName": "negligible",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Unknown",
+          "JsonName": "unknown",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostImagesScanResponseResultVulnerabilities",
+      "Fields": [
+        {
+          "Name": "Description",
+          "JsonName": "description",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "FixedVersion",
+          "JsonName": "fixedVersion",
+          "Description": "the version it is put right in; absent when none is known",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Description": "the CVE, or the scanner's own id for what it found",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Link",
+          "JsonName": "link",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Package",
+          "JsonName": "package",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Scanner",
+          "JsonName": "scanner",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Severity",
+          "JsonName": "severity",
+          "Description": "critical, high, medium, low, negligible or unknown",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Version",
+          "JsonName": "version",
+          "Description": "the version of the package the image has",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostImagesScanResponseResults",
+      "Fields": [
+        {
+          "Name": "ImageId",
+          "JsonName": "imageId",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ImageName",
+          "JsonName": "imageName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ScanDuration",
+          "JsonName": "scanDuration",
+          "Description": "how long the scan took, in milliseconds",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ScannedAt",
+          "JsonName": "scannedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Scanner",
+          "JsonName": "scanner",
+          "Description": "grype or trivy",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Summary",
+          "JsonName": "summary",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostImagesScanResponseResultsSummary"
+          }
+        },
+        {
+          "Name": "Vulnerabilities",
+          "JsonName": "vulnerabilities",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostImagesScanResponseResultsVulnerabilities"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostImagesScanResponseResultsSummary",
+      "Fields": [
+        {
+          "Name": "Critical",
+          "JsonName": "critical",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "High",
+          "JsonName": "high",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Low",
+          "JsonName": "low",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Medium",
+          "JsonName": "medium",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Negligible",
+          "JsonName": "negligible",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Unknown",
+          "JsonName": "unknown",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostImagesScanResponseResultsVulnerabilities",
+      "Fields": [
+        {
+          "Name": "Description",
+          "JsonName": "description",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "FixedVersion",
+          "JsonName": "fixedVersion",
+          "Description": "the version it is put right in; absent when none is known",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Description": "the CVE, or the scanner's own id for what it found",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Link",
+          "JsonName": "link",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Package",
+          "JsonName": "package",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Scanner",
+          "JsonName": "scanner",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Severity",
+          "JsonName": "severity",
+          "Description": "critical, high, medium, low, negligible or unknown",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Version",
+          "JsonName": "version",
+          "Description": "the version of the package the image has",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    }
+  ]
+}

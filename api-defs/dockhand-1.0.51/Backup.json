@@ -1,0 +1,1662 @@
+{
+  "Name": "Backup",
+  "Tag": "backup",
+  "Operations": [
+    {
+      "Name": "DeleteBackupConfigsById",
+      "OperationId": "delete_api_backup_configs_id",
+      "Method": "DELETE",
+      "Path": "/api/backup/configs/{id}",
+      "Description": "Delete a backup configuration and unregister its schedule, optionally forgetting its snapshots too",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "deleteSnapshots",
+          "Field": "DeleteSnapshots",
+          "In": "Query",
+          "Description": "Also forget and prune this config's snapshots (default false; snapshots survive so a restore is still possible)",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ],
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "DeleteBackupDestinationsById",
+      "OperationId": "delete_api_backup_destinations_id",
+      "Method": "DELETE",
+      "Path": "/api/backup/destinations/{id}",
+      "Description": "Delete a backup destination and unregister all its maintenance and dependent backup-config schedules",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "DeleteBackupSnapshotsById",
+      "OperationId": "delete_api_backup_snapshots_id",
+      "Method": "DELETE",
+      "Path": "/api/backup/snapshots/{id}",
+      "Description": "Forget and prune a single snapshot from a destination (destructive restic forget --prune), with a server-authoritative environment access gate",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "destinationId",
+          "Field": "DestinationId",
+          "In": "Query",
+          "Description": "Destination holding the snapshot (required) (from GET /api/backup/destinations)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Optional environment id for an early enterprise access check; the authoritative gate resolves the snapshot's owning environment server-side (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetBackupConfigs",
+      "OperationId": "get_api_backup_configs",
+      "Method": "GET",
+      "Path": "/api/backup/configs",
+      "Description": "List backup configurations, optionally filtered by type, target and environment (enterprise callers only see configs for environments they can access)",
+      "Options": [
+        {
+          "Name": "type",
+          "Field": "Type",
+          "In": "Query",
+          "Description": "Filter by backup config type (e.g. \"container\", \"stack\")",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "target",
+          "Field": "Target",
+          "In": "Query",
+          "Description": "Filter by the backed-up target name (container or stack name)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Filter by environment id (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "RawObject"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetBackupConfigsById",
+      "OperationId": "get_api_backup_configs_id",
+      "Method": "GET",
+      "Path": "/api/backup/configs/{id}",
+      "Description": "Fetch a single backup configuration by id, enforcing environment-scoped access",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "RawObject"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetBackupDestinations",
+      "OperationId": "get_api_backup_destinations",
+      "Method": "GET",
+      "Path": "/api/backup/destinations",
+      "Description": "List all backup destinations (restic repositories); the password is stripped and cloud-credential env vars are omitted from the list view",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "RawObject"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetBackupDestinationsById",
+      "OperationId": "get_api_backup_destinations_id",
+      "Method": "GET",
+      "Path": "/api/backup/destinations/{id}",
+      "Description": "Fetch a single backup destination; decrypted cloud-credential env vars are only included for callers who can manage backups, and the password is always stripped",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "RawObject"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetBackupInstance",
+      "OperationId": "get_api_backup_instance",
+      "Method": "GET",
+      "Path": "/api/backup/instance",
+      "Description": "This install's stable backup instance id, used to tell own snapshots from foreign orphans",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetBackupInstanceResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetBackupSnapshots",
+      "OperationId": "get_api_backup_snapshots",
+      "Method": "GET",
+      "Path": "/api/backup/snapshots",
+      "Description": "List restic snapshots for a backup config or a single destination (job-polled)",
+      "Options": [
+        {
+          "Name": "configId",
+          "Field": "ConfigId",
+          "In": "Query",
+          "Description": "Backup config id (mutually exclusive with destinationId)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "destinationId",
+          "Field": "DestinationId",
+          "In": "Query",
+          "Description": "Single destination id (mutually exclusive with configId)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "allDestinations",
+          "Field": "AllDestinations",
+          "In": "Query",
+          "Description": "With configId, include every destination of the config",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "RawObject"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetBackupSnapshotsByIdBrowse",
+      "OperationId": "get_api_backup_snapshots_id_browse",
+      "Method": "GET",
+      "Path": "/api/backup/snapshots/{id}/browse",
+      "Description": "List directory entries at a path inside a snapshot (job-polled)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "destinationId",
+          "Field": "DestinationId",
+          "In": "Query",
+          "Description": "Destination the snapshot lives in",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "path",
+          "Field": "Path",
+          "In": "Query",
+          "Description": "Directory path inside the snapshot to list",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment context for access checks",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "RawObject"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetBackupSnapshotsByIdDump",
+      "OperationId": "get_api_backup_snapshots_id_dump",
+      "Method": "GET",
+      "Path": "/api/backup/snapshots/{id}/dump",
+      "Description": "Read a single file (or archive) out of a snapshot (job-polled restic dump)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "destinationId",
+          "Field": "DestinationId",
+          "In": "Query",
+          "Description": "Destination the snapshot lives in",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "path",
+          "Field": "Path",
+          "In": "Query",
+          "Description": "Path inside the snapshot (must resolve under /volumes or /metadata)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "type",
+          "Field": "Type",
+          "In": "Query",
+          "Description": "Payload kind (e.g. inline preview vs archive)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "download",
+          "Field": "Download",
+          "In": "Query",
+          "Description": "When set, stream the file/directory as a tar",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/octet-stream",
+        "Type": {
+          "Type": "RawFile"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetBackupSnapshotsByIdMetadata",
+      "OperationId": "get_api_backup_snapshots_id_metadata",
+      "Method": "GET",
+      "Path": "/api/backup/snapshots/{id}/metadata",
+      "Description": "The snapshot's redacted metadata layout (job-polled restic dump)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "destinationId",
+          "Field": "DestinationId",
+          "In": "Query",
+          "Description": "Destination the snapshot lives in",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "RawObject"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetBackupSnapshotsDiff",
+      "OperationId": "get_api_backup_snapshots_diff",
+      "Method": "GET",
+      "Path": "/api/backup/snapshots/diff",
+      "Description": "Diff two snapshots' file trees (added/changed/removed) - job-polled",
+      "Options": [
+        {
+          "Name": "destinationId",
+          "Field": "DestinationId",
+          "In": "Query",
+          "Description": "Destination both snapshots live in",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "snapshotA",
+          "Field": "SnapshotA",
+          "In": "Query",
+          "Description": "The baseline snapshot id",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "snapshotB",
+          "Field": "SnapshotB",
+          "In": "Query",
+          "Description": "The snapshot to compare against the baseline",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "RawObject"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetBackupStackDirListing",
+      "OperationId": "get_api_backup_stack-dir-listing",
+      "Method": "GET",
+      "Path": "/api/backup/stack-dir-listing",
+      "Description": "Probe the target host and list the actual contents of a stack's directory, for the backup create/edit dialog's file picker",
+      "Options": [
+        {
+          "Name": "target",
+          "Field": "Target",
+          "In": "Query",
+          "Description": "Target stack name",
+          "Required": true,
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment ID the stack belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "RawObject"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetBackupStackPath",
+      "OperationId": "get_api_backup_stack-path",
+      "Method": "GET",
+      "Path": "/api/backup/stack-path",
+      "Description": "Preview where a stack's directory will be captured from on the host, without running a backup",
+      "Options": [
+        {
+          "Name": "target",
+          "Field": "Target",
+          "In": "Query",
+          "Description": "Target stack name",
+          "Required": true,
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment ID the stack belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "RawObject"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostBackupConfigs",
+      "OperationId": "post_api_backup_configs",
+      "Method": "POST",
+      "Path": "/api/backup/configs",
+      "Description": "Create a backup configuration for a container or stack, optionally scheduled, and register its cron schedule when enabled",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupConfigsRequest"
+        }
+      },
+      "ExpectedStatusCodes": [
+        201
+      ]
+    },
+    {
+      "Name": "PostBackupConfigsByIdRun",
+      "OperationId": "post_api_backup_configs_id_run",
+      "Method": "POST",
+      "Path": "/api/backup/configs/{id}/run",
+      "Description": "Trigger a manual backup run for a configuration, streaming progress as a Server-Sent Events job",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostBackupConfigsByIdStop",
+      "OperationId": "post_api_backup_configs_id_stop",
+      "Method": "POST",
+      "Path": "/api/backup/configs/{id}/stop",
+      "Description": "Cancel the in-flight backup for a configuration",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostBackupDestinations",
+      "OperationId": "post_api_backup_destinations",
+      "Method": "POST",
+      "Path": "/api/backup/destinations",
+      "Description": "Create a restic backup destination, auto-initialize and test the repository, and register its default maintenance schedules",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupDestinationsRequest"
+        }
+      },
+      "ExpectedStatusCodes": [
+        201
+      ]
+    },
+    {
+      "Name": "PostBackupDestinationsByIdInit",
+      "OperationId": "post_api_backup_destinations_id_init",
+      "Method": "POST",
+      "Path": "/api/backup/destinations/{id}/init",
+      "Description": "Initialize the restic repository for a destination and record the resulting test status",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostBackupDestinationsByIdRotateKey",
+      "OperationId": "post_api_backup_destinations_id_rotate-key",
+      "Method": "POST",
+      "Path": "/api/backup/destinations/{id}/rotate-key",
+      "Description": "Rotate the restic repository password for a destination and persist the new password",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupDestinationsByIdRotateKeyRequest"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostBackupDestinationsByIdTask",
+      "OperationId": "post_api_backup_destinations_id_task",
+      "Method": "POST",
+      "Path": "/api/backup/destinations/{id}/task",
+      "Description": "Run a restic repository maintenance task (unlock, check, prune, stats, repair-index or repair-snapshots) against a destination",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupDestinationsByIdTaskRequest"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostBackupDestinationsByIdTest",
+      "OperationId": "post_api_backup_destinations_id_test",
+      "Method": "POST",
+      "Path": "/api/backup/destinations/{id}/test",
+      "Description": "Test connectivity to a saved backup destination's repository and update its stored test status",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostBackupDestinationsByIdVerify",
+      "OperationId": "post_api_backup_destinations_id_verify",
+      "Method": "POST",
+      "Path": "/api/backup/destinations/{id}/verify",
+      "Description": "Verify the integrity of a destination's backups by reading a data subset, streaming progress as a Server-Sent Events job",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupDestinationsByIdVerifyRequest"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostBackupDestinationsTest",
+      "OperationId": "post_api_backup_destinations_test",
+      "Method": "POST",
+      "Path": "/api/backup/destinations/test",
+      "Description": "Test a backup repository — either a saved destination (by destinationId) or inline credentials supplied for a not-yet-saved destination",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupDestinationsTestRequest"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostBackupRestore",
+      "OperationId": "post_api_backup_restore",
+      "Method": "POST",
+      "Path": "/api/backup/restore",
+      "Description": "Restore a backup snapshot in-place or to a new location, streaming progress as a Server-Sent Events job",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupRestoreRequest"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostBackupRestorePreview",
+      "OperationId": "post_api_backup_restore_preview",
+      "Method": "POST",
+      "Path": "/api/backup/restore/preview",
+      "Description": "Preview what a restore would write (resolved targets + volume/stack contents)",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupRestorePreviewRequest"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostBackupRestoreStop",
+      "OperationId": "post_api_backup_restore_stop",
+      "Method": "POST",
+      "Path": "/api/backup/restore/stop",
+      "Description": "Cancel a running restore — kills the restore helper for a given snapshotId, or all restore helpers when snapshotId is omitted",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupRestoreStopRequest"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostBackupSnapshotsBatchDelete",
+      "OperationId": "post_api_backup_snapshots_batch-delete",
+      "Method": "POST",
+      "Path": "/api/backup/snapshots/batch-delete",
+      "Description": "Forget and prune several snapshots from one destination in a single restic forget --prune, with per-snapshot ownership and environment access gates",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupSnapshotsBatchDeleteRequest"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PutBackupConfigsById",
+      "OperationId": "put_api_backup_configs_id",
+      "Method": "PUT",
+      "Path": "/api/backup/configs/{id}",
+      "Description": "Update a backup configuration and re-register or remove its cron schedule accordingly",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutBackupConfigsByIdRequest"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PutBackupDestinationsById",
+      "OperationId": "put_api_backup_destinations_id",
+      "Method": "PUT",
+      "Path": "/api/backup/destinations/{id}",
+      "Description": "Update a backup destination, re-validating repository and flags when supplied and re-registering maintenance schedules when policies change",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutBackupDestinationsByIdRequest"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "GetBackupInstanceResponse",
+      "Fields": [
+        {
+          "Name": "InstanceId",
+          "JsonName": "instanceId",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupConfigsRequest",
+      "Fields": [
+        {
+          "Name": "AllVolumes",
+          "JsonName": "allVolumes",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "DestinationId",
+          "JsonName": "destinationId",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Options",
+          "JsonName": "options",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Retention",
+          "JsonName": "retention",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostBackupConfigsRequestRetention"
+          }
+        },
+        {
+          "Name": "Schedule",
+          "JsonName": "schedule",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SelectedVolumes",
+          "JsonName": "selectedVolumes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "StopBeforeBackup",
+          "JsonName": "stopBeforeBackup",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Tags",
+          "JsonName": "tags",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "TargetName",
+          "JsonName": "targetName",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupConfigsRequestRetention",
+      "Fields": [
+        {
+          "Name": "KeepDaily",
+          "JsonName": "keepDaily",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "KeepLast",
+          "JsonName": "keepLast",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "KeepMonthly",
+          "JsonName": "keepMonthly",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "KeepWeekly",
+          "JsonName": "keepWeekly",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "KeepYearly",
+          "JsonName": "keepYearly",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupDestinationsByIdRotateKeyRequest",
+      "Fields": [
+        {
+          "Name": "CurrentPassword",
+          "JsonName": "currentPassword",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "NewPassword",
+          "JsonName": "newPassword",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupDestinationsByIdTaskRequest",
+      "Fields": [
+        {
+          "Name": "Task",
+          "JsonName": "task",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupDestinationsByIdVerifyRequest",
+      "Fields": [
+        {
+          "Name": "DataSubset",
+          "JsonName": "dataSubset",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupDestinationsRequest",
+      "Fields": [
+        {
+          "Name": "BackupFlags",
+          "JsonName": "backupFlags",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Cacert",
+          "JsonName": "cacert",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvVars",
+          "JsonName": "envVars",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Flags",
+          "JsonName": "flags",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HostPath",
+          "JsonName": "hostPath",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Password",
+          "JsonName": "password",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Policies",
+          "JsonName": "policies",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Repository",
+          "JsonName": "repository",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "RestoreFlags",
+          "JsonName": "restoreFlags",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TlsClientCert",
+          "JsonName": "tlsClientCert",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupDestinationsTestRequest",
+      "Fields": [
+        {
+          "Name": "Cacert",
+          "JsonName": "cacert",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "DestinationId",
+          "JsonName": "destinationId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "EnvVars",
+          "JsonName": "envVars",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Password",
+          "JsonName": "password",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Repository",
+          "JsonName": "repository",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TlsClientCert",
+          "JsonName": "tlsClientCert",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupRestorePreviewRequest",
+      "Fields": [
+        {
+          "Name": "DestinationId",
+          "JsonName": "destinationId",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "IncludeTargets",
+          "JsonName": "includeTargets",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "MergeStackFiles",
+          "JsonName": "mergeStackFiles",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Mode",
+          "JsonName": "mode",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SkipStackFiles",
+          "JsonName": "skipStackFiles",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "SnapshotId",
+          "JsonName": "snapshotId",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "TargetEnvId",
+          "JsonName": "targetEnvId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "TargetName",
+          "JsonName": "targetName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TargetPath",
+          "JsonName": "targetPath",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TargetType",
+          "JsonName": "targetType",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "VolumeDestinations",
+          "JsonName": "volumeDestinations",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Volumes",
+          "JsonName": "volumes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupRestoreRequest",
+      "Fields": [
+        {
+          "Name": "ConfirmOverwrite",
+          "JsonName": "confirmOverwrite",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "DestinationId",
+          "JsonName": "destinationId",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Mode",
+          "JsonName": "mode",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "PostRestore",
+          "JsonName": "postRestore",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "RestoreSecrets",
+          "JsonName": "restoreSecrets",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "SkipStackFiles",
+          "JsonName": "skipStackFiles",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "SnapshotId",
+          "JsonName": "snapshotId",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "TargetName",
+          "JsonName": "targetName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TargetPath",
+          "JsonName": "targetPath",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TargetType",
+          "JsonName": "targetType",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "VolumeDestinations",
+          "JsonName": "volumeDestinations",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Dictionary",
+              "NestedItem": {
+                "Type": "Any"
+              }
+            }
+          }
+        },
+        {
+          "Name": "Volumes",
+          "JsonName": "volumes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupRestoreStopRequest",
+      "Fields": [
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "SnapshotId",
+          "JsonName": "snapshotId",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupSnapshotsBatchDeleteRequest",
+      "Fields": [
+        {
+          "Name": "DestinationId",
+          "JsonName": "destinationId",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "SnapshotIds",
+          "JsonName": "snapshotIds",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutBackupConfigsByIdRequest",
+      "Fields": [
+        {
+          "Name": "AllVolumes",
+          "JsonName": "allVolumes",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "DestinationId",
+          "JsonName": "destinationId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Options",
+          "JsonName": "options",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Retention",
+          "JsonName": "retention",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PutBackupConfigsByIdRequestRetention"
+          }
+        },
+        {
+          "Name": "Schedule",
+          "JsonName": "schedule",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SelectedVolumes",
+          "JsonName": "selectedVolumes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "StopBeforeBackup",
+          "JsonName": "stopBeforeBackup",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Tags",
+          "JsonName": "tags",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutBackupConfigsByIdRequestRetention",
+      "Fields": [
+        {
+          "Name": "KeepDaily",
+          "JsonName": "keepDaily",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "KeepLast",
+          "JsonName": "keepLast",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "KeepMonthly",
+          "JsonName": "keepMonthly",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "KeepWeekly",
+          "JsonName": "keepWeekly",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "KeepYearly",
+          "JsonName": "keepYearly",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutBackupDestinationsByIdRequest",
+      "Fields": [
+        {
+          "Name": "BackupFlags",
+          "JsonName": "backupFlags",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Cacert",
+          "JsonName": "cacert",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvVars",
+          "JsonName": "envVars",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Flags",
+          "JsonName": "flags",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HostPath",
+          "JsonName": "hostPath",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Password",
+          "JsonName": "password",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Policies",
+          "JsonName": "policies",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Repository",
+          "JsonName": "repository",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "RestoreFlags",
+          "JsonName": "restoreFlags",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TlsClientCert",
+          "JsonName": "tlsClientCert",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    }
+  ]
+}

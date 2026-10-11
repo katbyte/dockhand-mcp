@@ -1,0 +1,740 @@
+{
+  "Name": "Templates",
+  "Tag": "templates",
+  "Operations": [
+    {
+      "Name": "DeleteTemplatesSources",
+      "OperationId": "delete_api_templates_sources",
+      "Method": "DELETE",
+      "Path": "/api/templates/sources",
+      "Description": "Delete a custom template source by ID",
+      "Options": [
+        {
+          "Name": "id",
+          "Field": "Id",
+          "In": "Query",
+          "Description": "ID of the template source to delete (from GET /api/templates/sources)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteTemplatesSourcesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetTemplates",
+      "OperationId": "get_api_templates",
+      "Method": "GET",
+      "Path": "/api/templates",
+      "Description": "Return the normalized app templates aggregated from all enabled template sources (server-side cached for 1 hour)",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetTemplatesResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetTemplatesSources",
+      "OperationId": "get_api_templates_sources",
+      "Method": "GET",
+      "Path": "/api/templates/sources",
+      "Description": "List all configured template sources (built-in and custom)",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetTemplatesSourcesResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostTemplatesCompose",
+      "OperationId": "post_api_templates_compose",
+      "Method": "POST",
+      "Path": "/api/templates/compose",
+      "Description": "Return the compose YAML for a template — generated for container templates, fetched from the repository for stack templates",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostTemplatesComposeRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostTemplatesComposeResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostTemplatesSources",
+      "OperationId": "post_api_templates_sources",
+      "Method": "POST",
+      "Path": "/api/templates/sources",
+      "Description": "Add a custom template source with a name and URL",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostTemplatesSourcesRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostTemplatesSourcesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PutTemplatesSources",
+      "OperationId": "put_api_templates_sources",
+      "Method": "PUT",
+      "Path": "/api/templates/sources",
+      "Description": "Update a template source — toggle enabled, or change its name/URL (only provided fields are changed)",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutTemplatesSourcesRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutTemplatesSourcesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "DeleteTemplatesSourcesResponse",
+      "Fields": [
+        {
+          "Name": "Ok",
+          "JsonName": "ok",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetTemplatesResponse",
+      "Fields": [
+        {
+          "Name": "Categories",
+          "JsonName": "categories",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Description",
+          "JsonName": "description",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "DetailsUrl",
+          "JsonName": "detailsUrl",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Env",
+          "JsonName": "env",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetTemplatesResponseEnv"
+            }
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Image",
+          "JsonName": "image",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Logo",
+          "JsonName": "logo",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Network",
+          "JsonName": "network",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Note",
+          "JsonName": "note",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Ports",
+          "JsonName": "ports",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "ProjectUrl",
+          "JsonName": "projectUrl",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Repository",
+          "JsonName": "repository",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetTemplatesResponseRepository"
+          }
+        },
+        {
+          "Name": "RestartPolicy",
+          "JsonName": "restartPolicy",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Source",
+          "JsonName": "source",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Title",
+          "JsonName": "title",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Volumes",
+          "JsonName": "volumes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetTemplatesResponseVolumes"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetTemplatesResponseEnv",
+      "Fields": [
+        {
+          "Name": "Default",
+          "JsonName": "default",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Label",
+          "JsonName": "label",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetTemplatesResponseRepository",
+      "Fields": [
+        {
+          "Name": "Stackfile",
+          "JsonName": "stackfile",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetTemplatesResponseVolumes",
+      "Fields": [
+        {
+          "Name": "Bind",
+          "JsonName": "bind",
+          "Description": "the place on the host, when the template names one",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Container",
+          "JsonName": "container",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetTemplatesSourcesResponse",
+      "Fields": [
+        {
+          "Name": "Builtin",
+          "JsonName": "builtin",
+          "Description": "one of the sources Dockhand comes with",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "SortOrder",
+          "JsonName": "sortOrder",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "SourceId",
+          "JsonName": "sourceId",
+          "Description": "the id Dockhand keeps the source under",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostTemplatesComposeRequest",
+      "Fields": [
+        {
+          "Name": "Template",
+          "JsonName": "template",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostTemplatesComposeRequestTemplate"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostTemplatesComposeRequestTemplate",
+      "Fields": [
+        {
+          "Name": "Env",
+          "JsonName": "env",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostTemplatesComposeRequestTemplateEnv"
+            }
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Image",
+          "JsonName": "image",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Network",
+          "JsonName": "network",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Ports",
+          "JsonName": "ports",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Repository",
+          "JsonName": "repository",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostTemplatesComposeRequestTemplateRepository"
+          }
+        },
+        {
+          "Name": "RestartPolicy",
+          "JsonName": "restartPolicy",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Title",
+          "JsonName": "title",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Volumes",
+          "JsonName": "volumes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostTemplatesComposeRequestTemplateVolumes"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostTemplatesComposeRequestTemplateEnv",
+      "Fields": [
+        {
+          "Name": "Default",
+          "JsonName": "default",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Label",
+          "JsonName": "label",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostTemplatesComposeRequestTemplateRepository",
+      "Fields": [
+        {
+          "Name": "Stackfile",
+          "JsonName": "stackfile",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostTemplatesComposeRequestTemplateVolumes",
+      "Fields": [
+        {
+          "Name": "Bind",
+          "JsonName": "bind",
+          "Description": "the place on the host, when the template names one",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Container",
+          "JsonName": "container",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostTemplatesComposeResponse",
+      "Fields": [
+        {
+          "Name": "Compose",
+          "JsonName": "compose",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostTemplatesSourcesRequest",
+      "Fields": [
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostTemplatesSourcesResponse",
+      "Fields": [
+        {
+          "Name": "Builtin",
+          "JsonName": "builtin",
+          "Description": "one of the sources Dockhand comes with",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "SortOrder",
+          "JsonName": "sortOrder",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "SourceId",
+          "JsonName": "sourceId",
+          "Description": "the id Dockhand keeps the source under",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutTemplatesSourcesRequest",
+      "Fields": [
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutTemplatesSourcesResponse",
+      "Fields": [
+        {
+          "Name": "Ok",
+          "JsonName": "ok",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

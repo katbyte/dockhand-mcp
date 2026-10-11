@@ -1,0 +1,130 @@
+{
+  "Name": "Debug",
+  "Tag": "debug",
+  "Operations": [
+    {
+      "Name": "GetDebugMemory",
+      "OperationId": "get_api_debug_memory",
+      "Method": "GET",
+      "Path": "/api/debug/memory",
+      "Description": "Return Node.js/V8 memory diagnostics; only enabled when MEMORY_MONITOR=true. Also supports ?snapshot and ?snapshots to dump/list heap snapshots.",
+      "Options": [
+        {
+          "Name": "gc",
+          "Field": "Gc",
+          "In": "Query",
+          "Description": "Force garbage collection before reporting when true (requires Node started with --expose-gc)",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetDebugMemoryResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "GetDebugMemoryResponse",
+      "Fields": [
+        {
+          "Name": "GcAvailable",
+          "JsonName": "gcAvailable",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "GcForced",
+          "JsonName": "gcForced",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Growth",
+          "JsonName": "growth",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Process",
+          "JsonName": "process",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "RssTracker",
+          "JsonName": "rssTracker",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "System",
+          "JsonName": "system",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Timestamp",
+          "JsonName": "timestamp",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Uptime",
+          "JsonName": "uptime",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "V8Heap",
+          "JsonName": "v8Heap",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

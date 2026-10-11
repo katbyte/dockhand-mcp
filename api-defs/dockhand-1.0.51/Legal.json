@@ -1,0 +1,90 @@
+{
+  "Name": "Legal",
+  "Tag": "legal",
+  "Operations": [
+    {
+      "Name": "GetLegalLicense",
+      "OperationId": "get_api_legal_license",
+      "Method": "GET",
+      "Path": "/api/legal/license",
+      "Description": "Return the bundled LICENSE.txt — as JSON by default, or as raw text/plain when format=text",
+      "Options": [
+        {
+          "Name": "format",
+          "Field": "Format",
+          "In": "Query",
+          "Description": "Set to \"text\" to return the raw license as text/plain instead of JSON",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetLegalLicenseResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetLegalPrivacy",
+      "OperationId": "get_api_legal_privacy",
+      "Method": "GET",
+      "Path": "/api/legal/privacy",
+      "Description": "Return the bundled PRIVACY.txt — as JSON by default, or as raw text/plain when format=text",
+      "Options": [
+        {
+          "Name": "format",
+          "Field": "Format",
+          "In": "Query",
+          "Description": "Set to \"text\" to return the raw privacy policy as text/plain instead of JSON",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetLegalPrivacyResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "GetLegalLicenseResponse",
+      "Fields": [
+        {
+          "Name": "Content",
+          "JsonName": "content",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetLegalPrivacyResponse",
+      "Fields": [
+        {
+          "Name": "Content",
+          "JsonName": "content",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

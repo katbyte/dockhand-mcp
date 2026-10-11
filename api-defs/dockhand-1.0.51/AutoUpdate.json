@@ -1,0 +1,410 @@
+{
+  "Name": "AutoUpdate",
+  "Tag": "auto-update",
+  "Operations": [
+    {
+      "Name": "DeleteAutoUpdateByContainerName",
+      "OperationId": "delete_api_auto-update_containerName",
+      "Method": "DELETE",
+      "Path": "/api/auto-update/{containerName}",
+      "Description": "Delete a container's auto-update setting and unregister its schedule",
+      "PathParameters": [
+        {
+          "Name": "containerName",
+          "Argument": "containerName",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment the container belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteAutoUpdateByContainerNameResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetAutoUpdate",
+      "OperationId": "get_api_auto-update",
+      "Method": "GET",
+      "Path": "/api/auto-update",
+      "Description": "Get all enabled auto-update settings for an environment, keyed by container name",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment ID to read settings for (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Dictionary",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetAutoUpdateResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetAutoUpdateByContainerName",
+      "OperationId": "get_api_auto-update_containerName",
+      "Method": "GET",
+      "Path": "/api/auto-update/{containerName}",
+      "Description": "Get the auto-update setting for a container (returns sensible defaults when none is stored)",
+      "PathParameters": [
+        {
+          "Name": "containerName",
+          "Argument": "containerName",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment the container belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetAutoUpdateByContainerNameResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostAutoUpdateByContainerName",
+      "OperationId": "post_api_auto-update_containerName",
+      "Method": "POST",
+      "Path": "/api/auto-update/{containerName}",
+      "Description": "Create or update a container's auto-update setting; enabled=false deletes it and its schedule",
+      "PathParameters": [
+        {
+          "Name": "containerName",
+          "Argument": "containerName",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment the container belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostAutoUpdateByContainerNameRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostAutoUpdateByContainerNameResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "DeleteAutoUpdateByContainerNameResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetAutoUpdateByContainerNameResponse",
+      "Fields": [
+        {
+          "Name": "ContainerName",
+          "JsonName": "containerName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CronExpression",
+          "JsonName": "cronExpression",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "LastChecked",
+          "JsonName": "lastChecked",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LastUpdated",
+          "JsonName": "lastUpdated",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ScheduleType",
+          "JsonName": "scheduleType",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "VulnerabilityCriteria",
+          "JsonName": "vulnerabilityCriteria",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetAutoUpdateResponse",
+      "Fields": [
+        {
+          "Name": "CronExpression",
+          "JsonName": "cronExpression",
+          "Description": "when the container is checked and updated, as five cron fields; nothing when it was saved without one, and then it never runs",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ScheduleType",
+          "JsonName": "scheduleType",
+          "Description": "what Dockhand makes of the cron expression: daily, weekly or custom",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "VulnerabilityCriteria",
+          "JsonName": "vulnerabilityCriteria",
+          "Description": "what a scan of the new image may find before the update is held back: never holds none back",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostAutoUpdateByContainerNameRequest",
+      "Fields": [
+        {
+          "Name": "CronExpression",
+          "JsonName": "cronExpression",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "VulnerabilityCriteria",
+          "JsonName": "vulnerabilityCriteria",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostAutoUpdateByContainerNameResponse",
+      "Fields": [
+        {
+          "Name": "ContainerName",
+          "JsonName": "containerName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CronExpression",
+          "JsonName": "cronExpression",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Deleted",
+          "JsonName": "deleted",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "LastChecked",
+          "JsonName": "lastChecked",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LastUpdated",
+          "JsonName": "lastUpdated",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ScheduleType",
+          "JsonName": "scheduleType",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "VulnerabilityCriteria",
+          "JsonName": "vulnerabilityCriteria",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    }
+  ]
+}

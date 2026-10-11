@@ -1,0 +1,539 @@
+{
+  "Name": "Prune",
+  "Tag": "prune",
+  "Operations": [
+    {
+      "Name": "PostPruneAll",
+      "OperationId": "post_api_prune_all",
+      "Method": "POST",
+      "Path": "/api/prune/all",
+      "Description": "Prune all unused Docker resources (containers, images, volumes and networks) in a single operation",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Target environment id; scopes both the prune operation and the permission check (defaults to the local environment) (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostPruneAllResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostPruneContainers",
+      "OperationId": "post_api_prune_containers",
+      "Method": "POST",
+      "Path": "/api/prune/containers",
+      "Description": "Prune (delete) all stopped containers in the target environment",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Target environment id; scopes both the prune operation and the permission check (defaults to the local environment) (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostPruneContainersResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostPruneImages",
+      "OperationId": "post_api_prune_images",
+      "Method": "POST",
+      "Path": "/api/prune/images",
+      "Description": "Prune unused Docker images, streaming progress as a Server-Sent Events job",
+      "Options": [
+        {
+          "Name": "dangling",
+          "Field": "Dangling",
+          "In": "Query",
+          "Description": "When not \"false\", prune only dangling images; set \"dangling=false\" to prune all unused images (defaults to dangling-only)",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Target environment id; scopes both the prune operation and the permission check (defaults to the local environment) (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Accept",
+          "Field": "Accept",
+          "In": "Header",
+          "Description": "what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostPruneImagesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostPruneNetworks",
+      "OperationId": "post_api_prune_networks",
+      "Method": "POST",
+      "Path": "/api/prune/networks",
+      "Description": "Prune (delete) all unused Docker networks in the target environment",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Target environment id; scopes both the prune operation and the permission check (defaults to the local environment) (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostPruneNetworksResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostPruneVolumes",
+      "OperationId": "post_api_prune_volumes",
+      "Method": "POST",
+      "Path": "/api/prune/volumes",
+      "Description": "Prune (delete) all unused Docker volumes in the target environment",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Target environment id; scopes both the prune operation and the permission check (defaults to the local environment) (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostPruneVolumesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "PostPruneAllResponse",
+      "Fields": [
+        {
+          "Name": "Result",
+          "JsonName": "result",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostPruneAllResponseResult"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostPruneAllResponseResult",
+      "Fields": [
+        {
+          "Name": "Containers",
+          "JsonName": "containers",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostPruneAllResponseResultContainers"
+          }
+        },
+        {
+          "Name": "Images",
+          "JsonName": "images",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostPruneAllResponseResultImages"
+          }
+        },
+        {
+          "Name": "Networks",
+          "JsonName": "networks",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostPruneAllResponseResultNetworks"
+          }
+        },
+        {
+          "Name": "Volumes",
+          "JsonName": "volumes",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostPruneAllResponseResultVolumes"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostPruneAllResponseResultContainers",
+      "Fields": [
+        {
+          "Name": "ContainersDeleted",
+          "JsonName": "ContainersDeleted",
+          "Description": "the whole ids of the containers removed",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "SpaceReclaimed",
+          "JsonName": "SpaceReclaimed",
+          "Description": "the bytes got back",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostPruneAllResponseResultImages",
+      "Fields": [
+        {
+          "Name": "ImagesDeleted",
+          "JsonName": "ImagesDeleted",
+          "Description": "each name taken off and each image and layer deleted, one to an entry",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostPruneAllResponseResultImagesImagesDeleted"
+            }
+          }
+        },
+        {
+          "Name": "SpaceReclaimed",
+          "JsonName": "SpaceReclaimed",
+          "Description": "the bytes got back",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostPruneAllResponseResultImagesImagesDeleted",
+      "Fields": [
+        {
+          "Name": "Deleted",
+          "JsonName": "Deleted",
+          "Description": "the id of an image or of a layer that was deleted",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Untagged",
+          "JsonName": "Untagged",
+          "Description": "a name and tag that was taken off an image",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostPruneAllResponseResultNetworks",
+      "Fields": [
+        {
+          "Name": "NetworksDeleted",
+          "JsonName": "NetworksDeleted",
+          "Description": "the names of the networks removed",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostPruneAllResponseResultVolumes",
+      "Fields": [
+        {
+          "Name": "SpaceReclaimed",
+          "JsonName": "SpaceReclaimed",
+          "Description": "the bytes got back",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "VolumesDeleted",
+          "JsonName": "VolumesDeleted",
+          "Description": "the names of the volumes removed",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostPruneContainersResponse",
+      "Fields": [
+        {
+          "Name": "Result",
+          "JsonName": "result",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostPruneContainersResponseResult"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostPruneContainersResponseResult",
+      "Fields": [
+        {
+          "Name": "ContainersDeleted",
+          "JsonName": "ContainersDeleted",
+          "Description": "the whole ids of the containers removed",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "SpaceReclaimed",
+          "JsonName": "SpaceReclaimed",
+          "Description": "the bytes got back",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostPruneImagesResponse",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Description": "why not, when success is false: it comes with HTTP 200 all the same",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "JobId",
+          "JsonName": "jobId",
+          "Description": "the job the pruning runs as, for a caller that did not ask for JSON alone and so was not made to wait: GET /api/jobs/{id} says how it goes",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Result",
+          "JsonName": "result",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostPruneImagesResponseResult"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostPruneImagesResponseResult",
+      "Fields": [
+        {
+          "Name": "ImagesDeleted",
+          "JsonName": "ImagesDeleted",
+          "Description": "each name taken off and each image and layer deleted, one to an entry",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostPruneImagesResponseResultImagesDeleted"
+            }
+          }
+        },
+        {
+          "Name": "SpaceReclaimed",
+          "JsonName": "SpaceReclaimed",
+          "Description": "the bytes got back",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostPruneImagesResponseResultImagesDeleted",
+      "Fields": [
+        {
+          "Name": "Deleted",
+          "JsonName": "Deleted",
+          "Description": "the id of an image or of a layer that was deleted",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Untagged",
+          "JsonName": "Untagged",
+          "Description": "a name and tag that was taken off an image",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostPruneNetworksResponse",
+      "Fields": [
+        {
+          "Name": "Result",
+          "JsonName": "result",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostPruneNetworksResponseResult"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostPruneNetworksResponseResult",
+      "Fields": [
+        {
+          "Name": "NetworksDeleted",
+          "JsonName": "NetworksDeleted",
+          "Description": "the names of the networks removed",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostPruneVolumesResponse",
+      "Fields": [
+        {
+          "Name": "Result",
+          "JsonName": "result",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostPruneVolumesResponseResult"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostPruneVolumesResponseResult",
+      "Fields": [
+        {
+          "Name": "SpaceReclaimed",
+          "JsonName": "SpaceReclaimed",
+          "Description": "the bytes got back",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "VolumesDeleted",
+          "JsonName": "VolumesDeleted",
+          "Description": "the names of the volumes removed",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

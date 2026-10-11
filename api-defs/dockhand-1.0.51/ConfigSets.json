@@ -1,0 +1,1321 @@
+{
+  "Name": "ConfigSets",
+  "Tag": "config-sets",
+  "Operations": [
+    {
+      "Name": "DeleteConfigSetsById",
+      "OperationId": "delete_api_config-sets_id",
+      "Method": "DELETE",
+      "Path": "/api/config-sets/{id}",
+      "Description": "Delete a config set by ID",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteConfigSetsByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetConfigSets",
+      "OperationId": "get_api_config-sets",
+      "Method": "GET",
+      "Path": "/api/config-sets",
+      "Description": "List all config sets (reusable bundles of env vars, labels, ports, volumes, and runtime defaults)",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetConfigSetsResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetConfigSetsById",
+      "OperationId": "get_api_config-sets_id",
+      "Method": "GET",
+      "Path": "/api/config-sets/{id}",
+      "Description": "Fetch a single config set by its numeric ID",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetConfigSetsByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostConfigSets",
+      "OperationId": "post_api_config-sets",
+      "Method": "POST",
+      "Path": "/api/config-sets",
+      "Description": "Create a new config set",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostConfigSetsRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostConfigSetsResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        201
+      ]
+    },
+    {
+      "Name": "PutConfigSetsById",
+      "OperationId": "put_api_config-sets_id",
+      "Method": "PUT",
+      "Path": "/api/config-sets/{id}",
+      "Description": "Update an existing config set by ID",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutConfigSetsByIdRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutConfigSetsByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "DeleteConfigSetsByIdResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetConfigSetsByIdResponse",
+      "Fields": [
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Description",
+          "JsonName": "description",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvVars",
+          "JsonName": "envVars",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetConfigSetsByIdResponseEnvVars"
+            }
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetConfigSetsByIdResponseLabels"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "NetworkMode",
+          "JsonName": "networkMode",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Ports",
+          "JsonName": "ports",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetConfigSetsByIdResponsePorts"
+            }
+          }
+        },
+        {
+          "Name": "RestartPolicy",
+          "JsonName": "restartPolicy",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Volumes",
+          "JsonName": "volumes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetConfigSetsByIdResponseVolumes"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetConfigSetsByIdResponseEnvVars",
+      "Fields": [
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "JsonName": "value",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetConfigSetsByIdResponseLabels",
+      "Fields": [
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "JsonName": "value",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetConfigSetsByIdResponsePorts",
+      "Fields": [
+        {
+          "Name": "ContainerPort",
+          "JsonName": "containerPort",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "HostPort",
+          "JsonName": "hostPort",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Protocol",
+          "JsonName": "protocol",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetConfigSetsByIdResponseVolumes",
+      "Fields": [
+        {
+          "Name": "ContainerPath",
+          "JsonName": "containerPath",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "HostPath",
+          "JsonName": "hostPath",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Mode",
+          "JsonName": "mode",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetConfigSetsResponse",
+      "Fields": [
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Description",
+          "JsonName": "description",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvVars",
+          "JsonName": "envVars",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetConfigSetsResponseEnvVars"
+            }
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetConfigSetsResponseLabels"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "NetworkMode",
+          "JsonName": "networkMode",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Ports",
+          "JsonName": "ports",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetConfigSetsResponsePorts"
+            }
+          }
+        },
+        {
+          "Name": "RestartPolicy",
+          "JsonName": "restartPolicy",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Volumes",
+          "JsonName": "volumes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetConfigSetsResponseVolumes"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetConfigSetsResponseEnvVars",
+      "Fields": [
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "JsonName": "value",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetConfigSetsResponseLabels",
+      "Fields": [
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "JsonName": "value",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetConfigSetsResponsePorts",
+      "Fields": [
+        {
+          "Name": "ContainerPort",
+          "JsonName": "containerPort",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "HostPort",
+          "JsonName": "hostPort",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Protocol",
+          "JsonName": "protocol",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetConfigSetsResponseVolumes",
+      "Fields": [
+        {
+          "Name": "ContainerPath",
+          "JsonName": "containerPath",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "HostPath",
+          "JsonName": "hostPath",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Mode",
+          "JsonName": "mode",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostConfigSetsRequest",
+      "Fields": [
+        {
+          "Name": "Description",
+          "JsonName": "description",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvVars",
+          "JsonName": "envVars",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostConfigSetsRequestEnvVars"
+            }
+          }
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostConfigSetsRequestLabels"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "NetworkMode",
+          "JsonName": "networkMode",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Ports",
+          "JsonName": "ports",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostConfigSetsRequestPorts"
+            }
+          }
+        },
+        {
+          "Name": "RestartPolicy",
+          "JsonName": "restartPolicy",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Volumes",
+          "JsonName": "volumes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostConfigSetsRequestVolumes"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostConfigSetsRequestEnvVars",
+      "Fields": [
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "JsonName": "value",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostConfigSetsRequestLabels",
+      "Fields": [
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "JsonName": "value",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostConfigSetsRequestPorts",
+      "Fields": [
+        {
+          "Name": "ContainerPort",
+          "JsonName": "containerPort",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "HostPort",
+          "JsonName": "hostPort",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Protocol",
+          "JsonName": "protocol",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostConfigSetsRequestVolumes",
+      "Fields": [
+        {
+          "Name": "ContainerPath",
+          "JsonName": "containerPath",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "HostPath",
+          "JsonName": "hostPath",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Mode",
+          "JsonName": "mode",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostConfigSetsResponse",
+      "Fields": [
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Description",
+          "JsonName": "description",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvVars",
+          "JsonName": "envVars",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostConfigSetsResponseEnvVars"
+            }
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostConfigSetsResponseLabels"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "NetworkMode",
+          "JsonName": "networkMode",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Ports",
+          "JsonName": "ports",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostConfigSetsResponsePorts"
+            }
+          }
+        },
+        {
+          "Name": "RestartPolicy",
+          "JsonName": "restartPolicy",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Volumes",
+          "JsonName": "volumes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostConfigSetsResponseVolumes"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostConfigSetsResponseEnvVars",
+      "Fields": [
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "JsonName": "value",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostConfigSetsResponseLabels",
+      "Fields": [
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "JsonName": "value",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostConfigSetsResponsePorts",
+      "Fields": [
+        {
+          "Name": "ContainerPort",
+          "JsonName": "containerPort",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "HostPort",
+          "JsonName": "hostPort",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Protocol",
+          "JsonName": "protocol",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostConfigSetsResponseVolumes",
+      "Fields": [
+        {
+          "Name": "ContainerPath",
+          "JsonName": "containerPath",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "HostPath",
+          "JsonName": "hostPath",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Mode",
+          "JsonName": "mode",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutConfigSetsByIdRequest",
+      "Fields": [
+        {
+          "Name": "Description",
+          "JsonName": "description",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvVars",
+          "JsonName": "envVars",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PutConfigSetsByIdRequestEnvVars"
+            }
+          }
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PutConfigSetsByIdRequestLabels"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NetworkMode",
+          "JsonName": "networkMode",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Ports",
+          "JsonName": "ports",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PutConfigSetsByIdRequestPorts"
+            }
+          }
+        },
+        {
+          "Name": "RestartPolicy",
+          "JsonName": "restartPolicy",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Volumes",
+          "JsonName": "volumes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PutConfigSetsByIdRequestVolumes"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutConfigSetsByIdRequestEnvVars",
+      "Fields": [
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "JsonName": "value",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutConfigSetsByIdRequestLabels",
+      "Fields": [
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "JsonName": "value",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutConfigSetsByIdRequestPorts",
+      "Fields": [
+        {
+          "Name": "ContainerPort",
+          "JsonName": "containerPort",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "HostPort",
+          "JsonName": "hostPort",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Protocol",
+          "JsonName": "protocol",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutConfigSetsByIdRequestVolumes",
+      "Fields": [
+        {
+          "Name": "ContainerPath",
+          "JsonName": "containerPath",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "HostPath",
+          "JsonName": "hostPath",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Mode",
+          "JsonName": "mode",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutConfigSetsByIdResponse",
+      "Fields": [
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Description",
+          "JsonName": "description",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvVars",
+          "JsonName": "envVars",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PutConfigSetsByIdResponseEnvVars"
+            }
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PutConfigSetsByIdResponseLabels"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "NetworkMode",
+          "JsonName": "networkMode",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Ports",
+          "JsonName": "ports",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PutConfigSetsByIdResponsePorts"
+            }
+          }
+        },
+        {
+          "Name": "RestartPolicy",
+          "JsonName": "restartPolicy",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Volumes",
+          "JsonName": "volumes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PutConfigSetsByIdResponseVolumes"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutConfigSetsByIdResponseEnvVars",
+      "Fields": [
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "JsonName": "value",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutConfigSetsByIdResponseLabels",
+      "Fields": [
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Value",
+          "JsonName": "value",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutConfigSetsByIdResponsePorts",
+      "Fields": [
+        {
+          "Name": "ContainerPort",
+          "JsonName": "containerPort",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "HostPort",
+          "JsonName": "hostPort",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Protocol",
+          "JsonName": "protocol",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutConfigSetsByIdResponseVolumes",
+      "Fields": [
+        {
+          "Name": "ContainerPath",
+          "JsonName": "containerPath",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "HostPath",
+          "JsonName": "hostPath",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Mode",
+          "JsonName": "mode",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

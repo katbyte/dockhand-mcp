@@ -1,0 +1,208 @@
+{
+  "Name": "ContainerIcons",
+  "Tag": "container-icons",
+  "Operations": [
+    {
+      "Name": "DeleteContainerIconsByName",
+      "OperationId": "delete_api_container-icons_name",
+      "Method": "DELETE",
+      "Path": "/api/container-icons/{name}",
+      "Description": "Remove a container's icon override (fall back to automatic matching)",
+      "PathParameters": [
+        {
+          "Name": "name",
+          "Argument": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment id the container belongs to",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteContainerIconsByNameResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainerIcons",
+      "OperationId": "get_api_container-icons",
+      "Method": "GET",
+      "Path": "/api/container-icons",
+      "Description": "List all container icon overrides for an environment as a name -> icon map",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Dictionary",
+          "NestedItem": {
+            "Type": "String"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainerIconsByName",
+      "OperationId": "get_api_container-icons_name",
+      "Method": "GET",
+      "Path": "/api/container-icons/{name}",
+      "Description": "Get a container's uploaded custom icon (raw image/webp bytes, not JSON)",
+      "PathParameters": [
+        {
+          "Name": "name",
+          "Argument": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment id the container belongs to",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "image/*",
+        "Type": {
+          "Type": "RawFile"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostContainerIconsByName",
+      "OperationId": "post_api_container-icons_name",
+      "Method": "POST",
+      "Path": "/api/container-icons/{name}",
+      "Description": "Set a container's icon override - either a name reference or an uploaded image",
+      "PathParameters": [
+        {
+          "Name": "name",
+          "Argument": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment id the container belongs to",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainerIconsByNameRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostContainerIconsByNameResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "DeleteContainerIconsByNameResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainerIconsByNameRequest",
+      "Fields": [
+        {
+          "Name": "Icon",
+          "JsonName": "icon",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Image",
+          "JsonName": "image",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostContainerIconsByNameResponse",
+      "Fields": [
+        {
+          "Name": "Icon",
+          "JsonName": "icon",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "Name": "Batch",
+  "Tag": "batch",
+  "Operations": [
+    {
+      "Name": "PostBatch",
+      "OperationId": "post_api_batch",
+      "Method": "POST",
+      "Path": "/api/batch",
+      "Description": "Run a bulk operation (start/stop/restart/pause/unpause/remove/down, depending on entity type) across many containers, images, volumes, networks, or stacks; clients that send Accept application/json get a synchronous summary, others get a jobId and progress over Server-Sent Events",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment ID the entities belong to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBatchRequest"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "PostBatchRequest",
+      "Fields": [
+        {
+          "Name": "EntityType",
+          "JsonName": "entityType",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Items",
+          "JsonName": "items",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostBatchRequestItems"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Operation",
+          "JsonName": "operation",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Options",
+          "JsonName": "options",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostBatchRequestOptions"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBatchRequestItems",
+      "Fields": [
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostBatchRequestOptions",
+      "Fields": [
+        {
+          "Name": "Force",
+          "JsonName": "force",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "RemoveVolumes",
+          "JsonName": "removeVolumes",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    }
+  ]
+}

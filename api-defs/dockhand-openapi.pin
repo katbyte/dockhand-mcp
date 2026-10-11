@@ -1,0 +1,5 @@
+# The Dockhand API document sdk/dockhand is generated from: its version, the published image whose server serves it at /openapi.json, and the sha256 of its content.
+# Written by api-defs/get.sh --repin, read by api-defs/get.sh. The document is fetched from a running server of that image and is not kept in this repository.
+version=1.0.51
+image=fnsys/dockhand:v1.0.51
+sha256=0362672e68f7c88a630dce1179cfbaa20c7e95bd1dfde0fb8e296e48de87f1d6

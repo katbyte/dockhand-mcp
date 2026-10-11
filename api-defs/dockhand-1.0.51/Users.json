@@ -1,0 +1,809 @@
+{
+  "Name": "Users",
+  "Tag": "users",
+  "Operations": [
+    {
+      "Name": "DeleteUsersById",
+      "OperationId": "delete_api_users_id",
+      "Method": "DELETE",
+      "Path": "/api/users/{id}",
+      "Description": "Delete a user by id; deleting the last admin while auth is enabled disables authentication and requires confirmDisableAuth",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "confirmDisableAuth",
+          "Field": "ConfirmDisableAuth",
+          "In": "Query",
+          "Description": "Set to true to confirm deleting the last admin (which disables authentication)",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteUsersByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "DeleteUsersByIdMfa",
+      "OperationId": "delete_api_users_id_mfa",
+      "Method": "DELETE",
+      "Path": "/api/users/{id}/mfa",
+      "Description": "Disable MFA for a user",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "DeleteUsersByIdRoles",
+      "OperationId": "delete_api_users_id_roles",
+      "Method": "DELETE",
+      "Path": "/api/users/{id}/roles",
+      "Description": "Remove a role assignment from a user, optionally scoped to an environment (enterprise, admin only)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteUsersByIdRolesRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteUsersByIdRolesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetUsers",
+      "OperationId": "get_api_users",
+      "Method": "GET",
+      "Path": "/api/users",
+      "Description": "List all local/SSO users",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetUsersResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetUsersById",
+      "OperationId": "get_api_users_id",
+      "Method": "GET",
+      "Path": "/api/users/{id}",
+      "Description": "Get a single user by id (password hash is never returned; isAdmin is derived from role assignment)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetUsersByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetUsersByIdRoles",
+      "OperationId": "get_api_users_id_roles",
+      "Method": "GET",
+      "Path": "/api/users/{id}/roles",
+      "Description": "List the roles assigned to a user (enterprise only)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetUsersByIdRolesResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostUsers",
+      "OperationId": "post_api_users",
+      "Method": "POST",
+      "Path": "/api/users",
+      "Description": "Create a local user (allowed without auth only during initial setup, before any admin exists)",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostUsersRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostUsersResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        201
+      ]
+    },
+    {
+      "Name": "PostUsersByIdMfa",
+      "OperationId": "post_api_users_id_mfa",
+      "Method": "POST",
+      "Path": "/api/users/{id}/mfa",
+      "Description": "Set up or verify MFA for a user (action=setup regenerates a secret; action=verify confirms a code)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostUsersByIdMfaRequest"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostUsersByIdRoles",
+      "OperationId": "post_api_users_id_roles",
+      "Method": "POST",
+      "Path": "/api/users/{id}/roles",
+      "Description": "Assign a role to a user, optionally scoped to an environment (enterprise, admin only)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostUsersByIdRolesRequest"
+        }
+      },
+      "ExpectedStatusCodes": [
+        201
+      ]
+    },
+    {
+      "Name": "PutUsersById",
+      "OperationId": "put_api_users_id",
+      "Method": "PUT",
+      "Path": "/api/users/{id}",
+      "Description": "Update a user (self-edit is always allowed; admin/active changes require admin; demoting or deactivating the last admin needs confirmDisableAuth)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutUsersByIdRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutUsersByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "DeleteUsersByIdResponse",
+      "Fields": [
+        {
+          "Name": "AuthDisabled",
+          "JsonName": "authDisabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "DeleteUsersByIdRolesRequest",
+      "Fields": [
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "RoleId",
+          "JsonName": "roleId",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "DeleteUsersByIdRolesResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetUsersByIdResponse",
+      "Fields": [
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "DisplayName",
+          "JsonName": "displayName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Email",
+          "JsonName": "email",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "IsActive",
+          "JsonName": "isActive",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "IsAdmin",
+          "JsonName": "isAdmin",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "LastLogin",
+          "JsonName": "lastLogin",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "MfaEnabled",
+          "JsonName": "mfaEnabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetUsersByIdRolesResponse",
+      "Fields": [
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "RoleId",
+          "JsonName": "roleId",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetUsersResponse",
+      "Fields": [
+        {
+          "Name": "AuthProvider",
+          "JsonName": "authProvider",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "DisplayName",
+          "JsonName": "displayName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Email",
+          "JsonName": "email",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "IsActive",
+          "JsonName": "isActive",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "IsAdmin",
+          "JsonName": "isAdmin",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "IsSso",
+          "JsonName": "isSso",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "LastLogin",
+          "JsonName": "lastLogin",
+          "Description": "when the user last signed in; null for one who never has",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "MfaEnabled",
+          "JsonName": "mfaEnabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostUsersByIdMfaRequest",
+      "Fields": [
+        {
+          "Name": "Action",
+          "JsonName": "action",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Token",
+          "JsonName": "token",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostUsersByIdRolesRequest",
+      "Fields": [
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "RoleId",
+          "JsonName": "roleId",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostUsersRequest",
+      "Fields": [
+        {
+          "Name": "DisplayName",
+          "JsonName": "displayName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Email",
+          "JsonName": "email",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Password",
+          "JsonName": "password",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostUsersResponse",
+      "Fields": [
+        {
+          "Name": "AutoLoggedIn",
+          "JsonName": "autoLoggedIn",
+          "Description": "sent false for a user made by a caller that was already let in",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "DisplayName",
+          "JsonName": "displayName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Email",
+          "JsonName": "email",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "IsActive",
+          "JsonName": "isActive",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "IsAdmin",
+          "JsonName": "isAdmin",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutUsersByIdRequest",
+      "Fields": [
+        {
+          "Name": "ConfirmDisableAuth",
+          "JsonName": "confirmDisableAuth",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "DisplayName",
+          "JsonName": "displayName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Email",
+          "JsonName": "email",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "IsActive",
+          "JsonName": "isActive",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "IsAdmin",
+          "JsonName": "isAdmin",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Password",
+          "JsonName": "password",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutUsersByIdResponse",
+      "Fields": [
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "DisplayName",
+          "JsonName": "displayName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Email",
+          "JsonName": "email",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "IsActive",
+          "JsonName": "isActive",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "IsAdmin",
+          "JsonName": "isAdmin",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "LastLogin",
+          "JsonName": "lastLogin",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "MfaEnabled",
+          "JsonName": "mfaEnabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

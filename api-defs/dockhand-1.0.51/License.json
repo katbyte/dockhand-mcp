@@ -1,0 +1,151 @@
+{
+  "Name": "License",
+  "Tag": "license",
+  "Operations": [
+    {
+      "Name": "DeleteLicense",
+      "OperationId": "delete_api_license",
+      "Method": "DELETE",
+      "Path": "/api/license",
+      "Description": "Deactivate the currently active license",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteLicenseResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetLicense",
+      "OperationId": "get_api_license",
+      "Method": "GET",
+      "Path": "/api/license",
+      "Description": "Get the current license status plus the server hostname the license is bound to",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetLicenseResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostLicense",
+      "OperationId": "post_api_license",
+      "Method": "POST",
+      "Path": "/api/license",
+      "Description": "Activate a license by name and key",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostLicenseRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostLicenseResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "DeleteLicenseResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetLicenseResponse",
+      "Fields": [
+        {
+          "Name": "Active",
+          "JsonName": "active",
+          "Description": "whether a licence is in use",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Hostname",
+          "JsonName": "hostname",
+          "Description": "the host name a licence is bound to, which is this server's own",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Valid",
+          "JsonName": "valid",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostLicenseRequest",
+      "Fields": [
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostLicenseResponse",
+      "Fields": [
+        {
+          "Name": "License",
+          "JsonName": "license",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

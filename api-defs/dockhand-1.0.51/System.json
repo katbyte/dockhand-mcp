@@ -1,0 +1,641 @@
+{
+  "Name": "System",
+  "Tag": "system",
+  "Operations": [
+    {
+      "Name": "GetSystem",
+      "OperationId": "get_api_system",
+      "Method": "GET",
+      "Path": "/api/system",
+      "Description": "Return aggregated system info — Docker daemon, host, Node.js runtime, database, and object counts for an environment",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "ID of the environment to collect Docker info for (Docker fields are null when omitted or unreachable) (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetSystemResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetSystemDisk",
+      "OperationId": "get_api_system_disk",
+      "Method": "GET",
+      "Path": "/api/system/disk",
+      "Description": "Return Docker disk usage (df) for an environment, or null when collection is disabled, times out, or fails",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "ID of the environment to query disk usage for (from GET /api/environments)",
+          "Required": true,
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetSystemDiskResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetSystemFiles",
+      "OperationId": "get_api_system_files",
+      "Method": "GET",
+      "Path": "/api/system/files",
+      "Description": "List the entries of a directory on Dockhand's local filesystem (protected paths are hidden)",
+      "Options": [
+        {
+          "Name": "path",
+          "Field": "Path",
+          "In": "Query",
+          "Description": "Absolute directory path to list (defaults to \"/\")",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetSystemFilesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetSystemFilesContent",
+      "OperationId": "get_api_system_files_content",
+      "Method": "GET",
+      "Path": "/api/system/files/content",
+      "Description": "Read a text file from Dockhand's local filesystem (max 10MB, protected paths denied)",
+      "Options": [
+        {
+          "Name": "path",
+          "Field": "Path",
+          "In": "Query",
+          "Description": "Absolute path of the file to read",
+          "Required": true,
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetSystemFilesContentResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostSystemFiles",
+      "OperationId": "post_api_system_files",
+      "Method": "POST",
+      "Path": "/api/system/files",
+      "Description": "Create a directory on Dockhand's local filesystem (absolute path, no traversal, non-protected)",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostSystemFilesRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostSystemFilesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "GetSystemDiskResponse",
+      "Fields": [
+        {
+          "Name": "DiskUsage",
+          "JsonName": "diskUsage",
+          "Description": "Docker's own account of what its disk holds, in Docker's spelling; null when Dockhand could not get it from the host in time",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetSystemDiskResponseDiskUsage"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetSystemDiskResponseDiskUsage",
+      "Description": "Docker's own account of what its disk holds, in Docker's spelling; null when Dockhand could not get it from the host in time",
+      "Fields": [
+        {
+          "Name": "BuildCache",
+          "JsonName": "BuildCache",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetSystemDiskResponseDiskUsageBuildCache"
+            }
+          }
+        },
+        {
+          "Name": "Containers",
+          "JsonName": "Containers",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetSystemDiskResponseDiskUsageContainers"
+            }
+          }
+        },
+        {
+          "Name": "Images",
+          "JsonName": "Images",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetSystemDiskResponseDiskUsageImages"
+            }
+          }
+        },
+        {
+          "Name": "LayersSize",
+          "JsonName": "LayersSize",
+          "Description": "what the images take together, the layers they share counted once, in bytes",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Volumes",
+          "JsonName": "Volumes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetSystemDiskResponseDiskUsageVolumes"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetSystemDiskResponseDiskUsageBuildCache",
+      "Fields": [
+        {
+          "Name": "Description",
+          "JsonName": "Description",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ID",
+          "JsonName": "ID",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "InUse",
+          "JsonName": "InUse",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "LastUsedAt",
+          "JsonName": "LastUsedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Shared",
+          "JsonName": "Shared",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Size",
+          "JsonName": "Size",
+          "Description": "in bytes",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "Type",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetSystemDiskResponseDiskUsageContainers",
+      "Fields": [
+        {
+          "Name": "Id",
+          "JsonName": "Id",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Image",
+          "JsonName": "Image",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Names",
+          "JsonName": "Names",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "SizeRootFs",
+          "JsonName": "SizeRootFs",
+          "Description": "what its whole filesystem takes, its image included, in bytes",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "SizeRw",
+          "JsonName": "SizeRw",
+          "Description": "what it has written inside itself, in bytes; absent for one that has written nothing",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "State",
+          "JsonName": "State",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Status",
+          "JsonName": "Status",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetSystemDiskResponseDiskUsageImages",
+      "Fields": [
+        {
+          "Name": "Containers",
+          "JsonName": "Containers",
+          "Description": "how many containers are made from it, running or not",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Created",
+          "JsonName": "Created",
+          "Description": "when it was built, in seconds since 1970",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "Id",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "RepoTags",
+          "JsonName": "RepoTags",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "SharedSize",
+          "JsonName": "SharedSize",
+          "Description": "how much of it other images share; -1 where Docker did not work it out",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Size",
+          "JsonName": "Size",
+          "Description": "the image's size in bytes, shared layers included",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetSystemDiskResponseDiskUsageVolumes",
+      "Fields": [
+        {
+          "Name": "Name",
+          "JsonName": "Name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UsageData",
+          "JsonName": "UsageData",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetSystemDiskResponseDiskUsageVolumesUsageData"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetSystemDiskResponseDiskUsageVolumesUsageData",
+      "Fields": [
+        {
+          "Name": "RefCount",
+          "JsonName": "RefCount",
+          "Description": "how many containers mount it",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Size",
+          "JsonName": "Size",
+          "Description": "what the volume holds, in bytes; -1 where Docker cannot tell",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetSystemFilesContentResponse",
+      "Fields": [
+        {
+          "Name": "Content",
+          "JsonName": "content",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Mtime",
+          "JsonName": "mtime",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Size",
+          "JsonName": "size",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetSystemFilesResponse",
+      "Fields": [
+        {
+          "Name": "Entries",
+          "JsonName": "entries",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetSystemFilesResponseEntries"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Parent",
+          "JsonName": "parent",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetSystemFilesResponseEntries",
+      "Fields": [
+        {
+          "Name": "Mode",
+          "JsonName": "mode",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Mtime",
+          "JsonName": "mtime",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Size",
+          "JsonName": "size",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetSystemResponse",
+      "Fields": [
+        {
+          "Name": "Database",
+          "JsonName": "database",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Docker",
+          "JsonName": "docker",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Host",
+          "JsonName": "host",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Runtime",
+          "JsonName": "runtime",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Stats",
+          "JsonName": "stats",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostSystemFilesRequest",
+      "Fields": [
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostSystemFilesResponse",
+      "Fields": [
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

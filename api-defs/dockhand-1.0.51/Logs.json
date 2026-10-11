@@ -1,0 +1,70 @@
+{
+  "Name": "Logs",
+  "Tag": "logs",
+  "Operations": [
+    {
+      "Name": "GetLogsMerged",
+      "OperationId": "get_api_logs_merged",
+      "Method": "GET",
+      "Path": "/api/logs/merged",
+      "Description": "Stream merged, color-tagged logs from multiple containers over Server-Sent Events",
+      "Options": [
+        {
+          "Name": "containers",
+          "Field": "Containers",
+          "In": "Query",
+          "Description": "Comma-separated container IDs to merge logs from",
+          "Required": true,
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "tail",
+          "Field": "Tail",
+          "In": "Query",
+          "Description": "Number of lines to tail per container (default 100)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "since",
+          "Field": "Since",
+          "In": "Query",
+          "Description": "Only return logs since this timestamp (Docker since format)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "until",
+          "Field": "Until",
+          "In": "Query",
+          "Description": "Only return logs until this timestamp (Docker until format)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment the containers belong to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "text/event-stream",
+        "Type": {
+          "Type": "RawFile"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ]
+}

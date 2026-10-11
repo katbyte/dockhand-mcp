@@ -1,0 +1,188 @@
+{
+  "Name": "SelfUpdate",
+  "Tag": "self-update",
+  "Operations": [
+    {
+      "Name": "GetSelfUpdateCheck",
+      "OperationId": "get_api_self-update_check",
+      "Method": "GET",
+      "Path": "/api/self-update/check",
+      "Description": "Check whether a newer Dockhand image is available (version-tag compare via GitHub changelog, or registry-digest compare for mutable tags like :latest)",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetSelfUpdateCheckResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetSelfUpdateProgress",
+      "OperationId": "get_api_self-update_progress",
+      "Method": "GET",
+      "Path": "/api/self-update/progress",
+      "Description": "Poll the self-update sidecar container's logs and exit state for progress tracking",
+      "Options": [
+        {
+          "Name": "id",
+          "Field": "Id",
+          "In": "Query",
+          "Description": "Updater container id (from POST /api/self-update)",
+          "Required": true,
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetSelfUpdateProgressResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostSelfUpdate",
+      "OperationId": "post_api_self-update",
+      "Method": "POST",
+      "Path": "/api/self-update",
+      "Description": "Pull a new Dockhand image and hand off to an updater sidecar that replaces this running container",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostSelfUpdateRequest"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "GetSelfUpdateCheckResponse",
+      "Fields": [
+        {
+          "Name": "ContainerName",
+          "JsonName": "containerName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CurrentDigest",
+          "JsonName": "currentDigest",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CurrentImage",
+          "JsonName": "currentImage",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "IsComposeManaged",
+          "JsonName": "isComposeManaged",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "IsLocalImage",
+          "JsonName": "isLocalImage",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "LatestVersion",
+          "JsonName": "latestVersion",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NewDigest",
+          "JsonName": "newDigest",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NewImage",
+          "JsonName": "newImage",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdateAvailable",
+          "JsonName": "updateAvailable",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetSelfUpdateProgressResponse",
+      "Fields": [
+        {
+          "Name": "ExitCode",
+          "JsonName": "exitCode",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Logs",
+          "JsonName": "logs",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostSelfUpdateRequest",
+      "Fields": [
+        {
+          "Name": "NewImage",
+          "JsonName": "newImage",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

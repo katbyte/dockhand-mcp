@@ -1,0 +1,283 @@
+{
+  "Name": "Dashboard",
+  "Tag": "dashboard",
+  "Operations": [
+    {
+      "Name": "GetDashboardPreferences",
+      "OperationId": "get_api_dashboard_preferences",
+      "Method": "GET",
+      "Path": "/api/dashboard/preferences",
+      "Description": "Get the current user's dashboard preferences (grid layout, lock state, view mode)",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetDashboardPreferencesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetDashboardStats",
+      "OperationId": "get_api_dashboard_stats",
+      "Method": "GET",
+      "Path": "/api/dashboard/stats",
+      "Description": "Get aggregated dashboard statistics per environment (containers, images, volumes, stacks, metrics)",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetDashboardStatsResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetDashboardStatsStream",
+      "OperationId": "get_api_dashboard_stats_stream",
+      "Method": "GET",
+      "Path": "/api/dashboard/stats/stream",
+      "Description": "Stream per-environment dashboard stats progressively over Server-Sent Events",
+      "Response": {
+        "ContentType": "text/event-stream",
+        "Type": {
+          "Type": "RawFile"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostDashboardPreferences",
+      "OperationId": "post_api_dashboard_preferences",
+      "Method": "POST",
+      "Path": "/api/dashboard/preferences",
+      "Description": "Update the current user's dashboard preferences (only provided fields are merged)",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostDashboardPreferencesRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostDashboardPreferencesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "GetDashboardPreferencesResponse",
+      "Fields": [
+        {
+          "Name": "GridLayout",
+          "JsonName": "gridLayout",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Dictionary",
+              "NestedItem": {
+                "Type": "Any"
+              }
+            }
+          }
+        },
+        {
+          "Name": "Locked",
+          "JsonName": "locked",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ViewMode",
+          "JsonName": "viewMode",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetDashboardStatsResponse",
+      "Fields": [
+        {
+          "Name": "Containers",
+          "JsonName": "containers",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Events",
+          "JsonName": "events",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Images",
+          "JsonName": "images",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Metrics",
+          "JsonName": "metrics",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Networks",
+          "JsonName": "networks",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Online",
+          "JsonName": "online",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Stacks",
+          "JsonName": "stacks",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Volumes",
+          "JsonName": "volumes",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostDashboardPreferencesRequest",
+      "Fields": [
+        {
+          "Name": "GridLayout",
+          "JsonName": "gridLayout",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Dictionary",
+              "NestedItem": {
+                "Type": "Any"
+              }
+            }
+          }
+        },
+        {
+          "Name": "Locked",
+          "JsonName": "locked",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ViewMode",
+          "JsonName": "viewMode",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostDashboardPreferencesResponse",
+      "Fields": [
+        {
+          "Name": "GridLayout",
+          "JsonName": "gridLayout",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Dictionary",
+              "NestedItem": {
+                "Type": "Any"
+              }
+            }
+          }
+        },
+        {
+          "Name": "Locked",
+          "JsonName": "locked",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ViewMode",
+          "JsonName": "viewMode",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

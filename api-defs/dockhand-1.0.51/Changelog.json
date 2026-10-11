@@ -1,0 +1,79 @@
+{
+  "Name": "Changelog",
+  "Tag": "changelog",
+  "Operations": [
+    {
+      "Name": "GetChangelog",
+      "OperationId": "get_api_changelog",
+      "Method": "GET",
+      "Path": "/api/changelog",
+      "Description": "Return the bundled Dockhand changelog data",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetChangelogResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "GetChangelogResponse",
+      "Fields": [
+        {
+          "Name": "Changes",
+          "JsonName": "changes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetChangelogResponseChanges"
+            }
+          }
+        },
+        {
+          "Name": "Date",
+          "JsonName": "date",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Version",
+          "JsonName": "version",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetChangelogResponseChanges",
+      "Fields": [
+        {
+          "Name": "Text",
+          "JsonName": "text",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Description": "what kind of change: feature or fix",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    }
+  ]
+}

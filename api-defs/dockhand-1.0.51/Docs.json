@@ -1,0 +1,23 @@
+{
+  "Name": "Docs",
+  "Tag": "docs",
+  "Operations": [
+    {
+      "Name": "GetDocs",
+      "OperationId": "get_api_docs",
+      "Method": "GET",
+      "Path": "/api/docs",
+      "Description": "The full OpenAPI 3.0 specification for the Dockhand REST API (unauthenticated)",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "RawObject"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200,
+        304
+      ]
+    }
+  ]
+}

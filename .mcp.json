@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "dockhand": {
+      "command": "dockhand-mcp",
+      "args": ["serve"]
+    }
+  }
+}

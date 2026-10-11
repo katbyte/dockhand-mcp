@@ -1,0 +1,16 @@
+.claude/
+.DS_Store
+.idea/
+dist/
+/dockhand-mcp
+.tools/bin/
+.tools/cache/
+.tools/venv/
+.tools/npm/
+__pycache__/
+.env
+.dockhand-mcp
+.testenv*.sh
+.coverage/
+# Dockhand's own API document: fetched by api-defs/get.sh from a running server's /openapi.json and held to api-defs/dockhand-openapi.pin, never committed
+/api-defs/*.json

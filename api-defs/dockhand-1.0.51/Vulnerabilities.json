@@ -1,0 +1,680 @@
+{
+  "Name": "Vulnerabilities",
+  "Tag": "vulnerabilities",
+  "Operations": [
+    {
+      "Name": "GetVulnerabilities",
+      "OperationId": "get_api_vulnerabilities",
+      "Method": "GET",
+      "Path": "/api/vulnerabilities",
+      "Description": "A filtered, sorted page of aggregated vulnerability findings for an environment",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "the environment whose findings are asked for: with none, nothing is found",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "q",
+          "Field": "Q",
+          "In": "Query",
+          "Description": "only findings whose CVE, package, image, container or stack holds this text, whatever its case",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "severity",
+          "Field": "Severity",
+          "In": "Query",
+          "Description": "only findings this grave: critical, high, medium or low, or several with commas between",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "image",
+          "Field": "Image",
+          "In": "Query",
+          "Description": "only findings of the image by this name, whole, or of several with commas between",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "container",
+          "Field": "Container",
+          "In": "Query",
+          "Description": "only findings of the image a container by this name was made from",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "stack",
+          "Field": "Stack",
+          "In": "Query",
+          "Description": "only findings of the images a stack's containers were made from",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "sort",
+          "Field": "Sort",
+          "In": "Query",
+          "Description": "what to order by: severity, cve, package, image, installed, fixed, container, stack or scannedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "dir",
+          "Field": "Dir",
+          "In": "Query",
+          "Description": "desc for the order turned round; by severity the gravest come first unless it is",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "limit",
+          "Field": "Limit",
+          "In": "Query",
+          "Description": "the most findings to answer; every one unless given, and 0 for the counts alone",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "offset",
+          "Field": "Offset",
+          "In": "Query",
+          "Description": "how many findings to pass over first",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetVulnerabilitiesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetVulnerabilitiesCount",
+      "OperationId": "get_api_vulnerabilities_count",
+      "Method": "GET",
+      "Path": "/api/vulnerabilities/count",
+      "Description": "Return the total finding count, severity summary, and distinct image/container/stack filter values for an environment",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "the environment whose findings are asked for: with none, nothing is found",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetVulnerabilitiesCountResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetVulnerabilitiesExport",
+      "OperationId": "get_api_vulnerabilities_export",
+      "Method": "GET",
+      "Path": "/api/vulnerabilities/export",
+      "Description": "Export an environment's aggregated vulnerability findings as json or csv, matching the grid's filters and sort",
+      "Options": [
+        {
+          "Name": "format",
+          "Field": "Format",
+          "In": "Query",
+          "Description": "Output format — json (default) or csv",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "the environment whose findings are asked for: with none, nothing is found",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "q",
+          "Field": "Q",
+          "In": "Query",
+          "Description": "only findings whose CVE, package, image, container or stack holds this text, whatever its case",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "severity",
+          "Field": "Severity",
+          "In": "Query",
+          "Description": "only findings this grave: critical, high, medium or low, or several with commas between",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "image",
+          "Field": "Image",
+          "In": "Query",
+          "Description": "only findings of the image by this name, whole, or of several with commas between",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "container",
+          "Field": "Container",
+          "In": "Query",
+          "Description": "only findings of the image a container by this name was made from",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "stack",
+          "Field": "Stack",
+          "In": "Query",
+          "Description": "only findings of the images a stack's containers were made from",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "sort",
+          "Field": "Sort",
+          "In": "Query",
+          "Description": "what to order by: severity, cve, package, image, installed, fixed, container, stack or scannedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "dir",
+          "Field": "Dir",
+          "In": "Query",
+          "Description": "desc for the order turned round; by severity the gravest come first unless it is",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/octet-stream",
+        "Type": {
+          "Type": "RawFile"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostVulnerabilitiesScanAll",
+      "OperationId": "post_api_vulnerabilities_scan-all",
+      "Method": "POST",
+      "Path": "/api/vulnerabilities/scan-all",
+      "Description": "Scan every image in an environment for vulnerabilities, streaming per-image progress as Server-Sent Events",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "ID of the environment whose images to scan (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Accept",
+          "Field": "Accept",
+          "In": "Header",
+          "Description": "what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostVulnerabilitiesScanAllResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "GetVulnerabilitiesCountResponse",
+      "Fields": [
+        {
+          "Name": "Options",
+          "JsonName": "options",
+          "Description": "what the findings can be narrowed to",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetVulnerabilitiesCountResponseOptions"
+          }
+        },
+        {
+          "Name": "Summary",
+          "JsonName": "summary",
+          "Description": "the findings counted by how grave, of the ones that matched",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetVulnerabilitiesCountResponseSummary"
+          }
+        },
+        {
+          "Name": "Total",
+          "JsonName": "total",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetVulnerabilitiesCountResponseOptions",
+      "Description": "what the findings can be narrowed to",
+      "Fields": [
+        {
+          "Name": "Containers",
+          "JsonName": "containers",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Images",
+          "JsonName": "images",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Stacks",
+          "JsonName": "stacks",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetVulnerabilitiesCountResponseSummary",
+      "Description": "the findings counted by how grave, of the ones that matched",
+      "Fields": [
+        {
+          "Name": "Critical",
+          "JsonName": "critical",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "High",
+          "JsonName": "high",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ImagesScanned",
+          "JsonName": "imagesScanned",
+          "Description": "how many of the images the host has were scanned",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Low",
+          "JsonName": "low",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Medium",
+          "JsonName": "medium",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Total",
+          "JsonName": "total",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "TotalImages",
+          "JsonName": "totalImages",
+          "Description": "how many images the host has",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetVulnerabilitiesResponse",
+      "Fields": [
+        {
+          "Name": "Findings",
+          "JsonName": "findings",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetVulnerabilitiesResponseFindings"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Summary",
+          "JsonName": "summary",
+          "Description": "the findings counted by how grave, of the ones that matched",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetVulnerabilitiesResponseSummary"
+          }
+        },
+        {
+          "Name": "Total",
+          "JsonName": "total",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetVulnerabilitiesResponseFindings",
+      "Fields": [
+        {
+          "Name": "Containers",
+          "JsonName": "containers",
+          "Description": "the containers made from the image, as Dockhand last looked, which is up to half a minute ago; absent when there are none",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetVulnerabilitiesResponseFindingsContainers"
+            }
+          }
+        },
+        {
+          "Name": "Cve",
+          "JsonName": "cve",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Description",
+          "JsonName": "description",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "FixedVersion",
+          "JsonName": "fixedVersion",
+          "Description": "the version it is put right in; empty when none is known",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ImageId",
+          "JsonName": "imageId",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ImageName",
+          "JsonName": "imageName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "InstalledVersion",
+          "JsonName": "installedVersion",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Link",
+          "JsonName": "link",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Package",
+          "JsonName": "package",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ScannedAt",
+          "JsonName": "scannedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Severity",
+          "JsonName": "severity",
+          "Description": "critical, high, medium, low, negligible or unknown",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Stacks",
+          "JsonName": "stacks",
+          "Description": "the stacks those containers belong to; absent when there are none",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetVulnerabilitiesResponseFindingsContainers",
+      "Fields": [
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetVulnerabilitiesResponseSummary",
+      "Description": "the findings counted by how grave, of the ones that matched",
+      "Fields": [
+        {
+          "Name": "Critical",
+          "JsonName": "critical",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "High",
+          "JsonName": "high",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ImagesScanned",
+          "JsonName": "imagesScanned",
+          "Description": "how many of the images the host has were scanned",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Low",
+          "JsonName": "low",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Medium",
+          "JsonName": "medium",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Total",
+          "JsonName": "total",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "TotalImages",
+          "JsonName": "totalImages",
+          "Description": "how many images the host has",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostVulnerabilitiesScanAllResponse",
+      "Fields": [
+        {
+          "Name": "Cancelled",
+          "JsonName": "cancelled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Failed",
+          "JsonName": "failed",
+          "Description": "how many could not be",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "JobId",
+          "JsonName": "jobId",
+          "Description": "the job the scans run as, for a caller that did not ask for JSON alone",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Scanned",
+          "JsonName": "scanned",
+          "Description": "how many images were scanned",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Description": "false, with why in error, for an environment there is none of or none given: answered with 200 all the same",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Total",
+          "JsonName": "total",
+          "Description": "how many images the environment has",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    }
+  ]
+}

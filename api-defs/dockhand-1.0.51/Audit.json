@@ -1,0 +1,569 @@
+{
+  "Name": "Audit",
+  "Tag": "audit",
+  "Operations": [
+    {
+      "Name": "GetAudit",
+      "OperationId": "get_api_audit",
+      "Method": "GET",
+      "Path": "/api/audit",
+      "Description": "Query the audit log with filters and pagination (Enterprise only)",
+      "Options": [
+        {
+          "Name": "usernames",
+          "Field": "Usernames",
+          "In": "Query",
+          "Description": "Comma-separated usernames to filter by",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "entityTypes",
+          "Field": "EntityTypes",
+          "In": "Query",
+          "Description": "Comma-separated entity types to filter by",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "actions",
+          "Field": "Actions",
+          "In": "Query",
+          "Description": "Comma-separated actions to filter by",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "username",
+          "Field": "Username",
+          "In": "Query",
+          "Description": "Legacy single-username filter",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "entityType",
+          "Field": "EntityType",
+          "In": "Query",
+          "Description": "Legacy single entity-type filter",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "action",
+          "Field": "Action",
+          "In": "Query",
+          "Description": "Legacy single-action filter",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "environmentId",
+          "Field": "EnvironmentId",
+          "In": "Query",
+          "Description": "Filter to a single environment (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "labels",
+          "Field": "Labels",
+          "In": "Query",
+          "Description": "Comma-separated labels to filter by",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "fromDate",
+          "Field": "FromDate",
+          "In": "Query",
+          "Description": "Start of the date range (ISO 8601)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "toDate",
+          "Field": "ToDate",
+          "In": "Query",
+          "Description": "End of the date range (ISO 8601)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "limit",
+          "Field": "Limit",
+          "In": "Query",
+          "Description": "Maximum number of entries to return",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "offset",
+          "Field": "Offset",
+          "In": "Query",
+          "Description": "Number of entries to skip (pagination)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetAuditResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetAuditEvents",
+      "OperationId": "get_api_audit_events",
+      "Method": "GET",
+      "Path": "/api/audit/events",
+      "Description": "Stream live audit-log events over Server-Sent Events (Enterprise only)",
+      "Response": {
+        "ContentType": "text/event-stream",
+        "Type": {
+          "Type": "RawFile"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetAuditExport",
+      "OperationId": "get_api_audit_export",
+      "Method": "GET",
+      "Path": "/api/audit/export",
+      "Description": "Export the audit log as a downloadable file in JSON, CSV or Markdown (Enterprise only)",
+      "Options": [
+        {
+          "Name": "username",
+          "Field": "Username",
+          "In": "Query",
+          "Description": "Filter by username",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "entityType",
+          "Field": "EntityType",
+          "In": "Query",
+          "Description": "Filter by entity type",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "action",
+          "Field": "Action",
+          "In": "Query",
+          "Description": "Filter by action",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "environmentId",
+          "Field": "EnvironmentId",
+          "In": "Query",
+          "Description": "Filter to a single environment (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "fromDate",
+          "Field": "FromDate",
+          "In": "Query",
+          "Description": "Start of the date range (ISO 8601)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "toDate",
+          "Field": "ToDate",
+          "In": "Query",
+          "Description": "End of the date range (ISO 8601)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "format",
+          "Field": "Format",
+          "In": "Query",
+          "Description": "Output format — json (default), csv or md",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/octet-stream",
+        "Type": {
+          "Type": "RawFile"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetAuditOutsideApi",
+      "OperationId": "get_audit",
+      "Method": "GET",
+      "Path": "/audit",
+      "Description": "List audit log entries with optional filters (Enterprise only)",
+      "Options": [
+        {
+          "Name": "username",
+          "Field": "Username",
+          "In": "Query",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "entity_type",
+          "Field": "EntityType",
+          "In": "Query",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "action",
+          "Field": "Action",
+          "In": "Query",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "environment_id",
+          "Field": "EnvironmentId",
+          "In": "Query",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "from_date",
+          "Field": "FromDate",
+          "In": "Query",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "to_date",
+          "Field": "ToDate",
+          "In": "Query",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "limit",
+          "Field": "Limit",
+          "In": "Query",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "offset",
+          "Field": "Offset",
+          "In": "Query",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetAuditOutsideApiResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetAuditUsers",
+      "OperationId": "get_api_audit_users",
+      "Method": "GET",
+      "Path": "/api/audit/users",
+      "Description": "List the distinct usernames that appear in the audit log, for filter dropdowns (Enterprise only)",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "String"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetAuditUsersOutsideApi",
+      "OperationId": "get_audit_users",
+      "Method": "GET",
+      "Path": "/audit/users",
+      "Description": "List distinct usernames that appear in the audit log, for use as a filter dropdown (Enterprise only)",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "String"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "GetAuditOutsideApiResponse",
+      "Fields": [
+        {
+          "Name": "Limit",
+          "JsonName": "limit",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Logs",
+          "JsonName": "logs",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetAuditOutsideApiResponseLogs"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Offset",
+          "JsonName": "offset",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Total",
+          "JsonName": "total",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetAuditOutsideApiResponseLogs",
+      "Fields": [
+        {
+          "Name": "Action",
+          "JsonName": "action",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Description",
+          "JsonName": "description",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Details",
+          "JsonName": "details",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "EntityId",
+          "JsonName": "entityId",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EntityName",
+          "JsonName": "entityName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EntityType",
+          "JsonName": "entityType",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "IpAddress",
+          "JsonName": "ipAddress",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UserAgent",
+          "JsonName": "userAgent",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UserId",
+          "JsonName": "userId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetAuditResponse",
+      "Fields": [
+        {
+          "Name": "Logs",
+          "JsonName": "logs",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetAuditResponseLogs"
+            }
+          }
+        },
+        {
+          "Name": "Total",
+          "JsonName": "total",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetAuditResponseLogs",
+      "Fields": [
+        {
+          "Name": "Action",
+          "JsonName": "action",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EntityName",
+          "JsonName": "entityName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EntityType",
+          "JsonName": "entityType",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    }
+  ]
+}

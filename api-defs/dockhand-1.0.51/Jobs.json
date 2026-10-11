@@ -1,0 +1,138 @@
+{
+  "Name": "Jobs",
+  "Tag": "jobs",
+  "Operations": [
+    {
+      "Name": "DeleteJobsById",
+      "OperationId": "delete_api_jobs_id",
+      "Method": "DELETE",
+      "Path": "/api/jobs/{id}",
+      "Description": "Request cancellation of a running background job (owner or admin only)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteJobsByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetJobsById",
+      "OperationId": "get_api_jobs_id",
+      "Method": "GET",
+      "Path": "/api/jobs/{id}",
+      "Description": "Poll a background job's status and accumulated output lines (owner or admin only)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetJobsByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "DeleteJobsByIdResponse",
+      "Fields": [
+        {
+          "Name": "Cancelled",
+          "JsonName": "cancelled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetJobsByIdResponse",
+      "Fields": [
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Lines",
+          "JsonName": "lines",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetJobsByIdResponseLines"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Result",
+          "JsonName": "result",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetJobsByIdResponseLines",
+      "Fields": [
+        {
+          "Name": "Data",
+          "JsonName": "data",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Event",
+          "JsonName": "event",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    }
+  ]
+}

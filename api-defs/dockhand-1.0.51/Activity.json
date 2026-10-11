@@ -1,0 +1,372 @@
+{
+  "Name": "Activity",
+  "Tag": "activity",
+  "Operations": [
+    {
+      "Name": "DeleteActivity",
+      "OperationId": "delete_api_activity",
+      "Method": "DELETE",
+      "Path": "/api/activity",
+      "Description": "Clear all stored container activity events",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteActivityResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetActivity",
+      "OperationId": "get_api_activity",
+      "Method": "GET",
+      "Path": "/api/activity",
+      "Description": "Query container activity events with filters and pagination",
+      "Options": [
+        {
+          "Name": "environmentId",
+          "Field": "EnvironmentId",
+          "In": "Query",
+          "Description": "Filter to a single environment (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "containerId",
+          "Field": "ContainerId",
+          "In": "Query",
+          "Description": "Filter by container ID (from GET /api/containers)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "containerName",
+          "Field": "ContainerName",
+          "In": "Query",
+          "Description": "Filter by container name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "actions",
+          "Field": "Actions",
+          "In": "Query",
+          "Description": "Comma-separated event actions to filter by",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "labels",
+          "Field": "Labels",
+          "In": "Query",
+          "Description": "Comma-separated labels to filter by",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "fromDate",
+          "Field": "FromDate",
+          "In": "Query",
+          "Description": "Start of the date range (ISO 8601)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "toDate",
+          "Field": "ToDate",
+          "In": "Query",
+          "Description": "End of the date range (ISO 8601)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "limit",
+          "Field": "Limit",
+          "In": "Query",
+          "Description": "Maximum number of events to return",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "offset",
+          "Field": "Offset",
+          "In": "Query",
+          "Description": "Number of events to skip (pagination)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetActivityResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetActivityContainers",
+      "OperationId": "get_api_activity_containers",
+      "Method": "GET",
+      "Path": "/api/activity/containers",
+      "Description": "List distinct container names that appear in the activity log, for filter dropdowns",
+      "Options": [
+        {
+          "Name": "environment_id",
+          "Field": "EnvironmentId",
+          "In": "Query",
+          "Description": "Filter to a single environment (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "String"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetActivityEvents",
+      "OperationId": "get_api_activity_events",
+      "Method": "GET",
+      "Path": "/api/activity/events",
+      "Description": "Stream live container activity and environment-status events over Server-Sent Events",
+      "Response": {
+        "ContentType": "text/event-stream",
+        "Type": {
+          "Type": "RawFile"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetActivityStats",
+      "OperationId": "get_api_activity_stats",
+      "Method": "GET",
+      "Path": "/api/activity/stats",
+      "Description": "Get aggregate container activity statistics (totals and counts by action)",
+      "Options": [
+        {
+          "Name": "environment_id",
+          "Field": "EnvironmentId",
+          "In": "Query",
+          "Description": "Filter to a single environment (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetActivityStatsResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "DeleteActivityResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetActivityResponse",
+      "Fields": [
+        {
+          "Name": "Events",
+          "JsonName": "events",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetActivityResponseEvents"
+            }
+          }
+        },
+        {
+          "Name": "Limit",
+          "JsonName": "limit",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Offset",
+          "JsonName": "offset",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Total",
+          "JsonName": "total",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetActivityResponseEvents",
+      "Fields": [
+        {
+          "Name": "Action",
+          "JsonName": "action",
+          "Description": "what the container did, in Docker's word: create, start, die, kill, stop, restart, destroy, pause, unpause, rename, update, oom, or health_status: healthy and health_status: unhealthy",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ActorAttributes",
+          "JsonName": "actorAttributes",
+          "Description": "what Docker said of the event: the container's labels, and by kind exitCode for a death, signal for a kill and oldName for a rename, each as text",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "ContainerId",
+          "JsonName": "containerId",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ContainerName",
+          "JsonName": "containerName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvironmentIcon",
+          "JsonName": "environmentIcon",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "EnvironmentName",
+          "JsonName": "environmentName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Image",
+          "JsonName": "image",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Timestamp",
+          "JsonName": "timestamp",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetActivityStatsResponse",
+      "Fields": [
+        {
+          "Name": "ByAction",
+          "JsonName": "byAction",
+          "Description": "how many events of each action the log holds",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Integer"
+            }
+          }
+        },
+        {
+          "Name": "Today",
+          "JsonName": "today",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Total",
+          "JsonName": "total",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

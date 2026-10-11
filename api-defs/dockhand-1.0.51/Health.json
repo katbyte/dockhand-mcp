@@ -1,0 +1,170 @@
+{
+  "Name": "Health",
+  "Tag": "health",
+  "Operations": [
+    {
+      "Name": "GetHealth",
+      "OperationId": "get_api_health",
+      "Method": "GET",
+      "Path": "/api/health",
+      "Description": "Liveness probe — always returns 200 when the SvelteKit process is up",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetHealthResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetHealthDatabase",
+      "OperationId": "get_api_health_database",
+      "Method": "GET",
+      "Path": "/api/health/database",
+      "Description": "Public database health check reporting schema/migration/table status; authenticated settings:view callers also get connection details",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetHealthDatabaseResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "GetHealthDatabaseResponse",
+      "Fields": [
+        {
+          "Name": "AppliedMigrations",
+          "JsonName": "appliedMigrations",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Connection",
+          "JsonName": "connection",
+          "Description": "where the database is: a file's path for SQLite",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Database",
+          "JsonName": "database",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Healthy",
+          "JsonName": "healthy",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "MigrationsTable",
+          "JsonName": "migrationsTable",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "PendingMigrations",
+          "JsonName": "pendingMigrations",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "SchemaVersion",
+          "JsonName": "schemaVersion",
+          "Description": "the newest migration applied",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Tables",
+          "JsonName": "tables",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetHealthDatabaseResponseTables"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Timestamp",
+          "JsonName": "timestamp",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetHealthDatabaseResponseTables",
+      "Fields": [
+        {
+          "Name": "Expected",
+          "JsonName": "expected",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Found",
+          "JsonName": "found",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Missing",
+          "JsonName": "missing",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetHealthResponse",
+      "Fields": [
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Timestamp",
+          "JsonName": "timestamp",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

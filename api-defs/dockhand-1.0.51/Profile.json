@@ -1,0 +1,462 @@
+{
+  "Name": "Profile",
+  "Tag": "profile",
+  "Operations": [
+    {
+      "Name": "DeleteProfileAvatar",
+      "OperationId": "delete_api_profile_avatar",
+      "Method": "DELETE",
+      "Path": "/api/profile/avatar",
+      "Description": "Remove the authenticated user's avatar",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteProfileAvatarResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetProfile",
+      "OperationId": "get_api_profile",
+      "Method": "GET",
+      "Path": "/api/profile",
+      "Description": "Get the authenticated user's own profile",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetProfileResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetProfilePreferences",
+      "OperationId": "get_api_profile_preferences",
+      "Method": "GET",
+      "Path": "/api/profile/preferences",
+      "Description": "Get the current user's UI preferences (theme, fonts, editor options)",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "RawObject"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostProfileAvatar",
+      "OperationId": "post_api_profile_avatar",
+      "Method": "POST",
+      "Path": "/api/profile/avatar",
+      "Description": "Upload the authenticated user's avatar as a base64 image data URL (max ~500KB)",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostProfileAvatarRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostProfileAvatarResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PutProfile",
+      "OperationId": "put_api_profile",
+      "Method": "PUT",
+      "Path": "/api/profile",
+      "Description": "Update the authenticated user's own profile (email/display name, and optionally the password with current-password confirmation)",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutProfileRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutProfileResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PutProfilePreferences",
+      "OperationId": "put_api_profile_preferences",
+      "Method": "PUT",
+      "Path": "/api/profile/preferences",
+      "Description": "Update the current user's UI preferences (each field is optional)",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutProfilePreferencesRequest"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "DeleteProfileAvatarResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetProfileResponse",
+      "Fields": [
+        {
+          "Name": "Avatar",
+          "JsonName": "avatar",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "DisplayName",
+          "JsonName": "displayName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Email",
+          "JsonName": "email",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "IsAdmin",
+          "JsonName": "isAdmin",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "LastLogin",
+          "JsonName": "lastLogin",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "MfaEnabled",
+          "JsonName": "mfaEnabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Provider",
+          "JsonName": "provider",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostProfileAvatarRequest",
+      "Fields": [
+        {
+          "Name": "Avatar",
+          "JsonName": "avatar",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostProfileAvatarResponse",
+      "Fields": [
+        {
+          "Name": "Avatar",
+          "JsonName": "avatar",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutProfilePreferencesRequest",
+      "Fields": [
+        {
+          "Name": "ActionIconSize",
+          "JsonName": "actionIconSize",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "AnimateIcons",
+          "JsonName": "animateIcons",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ColoredActionButtons",
+          "JsonName": "coloredActionButtons",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "DarkTheme",
+          "JsonName": "darkTheme",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EditorFont",
+          "JsonName": "editorFont",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EditorIndentGuides",
+          "JsonName": "editorIndentGuides",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "EditorTheme",
+          "JsonName": "editorTheme",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Font",
+          "JsonName": "font",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "FontSize",
+          "JsonName": "fontSize",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "GridFontSize",
+          "JsonName": "gridFontSize",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LightTheme",
+          "JsonName": "lightTheme",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TerminalFont",
+          "JsonName": "terminalFont",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutProfileRequest",
+      "Fields": [
+        {
+          "Name": "CurrentPassword",
+          "JsonName": "currentPassword",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "DisplayName",
+          "JsonName": "displayName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Email",
+          "JsonName": "email",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NewPassword",
+          "JsonName": "newPassword",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutProfileResponse",
+      "Fields": [
+        {
+          "Name": "Avatar",
+          "JsonName": "avatar",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "DisplayName",
+          "JsonName": "displayName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Email",
+          "JsonName": "email",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "IsAdmin",
+          "JsonName": "isAdmin",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "LastLogin",
+          "JsonName": "lastLogin",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "MfaEnabled",
+          "JsonName": "mfaEnabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

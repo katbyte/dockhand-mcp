@@ -1,0 +1,63 @@
+{
+  "Name": "Dependencies",
+  "Tag": "dependencies",
+  "Operations": [
+    {
+      "Name": "GetDependencies",
+      "OperationId": "get_api_dependencies",
+      "Method": "GET",
+      "Path": "/api/dependencies",
+      "Description": "Return the combined list of npm dependencies and external tool images (grype, trivy), sorted by name, excluding Dockhand itself",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetDependenciesResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "GetDependenciesResponse",
+      "Fields": [
+        {
+          "Name": "License",
+          "JsonName": "license",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Repository",
+          "JsonName": "repository",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Version",
+          "JsonName": "version",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

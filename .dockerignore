@@ -1,0 +1,13 @@
+.git
+.github
+.idea
+.tools/bin
+.tools/venv
+.tools/npm
+api-defs/*.json
+dist
+docs
+dockhand-mcp
+*.md
+docker-compose.yml
+.env*

@@ -1,0 +1,189 @@
+{
+  "Name": "Icons",
+  "Tag": "icons",
+  "Operations": [
+    {
+      "Name": "GetIconsSelfhstByRef",
+      "OperationId": "get_api_icons_selfhst_ref",
+      "Method": "GET",
+      "Path": "/api/icons/selfhst/{ref}",
+      "Description": "Get a selfh.st app icon, fetched once from the CDN and cached on disk",
+      "PathParameters": [
+        {
+          "Name": "ref",
+          "Argument": "ref",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "image/*",
+        "Type": {
+          "Type": "RawFile"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetIconsSelfhstManifest",
+      "OperationId": "get_api_icons_selfhst-manifest",
+      "Method": "GET",
+      "Path": "/api/icons/selfhst-manifest",
+      "Description": "Get the selfh.st icon manifest (index.json), cached on disk with a 7-day TTL",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetIconsSelfhstManifestResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostIconsSelfhstBatch",
+      "OperationId": "post_api_icons_selfhst_batch",
+      "Method": "POST",
+      "Path": "/api/icons/selfhst/batch",
+      "Description": "Resolve multiple selfh.st app icons in one request (avoids per-icon requests a WAF flags as crawling)",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostIconsSelfhstBatchRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostIconsSelfhstBatchResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "GetIconsSelfhstManifestResponse",
+      "Fields": [
+        {
+          "Name": "Category",
+          "JsonName": "Category",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "CreatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Dark",
+          "JsonName": "Dark",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Light",
+          "JsonName": "Light",
+          "Description": "Yes when it has a form for a light background",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "Name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "PNG",
+          "JsonName": "PNG",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Reference",
+          "JsonName": "Reference",
+          "Description": "what the icon is asked for by",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SVG",
+          "JsonName": "SVG",
+          "Description": "Yes when it comes as SVG, and No",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Tags",
+          "JsonName": "Tags",
+          "Description": "its tags, with commas between",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "WebP",
+          "JsonName": "WebP",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostIconsSelfhstBatchRequest",
+      "Fields": [
+        {
+          "Name": "Refs",
+          "JsonName": "refs",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostIconsSelfhstBatchResponse",
+      "Fields": [
+        {
+          "Name": "Icons",
+          "JsonName": "icons",
+          "Description": "each icon that could be had as a data: address, by its reference; one that could not is left out",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1167 @@
+{
+  "Name": "Schedules",
+  "Tag": "schedules",
+  "Operations": [
+    {
+      "Name": "DeleteSchedulesByTypeById",
+      "OperationId": "delete_api_schedules_type_id",
+      "Method": "DELETE",
+      "Path": "/api/schedules/{type}/{id}",
+      "Description": "Delete (or disable, for policy-driven types) a schedule by type and id",
+      "PathParameters": [
+        {
+          "Name": "type",
+          "Argument": "typeParam",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteSchedulesByTypeByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "DeleteSchedulesExecutionsById",
+      "OperationId": "delete_api_schedules_executions_id",
+      "Method": "DELETE",
+      "Path": "/api/schedules/executions/{id}",
+      "Description": "Delete a single schedule execution record",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteSchedulesExecutionsByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetSchedules",
+      "OperationId": "get_api_schedules",
+      "Method": "GET",
+      "Path": "/api/schedules",
+      "Description": "List all schedules (container/env auto-updates, git syncs, image-prune, backups, repo maintenance, system jobs)",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetSchedulesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetSchedulesExecutions",
+      "OperationId": "get_api_schedules_executions",
+      "Method": "GET",
+      "Path": "/api/schedules/executions",
+      "Description": "List schedule execution history, filterable and paginated",
+      "Options": [
+        {
+          "Name": "scheduleType",
+          "Field": "ScheduleType",
+          "In": "Query",
+          "Description": "Filter by schedule type (container_update, git_stack_sync, ...)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "scheduleId",
+          "Field": "ScheduleId",
+          "In": "Query",
+          "Description": "Filter by the numeric id of the schedule (from GET /api/schedules)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "environmentId",
+          "Field": "EnvironmentId",
+          "In": "Query",
+          "Description": "Filter by environment id (\"null\" for global/system schedules) (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "status",
+          "Field": "Status",
+          "In": "Query",
+          "Description": "Filter by execution status (queued/running/success/warning/failed/skipped)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "statuses",
+          "Field": "Statuses",
+          "In": "Query",
+          "Description": "Comma-separated list of statuses (alternative to status)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "triggeredBy",
+          "Field": "TriggeredBy",
+          "In": "Query",
+          "Description": "Filter by trigger (cron/webhook/manual)",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "fromDate",
+          "Field": "FromDate",
+          "In": "Query",
+          "Description": "ISO date lower bound",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "toDate",
+          "Field": "ToDate",
+          "In": "Query",
+          "Description": "ISO date upper bound",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "limit",
+          "Field": "Limit",
+          "In": "Query",
+          "Description": "Page size (default 50)",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "offset",
+          "Field": "Offset",
+          "In": "Query",
+          "Description": "Page offset (default 0)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetSchedulesExecutionsResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetSchedulesExecutionsById",
+      "OperationId": "get_api_schedules_executions_id",
+      "Method": "GET",
+      "Path": "/api/schedules/executions/{id}",
+      "Description": "Get a single schedule execution, including its logs",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetSchedulesExecutionsByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetSchedulesSettings",
+      "OperationId": "get_api_schedules_settings",
+      "Method": "GET",
+      "Path": "/api/schedules/settings",
+      "Description": "Get the schedules-page display preference (hide system jobs), per-user with a global fallback",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetSchedulesSettingsResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetSchedulesStream",
+      "OperationId": "get_api_schedules_stream",
+      "Method": "GET",
+      "Path": "/api/schedules/stream",
+      "Description": "Server-Sent Events stream that polls and pushes schedule updates (same shape as GET /api/schedules)",
+      "Response": {
+        "ContentType": "text/event-stream",
+        "Type": {
+          "Type": "RawFile"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostSchedulesByTypeByIdRun",
+      "OperationId": "post_api_schedules_type_id_run",
+      "Method": "POST",
+      "Path": "/api/schedules/{type}/{id}/run",
+      "Description": "Manually trigger a single run of a schedule (outside its cron), by type and id",
+      "PathParameters": [
+        {
+          "Name": "type",
+          "Argument": "typeParam",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostSchedulesByTypeByIdRunResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostSchedulesByTypeByIdToggle",
+      "OperationId": "post_api_schedules_type_id_toggle",
+      "Method": "POST",
+      "Path": "/api/schedules/{type}/{id}/toggle",
+      "Description": "Toggle a schedule's enabled/disabled state (registers/unregisters the croner job accordingly)",
+      "PathParameters": [
+        {
+          "Name": "type",
+          "Argument": "typeParam",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostSchedulesByTypeByIdToggleResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostSchedulesSystemByIdToggle",
+      "OperationId": "post_api_schedules_system_id_toggle",
+      "Method": "POST",
+      "Path": "/api/schedules/system/{id}/toggle",
+      "Description": "Toggle one of the three built-in system cleanup jobs (schedule/event/scanner cleanup) on or off",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostSchedulesSystemByIdToggleResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PutSchedulesSettings",
+      "OperationId": "put_api_schedules_settings",
+      "Method": "PUT",
+      "Path": "/api/schedules/settings",
+      "Description": "Update the schedules-page display preference (hide system jobs) for the current user",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutSchedulesSettingsRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutSchedulesSettingsResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "DeleteSchedulesByTypeByIdResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "DeleteSchedulesExecutionsByIdResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetSchedulesExecutionsByIdResponse",
+      "Fields": [
+        {
+          "Name": "CompletedAt",
+          "JsonName": "completedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Details",
+          "JsonName": "details",
+          "Description": "what the run did, by its kind: what a prune removed, what a check found, why an update was skipped",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Duration",
+          "JsonName": "duration",
+          "Description": "how long it took, in milliseconds",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "EntityName",
+          "JsonName": "entityName",
+          "Description": "what the run was of: a container, an environment, a stack or a system job, by name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ErrorMessage",
+          "JsonName": "errorMessage",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Logs",
+          "JsonName": "logs",
+          "Description": "what the run logged, where one run is read; null in a list of runs",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ScheduleId",
+          "JsonName": "scheduleId",
+          "Description": "the schedule's number among those of its type; 0 for a run that belongs to no schedule, as a stack brought up by hand",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ScheduleType",
+          "JsonName": "scheduleType",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "StartedAt",
+          "JsonName": "startedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Description": "queued, running, success, warning, failed or skipped",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TriggeredAt",
+          "JsonName": "triggeredAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TriggeredBy",
+          "JsonName": "triggeredBy",
+          "Description": "cron, manual or webhook",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetSchedulesExecutionsResponse",
+      "Fields": [
+        {
+          "Name": "Executions",
+          "JsonName": "executions",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetSchedulesExecutionsResponseExecutions"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Limit",
+          "JsonName": "limit",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Offset",
+          "JsonName": "offset",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Total",
+          "JsonName": "total",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetSchedulesExecutionsResponseExecutions",
+      "Fields": [
+        {
+          "Name": "CompletedAt",
+          "JsonName": "completedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Details",
+          "JsonName": "details",
+          "Description": "what the run did, by its kind: what a prune removed, what a check found, why an update was skipped",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Duration",
+          "JsonName": "duration",
+          "Description": "how long it took, in milliseconds",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "EntityName",
+          "JsonName": "entityName",
+          "Description": "what the run was of: a container, an environment, a stack or a system job, by name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ErrorMessage",
+          "JsonName": "errorMessage",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Logs",
+          "JsonName": "logs",
+          "Description": "what the run logged, where one run is read; null in a list of runs",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ScheduleId",
+          "JsonName": "scheduleId",
+          "Description": "the schedule's number among those of its type; 0 for a run that belongs to no schedule, as a stack brought up by hand",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ScheduleType",
+          "JsonName": "scheduleType",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "StartedAt",
+          "JsonName": "startedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Description": "queued, running, success, warning, failed or skipped",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TriggeredAt",
+          "JsonName": "triggeredAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TriggeredBy",
+          "JsonName": "triggeredBy",
+          "Description": "cron, manual or webhook",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetSchedulesResponse",
+      "Fields": [
+        {
+          "Name": "Schedules",
+          "JsonName": "schedules",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetSchedulesResponseSchedules"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetSchedulesResponseSchedules",
+      "Fields": [
+        {
+          "Name": "CronExpression",
+          "JsonName": "cronExpression",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Description",
+          "JsonName": "description",
+          "Description": "what the schedule does, in words; null for a container's update",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "EntityName",
+          "JsonName": "entityName",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "EnvironmentName",
+          "JsonName": "environmentName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "IsSystem",
+          "JsonName": "isSystem",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "LastExecution",
+          "JsonName": "lastExecution",
+          "Description": "its latest run, with what it logged; null for one that has never run",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetSchedulesResponseSchedulesLastExecution"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "NextRun",
+          "JsonName": "nextRun",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "PruneMode",
+          "JsonName": "pruneMode",
+          "Description": "for an image prune: dangling or all",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "RecentExecutions",
+          "JsonName": "recentExecutions",
+          "Description": "its latest few runs, the latest first",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetSchedulesResponseSchedulesRecentExecutions"
+            }
+          }
+        },
+        {
+          "Name": "ScheduleType",
+          "JsonName": "scheduleType",
+          "Description": "how its time was given: daily, weekly or custom",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetSchedulesResponseSchedulesLastExecution",
+      "Description": "its latest run, with what it logged; null for one that has never run",
+      "Fields": [
+        {
+          "Name": "CompletedAt",
+          "JsonName": "completedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Details",
+          "JsonName": "details",
+          "Description": "what the run did, by its kind: what a prune removed, what a check found, why an update was skipped",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Duration",
+          "JsonName": "duration",
+          "Description": "how long it took, in milliseconds",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "EntityName",
+          "JsonName": "entityName",
+          "Description": "what the run was of: a container, an environment, a stack or a system job, by name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ErrorMessage",
+          "JsonName": "errorMessage",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Logs",
+          "JsonName": "logs",
+          "Description": "what the run logged, where one run is read; null in a list of runs",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ScheduleId",
+          "JsonName": "scheduleId",
+          "Description": "the schedule's number among those of its type; 0 for a run that belongs to no schedule, as a stack brought up by hand",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ScheduleType",
+          "JsonName": "scheduleType",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "StartedAt",
+          "JsonName": "startedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Description": "queued, running, success, warning, failed or skipped",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TriggeredAt",
+          "JsonName": "triggeredAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TriggeredBy",
+          "JsonName": "triggeredBy",
+          "Description": "cron, manual or webhook",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetSchedulesResponseSchedulesRecentExecutions",
+      "Fields": [
+        {
+          "Name": "CompletedAt",
+          "JsonName": "completedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Details",
+          "JsonName": "details",
+          "Description": "what the run did, by its kind: what a prune removed, what a check found, why an update was skipped",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Duration",
+          "JsonName": "duration",
+          "Description": "how long it took, in milliseconds",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "EntityName",
+          "JsonName": "entityName",
+          "Description": "what the run was of: a container, an environment, a stack or a system job, by name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ErrorMessage",
+          "JsonName": "errorMessage",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Logs",
+          "JsonName": "logs",
+          "Description": "what the run logged, where one run is read; null in a list of runs",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ScheduleId",
+          "JsonName": "scheduleId",
+          "Description": "the schedule's number among those of its type; 0 for a run that belongs to no schedule, as a stack brought up by hand",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ScheduleType",
+          "JsonName": "scheduleType",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "StartedAt",
+          "JsonName": "startedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Description": "queued, running, success, warning, failed or skipped",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TriggeredAt",
+          "JsonName": "triggeredAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TriggeredBy",
+          "JsonName": "triggeredBy",
+          "Description": "cron, manual or webhook",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetSchedulesSettingsResponse",
+      "Fields": [
+        {
+          "Name": "HideSystemJobs",
+          "JsonName": "hideSystemJobs",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostSchedulesByTypeByIdRunResponse",
+      "Fields": [
+        {
+          "Name": "Message",
+          "JsonName": "message",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostSchedulesByTypeByIdToggleResponse",
+      "Fields": [
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostSchedulesSystemByIdToggleResponse",
+      "Fields": [
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutSchedulesSettingsRequest",
+      "Fields": [
+        {
+          "Name": "HideSystemJobs",
+          "JsonName": "hideSystemJobs",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutSchedulesSettingsResponse",
+      "Fields": [
+        {
+          "Name": "HideSystemJobs",
+          "JsonName": "hideSystemJobs",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

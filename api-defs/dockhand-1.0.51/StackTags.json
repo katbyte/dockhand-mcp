@@ -1,0 +1,39 @@
+{
+  "Name": "StackTags",
+  "Tag": "stack-tags",
+  "Operations": [
+    {
+      "Name": "GetStackTags",
+      "OperationId": "get_api_stack-tags",
+      "Method": "GET",
+      "Path": "/api/stack-tags",
+      "Description": "List all stack tag assignments for an environment as a name -> tagIds map",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Dictionary",
+          "NestedItem": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Integer"
+            }
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ]
+}

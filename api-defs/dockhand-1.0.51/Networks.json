@@ -1,0 +1,1018 @@
+{
+  "Name": "Networks",
+  "Tag": "networks",
+  "Operations": [
+    {
+      "Name": "DeleteNetworksById",
+      "OperationId": "delete_api_networks_id",
+      "Method": "DELETE",
+      "Path": "/api/networks/{id}",
+      "Description": "Remove a Docker network by ID (a malformed ID is rejected with 400 by input validation)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment the network belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteNetworksByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetNetworks",
+      "OperationId": "get_api_networks",
+      "Method": "GET",
+      "Path": "/api/networks",
+      "Description": "List Docker networks for an environment (returns an empty array when no env is given)",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment ID to list networks from (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetNetworksResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetNetworksById",
+      "OperationId": "get_api_networks_id",
+      "Method": "GET",
+      "Path": "/api/networks/{id}",
+      "Description": "Inspect a Docker network by ID (a malformed ID is rejected with 400 by input validation)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment the network belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetNetworksByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetNetworksByIdInspect",
+      "OperationId": "get_api_networks_id_inspect",
+      "Method": "GET",
+      "Path": "/api/networks/{id}/inspect",
+      "Description": "Inspect a Docker network by ID (a malformed ID is rejected with 400 by input validation)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment the network belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetNetworksByIdInspectResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostNetworks",
+      "OperationId": "post_api_networks",
+      "Method": "POST",
+      "Path": "/api/networks",
+      "Description": "Create a Docker network in the given environment",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment ID to create the network in (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostNetworksRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostNetworksResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostNetworksByIdConnect",
+      "OperationId": "post_api_networks_id_connect",
+      "Method": "POST",
+      "Path": "/api/networks/{id}/connect",
+      "Description": "Connect a container to a Docker network",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment the network belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostNetworksByIdConnectRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostNetworksByIdConnectResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostNetworksByIdDisconnect",
+      "OperationId": "post_api_networks_id_disconnect",
+      "Method": "POST",
+      "Path": "/api/networks/{id}/disconnect",
+      "Description": "Disconnect a container from a Docker network (optionally forcing the disconnect)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment the network belongs to (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostNetworksByIdDisconnectRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostNetworksByIdDisconnectResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "DeleteNetworksByIdResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetNetworksByIdInspectResponse",
+      "Fields": [
+        {
+          "Name": "Attachable",
+          "JsonName": "Attachable",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Containers",
+          "JsonName": "Containers",
+          "Description": "the running containers on the network, by their whole id",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetNetworksByIdInspectResponseContainers"
+            }
+          }
+        },
+        {
+          "Name": "Created",
+          "JsonName": "Created",
+          "Description": "when the network was made, as 2006-01-02T15:04:05.999999999Z",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Driver",
+          "JsonName": "Driver",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnableIPv4",
+          "JsonName": "EnableIPv4",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "EnableIPv6",
+          "JsonName": "EnableIPv6",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "IPAM",
+          "JsonName": "IPAM",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetNetworksByIdInspectResponseIPAM"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "Id",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Ingress",
+          "JsonName": "Ingress",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Internal",
+          "JsonName": "Internal",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "Labels",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "Name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Options",
+          "JsonName": "Options",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Scope",
+          "JsonName": "Scope",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetNetworksByIdInspectResponseContainers",
+      "Fields": [
+        {
+          "Name": "EndpointID",
+          "JsonName": "EndpointID",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "IPv4Address",
+          "JsonName": "IPv4Address",
+          "Description": "the container's address on the network with the size of the range after it: 172.19.0.2/16",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "IPv6Address",
+          "JsonName": "IPv6Address",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "MacAddress",
+          "JsonName": "MacAddress",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "Name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetNetworksByIdInspectResponseIPAM",
+      "Fields": [
+        {
+          "Name": "Config",
+          "JsonName": "Config",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetNetworksByIdInspectResponseIPAMConfig"
+            }
+          }
+        },
+        {
+          "Name": "Driver",
+          "JsonName": "Driver",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetNetworksByIdInspectResponseIPAMConfig",
+      "Fields": [
+        {
+          "Name": "Gateway",
+          "JsonName": "Gateway",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Subnet",
+          "JsonName": "Subnet",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetNetworksByIdResponse",
+      "Fields": [
+        {
+          "Name": "Attachable",
+          "JsonName": "Attachable",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Containers",
+          "JsonName": "Containers",
+          "Description": "the running containers on the network, by their whole id",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetNetworksByIdResponseContainers"
+            }
+          }
+        },
+        {
+          "Name": "Created",
+          "JsonName": "Created",
+          "Description": "when the network was made, as 2006-01-02T15:04:05.999999999Z",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Driver",
+          "JsonName": "Driver",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnableIPv4",
+          "JsonName": "EnableIPv4",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "EnableIPv6",
+          "JsonName": "EnableIPv6",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "IPAM",
+          "JsonName": "IPAM",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetNetworksByIdResponseIPAM"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "Id",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Ingress",
+          "JsonName": "Ingress",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Internal",
+          "JsonName": "Internal",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "Labels",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "Name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Options",
+          "JsonName": "Options",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Scope",
+          "JsonName": "Scope",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetNetworksByIdResponseContainers",
+      "Fields": [
+        {
+          "Name": "EndpointID",
+          "JsonName": "EndpointID",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "IPv4Address",
+          "JsonName": "IPv4Address",
+          "Description": "the container's address on the network with the size of the range after it: 172.19.0.2/16",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "IPv6Address",
+          "JsonName": "IPv6Address",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "MacAddress",
+          "JsonName": "MacAddress",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "Name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetNetworksByIdResponseIPAM",
+      "Fields": [
+        {
+          "Name": "Config",
+          "JsonName": "Config",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetNetworksByIdResponseIPAMConfig"
+            }
+          }
+        },
+        {
+          "Name": "Driver",
+          "JsonName": "Driver",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetNetworksByIdResponseIPAMConfig",
+      "Fields": [
+        {
+          "Name": "Gateway",
+          "JsonName": "Gateway",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Subnet",
+          "JsonName": "Subnet",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetNetworksResponse",
+      "Fields": [
+        {
+          "Name": "Containers",
+          "JsonName": "containers",
+          "Description": "the containers on the network, by their whole id",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetNetworksResponseContainers"
+            }
+          }
+        },
+        {
+          "Name": "Driver",
+          "JsonName": "driver",
+          "Description": "bridge for a network of the host's own, host and null for the two Docker always has, overlay for one a swarm shares",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Description": "the network's whole id, sixty-four characters",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Internal",
+          "JsonName": "internal",
+          "Description": "whether the network is cut off from everything outside the host",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Ipam",
+          "JsonName": "ipam",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetNetworksResponseIpam"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Scope",
+          "JsonName": "scope",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetNetworksResponseContainers",
+      "Fields": [
+        {
+          "Name": "Ipv4Address",
+          "JsonName": "ipv4Address",
+          "Description": "the container's address on the network; empty while it is not running",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetNetworksResponseIpam",
+      "Fields": [
+        {
+          "Name": "Config",
+          "JsonName": "config",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetNetworksResponseIpamConfig"
+            }
+          }
+        },
+        {
+          "Name": "Driver",
+          "JsonName": "driver",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetNetworksResponseIpamConfig",
+      "Fields": [
+        {
+          "Name": "Gateway",
+          "JsonName": "gateway",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Subnet",
+          "JsonName": "subnet",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostNetworksByIdConnectRequest",
+      "Fields": [
+        {
+          "Name": "ContainerId",
+          "JsonName": "containerId",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ContainerName",
+          "JsonName": "containerName",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostNetworksByIdConnectResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostNetworksByIdDisconnectRequest",
+      "Fields": [
+        {
+          "Name": "ContainerId",
+          "JsonName": "containerId",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ContainerName",
+          "JsonName": "containerName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Force",
+          "JsonName": "force",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostNetworksByIdDisconnectResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostNetworksRequest",
+      "Fields": [
+        {
+          "Name": "Attachable",
+          "JsonName": "attachable",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Driver",
+          "JsonName": "driver",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnableIPv6",
+          "JsonName": "enableIPv6",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Ingress",
+          "JsonName": "ingress",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Internal",
+          "JsonName": "internal",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Ipam",
+          "JsonName": "ipam",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostNetworksRequestIpam"
+          }
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Options",
+          "JsonName": "options",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostNetworksRequestIpam",
+      "Fields": [
+        {
+          "Name": "Config",
+          "JsonName": "config",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Dictionary",
+              "NestedItem": {
+                "Type": "Any"
+              }
+            }
+          }
+        },
+        {
+          "Name": "Driver",
+          "JsonName": "driver",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Options",
+          "JsonName": "options",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostNetworksResponse",
+      "Fields": [
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}

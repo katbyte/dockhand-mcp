@@ -1,0 +1,4028 @@
+{
+  "Name": "Git",
+  "Tag": "git",
+  "Operations": [
+    {
+      "Name": "DeleteGitCredentialsById",
+      "OperationId": "delete_api_git_credentials_id",
+      "Method": "DELETE",
+      "Path": "/api/git/credentials/{id}",
+      "Description": "Delete a git credential by ID",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteGitCredentialsByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "DeleteGitRepositoriesById",
+      "OperationId": "delete_api_git_repositories_id",
+      "Method": "DELETE",
+      "Path": "/api/git/repositories/{id}",
+      "Description": "Delete a git repository, first removing the clone directories of every git stack it backs",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteGitRepositoriesByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "DeleteGitStacksById",
+      "OperationId": "delete_api_git_stacks_id",
+      "Method": "DELETE",
+      "Path": "/api/git/stacks/{id}",
+      "Description": "Delete a git stack (removes its deploy files and stack source)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteGitStacksByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetGitCredentials",
+      "OperationId": "get_api_git_credentials",
+      "Method": "GET",
+      "Path": "/api/git/credentials",
+      "Description": "List all stored git credentials with secrets stripped (only hasPassword/hasSshKey flags returned)",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetGitCredentialsResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetGitCredentialsById",
+      "OperationId": "get_api_git_credentials_id",
+      "Method": "GET",
+      "Path": "/api/git/credentials/{id}",
+      "Description": "Get a single git credential by ID with secrets stripped (only hasPassword/hasSshKey flags returned)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetGitCredentialsByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetGitRepositories",
+      "OperationId": "get_api_git_repositories",
+      "Method": "GET",
+      "Path": "/api/git/repositories",
+      "Description": "List all git repositories (repositories are global, not scoped to an environment)",
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetGitRepositoriesResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetGitRepositoriesById",
+      "OperationId": "get_api_git_repositories_id",
+      "Method": "GET",
+      "Path": "/api/git/repositories/{id}",
+      "Description": "Get a single git repository by ID",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetGitRepositoriesByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetGitRepositoriesByIdSync",
+      "OperationId": "get_api_git_repositories_id_sync",
+      "Method": "GET",
+      "Path": "/api/git/repositories/{id}/sync",
+      "Description": "Check whether the tracked branch has new commits upstream without pulling them",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetGitRepositoriesByIdSyncResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetGitStacks",
+      "OperationId": "get_api_git_stacks",
+      "Method": "GET",
+      "Path": "/api/git/stacks",
+      "Description": "List git-deployed stacks (optionally scoped to one environment)",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Filter to a single environment id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetGitStacksResponse"
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetGitStacksById",
+      "OperationId": "get_api_git_stacks_id",
+      "Method": "GET",
+      "Path": "/api/git/stacks/{id}",
+      "Description": "Get one git stack",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetGitStacksByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetGitStacksByIdEnvFiles",
+      "OperationId": "get_api_git_stacks_id_env-files",
+      "Method": "GET",
+      "Path": "/api/git/stacks/{id}/env-files",
+      "Description": "List the .env files present in a git stack's cloned repository",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetGitStacksByIdEnvFilesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetGitStacksByIdWebhook",
+      "OperationId": "get_api_git_stacks_id_webhook",
+      "Method": "GET",
+      "Path": "/api/git/stacks/{id}/webhook",
+      "Description": "GET webhook trigger for a git stack, with the secret passed as the `secret` query parameter",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "secret",
+          "Field": "Secret",
+          "In": "Query",
+          "Description": "Webhook secret; required only if the stack has a webhook secret configured",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetGitStacksByIdWebhookResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetGitWebhookById",
+      "OperationId": "get_api_git_webhook_id",
+      "Method": "GET",
+      "Path": "/api/git/webhook/{id}",
+      "Description": "GET webhook trigger for a git repository, with the secret passed as the `secret` query parameter",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "secret",
+          "Field": "Secret",
+          "In": "Query",
+          "Description": "Webhook secret; required only if the repository has a webhook secret configured",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetGitWebhookByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostGitBranches",
+      "OperationId": "post_api_git_branches",
+      "Method": "POST",
+      "Path": "/api/git/branches",
+      "Description": "List remote branches for a git repository via `git ls-remote`",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitBranchesRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitBranchesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostGitCredentials",
+      "OperationId": "post_api_git_credentials",
+      "Method": "POST",
+      "Path": "/api/git/credentials",
+      "Description": "Create a new git credential (none/password/ssh auth) and return it with secrets stripped",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitCredentialsRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitCredentialsResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostGitPreviewEnv",
+      "OperationId": "post_api_git_preview-env",
+      "Method": "POST",
+      "Path": "/api/git/preview-env",
+      "Description": "Clone a repo to a temp dir and preview its merged env-file variables for the git-stack env editor",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitPreviewEnvRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitPreviewEnvResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostGitRepositories",
+      "OperationId": "post_api_git_repositories",
+      "Method": "POST",
+      "Path": "/api/git/repositories",
+      "Description": "Create a git repository (branch defaults to main); deployment config lives on git stacks, not here",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitRepositoriesRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitRepositoriesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostGitRepositoriesByIdDeploy",
+      "OperationId": "post_api_git_repositories_id_deploy",
+      "Method": "POST",
+      "Path": "/api/git/repositories/{id}/deploy",
+      "Description": "Deploy the compose stack(s) defined in a git repository (clones/pulls, then runs docker compose)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitRepositoriesByIdDeployResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostGitRepositoriesByIdSync",
+      "OperationId": "post_api_git_repositories_id_sync",
+      "Method": "POST",
+      "Path": "/api/git/repositories/{id}/sync",
+      "Description": "Sync (git pull) the local clone of a repository to the latest commit on its tracked branch",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitRepositoriesByIdSyncResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostGitRepositoriesByIdTest",
+      "OperationId": "post_api_git_repositories_id_test",
+      "Method": "POST",
+      "Path": "/api/git/repositories/{id}/test",
+      "Description": "Test connectivity/authentication to a saved repository using its stored credential",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitRepositoriesByIdTestResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostGitRepositoriesTest",
+      "OperationId": "post_api_git_repositories_test",
+      "Method": "POST",
+      "Path": "/api/git/repositories/test",
+      "Description": "Test an unsaved repository configuration (url/branch/credentialId) before creating it",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitRepositoriesTestRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitRepositoriesTestResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostGitStacks",
+      "OperationId": "post_api_git_stacks",
+      "Method": "POST",
+      "Path": "/api/git/stacks",
+      "Description": "Create a git-deployed stack (from an existing repo or new repo url/branch)",
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitStacksRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitStacksResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostGitStacksByIdDeploy",
+      "OperationId": "post_api_git_stacks_id_deploy",
+      "Method": "POST",
+      "Path": "/api/git/stacks/{id}/deploy",
+      "Description": "Deploy a git stack, streaming the deploy log as SSE result events via the job-response channel",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitStacksByIdDeployResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostGitStacksByIdDeployStream",
+      "OperationId": "post_api_git_stacks_id_deploy-stream",
+      "Method": "POST",
+      "Path": "/api/git/stacks/{id}/deploy-stream",
+      "Description": "Deploy a git stack with live progress; streams SSE, or returns a jobId to poll (Accept negotiated)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "Accept",
+          "Field": "Accept",
+          "In": "Header",
+          "Description": "what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitStacksByIdDeployStreamResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostGitStacksByIdEnvFiles",
+      "OperationId": "post_api_git_stacks_id_env-files",
+      "Method": "POST",
+      "Path": "/api/git/stacks/{id}/env-files",
+      "Description": "Read and parse one .env file from a git stack's repository into a key/value map",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitStacksByIdEnvFilesRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitStacksByIdEnvFilesResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostGitStacksByIdSync",
+      "OperationId": "post_api_git_stacks_id_sync",
+      "Method": "POST",
+      "Path": "/api/git/stacks/{id}/sync",
+      "Description": "Sync (git pull) a git stack's repository clone to the latest tracked commit",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitStacksByIdSyncResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostGitStacksByIdTest",
+      "OperationId": "post_api_git_stacks_id_test",
+      "Method": "POST",
+      "Path": "/api/git/stacks/{id}/test",
+      "Description": "Test a git stack's repository access and compose configuration without deploying",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitStacksByIdTestResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostGitStacksByIdWebhook",
+      "OperationId": "post_api_git_stacks_id_webhook",
+      "Method": "POST",
+      "Path": "/api/git/stacks/{id}/webhook",
+      "Description": "Webhook trigger (GitHub/GitLab) that deploys a git stack when its signature/token verifies",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitStacksByIdWebhookResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PostGitWebhookById",
+      "OperationId": "post_api_git_webhook_id",
+      "Method": "POST",
+      "Path": "/api/git/webhook/{id}",
+      "Description": "Webhook trigger (GitHub/GitLab) that deploys from a git repository when its signature/token verifies",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitWebhookByIdRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostGitWebhookByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PutGitCredentialsById",
+      "OperationId": "put_api_git_credentials_id",
+      "Method": "PUT",
+      "Path": "/api/git/credentials/{id}",
+      "Description": "Update a git credential and return it with secrets stripped",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutGitCredentialsByIdRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutGitCredentialsByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PutGitRepositoriesById",
+      "OperationId": "put_api_git_repositories_id",
+      "Method": "PUT",
+      "Path": "/api/git/repositories/{id}",
+      "Description": "Update a git repository's basic fields (name/url/branch/credential)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutGitRepositoriesByIdRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutGitRepositoriesByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PutGitStacksById",
+      "OperationId": "put_api_git_stacks_id",
+      "Method": "PUT",
+      "Path": "/api/git/stacks/{id}",
+      "Description": "Update a git stack (rename, schedule, webhook, secret-provider binding)",
+      "PathParameters": [
+        {
+          "Name": "id",
+          "Argument": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutGitStacksByIdRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutGitStacksByIdResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "DeleteGitCredentialsByIdResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "DeleteGitRepositoriesByIdResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "DeleteGitStacksByIdResponse",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetGitCredentialsByIdResponse",
+      "Fields": [
+        {
+          "Name": "AuthType",
+          "JsonName": "authType",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HasPassword",
+          "JsonName": "hasPassword",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "HasSshKey",
+          "JsonName": "hasSshKey",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetGitCredentialsResponse",
+      "Fields": [
+        {
+          "Name": "AuthType",
+          "JsonName": "authType",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HasPassword",
+          "JsonName": "hasPassword",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "HasSshKey",
+          "JsonName": "hasSshKey",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetGitRepositoriesByIdResponse",
+      "Fields": [
+        {
+          "Name": "AutoUpdate",
+          "JsonName": "autoUpdate",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "AutoUpdateCron",
+          "JsonName": "autoUpdateCron",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "AutoUpdateSchedule",
+          "JsonName": "autoUpdateSchedule",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ComposePath",
+          "JsonName": "composePath",
+          "Description": "left from when a repository was itself deployed: always compose.yaml, and nothing sets it",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CredentialId",
+          "JsonName": "credentialId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Description": "left from when a repository was itself deployed: always null, and nothing sets it",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "LastCommit",
+          "JsonName": "lastCommit",
+          "Description": "the commit the repository's own copy is at, shortened",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LastSync",
+          "JsonName": "lastSync",
+          "Description": "when the repository's own copy was last fetched, which no git stack uses",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "SyncError",
+          "JsonName": "syncError",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SyncStatus",
+          "JsonName": "syncStatus",
+          "Description": "pending for a copy never fetched, then synced or error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "WebhookEnabled",
+          "JsonName": "webhookEnabled",
+          "Description": "always false: nothing in the API switches a repository's own webhook on",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "WebhookSecret",
+          "JsonName": "webhookSecret",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetGitRepositoriesByIdSyncResponse",
+      "Fields": [
+        {
+          "Name": "CurrentCommit",
+          "JsonName": "currentCommit",
+          "Description": "the commit the repository's own copy is at; none for one never fetched",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HasUpdates",
+          "JsonName": "hasUpdates",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "LatestCommit",
+          "JsonName": "latestCommit",
+          "Description": "the newest commit on the branch; unknown for a copy never fetched",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetGitRepositoriesResponse",
+      "Fields": [
+        {
+          "Name": "AutoUpdate",
+          "JsonName": "autoUpdate",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "AutoUpdateCron",
+          "JsonName": "autoUpdateCron",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "AutoUpdateSchedule",
+          "JsonName": "autoUpdateSchedule",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ComposePath",
+          "JsonName": "composePath",
+          "Description": "left from when a repository was itself deployed: always compose.yaml, and nothing sets it",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CredentialAuthType",
+          "JsonName": "credentialAuthType",
+          "Description": "that credential's kind: none, password or ssh",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CredentialId",
+          "JsonName": "credentialId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "CredentialName",
+          "JsonName": "credentialName",
+          "Description": "the name of the credential it is fetched with; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Description": "left from when a repository was itself deployed: always null, and nothing sets it",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "LastCommit",
+          "JsonName": "lastCommit",
+          "Description": "the commit the repository's own copy is at, shortened",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LastSync",
+          "JsonName": "lastSync",
+          "Description": "when the repository's own copy was last fetched, which no git stack uses",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "SyncError",
+          "JsonName": "syncError",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SyncStatus",
+          "JsonName": "syncStatus",
+          "Description": "pending for a copy never fetched, then synced or error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "WebhookEnabled",
+          "JsonName": "webhookEnabled",
+          "Description": "always false: nothing in the API switches a repository's own webhook on",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "WebhookSecret",
+          "JsonName": "webhookSecret",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetGitStacksByIdEnvFilesResponse",
+      "Fields": [
+        {
+          "Name": "Files",
+          "JsonName": "files",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetGitStacksByIdResponse",
+      "Fields": [
+        {
+          "Name": "AutoUpdate",
+          "JsonName": "autoUpdate",
+          "Description": "whether the stack is fetched and, when something changed, deployed on a schedule",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "AutoUpdateCron",
+          "JsonName": "autoUpdateCron",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "AutoUpdateSchedule",
+          "JsonName": "autoUpdateSchedule",
+          "Description": "a word for the schedule, as the web interface offers them: the cron beside it is what the schedule goes by",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Description": "the branch this stack follows; null for the repository's own",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "BuildOnDeploy",
+          "JsonName": "buildOnDeploy",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ComposePath",
+          "JsonName": "composePath",
+          "Description": "the compose file's path in the repository",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ContextDir",
+          "JsonName": "contextDir",
+          "Description": "the folder of the repository that is copied beside the compose file; null for the folder the compose file is in",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvFilePath",
+          "JsonName": "envFilePath",
+          "Description": "one more .env file in the repository to fill the compose file in from; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Description": "the environment the stack is deployed on; null for one made with none",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ForceRedeploy",
+          "JsonName": "forceRedeploy",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "LastCommit",
+          "JsonName": "lastCommit",
+          "Description": "the commit last fetched, shortened",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LastSync",
+          "JsonName": "lastSync",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NoBuildCache",
+          "JsonName": "noBuildCache",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Repository",
+          "JsonName": "repository",
+          "Description": "the repository the stack is deployed from",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetGitStacksByIdResponseRepository"
+          }
+        },
+        {
+          "Name": "RepositoryId",
+          "JsonName": "repositoryId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "RepullImages",
+          "JsonName": "repullImages",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "StackName",
+          "JsonName": "stackName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SyncError",
+          "JsonName": "syncError",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SyncStatus",
+          "JsonName": "syncStatus",
+          "Description": "pending for a stack never fetched, then synced or error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SyncedFiles",
+          "JsonName": "syncedFiles",
+          "Description": "the files last copied from the repository, each with a hash, as JSON in a text; absent in the list",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "WebhookEnabled",
+          "JsonName": "webhookEnabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "WebhookSecret",
+          "JsonName": "webhookSecret",
+          "Description": "the webhook's secret, sent back whole as it was given; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetGitStacksByIdResponseRepository",
+      "Description": "the repository the stack is deployed from",
+      "Fields": [
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CredentialId",
+          "JsonName": "credentialId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetGitStacksByIdWebhookResponse",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Output",
+          "JsonName": "output",
+          "Description": "what compose printed, or that nothing had changed and nothing was deployed",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Skipped",
+          "JsonName": "skipped",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetGitStacksResponse",
+      "Fields": [
+        {
+          "Name": "AutoUpdate",
+          "JsonName": "autoUpdate",
+          "Description": "whether the stack is fetched and, when something changed, deployed on a schedule",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "AutoUpdateCron",
+          "JsonName": "autoUpdateCron",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "AutoUpdateSchedule",
+          "JsonName": "autoUpdateSchedule",
+          "Description": "a word for the schedule, as the web interface offers them: the cron beside it is what the schedule goes by",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Description": "the branch this stack follows; null for the repository's own",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "BuildOnDeploy",
+          "JsonName": "buildOnDeploy",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ComposePath",
+          "JsonName": "composePath",
+          "Description": "the compose file's path in the repository",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ContextDir",
+          "JsonName": "contextDir",
+          "Description": "the folder of the repository that is copied beside the compose file; null for the folder the compose file is in",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvFilePath",
+          "JsonName": "envFilePath",
+          "Description": "one more .env file in the repository to fill the compose file in from; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Description": "the environment the stack is deployed on; null for one made with none",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ForceRedeploy",
+          "JsonName": "forceRedeploy",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "LastCommit",
+          "JsonName": "lastCommit",
+          "Description": "the commit last fetched, shortened",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LastSync",
+          "JsonName": "lastSync",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NoBuildCache",
+          "JsonName": "noBuildCache",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Repository",
+          "JsonName": "repository",
+          "Description": "the repository the stack is deployed from",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetGitStacksResponseRepository"
+          }
+        },
+        {
+          "Name": "RepositoryId",
+          "JsonName": "repositoryId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "RepullImages",
+          "JsonName": "repullImages",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "StackName",
+          "JsonName": "stackName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SyncError",
+          "JsonName": "syncError",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SyncStatus",
+          "JsonName": "syncStatus",
+          "Description": "pending for a stack never fetched, then synced or error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SyncedFiles",
+          "JsonName": "syncedFiles",
+          "Description": "the files last copied from the repository, each with a hash, as JSON in a text; absent in the list",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "WebhookEnabled",
+          "JsonName": "webhookEnabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "WebhookSecret",
+          "JsonName": "webhookSecret",
+          "Description": "the webhook's secret, sent back whole as it was given; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetGitStacksResponseRepository",
+      "Description": "the repository the stack is deployed from",
+      "Fields": [
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CredentialId",
+          "JsonName": "credentialId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetGitWebhookByIdResponse",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitBranchesRequest",
+      "Fields": [
+        {
+          "Name": "CredentialId",
+          "JsonName": "credentialId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "RepositoryId",
+          "JsonName": "repositoryId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitBranchesResponse",
+      "Fields": [
+        {
+          "Name": "Branches",
+          "JsonName": "branches",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostGitBranchesResponseBranches"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostGitBranchesResponseBranches",
+      "Fields": [
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Sha",
+          "JsonName": "sha",
+          "Description": "its newest commit, shortened",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitCredentialsRequest",
+      "Fields": [
+        {
+          "Name": "AuthType",
+          "JsonName": "authType",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Password",
+          "JsonName": "password",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SshPassphrase",
+          "JsonName": "sshPassphrase",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SshPrivateKey",
+          "JsonName": "sshPrivateKey",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitCredentialsResponse",
+      "Fields": [
+        {
+          "Name": "AuthType",
+          "JsonName": "authType",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HasPassword",
+          "JsonName": "hasPassword",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "HasSshKey",
+          "JsonName": "hasSshKey",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitPreviewEnvRequest",
+      "Fields": [
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ComposePath",
+          "JsonName": "composePath",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "CredentialId",
+          "JsonName": "credentialId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "EnvFilePath",
+          "JsonName": "envFilePath",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "RepositoryId",
+          "JsonName": "repositoryId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitPreviewEnvResponse",
+      "Fields": [
+        {
+          "Name": "Sources",
+          "JsonName": "sources",
+          "Description": "which file each variable came from, by its name: .env for the one beside the compose file, envFile for the one named",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Vars",
+          "JsonName": "vars",
+          "Description": "each variable's value, by its name",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostGitRepositoriesByIdDeployResponse",
+      "Fields": [
+        {
+          "Name": "Command",
+          "JsonName": "command",
+          "Description": "the compose command that was run",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ExitCode",
+          "JsonName": "exitCode",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Output",
+          "JsonName": "output",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostGitRepositoriesByIdSyncResponse",
+      "Fields": [
+        {
+          "Name": "Commit",
+          "JsonName": "commit",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ComposeContent",
+          "JsonName": "composeContent",
+          "Description": "the compose file at that commit",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Updated",
+          "JsonName": "updated",
+          "Description": "whether the commit is a new one",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitRepositoriesByIdTestResponse",
+      "Fields": [
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Description": "the branch that was looked for",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LastCommit",
+          "JsonName": "lastCommit",
+          "Description": "the newest commit on it, shortened",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostGitRepositoriesRequest",
+      "Fields": [
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CredentialId",
+          "JsonName": "credentialId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostGitRepositoriesResponse",
+      "Fields": [
+        {
+          "Name": "AutoUpdate",
+          "JsonName": "autoUpdate",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "AutoUpdateCron",
+          "JsonName": "autoUpdateCron",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "AutoUpdateSchedule",
+          "JsonName": "autoUpdateSchedule",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ComposePath",
+          "JsonName": "composePath",
+          "Description": "left from when a repository was itself deployed: always compose.yaml, and nothing sets it",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CredentialId",
+          "JsonName": "credentialId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Description": "left from when a repository was itself deployed: always null, and nothing sets it",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "LastCommit",
+          "JsonName": "lastCommit",
+          "Description": "the commit the repository's own copy is at, shortened",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LastSync",
+          "JsonName": "lastSync",
+          "Description": "when the repository's own copy was last fetched, which no git stack uses",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "SyncError",
+          "JsonName": "syncError",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SyncStatus",
+          "JsonName": "syncStatus",
+          "Description": "pending for a copy never fetched, then synced or error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "WebhookEnabled",
+          "JsonName": "webhookEnabled",
+          "Description": "always false: nothing in the API switches a repository's own webhook on",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "WebhookSecret",
+          "JsonName": "webhookSecret",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitRepositoriesTestRequest",
+      "Fields": [
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CredentialId",
+          "JsonName": "credentialId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostGitRepositoriesTestResponse",
+      "Fields": [
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Description": "the branch that was looked for",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LastCommit",
+          "JsonName": "lastCommit",
+          "Description": "the newest commit on it, shortened",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostGitStacksByIdDeployResponse",
+      "Fields": [
+        {
+          "Name": "Command",
+          "JsonName": "command",
+          "Description": "the compose command that was run",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ExitCode",
+          "JsonName": "exitCode",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Output",
+          "JsonName": "output",
+          "Description": "what compose printed",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitStacksByIdDeployStreamResponse",
+      "Fields": [
+        {
+          "Name": "JobId",
+          "JsonName": "jobId",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitStacksByIdEnvFilesRequest",
+      "Fields": [
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostGitStacksByIdEnvFilesResponse",
+      "Fields": [
+        {
+          "Name": "Vars",
+          "JsonName": "vars",
+          "Description": "each variable's value, by its name",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostGitStacksByIdSyncResponse",
+      "Fields": [
+        {
+          "Name": "ChangedFiles",
+          "JsonName": "changedFiles",
+          "Description": "the files that differ; one line in brackets for a first fetch",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Commit",
+          "JsonName": "commit",
+          "Description": "the commit fetched, shortened",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ComposeContent",
+          "JsonName": "composeContent",
+          "Description": "the compose file at that commit",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ComposeDir",
+          "JsonName": "composeDir",
+          "Description": "where Dockhand keeps its copy of the repository",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ComposeFileName",
+          "JsonName": "composeFileName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "DeletionPlan",
+          "JsonName": "deletionPlan",
+          "Description": "what the next deploy would take out of the stack's folder",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostGitStacksByIdSyncResponseDeletionPlan"
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NewCommitFull",
+          "JsonName": "newCommitFull",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NewFiles",
+          "JsonName": "newFiles",
+          "Description": "a hash of each file at that commit, by its path",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "PreviousManifest",
+          "JsonName": "previousManifest",
+          "Description": "what was fetched the time before",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostGitStacksByIdSyncResponsePreviousManifest"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Updated",
+          "JsonName": "updated",
+          "Description": "whether anything differs from what was last fetched",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitStacksByIdSyncResponseDeletionPlan",
+      "Description": "what the next deploy would take out of the stack's folder",
+      "Fields": [
+        {
+          "Name": "Skipped",
+          "JsonName": "skipped",
+          "Description": "the files it would leave though they are gone from the repository",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Dictionary",
+              "NestedItem": {
+                "Type": "Any"
+              }
+            }
+          }
+        },
+        {
+          "Name": "ToDelete",
+          "JsonName": "toDelete",
+          "Description": "the files the next deploy removes from the stack's folder, for having gone from the repository",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostGitStacksByIdSyncResponseDeletionPlanToDelete"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitStacksByIdSyncResponseDeletionPlanToDelete",
+      "Fields": [
+        {
+          "Name": "Hash",
+          "JsonName": "hash",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitStacksByIdSyncResponsePreviousManifest",
+      "Description": "what was fetched the time before",
+      "Fields": [
+        {
+          "Name": "Commit",
+          "JsonName": "commit",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Files",
+          "JsonName": "files",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitStacksByIdTestResponse",
+      "Fields": [
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Description": "the branch that was looked for",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LastCommit",
+          "JsonName": "lastCommit",
+          "Description": "the newest commit on it, shortened",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostGitStacksByIdWebhookResponse",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Output",
+          "JsonName": "output",
+          "Description": "what compose printed, or that nothing had changed and nothing was deployed",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Skipped",
+          "JsonName": "skipped",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitStacksRequest",
+      "Fields": [
+        {
+          "Name": "AutoUpdate",
+          "JsonName": "autoUpdate",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "AutoUpdateCron",
+          "JsonName": "autoUpdateCron",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "AutoUpdateSchedule",
+          "JsonName": "autoUpdateSchedule",
+          "Description": "a word for the schedule: the cron beside it is what the schedule goes by",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Description": "the branch this stack follows instead of the repository's own",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "BuildOnDeploy",
+          "JsonName": "buildOnDeploy",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ComposePath",
+          "JsonName": "composePath",
+          "Description": "the compose file's path in the repository; compose.yaml unless said",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ContextDir",
+          "JsonName": "contextDir",
+          "Description": "the folder of the repository that is copied beside the compose file",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CredentialId",
+          "JsonName": "credentialId",
+          "Description": "with url: the credential to fetch it with",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "DeployNow",
+          "JsonName": "deployNow",
+          "Description": "deploy it at once, and answer the stack with how that went as deployResult",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "EnvFilePath",
+          "JsonName": "envFilePath",
+          "Description": "one more .env file in the repository to fill the compose file in from",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvVars",
+          "JsonName": "envVars",
+          "Description": "the variables Dockhand keeps for the stack, whole: the ones left out are removed, and an empty list removes them all",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostGitStacksRequestEnvVars"
+            }
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ForceRedeploy",
+          "JsonName": "forceRedeploy",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "NoBuildCache",
+          "JsonName": "noBuildCache",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "RepoName",
+          "JsonName": "repoName",
+          "Description": "with url: what to call the repository; the stack's name unless said",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "RepositoryId",
+          "JsonName": "repositoryId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "RepullImages",
+          "JsonName": "repullImages",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "SecretProviderId",
+          "JsonName": "secretProviderId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "StackName",
+          "JsonName": "stackName",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Description": "in place of repositoryId: the address of a repository to save with the stack",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "WebhookEnabled",
+          "JsonName": "webhookEnabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "WebhookSecret",
+          "JsonName": "webhookSecret",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitStacksRequestEnvVars",
+      "Fields": [
+        {
+          "Name": "IsSecret",
+          "JsonName": "isSecret",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Value",
+          "JsonName": "value",
+          "Description": "the value; *** for a secret keeps the one it has",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitStacksResponse",
+      "Fields": [
+        {
+          "Name": "AutoUpdate",
+          "JsonName": "autoUpdate",
+          "Description": "whether the stack is fetched and, when something changed, deployed on a schedule",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "AutoUpdateCron",
+          "JsonName": "autoUpdateCron",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "AutoUpdateSchedule",
+          "JsonName": "autoUpdateSchedule",
+          "Description": "a word for the schedule, as the web interface offers them: the cron beside it is what the schedule goes by",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Description": "the branch this stack follows; null for the repository's own",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "BuildOnDeploy",
+          "JsonName": "buildOnDeploy",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ComposePath",
+          "JsonName": "composePath",
+          "Description": "the compose file's path in the repository",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ContextDir",
+          "JsonName": "contextDir",
+          "Description": "the folder of the repository that is copied beside the compose file; null for the folder the compose file is in",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvFilePath",
+          "JsonName": "envFilePath",
+          "Description": "one more .env file in the repository to fill the compose file in from; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Description": "the environment the stack is deployed on; null for one made with none",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ForceRedeploy",
+          "JsonName": "forceRedeploy",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "LastCommit",
+          "JsonName": "lastCommit",
+          "Description": "the commit last fetched, shortened",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LastSync",
+          "JsonName": "lastSync",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NoBuildCache",
+          "JsonName": "noBuildCache",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Repository",
+          "JsonName": "repository",
+          "Description": "the repository the stack is deployed from",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostGitStacksResponseRepository"
+          }
+        },
+        {
+          "Name": "RepositoryId",
+          "JsonName": "repositoryId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "RepullImages",
+          "JsonName": "repullImages",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "StackName",
+          "JsonName": "stackName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SyncError",
+          "JsonName": "syncError",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SyncStatus",
+          "JsonName": "syncStatus",
+          "Description": "pending for a stack never fetched, then synced or error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SyncedFiles",
+          "JsonName": "syncedFiles",
+          "Description": "the files last copied from the repository, each with a hash, as JSON in a text; absent in the list",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "WebhookEnabled",
+          "JsonName": "webhookEnabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "WebhookSecret",
+          "JsonName": "webhookSecret",
+          "Description": "the webhook's secret, sent back whole as it was given; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitStacksResponseRepository",
+      "Description": "the repository the stack is deployed from",
+      "Fields": [
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CredentialId",
+          "JsonName": "credentialId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitWebhookByIdRequest",
+      "Description": "Fields auto-detected from the handler's destructuring of the request body - generic string type, no @openapi annotation for this body yet.",
+      "Fields": [
+        {
+          "Name": "Ref",
+          "JsonName": "ref",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostGitWebhookByIdResponse",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutGitCredentialsByIdRequest",
+      "Fields": [
+        {
+          "Name": "AuthType",
+          "JsonName": "authType",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Password",
+          "JsonName": "password",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SshPassphrase",
+          "JsonName": "sshPassphrase",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SshPrivateKey",
+          "JsonName": "sshPrivateKey",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutGitCredentialsByIdResponse",
+      "Fields": [
+        {
+          "Name": "AuthType",
+          "JsonName": "authType",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HasPassword",
+          "JsonName": "hasPassword",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "HasSshKey",
+          "JsonName": "hasSshKey",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutGitRepositoriesByIdRequest",
+      "Fields": [
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CredentialId",
+          "JsonName": "credentialId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutGitRepositoriesByIdResponse",
+      "Fields": [
+        {
+          "Name": "AutoUpdate",
+          "JsonName": "autoUpdate",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "AutoUpdateCron",
+          "JsonName": "autoUpdateCron",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "AutoUpdateSchedule",
+          "JsonName": "autoUpdateSchedule",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ComposePath",
+          "JsonName": "composePath",
+          "Description": "left from when a repository was itself deployed: always compose.yaml, and nothing sets it",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CredentialId",
+          "JsonName": "credentialId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Description": "left from when a repository was itself deployed: always null, and nothing sets it",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "LastCommit",
+          "JsonName": "lastCommit",
+          "Description": "the commit the repository's own copy is at, shortened",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LastSync",
+          "JsonName": "lastSync",
+          "Description": "when the repository's own copy was last fetched, which no git stack uses",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "SyncError",
+          "JsonName": "syncError",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SyncStatus",
+          "JsonName": "syncStatus",
+          "Description": "pending for a copy never fetched, then synced or error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "WebhookEnabled",
+          "JsonName": "webhookEnabled",
+          "Description": "always false: nothing in the API switches a repository's own webhook on",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "WebhookSecret",
+          "JsonName": "webhookSecret",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutGitStacksByIdRequest",
+      "Fields": [
+        {
+          "Name": "AutoUpdate",
+          "JsonName": "autoUpdate",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "AutoUpdateCron",
+          "JsonName": "autoUpdateCron",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "AutoUpdateSchedule",
+          "JsonName": "autoUpdateSchedule",
+          "Description": "a word for the schedule: the cron beside it is what the schedule goes by",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Description": "the branch this stack follows instead of the repository's own",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "BuildOnDeploy",
+          "JsonName": "buildOnDeploy",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ComposePath",
+          "JsonName": "composePath",
+          "Description": "the compose file's path in the repository; compose.yaml unless said",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ContextDir",
+          "JsonName": "contextDir",
+          "Description": "the folder of the repository that is copied beside the compose file",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "DeployNow",
+          "JsonName": "deployNow",
+          "Description": "deploy it at once, and answer the stack with how that went as deployResult",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "EnvFilePath",
+          "JsonName": "envFilePath",
+          "Description": "one more .env file in the repository to fill the compose file in from",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvVars",
+          "JsonName": "envVars",
+          "Description": "the variables Dockhand keeps for the stack, whole: the ones left out are removed, and an empty list removes them all",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PutGitStacksByIdRequestEnvVars"
+            }
+          }
+        },
+        {
+          "Name": "ForceRedeploy",
+          "JsonName": "forceRedeploy",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "NoBuildCache",
+          "JsonName": "noBuildCache",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "RepullImages",
+          "JsonName": "repullImages",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "SecretProviderId",
+          "JsonName": "secretProviderId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "StackName",
+          "JsonName": "stackName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "WebhookEnabled",
+          "JsonName": "webhookEnabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "WebhookSecret",
+          "JsonName": "webhookSecret",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutGitStacksByIdRequestEnvVars",
+      "Fields": [
+        {
+          "Name": "IsSecret",
+          "JsonName": "isSecret",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Value",
+          "JsonName": "value",
+          "Description": "the value; *** for a secret keeps the one it has",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutGitStacksByIdResponse",
+      "Fields": [
+        {
+          "Name": "AutoUpdate",
+          "JsonName": "autoUpdate",
+          "Description": "whether the stack is fetched and, when something changed, deployed on a schedule",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "AutoUpdateCron",
+          "JsonName": "autoUpdateCron",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "AutoUpdateSchedule",
+          "JsonName": "autoUpdateSchedule",
+          "Description": "a word for the schedule, as the web interface offers them: the cron beside it is what the schedule goes by",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Description": "the branch this stack follows; null for the repository's own",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "BuildOnDeploy",
+          "JsonName": "buildOnDeploy",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ComposePath",
+          "JsonName": "composePath",
+          "Description": "the compose file's path in the repository",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ContextDir",
+          "JsonName": "contextDir",
+          "Description": "the folder of the repository that is copied beside the compose file; null for the folder the compose file is in",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvFilePath",
+          "JsonName": "envFilePath",
+          "Description": "one more .env file in the repository to fill the compose file in from; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Description": "the environment the stack is deployed on; null for one made with none",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ForceRedeploy",
+          "JsonName": "forceRedeploy",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "LastCommit",
+          "JsonName": "lastCommit",
+          "Description": "the commit last fetched, shortened",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LastSync",
+          "JsonName": "lastSync",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NoBuildCache",
+          "JsonName": "noBuildCache",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Repository",
+          "JsonName": "repository",
+          "Description": "the repository the stack is deployed from",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PutGitStacksByIdResponseRepository"
+          }
+        },
+        {
+          "Name": "RepositoryId",
+          "JsonName": "repositoryId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "RepullImages",
+          "JsonName": "repullImages",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "StackName",
+          "JsonName": "stackName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SyncError",
+          "JsonName": "syncError",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SyncStatus",
+          "JsonName": "syncStatus",
+          "Description": "pending for a stack never fetched, then synced or error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SyncedFiles",
+          "JsonName": "syncedFiles",
+          "Description": "the files last copied from the repository, each with a hash, as JSON in a text; absent in the list",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "WebhookEnabled",
+          "JsonName": "webhookEnabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "WebhookSecret",
+          "JsonName": "webhookSecret",
+          "Description": "the webhook's secret, sent back whole as it was given; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutGitStacksByIdResponseRepository",
+      "Description": "the repository the stack is deployed from",
+      "Fields": [
+        {
+          "Name": "Branch",
+          "JsonName": "branch",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CredentialId",
+          "JsonName": "credentialId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    }
+  ]
+}

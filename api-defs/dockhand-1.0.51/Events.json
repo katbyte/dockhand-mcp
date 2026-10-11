@@ -1,0 +1,33 @@
+{
+  "Name": "Events",
+  "Tag": "events",
+  "Operations": [
+    {
+      "Name": "GetEvents",
+      "OperationId": "get_api_events",
+      "Method": "GET",
+      "Path": "/api/events",
+      "Description": "Stream live Docker events (container/image/volume/network) for an environment via SSE, with periodic heartbeats",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment id — without it, an \"info\" SSE message is sent and the stream ends (from GET /api/environments)",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "text/event-stream",
+        "Type": {
+          "Type": "RawFile"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ]
+}

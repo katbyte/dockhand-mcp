@@ -1,0 +1,170 @@
+{
+  "Name": "ContainerTags",
+  "Tag": "container-tags",
+  "Operations": [
+    {
+      "Name": "GetContainerTags",
+      "OperationId": "get_api_container-tags",
+      "Method": "GET",
+      "Path": "/api/container-tags",
+      "Description": "List all container tag assignments for an environment as a name -> tagIds map",
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Dictionary",
+          "NestedItem": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Integer"
+            }
+          }
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "GetContainerTagsByName",
+      "OperationId": "get_api_container-tags_name",
+      "Method": "GET",
+      "Path": "/api/container-tags/{name}",
+      "Description": "Get the tag ids assigned to one container (by name)",
+      "PathParameters": [
+        {
+          "Name": "name",
+          "Argument": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "GetContainerTagsByNameResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    },
+    {
+      "Name": "PutContainerTagsByName",
+      "OperationId": "put_api_container-tags_name",
+      "Method": "PUT",
+      "Path": "/api/container-tags/{name}",
+      "Description": "Replace the tag ids assigned to one container (by name)",
+      "PathParameters": [
+        {
+          "Name": "name",
+          "Argument": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "env",
+          "Field": "Env",
+          "In": "Query",
+          "Description": "Environment id",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ],
+      "Request": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutContainerTagsByNameRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutContainerTagsByNameResponse"
+        }
+      },
+      "ExpectedStatusCodes": [
+        200
+      ]
+    }
+  ],
+  "Models": [
+    {
+      "Name": "GetContainerTagsByNameResponse",
+      "Fields": [
+        {
+          "Name": "TagIds",
+          "JsonName": "tagIds",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Integer"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutContainerTagsByNameRequest",
+      "Fields": [
+        {
+          "Name": "TagIds",
+          "JsonName": "tagIds",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Integer"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutContainerTagsByNameResponse",
+      "Fields": [
+        {
+          "Name": "TagIds",
+          "JsonName": "tagIds",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Integer"
+            }
+          },
+          "Required": true
+        }
+      ]
+    }
+  ]
+}
