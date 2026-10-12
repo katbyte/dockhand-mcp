@@ -2,7 +2,7 @@
 // ways a Dockhand is run they stand for - open, as it comes, with no login, or with its login switched on and asked with an API token. The machinery
 // for reading the environment is go-kt's (test/env).
 //
-// The integration suite (../../integration) drives the client in sdk/dockhand and the acceptance suite (../../acceptance) drives the tools over MCP.
+// The SDK suite (../../acceptance/dockhand) drives the client in sdk/dockhand and the tool suite (../../acceptance/tools) drives the tools over MCP.
 // Each runs twice on the same server, in order: open, and then with the login on - which this package switches on, through the client, as part of
 // opening the second: the first user, the login, and a token for that user.
 //

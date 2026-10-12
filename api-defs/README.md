@@ -27,7 +27,7 @@ make gencheck          # regenerate, fail if anything is uncommitted
 
 Dockhand releases about once a week, and its API moves with it. `make spec-refresh` does the whole refresh: review the diff it prints, run the tests, commit. A workaround whose bug the new document fixes fails the import and names itself; delete it. The generated package records the version it was built from in its `APIVersion` constant.
 
-The document is a description of intent, not of behaviour: the live suites (`integration/`, `acceptance/`) are what prove the shapes against a real server, and what they found is recorded below.
+The document is a description of intent, not of behaviour: the live suites (`acceptance/dockhand/`, `acceptance/tools/`) are what prove the shapes against a real server, and what they found is recorded below.
 
 ## How the document is made, and what that means
 

@@ -216,32 +216,34 @@ depscheck: ## Check that go.mod/go.sum and vendor/ are in sync
 test: build spec ## Run the unit tests, with the race detector
 	go test -race ./... -timeout ${TEST_TIMEOUT}
 
-test-integration: ## Run the SDK tests against an already-running server (DOCKHAND_TEST_STAGE=login switches its login on first)
+test-sdk: ## Run the SDK tests against an already-running server (DOCKHAND_TEST_STAGE=login switches its login on first)
 	@[ -n "${DOCKHAND_SERVER}" ] || \
 		(echo 'DOCKHAND_SERVER must be set; or use "make testacc"'; exit 1)
-	go test -tags integration -count=1 ./integration/... -timeout ${TEST_TIMEOUT} -v
+	go test -tags acceptance -count=1 ./acceptance/dockhand/... -timeout ${TEST_TIMEOUT} -v
 
-test-acceptance: ## Run the tool tests against an already-running server (DOCKHAND_TEST_STAGE=login switches its login on first)
+test-tools: ## Run the tool tests against an already-running server (DOCKHAND_TEST_STAGE=login switches its login on first)
 	@[ -n "${DOCKHAND_SERVER}" ] || \
 		(echo 'DOCKHAND_SERVER must be set; or use "make testacc"'; exit 1)
-	go test -tags integration -count=1 ./acceptance/... -timeout ${TEST_TIMEOUT} -v
+	go test -tags acceptance -count=1 ./acceptance/tools/... -timeout ${TEST_TIMEOUT} -v
 
-# each suite gets its own server and Docker hosts: the SDK tests make and remove containers of
-# their own, which would trample the tool suite's fixtures. The SDK's sit on the acceptance
-# port + 100, so both can run side by side.
+# everything that runs against a real server is under acceptance/, a folder for each suite: dockhand
+# for the SDK and tools for the tools. Each suite gets its own server and Docker hosts: the SDK
+# tests make and remove containers of their own, which would trample the tool suite's fixtures, so
+# the two are never run on one server, and go test ./acceptance/... is not how they are run. The
+# SDK's sit on the tool suite's port + 100, so both can run side by side.
 #
 # a suite runs once for each way a Dockhand is run, in order and on the same server: open, as
 # it comes, with no login and nothing sent to say who is asking; and with its login switched
 # on, which the suite does itself, through the API, and from then on asks with an API token.
-# STAGES narrows it: make testacc-acceptance STAGES=login goes straight to a server with login.
+# STAGES narrows it: make testacc-tools STAGES=login goes straight to a server with login.
 STAGES?=open login
 
-# live SUITE [EXTRA GO TEST ARGS] - start a server and its hosts, run the suite on each stage, tear them down
+# live SUITE FOLDER [EXTRA GO TEST ARGS] - start a server and its hosts, run the suite on each stage, tear them down
 define live
 	@set -e; \
 		env=".testenv-$(1).sh"; \
 		export DOCKHAND_TEST_CONTAINER=dockhand-mcp-$(1); \
-		[ "$(1)" = "integration" ] && export DOCKHAND_TEST_PORT=14400 || true; \
+		[ "$(1)" = "sdk" ] && export DOCKHAND_TEST_PORT=14400 || true; \
 		trap 'st=$$?; [ $$st -eq 0 ] || .scripts/testenv.sh logs; \
 			.scripts/testenv.sh down; rm -f '"$$env"'; exit $$st' EXIT; \
 		started=""; \
@@ -255,46 +257,46 @@ define live
 			started=$$stage; \
 			echo "==> $(1), $$stage..."; \
 			. ./"$$env"; \
-			DOCKHAND_TEST_STAGE=$$stage go test -tags integration -count=1 ./$(1)/... -timeout ${TEST_TIMEOUT} -v $(2); \
+			DOCKHAND_TEST_STAGE=$$stage go test -tags acceptance -count=1 ./acceptance/$(2)/... -timeout ${TEST_TIMEOUT} -v $(3); \
 		done
 endef
 
-testacc-integration: ## SDK tests against a throwaway server and Docker hosts: open, then with its login on
-	$(call live,integration)
+testacc-sdk: ## SDK tests against a throwaway server and Docker hosts: open, then with its login on
+	$(call live,sdk,dockhand)
 
-testacc-acceptance: ## Tool tests against a throwaway server and Docker hosts: open, then with its login on
-	$(call live,acceptance)
+testacc-tools: ## Tool tests against a throwaway server and Docker hosts: open, then with its login on
+	$(call live,tools,tools)
 
-testacc: testacc-integration testacc-acceptance ## Run both live suites, each on its own server through both stages
+testacc: testacc-sdk testacc-tools ## Run both live suites, each on its own server through both stages
 
 # Coverage has to span all three suites or it lies: the unit tests alone report
 # a fraction for tools/, because almost everything real happens in the live
-# suites behind the integration tag. Each writes binary coverage into its own
+# suites behind the acceptance tag. Each writes binary coverage into its own
 # directory and covdata merges them, which is stdlib tooling rather than a
 # third-party merger.
 COVERDIR?=.coverage
 COVERPKG=./tools/...,./lib/...,./cli/...,./sdk/...
-COVERDIRS=$(COVERDIR)/unit,$(COVERDIR)/integration,$(COVERDIR)/acceptance
+COVERDIRS=$(COVERDIR)/unit,$(COVERDIR)/sdk,$(COVERDIR)/tools
 
 cover: spec ## Run every suite with coverage and report the total
 	@rm -rf $(COVERDIR)
-	@mkdir -p $(COVERDIR)/unit $(COVERDIR)/integration $(COVERDIR)/acceptance
+	@mkdir -p $(COVERDIR)/unit $(COVERDIR)/sdk $(COVERDIR)/tools
 	@echo "==> unit..."
 	@go test -count=1 -coverpkg=$(COVERPKG) ./tools/ ./cli/ ./lib/... ./sdk/... \
 		-args -test.gocoverdir=$(CURDIR)/$(COVERDIR)/unit >/dev/null
-	@$(MAKE) --no-print-directory cover-integration
-	@$(MAKE) --no-print-directory cover-acceptance
+	@$(MAKE) --no-print-directory cover-sdk
+	@$(MAKE) --no-print-directory cover-tools
 	@go tool covdata textfmt -i=$(COVERDIRS) -o=$(COVERDIR)/coverage.out
 	@echo
 	@go tool cover -func=$(COVERDIR)/coverage.out | tail -1
 	@echo "==> per package"
 	@go tool covdata percent -i=$(COVERDIRS)
 
-cover-integration:
-	$(call live,integration,-coverpkg=$(COVERPKG) -args -test.gocoverdir=$(CURDIR)/$(COVERDIR)/integration)
+cover-sdk:
+	$(call live,sdk,dockhand,-coverpkg=$(COVERPKG) -args -test.gocoverdir=$(CURDIR)/$(COVERDIR)/sdk)
 
-cover-acceptance:
-	$(call live,acceptance,-coverpkg=$(COVERPKG) -args -test.gocoverdir=$(CURDIR)/$(COVERDIR)/acceptance)
+cover-tools:
+	$(call live,tools,tools,-coverpkg=$(COVERPKG) -args -test.gocoverdir=$(CURDIR)/$(COVERDIR)/tools)
 
 cover-html: cover ## Run every suite with coverage and open the HTML report
 	@go tool cover -html=$(COVERDIR)/coverage.out
@@ -307,4 +309,4 @@ testenv-down: ## Remove the throwaway Dockhand and its Docker hosts
 
 check-all: build test testacc lint actionlint yamllint shellcheck typos markdownlint depscheck apicheck ## Run build + tests (incl. live) + all linters + depscheck
 
-.PHONY: default all help generate pandorest-import pandorest-generate pandorest-diff spec spec-refresh gencheck fmt goimports build docker lint lint-fix actionlint yamllint shellcheck zizmor typos typos-fix markdownlint apicheck depscheck check-all install tools test test-integration test-acceptance testacc testacc-integration testacc-acceptance cover cover-integration cover-acceptance cover-html testenv-up testenv-down
+.PHONY: default all help generate pandorest-import pandorest-generate pandorest-diff spec spec-refresh gencheck fmt goimports build docker lint lint-fix actionlint yamllint shellcheck zizmor typos typos-fix markdownlint apicheck depscheck check-all install tools test test-sdk test-tools testacc testacc-sdk testacc-tools cover cover-sdk cover-tools cover-html testenv-up testenv-down
