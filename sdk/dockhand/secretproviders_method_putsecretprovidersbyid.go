@@ -4,27 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutSecretProvidersByIdOperationResponse is the result of PutSecretProvidersById.
-type PutSecretProvidersByIdOperationResponse struct {
+// PutSecretProvidersByIdResponse is the result of PutSecretProvidersById.
+//
+// Answer is the PutSecretProvidersByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PutSecretProvidersByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *PutSecretProvidersByIdResponse
+	Answer       *PutSecretProvidersByIdAnswer
+	*PutSecretProvidersByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutSecretProvidersByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutSecretProvidersByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutSecretProvidersByIdResponse) Record() (PutSecretProvidersByIdAnswer, error) {
+	if r.Answer == nil {
+		return PutSecretProvidersByIdAnswer{}, errors.New("PutSecretProvidersById answered no PutSecretProvidersByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PutSecretProvidersById calls PUT /api/secret-providers/{id}. Update a secret provider (name, type, and/or rotate its config); omitted fields are left unchanged.
-func (c Client) PutSecretProvidersById(ctx context.Context, id int, input PutSecretProvidersByIdRequest) (result PutSecretProvidersByIdOperationResponse, err error) {
+func (c Client) PutSecretProvidersById(ctx context.Context, id SecretProviderID, input PutSecretProvidersByIdRequest) (result PutSecretProvidersByIdResponse, err error) {
+	result.PutSecretProvidersByIdAnswer = &PutSecretProvidersByIdAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
-		Path:       fmt.Sprintf("/api/secret-providers/%d", id),
+		Path:       fmt.Sprintf("/api/secret-providers/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -45,11 +70,12 @@ func (c Client) PutSecretProvidersById(ctx context.Context, id int, input PutSec
 		return
 	}
 
-	var model PutSecretProvidersByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PutSecretProvidersByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PutSecretProvidersByIdAnswer = result.Answer
 
 	return
 }

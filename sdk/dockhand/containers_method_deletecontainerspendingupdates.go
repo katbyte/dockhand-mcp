@@ -4,38 +4,60 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteContainersPendingUpdatesOperationResponse is the result of DeleteContainersPendingUpdates.
-type DeleteContainersPendingUpdatesOperationResponse struct {
+// DeleteContainersPendingUpdatesResponse is the result of DeleteContainersPendingUpdates.
+//
+// Answer is the DeleteContainersPendingUpdatesAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteContainersPendingUpdatesResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteContainersPendingUpdatesResponse
+	Answer       *DeleteContainersPendingUpdatesAnswer
+	*DeleteContainersPendingUpdatesAnswer
 }
 
-// DeleteContainersPendingUpdatesOperationOptions holds the query and header parameters of DeleteContainersPendingUpdates.
-type DeleteContainersPendingUpdatesOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteContainersPendingUpdatesResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteContainersPendingUpdatesAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteContainersPendingUpdatesResponse) Record() (DeleteContainersPendingUpdatesAnswer, error) {
+	if r.Answer == nil {
+		return DeleteContainersPendingUpdatesAnswer{}, errors.New("DeleteContainersPendingUpdates answered no DeleteContainersPendingUpdatesAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// DeleteContainersPendingUpdatesOptions holds the query and header parameters of DeleteContainersPendingUpdates.
+type DeleteContainersPendingUpdatesOptions struct {
 	// The target environment ID (required) (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// The container to clear; omit to clear ALL pending updates in the environment (from GET /api/containers)
 	ContainerId string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o DeleteContainersPendingUpdatesOperationOptions) ToHeaders() *client.Headers {
+func (o DeleteContainersPendingUpdatesOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o DeleteContainersPendingUpdatesOperationOptions) ToQuery() *client.QueryParams {
+func (o DeleteContainersPendingUpdatesOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	if o.ContainerId != "" {
 		out.Append("containerId", o.ContainerId)
@@ -44,7 +66,8 @@ func (o DeleteContainersPendingUpdatesOperationOptions) ToQuery() *client.QueryP
 }
 
 // DeleteContainersPendingUpdates calls DELETE /api/containers/pending-updates. Clear pending-update records for an environment, or for a single container when containerId is given.
-func (c Client) DeleteContainersPendingUpdates(ctx context.Context, options DeleteContainersPendingUpdatesOperationOptions) (result DeleteContainersPendingUpdatesOperationResponse, err error) {
+func (c Client) DeleteContainersPendingUpdates(ctx context.Context, options DeleteContainersPendingUpdatesOptions) (result DeleteContainersPendingUpdatesResponse, err error) {
+	result.DeleteContainersPendingUpdatesAnswer = &DeleteContainersPendingUpdatesAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -68,11 +91,12 @@ func (c Client) DeleteContainersPendingUpdates(ctx context.Context, options Dele
 		return
 	}
 
-	var model DeleteContainersPendingUpdatesResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteContainersPendingUpdatesAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteContainersPendingUpdatesAnswer = result.Answer
 
 	return
 }

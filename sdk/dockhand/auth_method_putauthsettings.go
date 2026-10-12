@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutAuthSettingsOperationResponse is the result of PutAuthSettings.
-type PutAuthSettingsOperationResponse struct {
+// PutAuthSettingsResponse is the result of PutAuthSettings.
+//
+// Answer is the PutAuthSettingsAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PutAuthSettingsResponse struct {
 	HttpResponse *http.Response
-	Model        *PutAuthSettingsResponse
+	Answer       *PutAuthSettingsAnswer
+	*PutAuthSettingsAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutAuthSettingsResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutAuthSettingsAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutAuthSettingsResponse) Record() (PutAuthSettingsAnswer, error) {
+	if r.Answer == nil {
+		return PutAuthSettingsAnswer{}, errors.New("PutAuthSettings answered no PutAuthSettingsAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PutAuthSettings calls PUT /api/auth/settings. Update the global authentication settings (enabling auth requires at least one admin/user to exist).
-func (c Client) PutAuthSettings(ctx context.Context, input PutAuthSettingsRequest) (result PutAuthSettingsOperationResponse, err error) {
+func (c Client) PutAuthSettings(ctx context.Context, input PutAuthSettingsRequest) (result PutAuthSettingsResponse, err error) {
+	result.PutAuthSettingsAnswer = &PutAuthSettingsAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PutAuthSettings(ctx context.Context, input PutAuthSettingsReques
 		return
 	}
 
-	var model PutAuthSettingsResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PutAuthSettingsAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PutAuthSettingsAnswer = result.Answer
 
 	return
 }

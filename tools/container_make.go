@@ -170,7 +170,7 @@ func labelled(labels map[string]string) map[string]any {
 }
 
 // dockhandsOwn is why a container that is Dockhand itself, or one of its agents, is not made again through Dockhand; nothing for any other.
-func dockhandsOwn(c *dockhand.GetContainersResponse) error {
+func dockhandsOwn(c *dockhand.GetContainersAnswer) error {
 	if c.SystemContainer == "" {
 		return nil
 	}
@@ -179,7 +179,7 @@ func dockhandsOwn(c *dockhand.GetContainersResponse) error {
 }
 
 // ofStack is what is said of changing a container compose made by hand.
-func ofStack(c *dockhand.GetContainersResponse) string {
+func ofStack(c *dockhand.GetContainersAnswer) string {
 	stack := c.Labels[labelStack]
 	if stack == "" {
 		return ""
@@ -189,12 +189,12 @@ func ofStack(c *dockhand.GetContainersResponse) string {
 }
 
 // containerNamed is the container a host has under a name, or nil when it has none.
-func (r *registry) containerNamed(ctx context.Context, env environment, name string) (*dockhand.GetContainersResponse, error) {
+func (r *registry) containerNamed(ctx context.Context, env environment, name string) (*dockhand.GetContainersAnswer, error) {
 	listed, err := r.containersOf(ctx, env)
 	if err != nil {
 		return nil, err
 	}
-	if i := slices.IndexFunc(listed, func(c dockhand.GetContainersResponse) bool { return c.Name == name }); i >= 0 {
+	if i := slices.IndexFunc(listed, func(c dockhand.GetContainersAnswer) bool { return c.Name == name }); i >= 0 {
 		return &listed[i], nil
 	}
 
@@ -211,7 +211,7 @@ func (r *registry) remade(ctx context.Context, env environment, name string) (id
 	case is == nil:
 		return "", "", "no container of that name is listed on " + env.Name + " now"
 	default:
-		return shortened(is.Id), is.State, ""
+		return shortened(is.Id), string(is.State), ""
 	}
 }
 
@@ -307,7 +307,7 @@ func registerContainerMakeTools(r *registry) {
 				return nil, out, fmt.Errorf("the networks of %s could not be listed, so nothing was made: %w", env.Name, failed)
 			}
 			for _, network := range networks {
-				if !slices.ContainsFunc(has.Networks, func(n dockhand.GetNetworksResponse) bool { return n.Name == network }) {
+				if !slices.ContainsFunc(has.Networks, func(n dockhand.GetNetworksAnswer) bool { return n.Name == network }) {
 					return nil, out, fmt.Errorf("%s has no network named %s: make it first, or name one it has", env.Name, network)
 				}
 			}
@@ -355,7 +355,7 @@ func registerContainerMakeTools(r *registry) {
 			request.NetworkMode, request.AdditionalNetworks = networks[0], networks[1:]
 		}
 
-		_, err = r.dock.PostContainers(ctx, request, dockhand.PostContainersOperationOptions{Env: &env.ID})
+		_, err = r.dock.PostContainers(ctx, request, dockhand.PostContainersOptions{Env: env.ID})
 		var note string
 		out.ID, out.State, note = r.remade(ctx, env, name)
 		if err != nil {
@@ -435,7 +435,7 @@ func registerContainerMakeTools(r *registry) {
 			return nil, containerEditOut{}, err
 		}
 		c := &at.Container
-		out := containerEditOut{Env: at.Env.Name, Name: c.Name, ID: shortened(c.Id), Was: c.State, Is: c.State, Changes: []string{}, DryRun: in.DryRun}
+		out := containerEditOut{Env: at.Env.Name, Name: c.Name, ID: shortened(c.Id), Was: string(c.State), Is: string(c.State), Changes: []string{}, DryRun: in.DryRun}
 		if err := dockhandsOwn(c); err != nil {
 			return nil, out, err
 		}
@@ -444,7 +444,7 @@ func registerContainerMakeTools(r *registry) {
 			return nil, out, fmt.Errorf("%w, so nothing was changed: what it has now has to be read to be kept", err)
 		}
 
-		request := dockhand.PostContainersByIdUpdateRequest{StartAfterUpdate: new(running(c.State))}
+		request := dockhand.PostContainersByIdUpdateRequest{StartAfterUpdate: new(running(string(c.State)))}
 
 		// variables: the ones it has, in their order, with the named ones changed or gone and the new ones after
 		if len(in.EnvVars)+len(in.RemoveEnvVars) > 0 {
@@ -523,7 +523,7 @@ func registerContainerMakeTools(r *registry) {
 			return nil, out, nil
 		}
 
-		_, err = r.dock.PostContainersByIdUpdate(ctx, c.Id, request, dockhand.PostContainersByIdUpdateOperationOptions{Env: &at.Env.ID})
+		_, err = r.dock.PostContainersByIdUpdate(ctx, c.Id, request, dockhand.PostContainersByIdUpdateOptions{Env: at.Env.ID})
 		var note string
 		out.ID, out.Is, note = r.remade(ctx, at.Env, c.Name)
 		if err != nil {
@@ -580,7 +580,7 @@ func registerContainerMakeTools(r *registry) {
 		}
 		c := &at.Container
 		image := cmp.Or(to, c.Image)
-		out := containerUpdateOut{Env: at.Env.Name, Name: c.Name, Image: image, Was: shortImageID(c.ImageId), Is: shortImageID(c.ImageId), State: c.State, Changes: []string{}, DryRun: in.DryRun}
+		out := containerUpdateOut{Env: at.Env.Name, Name: c.Name, Image: image, Was: shortImageID(c.ImageId), Is: shortImageID(c.ImageId), State: string(c.State), Changes: []string{}, DryRun: in.DryRun}
 		if err := dockhandsOwn(c); err != nil {
 			return nil, out, err
 		}
@@ -616,12 +616,12 @@ func registerContainerMakeTools(r *registry) {
 			return nil, out, nil
 		}
 
-		_, err = r.dock.PostContainersByIdUpdate(ctx, c.Id, dockhand.PostContainersByIdUpdateRequest{Image: image, StartAfterUpdate: new(running(c.State))}, dockhand.PostContainersByIdUpdateOperationOptions{Env: &at.Env.ID})
+		_, err = r.dock.PostContainersByIdUpdate(ctx, c.Id, dockhand.PostContainersByIdUpdateRequest{Image: image, StartAfterUpdate: new(running(string(c.State)))}, dockhand.PostContainersByIdUpdateOptions{Env: at.Env.ID})
 		is, failed := r.containerNamed(ctx, at.Env, c.Name)
 		if err != nil {
 			how := "how it stands now could not be read back"
 			if failed == nil && is != nil {
-				how = "it is " + is.State + " now, on the image " + shortImageID(is.ImageId)
+				how = "it is " + string(is.State) + " now, on the image " + shortImageID(is.ImageId)
 			}
 
 			return nil, out, fmt.Errorf("%s on %s was not made again from %s: %w; %s", c.Name, out.Env, image, refusal(err), how)
@@ -629,7 +629,7 @@ func registerContainerMakeTools(r *registry) {
 		out.Changes = append(out.Changes, fmt.Sprintf("stopped %s, removed it and made it again from %s", c.Name, image))
 
 		// what Dockhand noted of a newer image is kept under the id of the container that is gone, and is cleared with it
-		if _, cleared := r.dock.DeleteContainersPendingUpdates(ctx, dockhand.DeleteContainersPendingUpdatesOperationOptions{Env: &at.Env.ID, ContainerId: c.Id}); cleared != nil {
+		if _, cleared := r.dock.DeleteContainersPendingUpdates(ctx, dockhand.DeleteContainersPendingUpdatesOptions{Env: at.Env.ID, ContainerId: c.Id}); cleared != nil {
 			out.Note = noted(out.Note, "Dockhand's note that an update was waiting could not be cleared: "+refusal(cleared).Error())
 		}
 
@@ -641,9 +641,9 @@ func registerContainerMakeTools(r *registry) {
 			out.Is, out.State = "", ""
 			out.Note = noted(out.Note, "Dockhand said it made the container again and none of that name is listed now")
 		default:
-			out.Is, out.State = shortImageID(is.ImageId), is.State
+			out.Is, out.State = shortImageID(is.ImageId), string(is.State)
 			out.Updated = is.ImageId != c.ImageId
-			if running(c.State) && !running(is.State) {
+			if running(string(c.State)) && !running(string(is.State)) {
 				out.Note = noted(out.Note, fmt.Sprintf("it was running and is %s now: its logs say why it did not stay up on the newer image", is.State))
 			}
 		}
@@ -739,13 +739,13 @@ func registerContainerMakeTools(r *registry) {
 			return nil, out, nil
 		}
 
-		set, err := r.dock.PostContainersByIdUpdateRuntime(ctx, c.Id, request, dockhand.PostContainersByIdUpdateRuntimeOperationOptions{Env: &at.Env.ID})
+		set, err := r.dock.PostContainersByIdUpdateRuntime(ctx, c.Id, request, dockhand.PostContainersByIdUpdateRuntimeOptions{Env: at.Env.ID})
 		if err != nil {
 			out.Changes = []string{}
 
 			return nil, out, fmt.Errorf("the limits of %s on %s were not changed: %w", c.Name, out.Env, refusal(err))
 		}
-		out.Warnings = set.Model.Warnings
+		out.Warnings = set.Answer.Warnings
 		for i := range out.Changes {
 			out.Changes[i] = "set " + out.Changes[i]
 		}
@@ -784,11 +784,11 @@ func registerContainerMakeTools(r *registry) {
 		}
 		out := containerComposeOut{Env: at.Env.Name, Container: at.Container.Name}
 
-		written, err := r.dock.GetContainersByIdCompose(ctx, at.Container.Id, dockhand.GetContainersByIdComposeOperationOptions{Env: &at.Env.ID})
+		written, err := r.dock.GetContainersByIdCompose(ctx, at.Container.Id, dockhand.GetContainersByIdComposeOptions{Env: at.Env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("%s on %s could not be written out as compose: %w", out.Container, out.Env, refusal(err))
 		}
-		out.Compose, out.Service, out.Stack = written.Model.Compose, written.Model.ServiceName, written.Model.StackProject
+		out.Compose, out.Service, out.Stack = written.Answer.Compose, written.Answer.ServiceName, written.Answer.StackProject
 		if !in.RevealSecrets {
 			out.Compose, out.Hidden = maskText(out.Compose)
 		}

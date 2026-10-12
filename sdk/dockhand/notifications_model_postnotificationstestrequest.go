@@ -6,5 +6,5 @@ package dockhand
 type PostNotificationsTestRequest struct {
 	Config *PostNotificationsTestRequestConfig `json:"config,omitempty"`
 	Name   string                              `json:"name,omitempty"`
-	Type   string                              `json:"type"`
+	Type   NotificationType                    `json:"type"`
 }

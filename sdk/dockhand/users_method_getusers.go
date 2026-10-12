@@ -9,14 +9,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetUsersOperationResponse is the result of GetUsers.
-type GetUsersOperationResponse struct {
+// GetUsersResponse is the result of GetUsers.
+type GetUsersResponse struct {
 	HttpResponse *http.Response
-	Model        []GetUsersResponse
+	Answer       []GetUsersAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetUsersResponse) Answered() bool { return r.Answer != nil }
+
 // GetUsers calls GET /api/users. List all local/SSO users.
-func (c Client) GetUsers(ctx context.Context) (result GetUsersOperationResponse, err error) {
+func (c Client) GetUsers(ctx context.Context) (result GetUsersResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,7 +43,7 @@ func (c Client) GetUsers(ctx context.Context) (result GetUsersOperationResponse,
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

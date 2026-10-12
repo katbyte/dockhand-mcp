@@ -9,14 +9,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetAuditUsersOutsideApiOperationResponse is the result of GetAuditUsersOutsideApi.
-type GetAuditUsersOutsideApiOperationResponse struct {
+// GetAuditUsersOutsideApiResponse is the result of GetAuditUsersOutsideApi.
+type GetAuditUsersOutsideApiResponse struct {
 	HttpResponse *http.Response
-	Model        []string
+	Answer       []string
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetAuditUsersOutsideApiResponse) Answered() bool { return r.Answer != nil }
+
 // GetAuditUsersOutsideApi calls GET /audit/users. List distinct usernames that appear in the audit log, for use as a filter dropdown (Enterprise only).
-func (c Client) GetAuditUsersOutsideApi(ctx context.Context) (result GetAuditUsersOutsideApiOperationResponse, err error) {
+func (c Client) GetAuditUsersOutsideApi(ctx context.Context) (result GetAuditUsersOutsideApiResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,7 +43,7 @@ func (c Client) GetAuditUsersOutsideApi(ctx context.Context) (result GetAuditUse
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

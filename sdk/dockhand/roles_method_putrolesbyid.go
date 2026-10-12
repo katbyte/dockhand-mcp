@@ -6,24 +6,26 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutRolesByIdOperationResponse is the result of PutRolesById.
-type PutRolesByIdOperationResponse struct {
+// PutRolesByIdResponse is the result of PutRolesById.
+type PutRolesByIdResponse struct {
 	HttpResponse *http.Response
 }
 
 // PutRolesById calls PUT /api/roles/{id}. Update a custom role (system roles cannot be modified; enterprise, admin required when auth is enabled).
-func (c Client) PutRolesById(ctx context.Context, id int, input PutRolesByIdRequest) (result PutRolesByIdOperationResponse, err error) {
+func (c Client) PutRolesById(ctx context.Context, id RoleID, input PutRolesByIdRequest) (result PutRolesByIdResponse, err error) {
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
-		Path:       fmt.Sprintf("/api/roles/%d", id),
+		Path:       fmt.Sprintf("/api/roles/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)

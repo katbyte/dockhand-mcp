@@ -4,5 +4,5 @@ package dockhand
 
 // PutStacksByNameTagsRequest is an object the document declares inline.
 type PutStacksByNameTagsRequest struct {
-	TagIds []int `json:"tagIds"`
+	TagIds []TagID `json:"tagIds"`
 }

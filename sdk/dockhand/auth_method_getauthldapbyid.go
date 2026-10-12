@@ -4,20 +4,43 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetAuthLdapByIdOperationResponse is the result of GetAuthLdapById.
-type GetAuthLdapByIdOperationResponse struct {
+// GetAuthLdapByIdResponse is the result of GetAuthLdapById.
+//
+// Answer is the GetAuthLdapByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetAuthLdapByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *GetAuthLdapByIdResponse
+	Answer       *GetAuthLdapByIdAnswer
+	*GetAuthLdapByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetAuthLdapByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetAuthLdapByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetAuthLdapByIdResponse) Record() (GetAuthLdapByIdAnswer, error) {
+	if r.Answer == nil {
+		return GetAuthLdapByIdAnswer{}, errors.New("GetAuthLdapById answered no GetAuthLdapByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetAuthLdapById calls GET /api/auth/ldap/{id}. Get a single LDAP provider configuration by id (enterprise only; bind password is masked).
-func (c Client) GetAuthLdapById(ctx context.Context, id int) (result GetAuthLdapByIdOperationResponse, err error) {
+func (c Client) GetAuthLdapById(ctx context.Context, id int) (result GetAuthLdapByIdResponse, err error) {
+	result.GetAuthLdapByIdAnswer = &GetAuthLdapByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -40,11 +63,12 @@ func (c Client) GetAuthLdapById(ctx context.Context, id int) (result GetAuthLdap
 		return
 	}
 
-	var model GetAuthLdapByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetAuthLdapByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetAuthLdapByIdAnswer = result.Answer
 
 	return
 }

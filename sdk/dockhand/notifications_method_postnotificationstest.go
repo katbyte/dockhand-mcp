@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostNotificationsTestOperationResponse is the result of PostNotificationsTest.
-type PostNotificationsTestOperationResponse struct {
+// PostNotificationsTestResponse is the result of PostNotificationsTest.
+//
+// Answer is the PostNotificationsTestAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostNotificationsTestResponse struct {
 	HttpResponse *http.Response
-	Model        *PostNotificationsTestResponse
+	Answer       *PostNotificationsTestAnswer
+	*PostNotificationsTestAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostNotificationsTestResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostNotificationsTestAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostNotificationsTestResponse) Record() (PostNotificationsTestAnswer, error) {
+	if r.Answer == nil {
+		return PostNotificationsTestAnswer{}, errors.New("PostNotificationsTest answered no PostNotificationsTestAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostNotificationsTest calls POST /api/notifications/test. Send a test notification using an ad-hoc config supplied in the body (nothing is saved).
-func (c Client) PostNotificationsTest(ctx context.Context, input PostNotificationsTestRequest) (result PostNotificationsTestOperationResponse, err error) {
+func (c Client) PostNotificationsTest(ctx context.Context, input PostNotificationsTestRequest) (result PostNotificationsTestResponse, err error) {
+	result.PostNotificationsTestAnswer = &PostNotificationsTestAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostNotificationsTest(ctx context.Context, input PostNotificatio
 		return
 	}
 
-	var model PostNotificationsTestResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostNotificationsTestAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostNotificationsTestAnswer = result.Answer
 
 	return
 }

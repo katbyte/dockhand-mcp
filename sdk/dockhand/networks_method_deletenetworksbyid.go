@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,41 +13,72 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteNetworksByIdOperationResponse is the result of DeleteNetworksById.
-type DeleteNetworksByIdOperationResponse struct {
+// DeleteNetworksByIdResponse is the result of DeleteNetworksById.
+//
+// Answer is the DeleteNetworksByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteNetworksByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteNetworksByIdResponse
+	Answer       *DeleteNetworksByIdAnswer
+	*DeleteNetworksByIdAnswer
 }
 
-// DeleteNetworksByIdOperationOptions holds the query and header parameters of DeleteNetworksById.
-type DeleteNetworksByIdOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteNetworksByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteNetworksByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteNetworksByIdResponse) Record() (DeleteNetworksByIdAnswer, error) {
+	if r.Answer == nil {
+		return DeleteNetworksByIdAnswer{}, errors.New("DeleteNetworksById answered no DeleteNetworksByIdAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// DeleteNetworksByIdOptions holds the query and header parameters of DeleteNetworksById.
+type DeleteNetworksByIdOptions struct {
 	// Environment the network belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o DeleteNetworksByIdOperationOptions) ToHeaders() *client.Headers {
+func (o DeleteNetworksByIdOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o DeleteNetworksByIdOperationOptions) ToQuery() *client.QueryParams {
+func (o DeleteNetworksByIdOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // DeleteNetworksById calls DELETE /api/networks/{id}. Remove a Docker network by ID (a malformed ID is rejected with 400 by input validation).
-func (c Client) DeleteNetworksById(ctx context.Context, id string, options DeleteNetworksByIdOperationOptions) (result DeleteNetworksByIdOperationResponse, err error) {
+func (c Client) DeleteNetworksById(ctx context.Context, id string, options ...DeleteNetworksByIdOptions) (result DeleteNetworksByIdResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("DeleteNetworksById takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option DeleteNetworksByIdOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.DeleteNetworksByIdAnswer = &DeleteNetworksByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/networks/%s", url.PathEscape(id)),
 	}
 
@@ -64,11 +96,12 @@ func (c Client) DeleteNetworksById(ctx context.Context, id string, options Delet
 		return
 	}
 
-	var model DeleteNetworksByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteNetworksByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteNetworksByIdAnswer = result.Answer
 
 	return
 }

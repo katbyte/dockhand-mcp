@@ -9,13 +9,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostBackupDestinationsOperationResponse is the result of PostBackupDestinations.
-type PostBackupDestinationsOperationResponse struct {
+// PostBackupDestinationsResponse is the result of PostBackupDestinations.
+type PostBackupDestinationsResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostBackupDestinations calls POST /api/backup/destinations. Create a restic backup destination, auto-initialize and test the repository, and register its default maintenance schedules.
-func (c Client) PostBackupDestinations(ctx context.Context, input PostBackupDestinationsRequest) (result PostBackupDestinationsOperationResponse, err error) {
+func (c Client) PostBackupDestinations(ctx context.Context, input PostBackupDestinationsRequest) (result PostBackupDestinationsResponse, err error) {
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{

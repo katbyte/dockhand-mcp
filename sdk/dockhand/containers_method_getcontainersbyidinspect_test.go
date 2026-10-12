@@ -13,8 +13,8 @@ func TestOperationGetContainersByIdInspect(t *testing.T) {
 	t.Parallel()
 
 	c, s := newOperationServer(t, 200, "application/json", "{}")
-	result, err := c.GetContainersByIdInspect(t.Context(), "p/id", GetContainersByIdInspectOperationOptions{
-		Env: new(7),
+	result, err := c.GetContainersByIdInspect(t.Context(), "p/id", GetContainersByIdInspectOptions{
+		Env: EnvironmentID(7),
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -26,14 +26,14 @@ func TestOperationGetContainersByIdInspect(t *testing.T) {
 	if result.HttpResponse == nil || result.HttpResponse.StatusCode != 200 {
 		t.Fatalf("HttpResponse = %+v", result.HttpResponse)
 	}
-	if result.Model == nil {
-		t.Error("the model was not decoded")
+	if result.Answer == nil || !result.Answered() {
+		t.Error("the answer was not decoded")
 	}
 
 	// an answer that does not decode is an error, with the response
 	c, _ = newOperationServer(t, 200, "application/json", "<html>")
-	result, err = c.GetContainersByIdInspect(t.Context(), "p/id", GetContainersByIdInspectOperationOptions{
-		Env: new(7),
+	result, err = c.GetContainersByIdInspect(t.Context(), "p/id", GetContainersByIdInspectOptions{
+		Env: EnvironmentID(7),
 	})
 	if err == nil || client.StatusCode(err) != 0 || result.HttpResponse == nil {
 		t.Errorf("an answer that does not decode = %v", err)
@@ -41,8 +41,8 @@ func TestOperationGetContainersByIdInspect(t *testing.T) {
 
 	// a status the operation does not document is an error, with the response
 	c, _ = newOperationServer(t, 418, "text/plain", "no")
-	result, err = c.GetContainersByIdInspect(t.Context(), "p/id", GetContainersByIdInspectOperationOptions{
-		Env: new(7),
+	result, err = c.GetContainersByIdInspect(t.Context(), "p/id", GetContainersByIdInspectOptions{
+		Env: EnvironmentID(7),
 	})
 	if client.StatusCode(err) != 418 || result.HttpResponse == nil {
 		t.Errorf("an undocumented status = %v, %+v", err, result.HttpResponse)

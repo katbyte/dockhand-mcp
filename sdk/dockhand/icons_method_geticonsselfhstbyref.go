@@ -4,23 +4,82 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetIconsSelfhstByRefOperationResponse is the result of GetIconsSelfhstByRef.
+// GetIconsSelfhstByRefResponse is the result of GetIconsSelfhstByRef.
 //
-// The operation answers image/*, left unread in HttpResponse.Body, which
-// the caller must close.
-type GetIconsSelfhstByRefOperationResponse struct {
+// The operation answers image/*, left unread in HttpResponse.Body. WriteTo copies
+// it out and Bytes reads it whole up to a size, each closing it; Reader hands it over
+// for the caller to read and close. After any of them the body is spent. A failed call
+// has no open body: the base client reads a refusal and closes it.
+type GetIconsSelfhstByRefResponse struct {
 	HttpResponse *http.Response
 }
 
+// Reader is the file's body, for the caller to read and close, and the content
+// type the server named it; an empty body and "" when the operation gave no
+// answer, so a deferred Close is always safe. The body stays readable after
+// the result goes out of scope, and has no size or time limit of the client's:
+// the caller's context is the one bound on a slow read.
+func (r GetIconsSelfhstByRefResponse) Reader() (io.ReadCloser, string) {
+	if r.HttpResponse == nil || r.HttpResponse.Body == nil {
+		return http.NoBody, ""
+	}
+
+	return r.HttpResponse.Body, r.HttpResponse.Header.Get("Content-Type")
+}
+
+// ContentLength is the file's length as the server named it, or -1 when it
+// did not, to refuse one too big before reading any of it.
+func (r GetIconsSelfhstByRefResponse) ContentLength() int64 {
+	if r.HttpResponse == nil {
+		return -1
+	}
+
+	return r.HttpResponse.ContentLength
+}
+
+// Filename is the name the server gave the file (Content-Disposition), or ""
+// when it gave none, for a caller saving it under the server's name.
+func (r GetIconsSelfhstByRefResponse) Filename() string {
+	if r.HttpResponse == nil {
+		return ""
+	}
+
+	return client.Filename(r.HttpResponse.Header)
+}
+
+// WriteTo copies the file to w and closes the body whatever happens, which is
+// the one way to take the answer that cannot leave it open. A writer that
+// failed is a client.WriteError, as against the server's side breaking off;
+// it fails when the operation gave no answer, and again once the body is spent.
+func (r GetIconsSelfhstByRefResponse) WriteTo(w io.Writer) (int64, error) {
+	if r.HttpResponse == nil || r.HttpResponse.Body == nil {
+		return 0, errors.New("no answer to write")
+	}
+
+	return client.Copy(w, r.HttpResponse.Body)
+}
+
+// Bytes reads the file whole, up to max bytes, and closes the body: a file
+// over max is a client.TooLargeError rather than cut short without a word.
+func (r GetIconsSelfhstByRefResponse) Bytes(max int64) ([]byte, error) {
+	if r.HttpResponse == nil || r.HttpResponse.Body == nil {
+		return nil, errors.New("no answer to read")
+	}
+
+	return client.ReadAtMost(r.HttpResponse.Body, max)
+}
+
 // GetIconsSelfhstByRef calls GET /api/icons/selfhst/{ref}. Get a selfh.st app icon, fetched once from the CDN and cached on disk.
-func (c Client) GetIconsSelfhstByRef(ctx context.Context, ref string) (result GetIconsSelfhstByRefOperationResponse, err error) {
+func (c Client) GetIconsSelfhstByRef(ctx context.Context, ref string) (result GetIconsSelfhstByRefResponse, err error) {
 	opts := client.RequestOptions{
 		Accept: "image/*",
 		ExpectedStatusCodes: []int{

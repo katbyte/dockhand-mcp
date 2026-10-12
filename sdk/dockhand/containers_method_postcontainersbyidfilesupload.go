@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,32 +14,53 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostContainersByIdFilesUploadOperationResponse is the result of PostContainersByIdFilesUpload.
-type PostContainersByIdFilesUploadOperationResponse struct {
+// PostContainersByIdFilesUploadResponse is the result of PostContainersByIdFilesUpload.
+//
+// Answer is the PostContainersByIdFilesUploadAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostContainersByIdFilesUploadResponse struct {
 	HttpResponse *http.Response
-	Model        *PostContainersByIdFilesUploadResponse
+	Answer       *PostContainersByIdFilesUploadAnswer
+	*PostContainersByIdFilesUploadAnswer
 }
 
-// PostContainersByIdFilesUploadOperationOptions holds the query and header parameters of PostContainersByIdFilesUpload.
-type PostContainersByIdFilesUploadOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostContainersByIdFilesUploadResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostContainersByIdFilesUploadAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostContainersByIdFilesUploadResponse) Record() (PostContainersByIdFilesUploadAnswer, error) {
+	if r.Answer == nil {
+		return PostContainersByIdFilesUploadAnswer{}, errors.New("PostContainersByIdFilesUpload answered no PostContainersByIdFilesUploadAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostContainersByIdFilesUploadOptions holds the query and header parameters of PostContainersByIdFilesUpload.
+type PostContainersByIdFilesUploadOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// Absolute target directory inside the container
 	Path string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostContainersByIdFilesUploadOperationOptions) ToHeaders() *client.Headers {
+func (o PostContainersByIdFilesUploadOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostContainersByIdFilesUploadOperationOptions) ToQuery() *client.QueryParams {
+func (o PostContainersByIdFilesUploadOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	if o.Path != "" {
 		out.Append("path", o.Path)
@@ -49,7 +71,8 @@ func (o PostContainersByIdFilesUploadOperationOptions) ToQuery() *client.QueryPa
 // PostContainersByIdFilesUpload calls POST /api/containers/{id}/files/upload. Upload one or more files into a container directory (requires the 'exec' permission).
 //
 // input is sent as contentType, or as multipart/form-data when that is empty.
-func (c Client) PostContainersByIdFilesUpload(ctx context.Context, id string, input io.Reader, contentType string, options PostContainersByIdFilesUploadOperationOptions) (result PostContainersByIdFilesUploadOperationResponse, err error) {
+func (c Client) PostContainersByIdFilesUpload(ctx context.Context, id string, input io.Reader, contentType string, options PostContainersByIdFilesUploadOptions) (result PostContainersByIdFilesUploadResponse, err error) {
+	result.PostContainersByIdFilesUploadAnswer = &PostContainersByIdFilesUploadAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "multipart/form-data",
 		ExpectedStatusCodes: []int{
@@ -78,11 +101,12 @@ func (c Client) PostContainersByIdFilesUpload(ctx context.Context, id string, in
 		return
 	}
 
-	var model PostContainersByIdFilesUploadResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostContainersByIdFilesUploadAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostContainersByIdFilesUploadAnswer = result.Answer
 
 	return
 }

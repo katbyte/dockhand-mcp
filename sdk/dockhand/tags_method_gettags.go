@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetTagsOperationResponse is the result of GetTags.
-type GetTagsOperationResponse struct {
+// GetTagsResponse is the result of GetTags.
+//
+// Answer is the GetTagsAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetTagsResponse struct {
 	HttpResponse *http.Response
-	Model        *GetTagsResponse
+	Answer       *GetTagsAnswer
+	*GetTagsAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetTagsResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetTagsAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetTagsResponse) Record() (GetTagsAnswer, error) {
+	if r.Answer == nil {
+		return GetTagsAnswer{}, errors.New("GetTags answered no GetTagsAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetTags calls GET /api/tags. List the global tag catalog (name + colour).
-func (c Client) GetTags(ctx context.Context) (result GetTagsOperationResponse, err error) {
+func (c Client) GetTags(ctx context.Context) (result GetTagsResponse, err error) {
+	result.GetTagsAnswer = &GetTagsAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) GetTags(ctx context.Context) (result GetTagsOperationResponse, e
 		return
 	}
 
-	var model GetTagsResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetTagsAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetTagsAnswer = result.Answer
 
 	return
 }

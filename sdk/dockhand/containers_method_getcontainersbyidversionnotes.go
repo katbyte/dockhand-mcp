@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,32 +13,53 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetContainersByIdVersionNotesOperationResponse is the result of GetContainersByIdVersionNotes.
-type GetContainersByIdVersionNotesOperationResponse struct {
+// GetContainersByIdVersionNotesResponse is the result of GetContainersByIdVersionNotes.
+//
+// Answer is the GetContainersByIdVersionNotesAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetContainersByIdVersionNotesResponse struct {
 	HttpResponse *http.Response
-	Model        *GetContainersByIdVersionNotesResponse
+	Answer       *GetContainersByIdVersionNotesAnswer
+	*GetContainersByIdVersionNotesAnswer
 }
 
-// GetContainersByIdVersionNotesOperationOptions holds the query and header parameters of GetContainersByIdVersionNotes.
-type GetContainersByIdVersionNotesOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetContainersByIdVersionNotesResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetContainersByIdVersionNotesAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetContainersByIdVersionNotesResponse) Record() (GetContainersByIdVersionNotesAnswer, error) {
+	if r.Answer == nil {
+		return GetContainersByIdVersionNotesAnswer{}, errors.New("GetContainersByIdVersionNotes answered no GetContainersByIdVersionNotesAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetContainersByIdVersionNotesOptions holds the query and header parameters of GetContainersByIdVersionNotes.
+type GetContainersByIdVersionNotesOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// Comma-separated version tags to fetch notes for (target + skipped), e.g. "16.3-alpine,16.4-alpine"
 	Versions string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetContainersByIdVersionNotesOperationOptions) ToHeaders() *client.Headers {
+func (o GetContainersByIdVersionNotesOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetContainersByIdVersionNotesOperationOptions) ToQuery() *client.QueryParams {
+func (o GetContainersByIdVersionNotesOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	if o.Versions != "" {
 		out.Append("versions", o.Versions)
@@ -46,7 +68,8 @@ func (o GetContainersByIdVersionNotesOperationOptions) ToQuery() *client.QueryPa
 }
 
 // GetContainersByIdVersionNotes calls GET /api/containers/{id}/version-notes. Resolve GitHub release notes for the versions a semver update-check surfaced (requires the 'view' permission).
-func (c Client) GetContainersByIdVersionNotes(ctx context.Context, id string, options GetContainersByIdVersionNotesOperationOptions) (result GetContainersByIdVersionNotesOperationResponse, err error) {
+func (c Client) GetContainersByIdVersionNotes(ctx context.Context, id string, options GetContainersByIdVersionNotesOptions) (result GetContainersByIdVersionNotesResponse, err error) {
+	result.GetContainersByIdVersionNotesAnswer = &GetContainersByIdVersionNotesAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -70,11 +93,12 @@ func (c Client) GetContainersByIdVersionNotes(ctx context.Context, id string, op
 		return
 	}
 
-	var model GetContainersByIdVersionNotesResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetContainersByIdVersionNotesAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetContainersByIdVersionNotesAnswer = result.Answer
 
 	return
 }

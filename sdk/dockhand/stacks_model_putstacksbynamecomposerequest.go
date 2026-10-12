@@ -4,15 +4,15 @@ package dockhand
 
 // PutStacksByNameComposeRequest is an object the document declares inline.
 type PutStacksByNameComposeRequest struct {
-	Build            *bool  `json:"build,omitempty"`
-	ComposePath      string `json:"composePath,omitempty"`
-	Content          string `json:"content"`
-	EnvPath          string `json:"envPath,omitempty"`
-	ForceRecreate    *bool  `json:"forceRecreate,omitempty"`
-	MoveFromDir      string `json:"moveFromDir,omitempty"`
-	OldComposePath   string `json:"oldComposePath,omitempty"`
-	OldEnvPath       string `json:"oldEnvPath,omitempty"`
-	Pull             *bool  `json:"pull,omitempty"`
-	Restart          *bool  `json:"restart,omitempty"`
-	SecretProviderId int    `json:"secretProviderId,omitempty"`
+	Build            *bool            `json:"build,omitempty"`
+	ComposePath      string           `json:"composePath,omitempty"`
+	Content          string           `json:"content"`
+	EnvPath          string           `json:"envPath,omitempty"`
+	ForceRecreate    *bool            `json:"forceRecreate,omitempty"`
+	MoveFromDir      string           `json:"moveFromDir,omitempty"`
+	OldComposePath   string           `json:"oldComposePath,omitempty"`
+	OldEnvPath       string           `json:"oldEnvPath,omitempty"`
+	Pull             *bool            `json:"pull,omitempty"`
+	Restart          *bool            `json:"restart,omitempty"`
+	SecretProviderId SecretProviderID `json:"secretProviderId,omitempty"`
 }

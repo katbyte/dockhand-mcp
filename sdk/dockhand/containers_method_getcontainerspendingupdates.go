@@ -4,41 +4,64 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetContainersPendingUpdatesOperationResponse is the result of GetContainersPendingUpdates.
-type GetContainersPendingUpdatesOperationResponse struct {
+// GetContainersPendingUpdatesResponse is the result of GetContainersPendingUpdates.
+//
+// Answer is the GetContainersPendingUpdatesAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetContainersPendingUpdatesResponse struct {
 	HttpResponse *http.Response
-	Model        *GetContainersPendingUpdatesResponse
+	Answer       *GetContainersPendingUpdatesAnswer
+	*GetContainersPendingUpdatesAnswer
 }
 
-// GetContainersPendingUpdatesOperationOptions holds the query and header parameters of GetContainersPendingUpdates.
-type GetContainersPendingUpdatesOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetContainersPendingUpdatesResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetContainersPendingUpdatesAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetContainersPendingUpdatesResponse) Record() (GetContainersPendingUpdatesAnswer, error) {
+	if r.Answer == nil {
+		return GetContainersPendingUpdatesAnswer{}, errors.New("GetContainersPendingUpdates answered no GetContainersPendingUpdatesAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetContainersPendingUpdatesOptions holds the query and header parameters of GetContainersPendingUpdates.
+type GetContainersPendingUpdatesOptions struct {
 	// The target environment ID (required) (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetContainersPendingUpdatesOperationOptions) ToHeaders() *client.Headers {
+func (o GetContainersPendingUpdatesOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetContainersPendingUpdatesOperationOptions) ToQuery() *client.QueryParams {
+func (o GetContainersPendingUpdatesOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetContainersPendingUpdates calls GET /api/containers/pending-updates. List the containers in an environment that have a pending image update recorded (requires the 'view' permission).
-func (c Client) GetContainersPendingUpdates(ctx context.Context, options GetContainersPendingUpdatesOperationOptions) (result GetContainersPendingUpdatesOperationResponse, err error) {
+func (c Client) GetContainersPendingUpdates(ctx context.Context, options GetContainersPendingUpdatesOptions) (result GetContainersPendingUpdatesResponse, err error) {
+	result.GetContainersPendingUpdatesAnswer = &GetContainersPendingUpdatesAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -62,11 +85,12 @@ func (c Client) GetContainersPendingUpdates(ctx context.Context, options GetCont
 		return
 	}
 
-	var model GetContainersPendingUpdatesResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetContainersPendingUpdatesAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetContainersPendingUpdatesAnswer = result.Answer
 
 	return
 }

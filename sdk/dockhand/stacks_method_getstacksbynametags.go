@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,41 +13,72 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetStacksByNameTagsOperationResponse is the result of GetStacksByNameTags.
-type GetStacksByNameTagsOperationResponse struct {
+// GetStacksByNameTagsResponse is the result of GetStacksByNameTags.
+//
+// Answer is the GetStacksByNameTagsAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetStacksByNameTagsResponse struct {
 	HttpResponse *http.Response
-	Model        *GetStacksByNameTagsResponse
+	Answer       *GetStacksByNameTagsAnswer
+	*GetStacksByNameTagsAnswer
 }
 
-// GetStacksByNameTagsOperationOptions holds the query and header parameters of GetStacksByNameTags.
-type GetStacksByNameTagsOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetStacksByNameTagsResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetStacksByNameTagsAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetStacksByNameTagsResponse) Record() (GetStacksByNameTagsAnswer, error) {
+	if r.Answer == nil {
+		return GetStacksByNameTagsAnswer{}, errors.New("GetStacksByNameTags answered no GetStacksByNameTagsAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetStacksByNameTagsOptions holds the query and header parameters of GetStacksByNameTags.
+type GetStacksByNameTagsOptions struct {
 	// Environment id
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetStacksByNameTagsOperationOptions) ToHeaders() *client.Headers {
+func (o GetStacksByNameTagsOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetStacksByNameTagsOperationOptions) ToQuery() *client.QueryParams {
+func (o GetStacksByNameTagsOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetStacksByNameTags calls GET /api/stacks/{name}/tags. Get the tag ids assigned to one stack (by name).
-func (c Client) GetStacksByNameTags(ctx context.Context, name string, options GetStacksByNameTagsOperationOptions) (result GetStacksByNameTagsOperationResponse, err error) {
+func (c Client) GetStacksByNameTags(ctx context.Context, name string, options ...GetStacksByNameTagsOptions) (result GetStacksByNameTagsResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetStacksByNameTags takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetStacksByNameTagsOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetStacksByNameTagsAnswer = &GetStacksByNameTagsAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/tags", url.PathEscape(name)),
 	}
 
@@ -64,11 +96,12 @@ func (c Client) GetStacksByNameTags(ctx context.Context, name string, options Ge
 		return
 	}
 
-	var model GetStacksByNameTagsResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetStacksByNameTagsAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetStacksByNameTagsAnswer = result.Answer
 
 	return
 }

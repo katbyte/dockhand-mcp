@@ -9,14 +9,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetRegistriesOperationResponse is the result of GetRegistries.
-type GetRegistriesOperationResponse struct {
+// GetRegistriesResponse is the result of GetRegistries.
+type GetRegistriesResponse struct {
 	HttpResponse *http.Response
-	Model        []GetRegistriesResponse
+	Answer       []GetRegistriesAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetRegistriesResponse) Answered() bool { return r.Answer != nil }
+
 // GetRegistries calls GET /api/registries. List all configured container registries with passwords stripped (only a hasCredentials flag).
-func (c Client) GetRegistries(ctx context.Context) (result GetRegistriesOperationResponse, err error) {
+func (c Client) GetRegistries(ctx context.Context) (result GetRegistriesResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,7 +43,7 @@ func (c Client) GetRegistries(ctx context.Context) (result GetRegistriesOperatio
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

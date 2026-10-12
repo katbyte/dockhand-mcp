@@ -19,11 +19,6 @@ func note(have, more string) string {
 	return have + "; " + more
 }
 
-// yes reads a flag the API may leave out: one left out is not set.
-func yes(flag *bool) bool {
-	return flag != nil && *flag
-}
-
 // refusal says, of an error that is the server asking who is calling or turning them away, what the operator is to do about it; any other error is
 // handed back as it came.
 func refusal(err error) error {
@@ -65,26 +60,26 @@ func registerServerTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("the Dockhand at %s could not be asked: %w", out.URL, err)
 		}
-		out.Login = yes(session.Model.AuthEnabled)
+		out.Login = session.Answer.AuthEnabled
 
 		// what it manages is the first thing a token is needed for, so a token that is wrong or missing is said here, as that
 		environments, err := r.dock.GetEnvironments(ctx)
 		if err != nil {
 			return nil, out, fmt.Errorf("the Dockhand at %s answers, and would not list its environments: %w", out.URL, refusal(err))
 		}
-		out.Environments = len(environments.Model)
+		out.Environments = len(environments.Answer)
 
 		// the rest describes a server that is known to answer, and one of them failing is said rather than hiding the others
 		if changelog, err := r.dock.GetChangelog(ctx); err != nil {
 			out.Note = note(out.Note, "its version could not be read: "+err.Error())
-		} else if len(changelog.Model) > 0 {
-			out.Version, out.Released = changelog.Model[0].Version, changelog.Model[0].Date
+		} else if len(changelog.Answer) > 0 {
+			out.Version, out.Released = changelog.Answer[0].Version, changelog.Answer[0].Date
 		}
 
 		if database, err := r.dock.GetHealthDatabase(ctx); err != nil {
 			out.Note = note(out.Note, "its database's health could not be read: "+err.Error())
 		} else {
-			out.Database, out.DatabaseHealthy, out.SchemaVersion = database.Model.Database, yes(database.Model.Healthy), database.Model.SchemaVersion
+			out.Database, out.DatabaseHealthy, out.SchemaVersion = database.Answer.Database, database.Answer.Healthy, database.Answer.SchemaVersion
 		}
 
 		if !out.Login {

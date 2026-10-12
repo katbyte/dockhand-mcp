@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteRolesByIdOperationResponse is the result of DeleteRolesById.
-type DeleteRolesByIdOperationResponse struct {
+// DeleteRolesByIdResponse is the result of DeleteRolesById.
+//
+// Answer is the DeleteRolesByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteRolesByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteRolesByIdResponse
+	Answer       *DeleteRolesByIdAnswer
+	*DeleteRolesByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteRolesByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteRolesByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteRolesByIdResponse) Record() (DeleteRolesByIdAnswer, error) {
+	if r.Answer == nil {
+		return DeleteRolesByIdAnswer{}, errors.New("DeleteRolesById answered no DeleteRolesByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // DeleteRolesById calls DELETE /api/roles/{id}. Delete a custom role by id (system roles cannot be deleted; enterprise, admin required when auth is enabled).
-func (c Client) DeleteRolesById(ctx context.Context, id int) (result DeleteRolesByIdOperationResponse, err error) {
+func (c Client) DeleteRolesById(ctx context.Context, id RoleID) (result DeleteRolesByIdResponse, err error) {
+	result.DeleteRolesByIdAnswer = &DeleteRolesByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
-		Path:       fmt.Sprintf("/api/roles/%d", id),
+		Path:       fmt.Sprintf("/api/roles/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) DeleteRolesById(ctx context.Context, id int) (result DeleteRoles
 		return
 	}
 
-	var model DeleteRolesByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteRolesByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteRolesByIdAnswer = result.Answer
 
 	return
 }

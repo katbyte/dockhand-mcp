@@ -6,23 +6,25 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteUsersByIdMfaOperationResponse is the result of DeleteUsersByIdMfa.
-type DeleteUsersByIdMfaOperationResponse struct {
+// DeleteUsersByIdMfaResponse is the result of DeleteUsersByIdMfa.
+type DeleteUsersByIdMfaResponse struct {
 	HttpResponse *http.Response
 }
 
 // DeleteUsersByIdMfa calls DELETE /api/users/{id}/mfa. Disable MFA for a user.
-func (c Client) DeleteUsersByIdMfa(ctx context.Context, id int) (result DeleteUsersByIdMfaOperationResponse, err error) {
+func (c Client) DeleteUsersByIdMfa(ctx context.Context, id UserID) (result DeleteUsersByIdMfaResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
-		Path:       fmt.Sprintf("/api/users/%d/mfa", id),
+		Path:       fmt.Sprintf("/api/users/%s/mfa", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)

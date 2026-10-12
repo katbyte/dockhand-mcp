@@ -9,13 +9,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostBackupSnapshotsBatchDeleteOperationResponse is the result of PostBackupSnapshotsBatchDelete.
-type PostBackupSnapshotsBatchDeleteOperationResponse struct {
+// PostBackupSnapshotsBatchDeleteResponse is the result of PostBackupSnapshotsBatchDelete.
+type PostBackupSnapshotsBatchDeleteResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostBackupSnapshotsBatchDelete calls POST /api/backup/snapshots/batch-delete. Forget and prune several snapshots from one destination in a single restic forget --prune, with per-snapshot ownership and environment access gates.
-func (c Client) PostBackupSnapshotsBatchDelete(ctx context.Context, input PostBackupSnapshotsBatchDeleteRequest) (result PostBackupSnapshotsBatchDeleteOperationResponse, err error) {
+func (c Client) PostBackupSnapshotsBatchDelete(ctx context.Context, input PostBackupSnapshotsBatchDeleteRequest) (result PostBackupSnapshotsBatchDeleteResponse, err error) {
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{

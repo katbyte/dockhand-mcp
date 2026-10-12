@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,35 +13,57 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostContainersByIdExecOperationResponse is the result of PostContainersByIdExec.
-type PostContainersByIdExecOperationResponse struct {
+// PostContainersByIdExecResponse is the result of PostContainersByIdExec.
+//
+// Answer is the PostContainersByIdExecAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostContainersByIdExecResponse struct {
 	HttpResponse *http.Response
-	Model        *PostContainersByIdExecResponse
+	Answer       *PostContainersByIdExecAnswer
+	*PostContainersByIdExecAnswer
 }
 
-// PostContainersByIdExecOperationOptions holds the query and header parameters of PostContainersByIdExec.
-type PostContainersByIdExecOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostContainersByIdExecResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostContainersByIdExecAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostContainersByIdExecResponse) Record() (PostContainersByIdExecAnswer, error) {
+	if r.Answer == nil {
+		return PostContainersByIdExecAnswer{}, errors.New("PostContainersByIdExec answered no PostContainersByIdExecAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostContainersByIdExecOptions holds the query and header parameters of PostContainersByIdExec.
+type PostContainersByIdExecOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	EnvId *int
+	EnvId EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostContainersByIdExecOperationOptions) ToHeaders() *client.Headers {
+func (o PostContainersByIdExecOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostContainersByIdExecOperationOptions) ToQuery() *client.QueryParams {
+func (o PostContainersByIdExecOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.EnvId != nil {
-		out.Append("envId", strconv.Itoa(*o.EnvId))
+	if o.EnvId != 0 {
+		out.Append("envId", strconv.Itoa(int(o.EnvId)))
 	}
 	return &out
 }
 
 // PostContainersByIdExec calls POST /api/containers/{id}/exec. Create a Docker exec instance in a container and return its ID plus the Docker connection info for a terminal WebSocket.
-func (c Client) PostContainersByIdExec(ctx context.Context, id string, input PostContainersByIdExecRequest, options PostContainersByIdExecOperationOptions) (result PostContainersByIdExecOperationResponse, err error) {
+func (c Client) PostContainersByIdExec(ctx context.Context, id string, input PostContainersByIdExecRequest, options PostContainersByIdExecOptions) (result PostContainersByIdExecResponse, err error) {
+	result.PostContainersByIdExecAnswer = &PostContainersByIdExecAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -69,11 +92,12 @@ func (c Client) PostContainersByIdExec(ctx context.Context, id string, input Pos
 		return
 	}
 
-	var model PostContainersByIdExecResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostContainersByIdExecAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostContainersByIdExecAnswer = result.Answer
 
 	return
 }

@@ -23,7 +23,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetLegalLicenseResponse"
+          "ReferenceName": "GetLegalLicenseAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -51,7 +51,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetLegalPrivacyResponse"
+          "ReferenceName": "GetLegalPrivacyAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -61,7 +61,7 @@
   ],
   "Models": [
     {
-      "Name": "GetLegalLicenseResponse",
+      "Name": "GetLegalLicenseAnswer",
       "Fields": [
         {
           "Name": "Content",
@@ -74,7 +74,7 @@
       ]
     },
     {
-      "Name": "GetLegalPrivacyResponse",
+      "Name": "GetLegalPrivacyAnswer",
       "Fields": [
         {
           "Name": "Content",

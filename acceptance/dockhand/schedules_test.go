@@ -14,15 +14,15 @@ import (
 )
 
 // scheduleOf is one thing Dockhand does by itself as it lists it, or nil when it lists none of that type and number.
-func scheduleOf(t *testing.T, c *dockhand.Client, kind string, id int) *dockhand.GetSchedulesResponseSchedules {
+func scheduleOf(t *testing.T, c *dockhand.Client, kind string, id int) *dockhand.GetSchedulesAnswerSchedules {
 	t.Helper()
 
 	listed, err := c.GetSchedules(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
-	if at := slices.IndexFunc(listed.Model.Schedules, func(s dockhand.GetSchedulesResponseSchedules) bool { return s.Type == kind && s.Id == id }); at >= 0 {
-		return &listed.Model.Schedules[at]
+	if at := slices.IndexFunc(listed.Answer.Schedules, func(s dockhand.GetSchedulesAnswerSchedules) bool { return string(s.Type) == kind && s.Id == id }); at >= 0 {
+		return &listed.Answer.Schedules[at]
 	}
 
 	return nil
@@ -37,44 +37,44 @@ func TestSchedulesListedRunSwitchedAndRemoved(t *testing.T) {
 	for _, host := range []string{testenv.Alpha, testenv.Beta} {
 		env := world.Env(host)
 		name := started(t, host, host)
-		at := dockhand.PostAutoUpdateByContainerNameOperationOptions{Env: &env}
+		at := dockhand.PostAutoUpdateByContainerNameOptions{Env: env}
 		t.Cleanup(func() {
-			_, _ = c.DeleteAutoUpdateByContainerName(noCancel(t), name, dockhand.DeleteAutoUpdateByContainerNameOperationOptions{Env: &env})
+			_, _ = c.DeleteAutoUpdateByContainerName(noCancel(t), name, dockhand.DeleteAutoUpdateByContainerNameOptions{Env: env})
 		})
 		saved, err := c.PostAutoUpdateByContainerName(t.Context(), name, dockhand.PostAutoUpdateByContainerNameRequest{Enabled: new(true), CronExpression: "0 4 * * *", VulnerabilityCriteria: "never"}, at)
-		if err != nil || saved.Model.Id == 0 {
-			t.Fatalf("%s: saving a schedule = %+v, %v", host, saved.Model, err)
+		if err != nil || saved.Answer.Id == 0 {
+			t.Fatalf("%s: saving a schedule = %+v, %v", host, saved.Answer, err)
 		}
-		id := saved.Model.Id
+		id := saved.Answer.Id
 
 		// listed by the number of its record, with when it next runs and no run yet
 		listed := scheduleOf(t, c, kind, id)
-		if listed == nil || listed.Name != "Update container: "+name || listed.EntityName != name || listed.EnvironmentId != env || listed.EnvironmentName != host || !yes(listed.Enabled) || listed.CronExpression != "0 4 * * *" || listed.NextRun == "" || yes(listed.IsSystem) || listed.LastExecution != nil || len(listed.RecentExecutions) != 0 || listed.ScheduleType != "daily" {
+		if listed == nil || listed.Name != "Update container: "+name || listed.EntityName != name || listed.EnvironmentId != env || listed.EnvironmentName != host || !listed.Enabled || listed.CronExpression != "0 4 * * *" || listed.NextRun.IsZero() || listed.IsSystem || listed.LastExecution != nil || len(listed.RecentExecutions) != 0 || listed.ScheduleType != "daily" {
 			t.Fatalf("%s: the schedule as listed = %+v", host, listed)
 		}
 
 		// run before its time: answered at once, and the run is kept when it ends, with what it found and logged
-		if ran, err := c.PostSchedulesByTypeByIdRun(t.Context(), kind, id); err != nil || !yes(ran.Model.Success) || ran.Model.Message == "" {
-			t.Fatalf("%s: running it now = %+v, %v", host, ran.Model, err)
+		if ran, err := c.PostSchedulesByTypeByIdRun(t.Context(), kind, id); err != nil || !ran.Answer.Success || ran.Answer.Message == "" {
+			t.Fatalf("%s: running it now = %+v, %v", host, ran.Answer, err)
 		}
-		of := dockhand.GetSchedulesExecutionsOperationOptions{ScheduleType: kind, ScheduleId: &id}
-		var runs *dockhand.GetSchedulesExecutionsResponse
+		of := dockhand.GetSchedulesExecutionsOptions{ScheduleType: kind, ScheduleId: &id}
+		var runs *dockhand.GetSchedulesExecutionsAnswer
 		if !acctest.Eventually(func() bool {
 			answer, failed := c.GetSchedulesExecutions(t.Context(), of)
-			runs = answer.Model
+			runs = answer.Answer
 
 			return failed == nil && len(runs.Executions) == 1 && runs.Executions[0].Status != "running" && runs.Executions[0].Status != "queued"
 		}) {
 			t.Fatalf("%s: the run did not end: %+v", host, runs)
 		}
 		run := runs.Executions[0]
-		if runs.Total != 1 || run.ScheduleType != kind || run.ScheduleId != id || run.EnvironmentId != env || run.EntityName != name || run.TriggeredBy != "manual" || run.TriggeredAt == "" || run.StartedAt == "" || run.CompletedAt == "" || run.Logs != "" || !slices.Contains([]string{"success", "skipped", "failed"}, run.Status) {
+		if runs.Total != 1 || run.ScheduleType != kind || run.ScheduleId != id || run.EnvironmentId != env || run.EntityName != name || run.TriggeredBy != "manual" || run.TriggeredAt.IsZero() || run.StartedAt.IsZero() || run.CompletedAt.IsZero() || run.Logs != "" || !slices.Contains([]string{"success", "skipped", "failed"}, string(run.Status)) {
 			t.Errorf("%s: the run as listed = %+v", host, run)
 		}
 		// one run read by its number has what it logged, which a list of runs leaves out
 		one, err := c.GetSchedulesExecutionsById(t.Context(), run.Id)
-		if err != nil || one.Model.Id != run.Id || one.Model.Status != run.Status || !strings.Contains(one.Model.Logs, "Checking container: "+name) {
-			t.Errorf("%s: the run read by its number = %+v, %v", host, one.Model, err)
+		if err != nil || one.Answer.Id != run.Id || one.Answer.Status != run.Status || !strings.Contains(one.Answer.Logs, "Checking container: "+name) {
+			t.Errorf("%s: the run read by its number = %+v, %v", host, one.Answer, err)
 		}
 		if again := scheduleOf(t, c, kind, id); again == nil || again.LastExecution == nil || again.LastExecution.Id != run.Id || len(again.RecentExecutions) != 1 {
 			t.Errorf("%s: the schedule once run = %+v", host, again)
@@ -82,36 +82,36 @@ func TestSchedulesListedRunSwitchedAndRemoved(t *testing.T) {
 
 		// the runs narrowed: by what set them off, by how they stand, by environment and by time
 		for what, tc := range map[string]struct {
-			by   dockhand.GetSchedulesExecutionsOperationOptions
+			by   dockhand.GetSchedulesExecutionsOptions
 			want int
 		}{
-			"set off by hand":          {dockhand.GetSchedulesExecutionsOperationOptions{ScheduleType: kind, ScheduleId: &id, TriggeredBy: "manual"}, 1},
-			"set off by its schedule":  {dockhand.GetSchedulesExecutionsOperationOptions{ScheduleType: kind, ScheduleId: &id, TriggeredBy: "cron"}, 0},
-			"standing as it does":      {dockhand.GetSchedulesExecutionsOperationOptions{ScheduleType: kind, ScheduleId: &id, Statuses: run.Status + ",queued"}, 1},
-			"standing another way":     {dockhand.GetSchedulesExecutionsOperationOptions{ScheduleType: kind, ScheduleId: &id, Status: "queued"}, 0},
-			"of its environment":       {dockhand.GetSchedulesExecutionsOperationOptions{ScheduleType: kind, ScheduleId: &id, EnvironmentId: &env}, 1},
-			"before 2020":              {dockhand.GetSchedulesExecutionsOperationOptions{ScheduleType: kind, ScheduleId: &id, ToDate: "2020-01-01T00:00:00Z"}, 0},
-			"a standing there is none": {dockhand.GetSchedulesExecutionsOperationOptions{ScheduleType: kind, ScheduleId: &id, Status: "nonsense"}, 0},
+			"set off by hand":          {dockhand.GetSchedulesExecutionsOptions{ScheduleType: kind, ScheduleId: &id, TriggeredBy: "manual"}, 1},
+			"set off by its schedule":  {dockhand.GetSchedulesExecutionsOptions{ScheduleType: kind, ScheduleId: &id, TriggeredBy: "cron"}, 0},
+			"standing as it does":      {dockhand.GetSchedulesExecutionsOptions{ScheduleType: kind, ScheduleId: &id, Statuses: string(run.Status + ",queued")}, 1},
+			"standing another way":     {dockhand.GetSchedulesExecutionsOptions{ScheduleType: kind, ScheduleId: &id, Status: "queued"}, 0},
+			"of its environment":       {dockhand.GetSchedulesExecutionsOptions{ScheduleType: kind, ScheduleId: &id, EnvironmentId: env}, 1},
+			"before 2020":              {dockhand.GetSchedulesExecutionsOptions{ScheduleType: kind, ScheduleId: &id, ToDate: "2020-01-01T00:00:00Z"}, 0},
+			"a standing there is none": {dockhand.GetSchedulesExecutionsOptions{ScheduleType: kind, ScheduleId: &id, Status: "nonsense"}, 0},
 		} {
-			if got, err := c.GetSchedulesExecutions(t.Context(), tc.by); err != nil || got.Model.Total != tc.want {
-				t.Errorf("%s: the runs %s = %+v, %v, want %d", host, what, got.Model, err, tc.want)
+			if got, err := c.GetSchedulesExecutions(t.Context(), tc.by); err != nil || got.Answer.Total != tc.want {
+				t.Errorf("%s: the runs %s = %+v, %v, want %d", host, what, got.Answer, err, tc.want)
 			}
 		}
 
 		// switched off and on: there is one call, which turns it over and answers how it then stands
 		for _, want := range []bool{false, true} {
 			turned, err := c.PostSchedulesByTypeByIdToggle(t.Context(), kind, id)
-			if err != nil || yes(turned.Model.Enabled) != want {
-				t.Fatalf("%s: turned over = %+v, %v, want switched on: %v", host, turned.Model, err, want)
+			if err != nil || turned.Answer.Enabled != want {
+				t.Fatalf("%s: turned over = %+v, %v, want switched on: %v", host, turned.Answer, err, want)
 			}
-			if now := scheduleOf(t, c, kind, id); now == nil || yes(now.Enabled) != want || (now.NextRun != "") != want {
+			if now := scheduleOf(t, c, kind, id); now == nil || now.Enabled != want || (!now.NextRun.IsZero()) != want {
 				t.Errorf("%s: as listed once turned over = %+v", host, now)
 			}
 		}
 
 		// the record of the run removed, once
-		if gone, err := c.DeleteSchedulesExecutionsById(t.Context(), run.Id); err != nil || !yes(gone.Model.Success) {
-			t.Errorf("%s: removing the run's record = %+v, %v", host, gone.Model, err)
+		if gone, err := c.DeleteSchedulesExecutionsById(t.Context(), run.Id); err != nil || !gone.Answer.Success {
+			t.Errorf("%s: removing the run's record = %+v, %v", host, gone.Answer, err)
 		}
 		if _, err := c.GetSchedulesExecutionsById(t.Context(), run.Id); !client.IsNotFound(err) {
 			t.Errorf("%s: the run's record read once removed = %v", host, err)
@@ -122,8 +122,8 @@ func TestSchedulesListedRunSwitchedAndRemoved(t *testing.T) {
 
 		// the schedule removed: no longer listed, and a second go is answered as done all the same
 		for range 2 {
-			if gone, err := c.DeleteSchedulesByTypeById(t.Context(), kind, id); err != nil || !yes(gone.Model.Success) {
-				t.Errorf("%s: removing the schedule = %+v, %v", host, gone.Model, err)
+			if gone, err := c.DeleteSchedulesByTypeById(t.Context(), kind, id); err != nil || !gone.Answer.Success {
+				t.Errorf("%s: removing the schedule = %+v, %v", host, gone.Answer, err)
 			}
 		}
 		if scheduleOf(t, c, kind, id) != nil {
@@ -136,17 +136,17 @@ func TestSchedulesListedRunSwitchedAndRemoved(t *testing.T) {
 
 	// Dockhand's own jobs: run now like any other, three of them switched off by a call of their own, and none removed
 	const tidy, helpers, events = "system_cleanup", 3, 2
-	if own := scheduleOf(t, c, tidy, helpers); own == nil || !yes(own.IsSystem) || !yes(own.Enabled) || own.Description == "" || own.EnvironmentId != 0 || own.CronExpression == "" {
+	if own := scheduleOf(t, c, tidy, helpers); own == nil || !own.IsSystem || !own.Enabled || own.Description == "" || own.EnvironmentId != 0 || own.CronExpression == "" {
 		t.Fatalf("one of Dockhand's own jobs = %+v", own)
 	}
-	if ran, err := c.PostSchedulesByTypeByIdRun(t.Context(), tidy, helpers); err != nil || !yes(ran.Model.Success) {
-		t.Errorf("running one of Dockhand's own jobs = %+v, %v", ran.Model, err)
+	if ran, err := c.PostSchedulesByTypeByIdRun(t.Context(), tidy, helpers); err != nil || !ran.Answer.Success {
+		t.Errorf("running one of Dockhand's own jobs = %+v, %v", ran.Answer, err)
 	}
 	id := helpers
 	if !acctest.Eventually(func() bool {
-		runs, err := c.GetSchedulesExecutions(t.Context(), dockhand.GetSchedulesExecutionsOperationOptions{ScheduleType: tidy, ScheduleId: &id, TriggeredBy: "manual"})
+		runs, err := c.GetSchedulesExecutions(t.Context(), dockhand.GetSchedulesExecutionsOptions{ScheduleType: tidy, ScheduleId: &id, TriggeredBy: "manual"})
 
-		return err == nil && len(runs.Model.Executions) > 0 && runs.Model.Executions[0].Status == "success" && runs.Model.Executions[0].EnvironmentId == 0
+		return err == nil && len(runs.Answer.Executions) > 0 && runs.Answer.Executions[0].Status == "success" && runs.Answer.Executions[0].EnvironmentId == 0
 	}) {
 		t.Error("the run of one of Dockhand's own jobs was not kept as a success")
 	}
@@ -157,10 +157,10 @@ func TestSchedulesListedRunSwitchedAndRemoved(t *testing.T) {
 		t.Errorf("turning over one that cannot be switched off = %v", err)
 	}
 	for _, want := range []bool{false, true} {
-		if turned, err := c.PostSchedulesSystemByIdToggle(t.Context(), events); err != nil || yes(turned.Model.Enabled) != want {
-			t.Fatalf("turning over one that can be = %+v, %v, want switched on: %v", turned.Model, err, want)
+		if turned, err := c.PostSchedulesSystemByIdToggle(t.Context(), events); err != nil || turned.Answer.Enabled != want {
+			t.Fatalf("turning over one that can be = %+v, %v, want switched on: %v", turned.Answer, err, want)
 		}
-		if now := scheduleOf(t, c, tidy, events); now == nil || yes(now.Enabled) != want {
+		if now := scheduleOf(t, c, tidy, events); now == nil || now.Enabled != want {
 			t.Errorf("as listed once turned over = %+v", now)
 		}
 	}
@@ -173,11 +173,11 @@ func TestSchedulesListedRunSwitchedAndRemoved(t *testing.T) {
 
 	// whether the page that lists them hides Dockhand's own jobs is kept, and read back
 	for _, hide := range []bool{true, false} {
-		if set, err := c.PutSchedulesSettings(t.Context(), dockhand.PutSchedulesSettingsRequest{HideSystemJobs: new(hide)}); err != nil || !yes(set.Model.Success) {
-			t.Fatalf("hiding Dockhand's own jobs: %v = %+v, %v", hide, set.Model, err)
+		if set, err := c.PutSchedulesSettings(t.Context(), dockhand.PutSchedulesSettingsRequest{HideSystemJobs: new(hide)}); err != nil || !set.Answer.Success {
+			t.Fatalf("hiding Dockhand's own jobs: %v = %+v, %v", hide, set.Answer, err)
 		}
-		if got, err := c.GetSchedulesSettings(t.Context()); err != nil || yes(got.Model.HideSystemJobs) != hide {
-			t.Errorf("read back = %+v, %v, want %v", got.Model, err, hide)
+		if got, err := c.GetSchedulesSettings(t.Context()); err != nil || got.Answer.HideSystemJobs != hide {
+			t.Errorf("read back = %+v, %v, want %v", got.Answer, err, hide)
 		}
 	}
 }

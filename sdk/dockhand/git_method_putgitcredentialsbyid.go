@@ -4,27 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutGitCredentialsByIdOperationResponse is the result of PutGitCredentialsById.
-type PutGitCredentialsByIdOperationResponse struct {
+// PutGitCredentialsByIdResponse is the result of PutGitCredentialsById.
+//
+// Answer is the PutGitCredentialsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PutGitCredentialsByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *PutGitCredentialsByIdResponse
+	Answer       *PutGitCredentialsByIdAnswer
+	*PutGitCredentialsByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutGitCredentialsByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutGitCredentialsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutGitCredentialsByIdResponse) Record() (PutGitCredentialsByIdAnswer, error) {
+	if r.Answer == nil {
+		return PutGitCredentialsByIdAnswer{}, errors.New("PutGitCredentialsById answered no PutGitCredentialsByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PutGitCredentialsById calls PUT /api/git/credentials/{id}. Update a git credential and return it with secrets stripped.
-func (c Client) PutGitCredentialsById(ctx context.Context, id int, input PutGitCredentialsByIdRequest) (result PutGitCredentialsByIdOperationResponse, err error) {
+func (c Client) PutGitCredentialsById(ctx context.Context, id GitCredentialID, input PutGitCredentialsByIdRequest) (result PutGitCredentialsByIdResponse, err error) {
+	result.PutGitCredentialsByIdAnswer = &PutGitCredentialsByIdAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
-		Path:       fmt.Sprintf("/api/git/credentials/%d", id),
+		Path:       fmt.Sprintf("/api/git/credentials/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -45,11 +70,12 @@ func (c Client) PutGitCredentialsById(ctx context.Context, id int, input PutGitC
 		return
 	}
 
-	var model PutGitCredentialsByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PutGitCredentialsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PutGitCredentialsByIdAnswer = result.Answer
 
 	return
 }

@@ -94,8 +94,8 @@ func registerContainerEventTools(r *registry) {
 		limit := cmp.Or(in.Limit, defaultEvents)
 
 		// the log is one for every host, and is asked once: for one environment, or for all
-		options := dockhand.GetActivityOperationOptions{ContainerName: strings.TrimPrefix(strings.TrimSpace(in.Container), "/"), Actions: strings.Join(actions, ","), FromDate: since, ToDate: until, Limit: &limit}
-		counted := dockhand.GetActivityStatsOperationOptions{}
+		options := dockhand.GetActivityOptions{ContainerName: strings.TrimPrefix(strings.TrimSpace(in.Container), "/"), Actions: strings.Join(actions, ","), FromDate: since, ToDate: until, Limit: &limit}
+		counted := dockhand.GetActivityStatsOptions{}
 		named, err := in.named()
 		if err != nil {
 			return nil, containerEventsOut{}, err
@@ -105,17 +105,17 @@ func registerContainerEventTools(r *registry) {
 			if failed != nil {
 				return nil, containerEventsOut{}, failed
 			}
-			options.EnvironmentId, counted.EnvironmentId = &env.ID, &env.ID
+			options.EnvironmentId, counted.EnvironmentId = env.ID, env.ID
 		}
 
 		kept, err := r.dock.GetActivity(ctx, options)
 		if err != nil {
 			return nil, containerEventsOut{}, fmt.Errorf("the activity log could not be read: %w", refusal(err))
 		}
-		out := containerEventsOut{Events: make([]containerEvent, 0, len(kept.Model.Events)), Total: kept.Model.Total}
-		for i := range kept.Model.Events {
-			e := &kept.Model.Events[i]
-			event := containerEvent{At: e.Timestamp, Env: e.EnvironmentName, Container: e.ContainerName, Action: e.Action, Signal: e.ActorAttributes["signal"], Was: strings.TrimPrefix(e.ActorAttributes["oldName"], "/"), Image: e.Image, Stack: e.ActorAttributes[labelStack]}
+		out := containerEventsOut{Events: make([]containerEvent, 0, len(kept.Answer.Events)), Total: kept.Answer.Total}
+		for i := range kept.Answer.Events {
+			e := &kept.Answer.Events[i]
+			event := containerEvent{At: when(e.Timestamp), Env: e.EnvironmentName, Container: e.ContainerName, Action: e.Action, Signal: e.ActorAttributes["signal"], Was: strings.TrimPrefix(e.ActorAttributes["oldName"], "/"), Image: e.Image, Stack: e.ActorAttributes[labelStack]}
 			if code, failed := strconv.Atoi(e.ActorAttributes["exitCode"]); failed == nil && e.Action == "die" {
 				event.ExitCode = &code
 			}
@@ -134,7 +134,7 @@ func registerContainerEventTools(r *registry) {
 			if failed != nil {
 				out.Note = note(out.Note, "the log could not be counted by action: "+refusal(failed).Error())
 			} else {
-				out.ByAction = stats.Model.ByAction
+				out.ByAction = stats.Answer.ByAction
 			}
 		}
 
@@ -153,11 +153,11 @@ func registerContainerEventTools(r *registry) {
 		Name:        "container_events_clear",
 		Description: "Clear Dockhand's whole record of what containers did, for every Docker host at once: every start, death, kill and restart it has kept. Nothing on any host is touched, and nothing that happens afterwards is lost, but what happened before cannot be got back: it is the only place a container that is gone is remembered. Dockhand takes no part of it, one host's or one container's: it is all or nothing. Without confirm the answer says how many events would go and clears nothing.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in eventsClearIn) (*mcp.CallToolResult, eventsClearOut, error) {
-		held, err := r.dock.GetActivityStats(ctx, dockhand.GetActivityStatsOperationOptions{})
+		held, err := r.dock.GetActivityStats(ctx, dockhand.GetActivityStatsOptions{})
 		if err != nil {
 			return nil, eventsClearOut{}, fmt.Errorf("the activity log could not be read, so nothing was cleared: %w", refusal(err))
 		}
-		out := eventsClearOut{Events: held.Model.Total}
+		out := eventsClearOut{Events: held.Answer.Total}
 		switch {
 		case out.Events == 0:
 			out.Note = "nothing to clear: the log holds no events"
@@ -175,12 +175,12 @@ func registerContainerEventTools(r *registry) {
 		}
 
 		// what the hosts go on doing is kept from the moment it is cleared, so a log read back with a few events in it was cleared all the same
-		left, err := r.dock.GetActivityStats(ctx, dockhand.GetActivityStatsOperationOptions{})
+		left, err := r.dock.GetActivityStats(ctx, dockhand.GetActivityStatsOptions{})
 		switch {
 		case err != nil:
 			out.Note = "that it is cleared could not be read back: " + refusal(err).Error()
-		case left.Model.Total >= out.Events:
-			out.Note = fmt.Sprintf("Dockhand said it cleared the log, and it holds %d events", left.Model.Total)
+		case left.Answer.Total >= out.Events:
+			out.Note = fmt.Sprintf("Dockhand said it cleared the log, and it holds %d events", left.Answer.Total)
 		default:
 			out.Cleared = true
 		}

@@ -91,10 +91,10 @@ func TestEnvList(t *testing.T) {
 	rows := named(acctest.Rows(t, out["environments"], "environments"), "env")
 
 	alpha, beta := rows[testenv.Alpha], rows[testenv.Beta]
-	if acctest.Num(t, alpha["id"], "id") != world.Env(testenv.Alpha) || alpha["connection"] != testenv.ConnectionSocket || alpha["address"] != nil || !acctest.IsBool(alpha["online"], true) {
+	if acctest.Num(t, alpha["id"], "id") != int(world.Env(testenv.Alpha)) || alpha["connection"] != testenv.ConnectionSocket || alpha["address"] != nil || !acctest.IsBool(alpha["online"], true) {
 		t.Errorf("alpha = %v: reached by its socket, with no address, and online", alpha)
 	}
-	if acctest.Num(t, beta["id"], "id") != world.Env(testenv.Beta) || beta["connection"] != testenv.ConnectionAgent || beta["address"] != world.Agent || !acctest.IsBool(beta["online"], true) {
+	if acctest.Num(t, beta["id"], "id") != int(world.Env(testenv.Beta)) || beta["connection"] != testenv.ConnectionAgent || beta["address"] != world.Agent || !acctest.IsBool(beta["online"], true) {
 		t.Errorf("beta = %v: reached through the agent at %s, and online", beta, world.Agent)
 	}
 

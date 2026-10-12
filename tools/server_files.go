@@ -63,7 +63,7 @@ func registerServerFileTools(r *registry) {
 		}
 		out := serverFilesOut{Path: dir, Entries: []serverEntry{}}
 
-		listed, err := r.dock.GetSystemFiles(ctx, dockhand.GetSystemFilesOperationOptions{Path: dir})
+		listed, err := r.dock.GetSystemFiles(ctx, dockhand.GetSystemFilesOptions{Path: dir})
 		switch status := client.StatusCode(err); {
 		case status == http.StatusNotFound:
 			return nil, out, fmt.Errorf("there is no %s on Dockhand's own filesystem", dir)
@@ -75,9 +75,9 @@ func registerServerFileTools(r *registry) {
 			return nil, out, fmt.Errorf("%s could not be listed: %w", dir, refusal(err))
 		default:
 		}
-		for i := range listed.Model.Entries {
-			e := &listed.Model.Entries[i]
-			out.Entries = append(out.Entries, serverEntry{Name: e.Name, Type: e.Type, Size: e.Size, Mode: e.Mode, Modified: e.Mtime})
+		for i := range listed.Answer.Entries {
+			e := &listed.Answer.Entries[i]
+			out.Entries = append(out.Entries, serverEntry{Name: e.Name, Type: string(e.Type), Size: e.Size, Mode: e.Mode, Modified: when(e.Mtime)})
 		}
 		slices.SortStableFunc(out.Entries, func(a, b serverEntry) int {
 			return cmp.Or(cmp.Compare(b2i(a.Type != "directory"), b2i(b.Type != "directory")), cmp.Compare(a.Name, b.Name))
@@ -119,7 +119,7 @@ func registerServerFileTools(r *registry) {
 		}
 		out := serverReadOut{Path: file}
 
-		read, err := r.dock.GetSystemFilesContent(ctx, dockhand.GetSystemFilesContentOperationOptions{Path: file})
+		read, err := r.dock.GetSystemFilesContent(ctx, dockhand.GetSystemFilesContentOptions{Path: file})
 		switch status := client.StatusCode(err); {
 		case status == http.StatusNotFound:
 			return nil, out, fmt.Errorf("there is no file %s on Dockhand's own filesystem: server_files lists what there is", file)
@@ -134,7 +134,7 @@ func registerServerFileTools(r *registry) {
 		default:
 		}
 
-		text := read.Model.Content
+		text := read.Answer.Content
 		// Dockhand hands a file over as text whatever it is: what was not text shows as bytes that are none, or as the mark of ones that could not be
 		// read
 		if strings.ContainsRune(text, 0) || strings.ContainsRune(text, utf8.RuneError) {
@@ -143,7 +143,7 @@ func registerServerFileTools(r *registry) {
 		if !in.RevealSecrets {
 			text, out.Hidden = maskText(text)
 		}
-		out.Chars, out.Modified = utf8.RuneCountInString(text), read.Model.Mtime
+		out.Chars, out.Modified = utf8.RuneCountInString(text), when(read.Answer.Mtime)
 		if limit := cmp.Or(in.MaxChars, defaultFileChars); out.Chars > limit {
 			text, out.Truncated = string([]rune(text)[:limit]), true
 			out.Note = fmt.Sprintf("the file is %d characters and its first %d are given: raise max_chars for more", out.Chars, limit)
@@ -178,7 +178,7 @@ func registerServerFileTools(r *registry) {
 		out := serverMkdirOut{Path: dir, Changes: []string{}, DryRun: in.DryRun}
 
 		// what is there is looked at first: a directory is nothing to do, and a file is in the way
-		_, err = r.dock.GetSystemFiles(ctx, dockhand.GetSystemFilesOperationOptions{Path: dir})
+		_, err = r.dock.GetSystemFiles(ctx, dockhand.GetSystemFilesOptions{Path: dir})
 		switch status := client.StatusCode(err); {
 		case err == nil:
 			out.Note = "nothing to do: the directory is there already"
@@ -204,7 +204,7 @@ func registerServerFileTools(r *registry) {
 			return nil, out, fmt.Errorf("%s was not made: %s", dir, keptBack)
 		case err != nil:
 			return nil, out, fmt.Errorf("%s was not made: %w", dir, refusal(err))
-		case !yes(made.Model.Success):
+		case !made.Answer.Success:
 			return nil, out, errors.New("the making of " + dir + " was answered without its being said to have succeeded: server_files says whether it is there")
 		default:
 		}

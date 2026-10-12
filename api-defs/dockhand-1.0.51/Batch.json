@@ -15,7 +15,8 @@
           "In": "Query",
           "Description": "Environment ID the entities belong to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],

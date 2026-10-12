@@ -4,32 +4,54 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteHawserTokensOperationResponse is the result of DeleteHawserTokens.
-type DeleteHawserTokensOperationResponse struct {
+// DeleteHawserTokensResponse is the result of DeleteHawserTokens.
+//
+// Answer is the DeleteHawserTokensAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteHawserTokensResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteHawserTokensResponse
+	Answer       *DeleteHawserTokensAnswer
+	*DeleteHawserTokensAnswer
 }
 
-// DeleteHawserTokensOperationOptions holds the query and header parameters of DeleteHawserTokens.
-type DeleteHawserTokensOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteHawserTokensResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteHawserTokensAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteHawserTokensResponse) Record() (DeleteHawserTokensAnswer, error) {
+	if r.Answer == nil {
+		return DeleteHawserTokensAnswer{}, errors.New("DeleteHawserTokens answered no DeleteHawserTokensAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// DeleteHawserTokensOptions holds the query and header parameters of DeleteHawserTokens.
+type DeleteHawserTokensOptions struct {
 	// ID of the token to revoke (from GET /api/hawser/tokens)
 	Id *int
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o DeleteHawserTokensOperationOptions) ToHeaders() *client.Headers {
+func (o DeleteHawserTokensOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o DeleteHawserTokensOperationOptions) ToQuery() *client.QueryParams {
+func (o DeleteHawserTokensOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Id != nil {
 		out.Append("id", strconv.Itoa(*o.Id))
@@ -38,7 +60,8 @@ func (o DeleteHawserTokensOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // DeleteHawserTokens calls DELETE /api/hawser/tokens. Revoke a Hawser agent token by ID.
-func (c Client) DeleteHawserTokens(ctx context.Context, options DeleteHawserTokensOperationOptions) (result DeleteHawserTokensOperationResponse, err error) {
+func (c Client) DeleteHawserTokens(ctx context.Context, options DeleteHawserTokensOptions) (result DeleteHawserTokensResponse, err error) {
+	result.DeleteHawserTokensAnswer = &DeleteHawserTokensAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -62,11 +85,12 @@ func (c Client) DeleteHawserTokens(ctx context.Context, options DeleteHawserToke
 		return
 	}
 
-	var model DeleteHawserTokensResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteHawserTokensAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteHawserTokensAnswer = result.Answer
 
 	return
 }

@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,16 +13,37 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostStacksByNameRestartOperationResponse is the result of PostStacksByNameRestart.
-type PostStacksByNameRestartOperationResponse struct {
+// PostStacksByNameRestartResponse is the result of PostStacksByNameRestart.
+//
+// Answer is the PostStacksByNameRestartAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostStacksByNameRestartResponse struct {
 	HttpResponse *http.Response
-	Model        *PostStacksByNameRestartResponse
+	Answer       *PostStacksByNameRestartAnswer
+	*PostStacksByNameRestartAnswer
 }
 
-// PostStacksByNameRestartOperationOptions holds the query and header parameters of PostStacksByNameRestart.
-type PostStacksByNameRestartOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostStacksByNameRestartResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostStacksByNameRestartAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostStacksByNameRestartResponse) Record() (PostStacksByNameRestartAnswer, error) {
+	if r.Answer == nil {
+		return PostStacksByNameRestartAnswer{}, errors.New("PostStacksByNameRestart answered no PostStacksByNameRestartAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostStacksByNameRestartOptions holds the query and header parameters of PostStacksByNameRestart.
+type PostStacksByNameRestartOptions struct {
 	// Environment ID the stack belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// Restart mode — "recreate" recreates containers (new IDs, re-pull), "ordered" does a stop+start honoring depends_on ordering (same IDs), anything else is a plain in-place restart
 	Mode string
@@ -31,7 +53,7 @@ type PostStacksByNameRestartOperationOptions struct {
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostStacksByNameRestartOperationOptions) ToHeaders() *client.Headers {
+func (o PostStacksByNameRestartOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	if o.Accept != "" {
 		out.Append("Accept", o.Accept)
@@ -40,10 +62,10 @@ func (o PostStacksByNameRestartOperationOptions) ToHeaders() *client.Headers {
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostStacksByNameRestartOperationOptions) ToQuery() *client.QueryParams {
+func (o PostStacksByNameRestartOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	if o.Mode != "" {
 		out.Append("mode", o.Mode)
@@ -52,13 +74,23 @@ func (o PostStacksByNameRestartOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // PostStacksByNameRestart calls POST /api/stacks/{name}/restart. Restart a stack (mode=restart|ordered|recreate); progress and the final result stream over Server-Sent Events.
-func (c Client) PostStacksByNameRestart(ctx context.Context, name string, options PostStacksByNameRestartOperationOptions) (result PostStacksByNameRestartOperationResponse, err error) {
+func (c Client) PostStacksByNameRestart(ctx context.Context, name string, options ...PostStacksByNameRestartOptions) (result PostStacksByNameRestartResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostStacksByNameRestart takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostStacksByNameRestartOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostStacksByNameRestartAnswer = &PostStacksByNameRestartAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/restart", url.PathEscape(name)),
 	}
 
@@ -76,11 +108,12 @@ func (c Client) PostStacksByNameRestart(ctx context.Context, name string, option
 		return
 	}
 
-	var model PostStacksByNameRestartResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostStacksByNameRestartAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostStacksByNameRestartAnswer = result.Answer
 
 	return
 }

@@ -4,26 +4,50 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostGitStacksByIdDeployStreamOperationResponse is the result of PostGitStacksByIdDeployStream.
-type PostGitStacksByIdDeployStreamOperationResponse struct {
+// PostGitStacksByIdDeployStreamResponse is the result of PostGitStacksByIdDeployStream.
+//
+// Answer is the PostGitStacksByIdDeployStreamAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostGitStacksByIdDeployStreamResponse struct {
 	HttpResponse *http.Response
-	Model        *PostGitStacksByIdDeployStreamResponse
+	Answer       *PostGitStacksByIdDeployStreamAnswer
+	*PostGitStacksByIdDeployStreamAnswer
 }
 
-// PostGitStacksByIdDeployStreamOperationOptions holds the query and header parameters of PostGitStacksByIdDeployStream.
-type PostGitStacksByIdDeployStreamOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostGitStacksByIdDeployStreamResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostGitStacksByIdDeployStreamAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostGitStacksByIdDeployStreamResponse) Record() (PostGitStacksByIdDeployStreamAnswer, error) {
+	if r.Answer == nil {
+		return PostGitStacksByIdDeployStreamAnswer{}, errors.New("PostGitStacksByIdDeployStream answered no PostGitStacksByIdDeployStreamAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostGitStacksByIdDeployStreamOptions holds the query and header parameters of PostGitStacksByIdDeployStream.
+type PostGitStacksByIdDeployStreamOptions struct {
 	// what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once
 	Accept string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostGitStacksByIdDeployStreamOperationOptions) ToHeaders() *client.Headers {
+func (o PostGitStacksByIdDeployStreamOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	if o.Accept != "" {
 		out.Append("Accept", o.Accept)
@@ -32,20 +56,30 @@ func (o PostGitStacksByIdDeployStreamOperationOptions) ToHeaders() *client.Heade
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostGitStacksByIdDeployStreamOperationOptions) ToQuery() *client.QueryParams {
+func (o PostGitStacksByIdDeployStreamOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	return &out
 }
 
 // PostGitStacksByIdDeployStream calls POST /api/git/stacks/{id}/deploy-stream. Deploy a git stack with live progress; streams SSE, or returns a jobId to poll (Accept negotiated).
-func (c Client) PostGitStacksByIdDeployStream(ctx context.Context, id int, options PostGitStacksByIdDeployStreamOperationOptions) (result PostGitStacksByIdDeployStreamOperationResponse, err error) {
+func (c Client) PostGitStacksByIdDeployStream(ctx context.Context, id GitStackID, options ...PostGitStacksByIdDeployStreamOptions) (result PostGitStacksByIdDeployStreamResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostGitStacksByIdDeployStream takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostGitStacksByIdDeployStreamOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostGitStacksByIdDeployStreamAnswer = &PostGitStacksByIdDeployStreamAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
-		Path:          fmt.Sprintf("/api/git/stacks/%d/deploy-stream", id),
+		OptionsObject: option,
+		Path:          fmt.Sprintf("/api/git/stacks/%s/deploy-stream", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -62,11 +96,12 @@ func (c Client) PostGitStacksByIdDeployStream(ctx context.Context, id int, optio
 		return
 	}
 
-	var model PostGitStacksByIdDeployStreamResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostGitStacksByIdDeployStreamAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostGitStacksByIdDeployStreamAnswer = result.Answer
 
 	return
 }

@@ -5,20 +5,25 @@ package dockhand
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetBackupSnapshotsOperationResponse is the result of GetBackupSnapshots.
-type GetBackupSnapshotsOperationResponse struct {
+// GetBackupSnapshotsResponse is the result of GetBackupSnapshots.
+type GetBackupSnapshotsResponse struct {
 	HttpResponse *http.Response
-	Model        json.RawMessage
+	Answer       json.RawMessage
 }
 
-// GetBackupSnapshotsOperationOptions holds the query and header parameters of GetBackupSnapshots.
-type GetBackupSnapshotsOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetBackupSnapshotsResponse) Answered() bool { return r.Answer != nil }
+
+// GetBackupSnapshotsOptions holds the query and header parameters of GetBackupSnapshots.
+type GetBackupSnapshotsOptions struct {
 	// Backup config id (mutually exclusive with destinationId)
 	ConfigId *int
 
@@ -30,13 +35,13 @@ type GetBackupSnapshotsOperationOptions struct {
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetBackupSnapshotsOperationOptions) ToHeaders() *client.Headers {
+func (o GetBackupSnapshotsOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetBackupSnapshotsOperationOptions) ToQuery() *client.QueryParams {
+func (o GetBackupSnapshotsOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.ConfigId != nil {
 		out.Append("configId", strconv.Itoa(*o.ConfigId))
@@ -51,13 +56,22 @@ func (o GetBackupSnapshotsOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetBackupSnapshots calls GET /api/backup/snapshots. List restic snapshots for a backup config or a single destination (job-polled).
-func (c Client) GetBackupSnapshots(ctx context.Context, options GetBackupSnapshotsOperationOptions) (result GetBackupSnapshotsOperationResponse, err error) {
+func (c Client) GetBackupSnapshots(ctx context.Context, options ...GetBackupSnapshotsOptions) (result GetBackupSnapshotsResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetBackupSnapshots takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetBackupSnapshotsOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/backup/snapshots",
 	}
 
@@ -75,7 +89,7 @@ func (c Client) GetBackupSnapshots(ctx context.Context, options GetBackupSnapsho
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

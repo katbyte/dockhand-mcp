@@ -4,29 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostImagesPullOperationResponse is the result of PostImagesPull.
-type PostImagesPullOperationResponse struct {
+// PostImagesPullResponse is the result of PostImagesPull.
+//
+// Answer is the PostImagesPullAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostImagesPullResponse struct {
 	HttpResponse *http.Response
-	Model        *PostImagesPullResponse
+	Answer       *PostImagesPullAnswer
+	*PostImagesPullAnswer
 }
 
-// PostImagesPullOperationOptions holds the query and header parameters of PostImagesPull.
-type PostImagesPullOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostImagesPullResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostImagesPullAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostImagesPullResponse) Record() (PostImagesPullAnswer, error) {
+	if r.Answer == nil {
+		return PostImagesPullAnswer{}, errors.New("PostImagesPull answered no PostImagesPullAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostImagesPullOptions holds the query and header parameters of PostImagesPull.
+type PostImagesPullOptions struct {
 	// ID of the environment to pull into (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once
 	Accept string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostImagesPullOperationOptions) ToHeaders() *client.Headers {
+func (o PostImagesPullOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	if o.Accept != "" {
 		out.Append("Accept", o.Accept)
@@ -35,23 +58,33 @@ func (o PostImagesPullOperationOptions) ToHeaders() *client.Headers {
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostImagesPullOperationOptions) ToQuery() *client.QueryParams {
+func (o PostImagesPullOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostImagesPull calls POST /api/images/pull. Pull a Docker image and stream pull (and optional scan-on-pull) progress as Server-Sent Events.
-func (c Client) PostImagesPull(ctx context.Context, input PostImagesPullRequest, options PostImagesPullOperationOptions) (result PostImagesPullOperationResponse, err error) {
+func (c Client) PostImagesPull(ctx context.Context, input PostImagesPullRequest, options ...PostImagesPullOptions) (result PostImagesPullResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostImagesPull takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostImagesPullOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostImagesPullAnswer = &PostImagesPullAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/images/pull",
 	}
 
@@ -73,11 +106,12 @@ func (c Client) PostImagesPull(ctx context.Context, input PostImagesPullRequest,
 		return
 	}
 
-	var model PostImagesPullResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostImagesPullAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostImagesPullAnswer = result.Answer
 
 	return
 }

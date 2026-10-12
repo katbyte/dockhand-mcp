@@ -4,26 +4,53 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetEnvironmentsByIdNotificationsByNotificationIdOperationResponse is the result of GetEnvironmentsByIdNotificationsByNotificationId.
-type GetEnvironmentsByIdNotificationsByNotificationIdOperationResponse struct {
+// GetEnvironmentsByIdNotificationsByNotificationIdResponse is the result of GetEnvironmentsByIdNotificationsByNotificationId.
+//
+// Answer is the GetEnvironmentsByIdNotificationsByNotificationIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetEnvironmentsByIdNotificationsByNotificationIdResponse struct {
 	HttpResponse *http.Response
-	Model        *GetEnvironmentsByIdNotificationsByNotificationIdResponse
+	Answer       *GetEnvironmentsByIdNotificationsByNotificationIdAnswer
+	*GetEnvironmentsByIdNotificationsByNotificationIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetEnvironmentsByIdNotificationsByNotificationIdResponse) Answered() bool {
+	return r.Answer != nil
+}
+
+// Record is the GetEnvironmentsByIdNotificationsByNotificationIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetEnvironmentsByIdNotificationsByNotificationIdResponse) Record() (GetEnvironmentsByIdNotificationsByNotificationIdAnswer, error) {
+	if r.Answer == nil {
+		return GetEnvironmentsByIdNotificationsByNotificationIdAnswer{}, errors.New("GetEnvironmentsByIdNotificationsByNotificationId answered no GetEnvironmentsByIdNotificationsByNotificationIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetEnvironmentsByIdNotificationsByNotificationId calls GET /api/environments/{id}/notifications/{notificationId}. Get one notification-channel link for an environment.
-func (c Client) GetEnvironmentsByIdNotificationsByNotificationId(ctx context.Context, id int, notificationId int) (result GetEnvironmentsByIdNotificationsByNotificationIdOperationResponse, err error) {
+func (c Client) GetEnvironmentsByIdNotificationsByNotificationId(ctx context.Context, id EnvironmentID, notificationId NotificationID) (result GetEnvironmentsByIdNotificationsByNotificationIdResponse, err error) {
+	result.GetEnvironmentsByIdNotificationsByNotificationIdAnswer = &GetEnvironmentsByIdNotificationsByNotificationIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
-		Path:       fmt.Sprintf("/api/environments/%d/notifications/%d", id, notificationId),
+		Path:       fmt.Sprintf("/api/environments/%s/notifications/%s", url.PathEscape(strconv.Itoa(int(id))), url.PathEscape(strconv.Itoa(int(notificationId)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +67,12 @@ func (c Client) GetEnvironmentsByIdNotificationsByNotificationId(ctx context.Con
 		return
 	}
 
-	var model GetEnvironmentsByIdNotificationsByNotificationIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetEnvironmentsByIdNotificationsByNotificationIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetEnvironmentsByIdNotificationsByNotificationIdAnswer = result.Answer
 
 	return
 }

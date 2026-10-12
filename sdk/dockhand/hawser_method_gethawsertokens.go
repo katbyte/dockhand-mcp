@@ -9,14 +9,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetHawserTokensOperationResponse is the result of GetHawserTokens.
-type GetHawserTokensOperationResponse struct {
+// GetHawserTokensResponse is the result of GetHawserTokens.
+type GetHawserTokensResponse struct {
 	HttpResponse *http.Response
-	Model        []GetHawserTokensResponse
+	Answer       []GetHawserTokensAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetHawserTokensResponse) Answered() bool { return r.Answer != nil }
+
 // GetHawserTokens calls GET /api/hawser/tokens. List all Hawser agent tokens (only the prefix is returned, never the full token).
-func (c Client) GetHawserTokens(ctx context.Context) (result GetHawserTokensOperationResponse, err error) {
+func (c Client) GetHawserTokens(ctx context.Context) (result GetHawserTokensResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,7 +43,7 @@ func (c Client) GetHawserTokens(ctx context.Context) (result GetHawserTokensOper
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

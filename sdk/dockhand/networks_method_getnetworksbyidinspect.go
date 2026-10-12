@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,41 +13,72 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetNetworksByIdInspectOperationResponse is the result of GetNetworksByIdInspect.
-type GetNetworksByIdInspectOperationResponse struct {
+// GetNetworksByIdInspectResponse is the result of GetNetworksByIdInspect.
+//
+// Answer is the GetNetworksByIdInspectAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetNetworksByIdInspectResponse struct {
 	HttpResponse *http.Response
-	Model        *GetNetworksByIdInspectResponse
+	Answer       *GetNetworksByIdInspectAnswer
+	*GetNetworksByIdInspectAnswer
 }
 
-// GetNetworksByIdInspectOperationOptions holds the query and header parameters of GetNetworksByIdInspect.
-type GetNetworksByIdInspectOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetNetworksByIdInspectResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetNetworksByIdInspectAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetNetworksByIdInspectResponse) Record() (GetNetworksByIdInspectAnswer, error) {
+	if r.Answer == nil {
+		return GetNetworksByIdInspectAnswer{}, errors.New("GetNetworksByIdInspect answered no GetNetworksByIdInspectAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetNetworksByIdInspectOptions holds the query and header parameters of GetNetworksByIdInspect.
+type GetNetworksByIdInspectOptions struct {
 	// Environment the network belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetNetworksByIdInspectOperationOptions) ToHeaders() *client.Headers {
+func (o GetNetworksByIdInspectOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetNetworksByIdInspectOperationOptions) ToQuery() *client.QueryParams {
+func (o GetNetworksByIdInspectOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetNetworksByIdInspect calls GET /api/networks/{id}/inspect. Inspect a Docker network by ID (a malformed ID is rejected with 400 by input validation).
-func (c Client) GetNetworksByIdInspect(ctx context.Context, id string, options GetNetworksByIdInspectOperationOptions) (result GetNetworksByIdInspectOperationResponse, err error) {
+func (c Client) GetNetworksByIdInspect(ctx context.Context, id string, options ...GetNetworksByIdInspectOptions) (result GetNetworksByIdInspectResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetNetworksByIdInspect takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetNetworksByIdInspectOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetNetworksByIdInspectAnswer = &GetNetworksByIdInspectAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/networks/%s/inspect", url.PathEscape(id)),
 	}
 
@@ -64,11 +96,12 @@ func (c Client) GetNetworksByIdInspect(ctx context.Context, id string, options G
 		return
 	}
 
-	var model GetNetworksByIdInspectResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetNetworksByIdInspectAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetNetworksByIdInspectAnswer = result.Answer
 
 	return
 }

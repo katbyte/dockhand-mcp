@@ -10,13 +10,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteBackupDestinationsByIdOperationResponse is the result of DeleteBackupDestinationsById.
-type DeleteBackupDestinationsByIdOperationResponse struct {
+// DeleteBackupDestinationsByIdResponse is the result of DeleteBackupDestinationsById.
+type DeleteBackupDestinationsByIdResponse struct {
 	HttpResponse *http.Response
 }
 
 // DeleteBackupDestinationsById calls DELETE /api/backup/destinations/{id}. Delete a backup destination and unregister all its maintenance and dependent backup-config schedules.
-func (c Client) DeleteBackupDestinationsById(ctx context.Context, id int) (result DeleteBackupDestinationsByIdOperationResponse, err error) {
+func (c Client) DeleteBackupDestinationsById(ctx context.Context, id int) (result DeleteBackupDestinationsByIdResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,

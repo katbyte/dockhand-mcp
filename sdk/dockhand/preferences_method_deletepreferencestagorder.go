@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeletePreferencesTagOrderOperationResponse is the result of DeletePreferencesTagOrder.
-type DeletePreferencesTagOrderOperationResponse struct {
+// DeletePreferencesTagOrderResponse is the result of DeletePreferencesTagOrder.
+//
+// Answer is the DeletePreferencesTagOrderAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeletePreferencesTagOrderResponse struct {
 	HttpResponse *http.Response
-	Model        *DeletePreferencesTagOrderResponse
+	Answer       *DeletePreferencesTagOrderAnswer
+	*DeletePreferencesTagOrderAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeletePreferencesTagOrderResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeletePreferencesTagOrderAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeletePreferencesTagOrderResponse) Record() (DeletePreferencesTagOrderAnswer, error) {
+	if r.Answer == nil {
+		return DeletePreferencesTagOrderAnswer{}, errors.New("DeletePreferencesTagOrder answered no DeletePreferencesTagOrderAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // DeletePreferencesTagOrder calls DELETE /api/preferences/tag-order. Reset the tag order back to the default (by name).
-func (c Client) DeletePreferencesTagOrder(ctx context.Context) (result DeletePreferencesTagOrderOperationResponse, err error) {
+func (c Client) DeletePreferencesTagOrder(ctx context.Context) (result DeletePreferencesTagOrderResponse, err error) {
+	result.DeletePreferencesTagOrderAnswer = &DeletePreferencesTagOrderAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) DeletePreferencesTagOrder(ctx context.Context) (result DeletePre
 		return
 	}
 
-	var model DeletePreferencesTagOrderResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeletePreferencesTagOrderAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeletePreferencesTagOrderAnswer = result.Answer
 
 	return
 }

@@ -11,25 +11,25 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteBackupConfigsByIdOperationResponse is the result of DeleteBackupConfigsById.
-type DeleteBackupConfigsByIdOperationResponse struct {
+// DeleteBackupConfigsByIdResponse is the result of DeleteBackupConfigsById.
+type DeleteBackupConfigsByIdResponse struct {
 	HttpResponse *http.Response
 }
 
-// DeleteBackupConfigsByIdOperationOptions holds the query and header parameters of DeleteBackupConfigsById.
-type DeleteBackupConfigsByIdOperationOptions struct {
+// DeleteBackupConfigsByIdOptions holds the query and header parameters of DeleteBackupConfigsById.
+type DeleteBackupConfigsByIdOptions struct {
 	// Also forget and prune this config's snapshots (default false; snapshots survive so a restore is still possible)
 	DeleteSnapshots *bool
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o DeleteBackupConfigsByIdOperationOptions) ToHeaders() *client.Headers {
+func (o DeleteBackupConfigsByIdOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o DeleteBackupConfigsByIdOperationOptions) ToQuery() *client.QueryParams {
+func (o DeleteBackupConfigsByIdOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.DeleteSnapshots != nil {
 		out.Append("deleteSnapshots", strconv.FormatBool(*o.DeleteSnapshots))
@@ -38,13 +38,22 @@ func (o DeleteBackupConfigsByIdOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // DeleteBackupConfigsById calls DELETE /api/backup/configs/{id}. Delete a backup configuration and unregister its schedule, optionally forgetting its snapshots too.
-func (c Client) DeleteBackupConfigsById(ctx context.Context, id int, options DeleteBackupConfigsByIdOperationOptions) (result DeleteBackupConfigsByIdOperationResponse, err error) {
+func (c Client) DeleteBackupConfigsById(ctx context.Context, id int, options ...DeleteBackupConfigsByIdOptions) (result DeleteBackupConfigsByIdResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("DeleteBackupConfigsById takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option DeleteBackupConfigsByIdOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/backup/configs/%d", id),
 	}
 

@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetProfileOperationResponse is the result of GetProfile.
-type GetProfileOperationResponse struct {
+// GetProfileResponse is the result of GetProfile.
+//
+// Answer is the GetProfileAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetProfileResponse struct {
 	HttpResponse *http.Response
-	Model        *GetProfileResponse
+	Answer       *GetProfileAnswer
+	*GetProfileAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetProfileResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetProfileAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetProfileResponse) Record() (GetProfileAnswer, error) {
+	if r.Answer == nil {
+		return GetProfileAnswer{}, errors.New("GetProfile answered no GetProfileAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetProfile calls GET /api/profile. Get the authenticated user's own profile.
-func (c Client) GetProfile(ctx context.Context) (result GetProfileOperationResponse, err error) {
+func (c Client) GetProfile(ctx context.Context) (result GetProfileResponse, err error) {
+	result.GetProfileAnswer = &GetProfileAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) GetProfile(ctx context.Context) (result GetProfileOperationRespo
 		return
 	}
 
-	var model GetProfileResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetProfileAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetProfileAnswer = result.Answer
 
 	return
 }

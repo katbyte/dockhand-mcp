@@ -4,20 +4,43 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostSchedulesSystemByIdToggleOperationResponse is the result of PostSchedulesSystemByIdToggle.
-type PostSchedulesSystemByIdToggleOperationResponse struct {
+// PostSchedulesSystemByIdToggleResponse is the result of PostSchedulesSystemByIdToggle.
+//
+// Answer is the PostSchedulesSystemByIdToggleAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostSchedulesSystemByIdToggleResponse struct {
 	HttpResponse *http.Response
-	Model        *PostSchedulesSystemByIdToggleResponse
+	Answer       *PostSchedulesSystemByIdToggleAnswer
+	*PostSchedulesSystemByIdToggleAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostSchedulesSystemByIdToggleResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostSchedulesSystemByIdToggleAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostSchedulesSystemByIdToggleResponse) Record() (PostSchedulesSystemByIdToggleAnswer, error) {
+	if r.Answer == nil {
+		return PostSchedulesSystemByIdToggleAnswer{}, errors.New("PostSchedulesSystemByIdToggle answered no PostSchedulesSystemByIdToggleAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostSchedulesSystemByIdToggle calls POST /api/schedules/system/{id}/toggle. Toggle one of the three built-in system cleanup jobs (schedule/event/scanner cleanup) on or off.
-func (c Client) PostSchedulesSystemByIdToggle(ctx context.Context, id int) (result PostSchedulesSystemByIdToggleOperationResponse, err error) {
+func (c Client) PostSchedulesSystemByIdToggle(ctx context.Context, id int) (result PostSchedulesSystemByIdToggleResponse, err error) {
+	result.PostSchedulesSystemByIdToggleAnswer = &PostSchedulesSystemByIdToggleAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -40,11 +63,12 @@ func (c Client) PostSchedulesSystemByIdToggle(ctx context.Context, id int) (resu
 		return
 	}
 
-	var model PostSchedulesSystemByIdToggleResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostSchedulesSystemByIdToggleAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostSchedulesSystemByIdToggleAnswer = result.Answer
 
 	return
 }

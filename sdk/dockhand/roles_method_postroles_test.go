@@ -26,6 +26,9 @@ func TestOperationPostRoles(t *testing.T) {
 	if !json.Valid([]byte(body)) {
 		t.Errorf("body = %q, want JSON", body)
 	}
+	if body != "{\"name\":\"\",\"permissions\":null}" {
+		t.Errorf("an empty record sent %q, want %q: a field never set went out", body, "{\"name\":\"\",\"permissions\":null}")
+	}
 	if result.HttpResponse == nil || result.HttpResponse.StatusCode != 201 {
 		t.Fatalf("HttpResponse = %+v", result.HttpResponse)
 	}

@@ -13,26 +13,30 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetBackupSnapshotsByIdMetadataOperationResponse is the result of GetBackupSnapshotsByIdMetadata.
-type GetBackupSnapshotsByIdMetadataOperationResponse struct {
+// GetBackupSnapshotsByIdMetadataResponse is the result of GetBackupSnapshotsByIdMetadata.
+type GetBackupSnapshotsByIdMetadataResponse struct {
 	HttpResponse *http.Response
-	Model        json.RawMessage
+	Answer       json.RawMessage
 }
 
-// GetBackupSnapshotsByIdMetadataOperationOptions holds the query and header parameters of GetBackupSnapshotsByIdMetadata.
-type GetBackupSnapshotsByIdMetadataOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetBackupSnapshotsByIdMetadataResponse) Answered() bool { return r.Answer != nil }
+
+// GetBackupSnapshotsByIdMetadataOptions holds the query and header parameters of GetBackupSnapshotsByIdMetadata.
+type GetBackupSnapshotsByIdMetadataOptions struct {
 	// Destination the snapshot lives in
 	DestinationId *int
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetBackupSnapshotsByIdMetadataOperationOptions) ToHeaders() *client.Headers {
+func (o GetBackupSnapshotsByIdMetadataOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetBackupSnapshotsByIdMetadataOperationOptions) ToQuery() *client.QueryParams {
+func (o GetBackupSnapshotsByIdMetadataOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.DestinationId != nil {
 		out.Append("destinationId", strconv.Itoa(*o.DestinationId))
@@ -41,13 +45,22 @@ func (o GetBackupSnapshotsByIdMetadataOperationOptions) ToQuery() *client.QueryP
 }
 
 // GetBackupSnapshotsByIdMetadata calls GET /api/backup/snapshots/{id}/metadata. The snapshot's redacted metadata layout (job-polled restic dump).
-func (c Client) GetBackupSnapshotsByIdMetadata(ctx context.Context, id string, options GetBackupSnapshotsByIdMetadataOperationOptions) (result GetBackupSnapshotsByIdMetadataOperationResponse, err error) {
+func (c Client) GetBackupSnapshotsByIdMetadata(ctx context.Context, id string, options ...GetBackupSnapshotsByIdMetadataOptions) (result GetBackupSnapshotsByIdMetadataResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetBackupSnapshotsByIdMetadata takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetBackupSnapshotsByIdMetadataOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/backup/snapshots/%s/metadata", url.PathEscape(id)),
 	}
 
@@ -65,7 +78,7 @@ func (c Client) GetBackupSnapshotsByIdMetadata(ctx context.Context, id string, o
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

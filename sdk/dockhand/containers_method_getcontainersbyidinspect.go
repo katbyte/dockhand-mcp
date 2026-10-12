@@ -13,35 +13,39 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetContainersByIdInspectOperationResponse is the result of GetContainersByIdInspect.
-type GetContainersByIdInspectOperationResponse struct {
+// GetContainersByIdInspectResponse is the result of GetContainersByIdInspect.
+type GetContainersByIdInspectResponse struct {
 	HttpResponse *http.Response
-	Model        json.RawMessage
+	Answer       json.RawMessage
 }
 
-// GetContainersByIdInspectOperationOptions holds the query and header parameters of GetContainersByIdInspect.
-type GetContainersByIdInspectOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetContainersByIdInspectResponse) Answered() bool { return r.Answer != nil }
+
+// GetContainersByIdInspectOptions holds the query and header parameters of GetContainersByIdInspect.
+type GetContainersByIdInspectOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetContainersByIdInspectOperationOptions) ToHeaders() *client.Headers {
+func (o GetContainersByIdInspectOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetContainersByIdInspectOperationOptions) ToQuery() *client.QueryParams {
+func (o GetContainersByIdInspectOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetContainersByIdInspect calls GET /api/containers/{id}/inspect. Return the full Docker inspect payload for a container (requires the 'inspect' permission).
-func (c Client) GetContainersByIdInspect(ctx context.Context, id string, options GetContainersByIdInspectOperationOptions) (result GetContainersByIdInspectOperationResponse, err error) {
+func (c Client) GetContainersByIdInspect(ctx context.Context, id string, options GetContainersByIdInspectOptions) (result GetContainersByIdInspectResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -65,7 +69,7 @@ func (c Client) GetContainersByIdInspect(ctx context.Context, id string, options
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

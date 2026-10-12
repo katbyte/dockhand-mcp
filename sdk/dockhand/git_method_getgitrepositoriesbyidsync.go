@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetGitRepositoriesByIdSyncOperationResponse is the result of GetGitRepositoriesByIdSync.
-type GetGitRepositoriesByIdSyncOperationResponse struct {
+// GetGitRepositoriesByIdSyncResponse is the result of GetGitRepositoriesByIdSync.
+//
+// Answer is the GetGitRepositoriesByIdSyncAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetGitRepositoriesByIdSyncResponse struct {
 	HttpResponse *http.Response
-	Model        *GetGitRepositoriesByIdSyncResponse
+	Answer       *GetGitRepositoriesByIdSyncAnswer
+	*GetGitRepositoriesByIdSyncAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetGitRepositoriesByIdSyncResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetGitRepositoriesByIdSyncAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetGitRepositoriesByIdSyncResponse) Record() (GetGitRepositoriesByIdSyncAnswer, error) {
+	if r.Answer == nil {
+		return GetGitRepositoriesByIdSyncAnswer{}, errors.New("GetGitRepositoriesByIdSync answered no GetGitRepositoriesByIdSyncAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetGitRepositoriesByIdSync calls GET /api/git/repositories/{id}/sync. Check whether the tracked branch has new commits upstream without pulling them.
-func (c Client) GetGitRepositoriesByIdSync(ctx context.Context, id int) (result GetGitRepositoriesByIdSyncOperationResponse, err error) {
+func (c Client) GetGitRepositoriesByIdSync(ctx context.Context, id GitRepositoryID) (result GetGitRepositoriesByIdSyncResponse, err error) {
+	result.GetGitRepositoriesByIdSyncAnswer = &GetGitRepositoriesByIdSyncAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
-		Path:       fmt.Sprintf("/api/git/repositories/%d/sync", id),
+		Path:       fmt.Sprintf("/api/git/repositories/%s/sync", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) GetGitRepositoriesByIdSync(ctx context.Context, id int) (result 
 		return
 	}
 
-	var model GetGitRepositoriesByIdSyncResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetGitRepositoriesByIdSyncAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetGitRepositoriesByIdSyncAnswer = result.Answer
 
 	return
 }

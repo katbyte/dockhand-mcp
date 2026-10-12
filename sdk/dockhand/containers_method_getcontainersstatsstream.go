@@ -4,50 +4,94 @@ package dockhand
 
 import (
 	"context"
+	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetContainersStatsStreamOperationResponse is the result of GetContainersStatsStream.
+// GetContainersStatsStreamResponse is the result of GetContainersStatsStream.
 //
-// The operation answers text/event-stream, left unread in HttpResponse.Body, which
-// the caller must close.
-type GetContainersStatsStreamOperationResponse struct {
+// The operation answers text/event-stream, left open in HttpResponse.Body: Reader hands it
+// over for the caller to read event by event and close; it has no end to copy to.
+type GetContainersStatsStreamResponse struct {
 	HttpResponse *http.Response
 }
 
-// GetContainersStatsStreamOperationOptions holds the query and header parameters of GetContainersStatsStream.
-type GetContainersStatsStreamOperationOptions struct {
+// Reader is the file's body, for the caller to read and close, and the content
+// type the server named it; an empty body and "" when the operation gave no
+// answer, so a deferred Close is always safe. The body stays readable after
+// the result goes out of scope, and has no size or time limit of the client's:
+// the caller's context is the one bound on a slow read.
+func (r GetContainersStatsStreamResponse) Reader() (io.ReadCloser, string) {
+	if r.HttpResponse == nil || r.HttpResponse.Body == nil {
+		return http.NoBody, ""
+	}
+
+	return r.HttpResponse.Body, r.HttpResponse.Header.Get("Content-Type")
+}
+
+// ContentLength is the file's length as the server named it, or -1 when it
+// did not, to refuse one too big before reading any of it.
+func (r GetContainersStatsStreamResponse) ContentLength() int64 {
+	if r.HttpResponse == nil {
+		return -1
+	}
+
+	return r.HttpResponse.ContentLength
+}
+
+// Filename is the name the server gave the file (Content-Disposition), or ""
+// when it gave none, for a caller saving it under the server's name.
+func (r GetContainersStatsStreamResponse) Filename() string {
+	if r.HttpResponse == nil {
+		return ""
+	}
+
+	return client.Filename(r.HttpResponse.Header)
+}
+
+// GetContainersStatsStreamOptions holds the query and header parameters of GetContainersStatsStream.
+type GetContainersStatsStreamOptions struct {
 	// Environment id — an immediate "done" event is sent if omitted or no environments are configured (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetContainersStatsStreamOperationOptions) ToHeaders() *client.Headers {
+func (o GetContainersStatsStreamOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetContainersStatsStreamOperationOptions) ToQuery() *client.QueryParams {
+func (o GetContainersStatsStreamOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetContainersStatsStream calls GET /api/containers/stats/stream. Stream live CPU/memory/network/block-IO stats for all running containers in an environment (one snapshot round, then closes).
-func (c Client) GetContainersStatsStream(ctx context.Context, options GetContainersStatsStreamOperationOptions) (result GetContainersStatsStreamOperationResponse, err error) {
+func (c Client) GetContainersStatsStream(ctx context.Context, options ...GetContainersStatsStreamOptions) (result GetContainersStatsStreamResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetContainersStatsStream takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetContainersStatsStreamOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		Accept: "text/event-stream",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
-		OptionsObject:  options,
+		OptionsObject:  option,
 		Path:           "/api/containers/stats/stream",
 		StreamResponse: true,
 	}

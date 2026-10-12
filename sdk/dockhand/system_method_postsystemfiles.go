@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostSystemFilesOperationResponse is the result of PostSystemFiles.
-type PostSystemFilesOperationResponse struct {
+// PostSystemFilesResponse is the result of PostSystemFiles.
+//
+// Answer is the PostSystemFilesAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostSystemFilesResponse struct {
 	HttpResponse *http.Response
-	Model        *PostSystemFilesResponse
+	Answer       *PostSystemFilesAnswer
+	*PostSystemFilesAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostSystemFilesResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostSystemFilesAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostSystemFilesResponse) Record() (PostSystemFilesAnswer, error) {
+	if r.Answer == nil {
+		return PostSystemFilesAnswer{}, errors.New("PostSystemFiles answered no PostSystemFilesAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostSystemFiles calls POST /api/system/files. Create a directory on Dockhand's local filesystem (absolute path, no traversal, non-protected).
-func (c Client) PostSystemFiles(ctx context.Context, input PostSystemFilesRequest) (result PostSystemFilesOperationResponse, err error) {
+func (c Client) PostSystemFiles(ctx context.Context, input PostSystemFilesRequest) (result PostSystemFilesResponse, err error) {
+	result.PostSystemFilesAnswer = &PostSystemFilesAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostSystemFiles(ctx context.Context, input PostSystemFilesReques
 		return
 	}
 
-	var model PostSystemFilesResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostSystemFilesAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostSystemFilesAnswer = result.Answer
 
 	return
 }

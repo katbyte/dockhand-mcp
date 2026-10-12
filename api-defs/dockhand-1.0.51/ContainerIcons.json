@@ -24,7 +24,8 @@
           "In": "Query",
           "Description": "Environment id the container belongs to",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -32,7 +33,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteContainerIconsByNameResponse"
+          "ReferenceName": "DeleteContainerIconsByNameAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -52,7 +53,8 @@
           "In": "Query",
           "Description": "Environment id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -91,7 +93,8 @@
           "In": "Query",
           "Description": "Environment id the container belongs to",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -127,7 +130,8 @@
           "In": "Query",
           "Description": "Environment id the container belongs to",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -142,7 +146,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostContainerIconsByNameResponse"
+          "ReferenceName": "PostContainerIconsByNameAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -152,8 +156,29 @@
   ],
   "Models": [
     {
-      "Name": "DeleteContainerIconsByNameResponse",
+      "Name": "DeleteContainerIconsByNameAnswer",
       "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainerIconsByNameAnswer",
+      "Fields": [
+        {
+          "Name": "Icon",
+          "JsonName": "icon",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
         {
           "Name": "Success",
           "JsonName": "success",
@@ -180,27 +205,6 @@
           "Type": {
             "Type": "String"
           }
-        }
-      ]
-    },
-    {
-      "Name": "PostContainerIconsByNameResponse",
-      "Fields": [
-        {
-          "Name": "Icon",
-          "JsonName": "icon",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
         }
       ]
     }

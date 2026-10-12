@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,42 +13,73 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostContainerIconsByNameOperationResponse is the result of PostContainerIconsByName.
-type PostContainerIconsByNameOperationResponse struct {
+// PostContainerIconsByNameResponse is the result of PostContainerIconsByName.
+//
+// Answer is the PostContainerIconsByNameAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostContainerIconsByNameResponse struct {
 	HttpResponse *http.Response
-	Model        *PostContainerIconsByNameResponse
+	Answer       *PostContainerIconsByNameAnswer
+	*PostContainerIconsByNameAnswer
 }
 
-// PostContainerIconsByNameOperationOptions holds the query and header parameters of PostContainerIconsByName.
-type PostContainerIconsByNameOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostContainerIconsByNameResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostContainerIconsByNameAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostContainerIconsByNameResponse) Record() (PostContainerIconsByNameAnswer, error) {
+	if r.Answer == nil {
+		return PostContainerIconsByNameAnswer{}, errors.New("PostContainerIconsByName answered no PostContainerIconsByNameAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostContainerIconsByNameOptions holds the query and header parameters of PostContainerIconsByName.
+type PostContainerIconsByNameOptions struct {
 	// Environment id the container belongs to
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostContainerIconsByNameOperationOptions) ToHeaders() *client.Headers {
+func (o PostContainerIconsByNameOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostContainerIconsByNameOperationOptions) ToQuery() *client.QueryParams {
+func (o PostContainerIconsByNameOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostContainerIconsByName calls POST /api/container-icons/{name}. Set a container's icon override - either a name reference or an uploaded image.
-func (c Client) PostContainerIconsByName(ctx context.Context, name string, input PostContainerIconsByNameRequest, options PostContainerIconsByNameOperationOptions) (result PostContainerIconsByNameOperationResponse, err error) {
+func (c Client) PostContainerIconsByName(ctx context.Context, name string, input PostContainerIconsByNameRequest, options ...PostContainerIconsByNameOptions) (result PostContainerIconsByNameResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostContainerIconsByName takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostContainerIconsByNameOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostContainerIconsByNameAnswer = &PostContainerIconsByNameAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/container-icons/%s", url.PathEscape(name)),
 	}
 
@@ -69,11 +101,12 @@ func (c Client) PostContainerIconsByName(ctx context.Context, name string, input
 		return
 	}
 
-	var model PostContainerIconsByNameResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostContainerIconsByNameAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostContainerIconsByNameAnswer = result.Answer
 
 	return
 }

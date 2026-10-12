@@ -4,47 +4,61 @@ package dockhand
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetContainerIconsOperationResponse is the result of GetContainerIcons.
-type GetContainerIconsOperationResponse struct {
+// GetContainerIconsResponse is the result of GetContainerIcons.
+type GetContainerIconsResponse struct {
 	HttpResponse *http.Response
-	Model        map[string]string
+	Answer       map[string]string
 }
 
-// GetContainerIconsOperationOptions holds the query and header parameters of GetContainerIcons.
-type GetContainerIconsOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetContainerIconsResponse) Answered() bool { return r.Answer != nil }
+
+// GetContainerIconsOptions holds the query and header parameters of GetContainerIcons.
+type GetContainerIconsOptions struct {
 	// Environment id
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetContainerIconsOperationOptions) ToHeaders() *client.Headers {
+func (o GetContainerIconsOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetContainerIconsOperationOptions) ToQuery() *client.QueryParams {
+func (o GetContainerIconsOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetContainerIcons calls GET /api/container-icons. List all container icon overrides for an environment as a name -> icon map.
-func (c Client) GetContainerIcons(ctx context.Context, options GetContainerIconsOperationOptions) (result GetContainerIconsOperationResponse, err error) {
+func (c Client) GetContainerIcons(ctx context.Context, options ...GetContainerIconsOptions) (result GetContainerIconsResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetContainerIcons takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetContainerIconsOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/container-icons",
 	}
 
@@ -62,7 +76,7 @@ func (c Client) GetContainerIcons(ctx context.Context, options GetContainerIcons
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

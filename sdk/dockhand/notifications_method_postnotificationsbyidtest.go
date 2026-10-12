@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostNotificationsByIdTestOperationResponse is the result of PostNotificationsByIdTest.
-type PostNotificationsByIdTestOperationResponse struct {
+// PostNotificationsByIdTestResponse is the result of PostNotificationsByIdTest.
+//
+// Answer is the PostNotificationsByIdTestAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostNotificationsByIdTestResponse struct {
 	HttpResponse *http.Response
-	Model        *PostNotificationsByIdTestResponse
+	Answer       *PostNotificationsByIdTestAnswer
+	*PostNotificationsByIdTestAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostNotificationsByIdTestResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostNotificationsByIdTestAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostNotificationsByIdTestResponse) Record() (PostNotificationsByIdTestAnswer, error) {
+	if r.Answer == nil {
+		return PostNotificationsByIdTestAnswer{}, errors.New("PostNotificationsByIdTest answered no PostNotificationsByIdTestAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostNotificationsByIdTest calls POST /api/notifications/{id}/test. Send a test notification through an already-saved notification setting.
-func (c Client) PostNotificationsByIdTest(ctx context.Context, id int) (result PostNotificationsByIdTestOperationResponse, err error) {
+func (c Client) PostNotificationsByIdTest(ctx context.Context, id NotificationID) (result PostNotificationsByIdTestResponse, err error) {
+	result.PostNotificationsByIdTestAnswer = &PostNotificationsByIdTestAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
-		Path:       fmt.Sprintf("/api/notifications/%d/test", id),
+		Path:       fmt.Sprintf("/api/notifications/%s/test", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) PostNotificationsByIdTest(ctx context.Context, id int) (result P
 		return
 	}
 
-	var model PostNotificationsByIdTestResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostNotificationsByIdTestAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostNotificationsByIdTestAnswer = result.Answer
 
 	return
 }

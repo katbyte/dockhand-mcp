@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetHealthOperationResponse is the result of GetHealth.
-type GetHealthOperationResponse struct {
+// GetHealthResponse is the result of GetHealth.
+//
+// Answer is the GetHealthAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetHealthResponse struct {
 	HttpResponse *http.Response
-	Model        *GetHealthResponse
+	Answer       *GetHealthAnswer
+	*GetHealthAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetHealthResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetHealthAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetHealthResponse) Record() (GetHealthAnswer, error) {
+	if r.Answer == nil {
+		return GetHealthAnswer{}, errors.New("GetHealth answered no GetHealthAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetHealth calls GET /api/health. Liveness probe — always returns 200 when the SvelteKit process is up.
-func (c Client) GetHealth(ctx context.Context) (result GetHealthOperationResponse, err error) {
+func (c Client) GetHealth(ctx context.Context) (result GetHealthResponse, err error) {
+	result.GetHealthAnswer = &GetHealthAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) GetHealth(ctx context.Context) (result GetHealthOperationRespons
 		return
 	}
 
-	var model GetHealthResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetHealthAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetHealthAnswer = result.Answer
 
 	return
 }

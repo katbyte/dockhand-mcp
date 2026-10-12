@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,42 +13,73 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostImagesByIdTagOperationResponse is the result of PostImagesByIdTag.
-type PostImagesByIdTagOperationResponse struct {
+// PostImagesByIdTagResponse is the result of PostImagesByIdTag.
+//
+// Answer is the PostImagesByIdTagAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostImagesByIdTagResponse struct {
 	HttpResponse *http.Response
-	Model        *PostImagesByIdTagResponse
+	Answer       *PostImagesByIdTagAnswer
+	*PostImagesByIdTagAnswer
 }
 
-// PostImagesByIdTagOperationOptions holds the query and header parameters of PostImagesByIdTag.
-type PostImagesByIdTagOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostImagesByIdTagResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostImagesByIdTagAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostImagesByIdTagResponse) Record() (PostImagesByIdTagAnswer, error) {
+	if r.Answer == nil {
+		return PostImagesByIdTagAnswer{}, errors.New("PostImagesByIdTag answered no PostImagesByIdTagAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostImagesByIdTagOptions holds the query and header parameters of PostImagesByIdTag.
+type PostImagesByIdTagOptions struct {
 	// ID of the environment the image belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostImagesByIdTagOperationOptions) ToHeaders() *client.Headers {
+func (o PostImagesByIdTagOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostImagesByIdTagOperationOptions) ToQuery() *client.QueryParams {
+func (o PostImagesByIdTagOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostImagesByIdTag calls POST /api/images/{id}/tag. Tag a Docker image into a repository (defaults the tag to "latest").
-func (c Client) PostImagesByIdTag(ctx context.Context, id string, input PostImagesByIdTagRequest, options PostImagesByIdTagOperationOptions) (result PostImagesByIdTagOperationResponse, err error) {
+func (c Client) PostImagesByIdTag(ctx context.Context, id string, input PostImagesByIdTagRequest, options ...PostImagesByIdTagOptions) (result PostImagesByIdTagResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostImagesByIdTag takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostImagesByIdTagOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostImagesByIdTagAnswer = &PostImagesByIdTagAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/images/%s/tag", url.PathEscape(id)),
 	}
 
@@ -69,11 +101,12 @@ func (c Client) PostImagesByIdTag(ctx context.Context, id string, input PostImag
 		return
 	}
 
-	var model PostImagesByIdTagResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostImagesByIdTagAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostImagesByIdTagAnswer = result.Answer
 
 	return
 }

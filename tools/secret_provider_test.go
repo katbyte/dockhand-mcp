@@ -64,7 +64,7 @@ func TestSecretProviderList(t *testing.T) {
 	if len(rows) != 3 || rows[0]["name"] != "main" || rows[1]["name"] != "Main" || rows[2]["name"] != "spare" || acctest.Num(t, out["total"], "total") != 3 {
 		t.Fatalf("the providers, by name = %v", out)
 	}
-	if got := flat(rows[0]); got != `{"changed":"2026-10-11T03:25:22.481Z","created":"2026-10-11 03:22:58","default":true,"id":1,"name":"main","settings":{"address":"http://vault.example:8200","audit_token":"***","mount":"kv","verify":"true"},"stacks":[{"env":"#9","stack":"old"},{"env":"alpha","stack":"apps"},{"env":"alpha","stack":"mail"}],"type":"vault"}` {
+	if got := flat(rows[0]); got != `{"changed":"2026-10-11T03:25:22Z","created":"2026-10-11T03:22:58Z","default":true,"id":1,"name":"main","settings":{"address":"http://vault.example:8200","audit_token":"***","mount":"kv","verify":"true"},"stacks":[{"env":"#9","stack":"old"},{"env":"alpha","stack":"apps"},{"env":"alpha","stack":"mail"}],"type":"vault"}` {
 		t.Errorf("a provider stacks use = %s", got)
 	}
 	if rows[1]["settings"] != nil || rows[1]["stacks"] != nil || rows[1]["default"] != nil || acctest.Object(t, rows[2]["settings"], "settings")["project"] != "web" {
@@ -311,7 +311,7 @@ func TestSecretProviderCreate(t *testing.T) {
 		if body := dock.Last(providerMake).Body; body != `{"config":{"address":"http://vault.example:8200","token":"made-up-token"},"name":"second","type":"vault"}` || dock.Last(providerTry).Body != `{"config":{"address":"http://vault.example:8200","token":"made-up-token"},"type":"vault"}` || dock.Last(defaultSet).Body != `{"providerId":9}` {
 			t.Errorf("a provider was saved with %s, tried with %s, made the default with %s", body, dock.Last(providerTry).Body, dock.Last(defaultSet).Body)
 		}
-		if got := flat(out); got != `{"changes":["saved the vault provider second","made it the default"],"provider":{"changed":"2026-10-11 04:00:00","created":"2026-10-11 04:00:00","default":true,"id":9,"name":"second","settings":{"address":"http://vault.example:8200"},"type":"vault"}}` {
+		if got := flat(out); got != `{"changes":["saved the vault provider second","made it the default"],"provider":{"changed":"2026-10-11T04:00:00Z","created":"2026-10-11T04:00:00Z","default":true,"id":9,"name":"second","settings":{"address":"http://vault.example:8200"},"type":"vault"}}` {
 			t.Errorf("a provider saved = %s", got)
 		}
 

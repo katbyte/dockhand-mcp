@@ -311,7 +311,7 @@ func TestAPanicInAToolIsAnErrorNotACrash(t *testing.T) {
 	}}
 	type none struct{}
 	add(r, writeTool, &mcp.Tool{Name: "zzyzx_panic"}, func(context.Context, *mcp.CallToolRequest, none) (*mcp.CallToolResult, none, error) {
-		var found map[string]*dockhand.GetEnvironmentsResponse
+		var found map[string]*dockhand.GetEnvironmentsAnswer
 
 		return nil, none{}, errors.New(found["9"].Name) // a nil dereference
 	})

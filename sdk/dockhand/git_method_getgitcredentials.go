@@ -9,14 +9,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetGitCredentialsOperationResponse is the result of GetGitCredentials.
-type GetGitCredentialsOperationResponse struct {
+// GetGitCredentialsResponse is the result of GetGitCredentials.
+type GetGitCredentialsResponse struct {
 	HttpResponse *http.Response
-	Model        []GetGitCredentialsResponse
+	Answer       []GetGitCredentialsAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetGitCredentialsResponse) Answered() bool { return r.Answer != nil }
+
 // GetGitCredentials calls GET /api/git/credentials. List all stored git credentials with secrets stripped (only hasPassword/hasSshKey flags returned).
-func (c Client) GetGitCredentials(ctx context.Context) (result GetGitCredentialsOperationResponse, err error) {
+func (c Client) GetGitCredentials(ctx context.Context) (result GetGitCredentialsResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,7 +43,7 @@ func (c Client) GetGitCredentials(ctx context.Context) (result GetGitCredentials
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

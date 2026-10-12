@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteTagsByIdOperationResponse is the result of DeleteTagsById.
-type DeleteTagsByIdOperationResponse struct {
+// DeleteTagsByIdResponse is the result of DeleteTagsById.
+//
+// Answer is the DeleteTagsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteTagsByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteTagsByIdResponse
+	Answer       *DeleteTagsByIdAnswer
+	*DeleteTagsByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteTagsByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteTagsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteTagsByIdResponse) Record() (DeleteTagsByIdAnswer, error) {
+	if r.Answer == nil {
+		return DeleteTagsByIdAnswer{}, errors.New("DeleteTagsById answered no DeleteTagsByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // DeleteTagsById calls DELETE /api/tags/{id}. Delete a catalog tag (removes it from every container and stack).
-func (c Client) DeleteTagsById(ctx context.Context, id int) (result DeleteTagsByIdOperationResponse, err error) {
+func (c Client) DeleteTagsById(ctx context.Context, id TagID) (result DeleteTagsByIdResponse, err error) {
+	result.DeleteTagsByIdAnswer = &DeleteTagsByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
-		Path:       fmt.Sprintf("/api/tags/%d", id),
+		Path:       fmt.Sprintf("/api/tags/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) DeleteTagsById(ctx context.Context, id int) (result DeleteTagsBy
 		return
 	}
 
-	var model DeleteTagsByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteTagsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteTagsByIdAnswer = result.Answer
 
 	return
 }

@@ -4,31 +4,54 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetLegalPrivacyOperationResponse is the result of GetLegalPrivacy.
-type GetLegalPrivacyOperationResponse struct {
+// GetLegalPrivacyResponse is the result of GetLegalPrivacy.
+//
+// Answer is the GetLegalPrivacyAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetLegalPrivacyResponse struct {
 	HttpResponse *http.Response
-	Model        *GetLegalPrivacyResponse
+	Answer       *GetLegalPrivacyAnswer
+	*GetLegalPrivacyAnswer
 }
 
-// GetLegalPrivacyOperationOptions holds the query and header parameters of GetLegalPrivacy.
-type GetLegalPrivacyOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetLegalPrivacyResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetLegalPrivacyAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetLegalPrivacyResponse) Record() (GetLegalPrivacyAnswer, error) {
+	if r.Answer == nil {
+		return GetLegalPrivacyAnswer{}, errors.New("GetLegalPrivacy answered no GetLegalPrivacyAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetLegalPrivacyOptions holds the query and header parameters of GetLegalPrivacy.
+type GetLegalPrivacyOptions struct {
 	// Set to "text" to return the raw privacy policy as text/plain instead of JSON
 	Format string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetLegalPrivacyOperationOptions) ToHeaders() *client.Headers {
+func (o GetLegalPrivacyOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetLegalPrivacyOperationOptions) ToQuery() *client.QueryParams {
+func (o GetLegalPrivacyOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Format != "" {
 		out.Append("format", o.Format)
@@ -37,13 +60,23 @@ func (o GetLegalPrivacyOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetLegalPrivacy calls GET /api/legal/privacy. Return the bundled PRIVACY.txt — as JSON by default, or as raw text/plain when format=text.
-func (c Client) GetLegalPrivacy(ctx context.Context, options GetLegalPrivacyOperationOptions) (result GetLegalPrivacyOperationResponse, err error) {
+func (c Client) GetLegalPrivacy(ctx context.Context, options ...GetLegalPrivacyOptions) (result GetLegalPrivacyResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetLegalPrivacy takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetLegalPrivacyOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetLegalPrivacyAnswer = &GetLegalPrivacyAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/legal/privacy",
 	}
 
@@ -61,11 +94,12 @@ func (c Client) GetLegalPrivacy(ctx context.Context, options GetLegalPrivacyOper
 		return
 	}
 
-	var model GetLegalPrivacyResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetLegalPrivacyAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetLegalPrivacyAnswer = result.Answer
 
 	return
 }

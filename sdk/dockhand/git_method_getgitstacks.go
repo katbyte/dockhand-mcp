@@ -4,47 +4,61 @@ package dockhand
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetGitStacksOperationResponse is the result of GetGitStacks.
-type GetGitStacksOperationResponse struct {
+// GetGitStacksResponse is the result of GetGitStacks.
+type GetGitStacksResponse struct {
 	HttpResponse *http.Response
-	Model        []GetGitStacksResponse
+	Answer       []GetGitStacksAnswer
 }
 
-// GetGitStacksOperationOptions holds the query and header parameters of GetGitStacks.
-type GetGitStacksOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetGitStacksResponse) Answered() bool { return r.Answer != nil }
+
+// GetGitStacksOptions holds the query and header parameters of GetGitStacks.
+type GetGitStacksOptions struct {
 	// Filter to a single environment id
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetGitStacksOperationOptions) ToHeaders() *client.Headers {
+func (o GetGitStacksOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetGitStacksOperationOptions) ToQuery() *client.QueryParams {
+func (o GetGitStacksOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetGitStacks calls GET /api/git/stacks. List git-deployed stacks (optionally scoped to one environment).
-func (c Client) GetGitStacks(ctx context.Context, options GetGitStacksOperationOptions) (result GetGitStacksOperationResponse, err error) {
+func (c Client) GetGitStacks(ctx context.Context, options ...GetGitStacksOptions) (result GetGitStacksResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetGitStacks takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetGitStacksOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/git/stacks",
 	}
 
@@ -62,7 +76,7 @@ func (c Client) GetGitStacks(ctx context.Context, options GetGitStacksOperationO
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetRolesByIdOperationResponse is the result of GetRolesById.
-type GetRolesByIdOperationResponse struct {
+// GetRolesByIdResponse is the result of GetRolesById.
+//
+// Answer is the GetRolesByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetRolesByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *GetRolesByIdResponse
+	Answer       *GetRolesByIdAnswer
+	*GetRolesByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetRolesByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetRolesByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetRolesByIdResponse) Record() (GetRolesByIdAnswer, error) {
+	if r.Answer == nil {
+		return GetRolesByIdAnswer{}, errors.New("GetRolesById answered no GetRolesByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetRolesById calls GET /api/roles/{id}. Get a single role by id; needs admin or users:view, plus an enterprise license.
-func (c Client) GetRolesById(ctx context.Context, id int) (result GetRolesByIdOperationResponse, err error) {
+func (c Client) GetRolesById(ctx context.Context, id RoleID) (result GetRolesByIdResponse, err error) {
+	result.GetRolesByIdAnswer = &GetRolesByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
-		Path:       fmt.Sprintf("/api/roles/%d", id),
+		Path:       fmt.Sprintf("/api/roles/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) GetRolesById(ctx context.Context, id int) (result GetRolesByIdOp
 		return
 	}
 
-	var model GetRolesByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetRolesByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetRolesByIdAnswer = result.Answer
 
 	return
 }

@@ -76,8 +76,8 @@ func settingsOf(record any) map[string]any {
 }
 
 // versionSettingsOf is the same of the settings for newer versions.
-func versionSettingsOf(have *dockhand.GetSettingsSemverResponse) map[string]any {
-	return map[string]any{newerVersions + "enabled": yes(have.Enabled), biggestStep: have.MaxBump, newerVersions + "matchFlavor": yes(have.MatchFlavor), newerVersions + "includePrerelease": yes(have.IncludePrerelease)}
+func versionSettingsOf(have *dockhand.GetSettingsSemverAnswer) map[string]any {
+	return map[string]any{newerVersions + "enabled": have.Enabled, biggestStep: have.MaxBump, newerVersions + "matchFlavor": have.MatchFlavor, newerVersions + "includePrerelease": have.IncludePrerelease}
 }
 
 // valueSaid is a setting's value as it is said and compared: a text in quotes, a list as JSON writes one, and a switch or a number as it is.
@@ -191,7 +191,7 @@ func registerSettingsTools(r *registry) {
 			return nil, fmt.Errorf("the general settings could not be read: %w", refusal(err))
 		}
 
-		return settingsOf(have.Model), nil
+		return settingsOf(have.Answer), nil
 	}
 	versions := func(ctx context.Context) (map[string]any, error) {
 		have, err := r.dock.GetSettingsSemver(ctx)
@@ -199,7 +199,7 @@ func registerSettingsTools(r *registry) {
 			return nil, fmt.Errorf("the settings for newer versions could not be read: %w", refusal(err))
 		}
 
-		return versionSettingsOf(have.Model), nil
+		return versionSettingsOf(have.Answer), nil
 	}
 
 	type settingRow struct {

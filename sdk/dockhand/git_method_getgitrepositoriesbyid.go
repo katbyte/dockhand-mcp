@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetGitRepositoriesByIdOperationResponse is the result of GetGitRepositoriesById.
-type GetGitRepositoriesByIdOperationResponse struct {
+// GetGitRepositoriesByIdResponse is the result of GetGitRepositoriesById.
+//
+// Answer is the GetGitRepositoriesByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetGitRepositoriesByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *GetGitRepositoriesByIdResponse
+	Answer       *GetGitRepositoriesByIdAnswer
+	*GetGitRepositoriesByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetGitRepositoriesByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetGitRepositoriesByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetGitRepositoriesByIdResponse) Record() (GetGitRepositoriesByIdAnswer, error) {
+	if r.Answer == nil {
+		return GetGitRepositoriesByIdAnswer{}, errors.New("GetGitRepositoriesById answered no GetGitRepositoriesByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetGitRepositoriesById calls GET /api/git/repositories/{id}. Get a single git repository by ID.
-func (c Client) GetGitRepositoriesById(ctx context.Context, id int) (result GetGitRepositoriesByIdOperationResponse, err error) {
+func (c Client) GetGitRepositoriesById(ctx context.Context, id GitRepositoryID) (result GetGitRepositoriesByIdResponse, err error) {
+	result.GetGitRepositoriesByIdAnswer = &GetGitRepositoriesByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
-		Path:       fmt.Sprintf("/api/git/repositories/%d", id),
+		Path:       fmt.Sprintf("/api/git/repositories/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) GetGitRepositoriesById(ctx context.Context, id int) (result GetG
 		return
 	}
 
-	var model GetGitRepositoriesByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetGitRepositoriesByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetGitRepositoriesByIdAnswer = result.Answer
 
 	return
 }

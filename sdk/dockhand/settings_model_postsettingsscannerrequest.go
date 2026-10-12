@@ -4,10 +4,10 @@ package dockhand
 
 // PostSettingsScannerRequest is an object the document declares inline.
 type PostSettingsScannerRequest struct {
-	EnvId      int    `json:"envId,omitempty"`
-	GrypeArgs  string `json:"grypeArgs,omitempty"`
-	GrypeImage string `json:"grypeImage,omitempty"`
-	Scanner    string `json:"scanner,omitempty"`
-	TrivyArgs  string `json:"trivyArgs,omitempty"`
-	TrivyImage string `json:"trivyImage,omitempty"`
+	EnvId      EnvironmentID `json:"envId,omitempty"`
+	GrypeArgs  string        `json:"grypeArgs,omitempty"`
+	GrypeImage string        `json:"grypeImage,omitempty"`
+	Scanner    Scanner       `json:"scanner,omitempty"`
+	TrivyArgs  string        `json:"trivyArgs,omitempty"`
+	TrivyImage string        `json:"trivyImage,omitempty"`
 }

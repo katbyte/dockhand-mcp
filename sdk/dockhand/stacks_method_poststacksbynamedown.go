@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,23 +13,44 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostStacksByNameDownOperationResponse is the result of PostStacksByNameDown.
-type PostStacksByNameDownOperationResponse struct {
+// PostStacksByNameDownResponse is the result of PostStacksByNameDown.
+//
+// Answer is the PostStacksByNameDownAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostStacksByNameDownResponse struct {
 	HttpResponse *http.Response
-	Model        *PostStacksByNameDownResponse
+	Answer       *PostStacksByNameDownAnswer
+	*PostStacksByNameDownAnswer
 }
 
-// PostStacksByNameDownOperationOptions holds the query and header parameters of PostStacksByNameDown.
-type PostStacksByNameDownOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostStacksByNameDownResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostStacksByNameDownAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostStacksByNameDownResponse) Record() (PostStacksByNameDownAnswer, error) {
+	if r.Answer == nil {
+		return PostStacksByNameDownAnswer{}, errors.New("PostStacksByNameDown answered no PostStacksByNameDownAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostStacksByNameDownOptions holds the query and header parameters of PostStacksByNameDown.
+type PostStacksByNameDownOptions struct {
 	// Environment id (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once
 	Accept string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostStacksByNameDownOperationOptions) ToHeaders() *client.Headers {
+func (o PostStacksByNameDownOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	if o.Accept != "" {
 		out.Append("Accept", o.Accept)
@@ -37,23 +59,33 @@ func (o PostStacksByNameDownOperationOptions) ToHeaders() *client.Headers {
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostStacksByNameDownOperationOptions) ToQuery() *client.QueryParams {
+func (o PostStacksByNameDownOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostStacksByNameDown calls POST /api/stacks/{name}/down. Take a stack down (docker compose down — removes containers, keeps files), asynchronously.
-func (c Client) PostStacksByNameDown(ctx context.Context, name string, input PostStacksByNameDownRequest, options PostStacksByNameDownOperationOptions) (result PostStacksByNameDownOperationResponse, err error) {
+func (c Client) PostStacksByNameDown(ctx context.Context, name string, input PostStacksByNameDownRequest, options ...PostStacksByNameDownOptions) (result PostStacksByNameDownResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostStacksByNameDown takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostStacksByNameDownOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostStacksByNameDownAnswer = &PostStacksByNameDownAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/down", url.PathEscape(name)),
 	}
 
@@ -75,11 +107,12 @@ func (c Client) PostStacksByNameDown(ctx context.Context, name string, input Pos
 		return
 	}
 
-	var model PostStacksByNameDownResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostStacksByNameDownAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostStacksByNameDownAnswer = result.Answer
 
 	return
 }

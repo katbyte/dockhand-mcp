@@ -42,6 +42,81 @@
     "dockhand-preference-answers",
     "dockhand-secret-provider-answers",
     "dockhand-git-answers",
-    "dockhand-job-accept"
+    "dockhand-job-accept",
+    "dockhand-unsaid-flags",
+    "dockhand-dates",
+    "dockhand-unix-dates",
+    "dockhand-enums-everywhere",
+    "dockhand-enums-containers",
+    "dockhand-enums-findings",
+    "dockhand-enums-checks",
+    "dockhand-enums-environments",
+    "dockhand-enums-jobs",
+    "dockhand-enums-stacks",
+    "dockhand-enums-runs",
+    "dockhand-enums-deploys",
+    "dockhand-enums-notifications",
+    "dockhand-enums-secret-providers",
+    "dockhand-enums-changelog",
+    "dockhand-enums-schedules",
+    "dockhand-enums-files",
+    "dockhand-enums-sign-in",
+    "dockhand-enums-templates"
+  ],
+  "Dates": [
+    "2006-01-02T15:04:05.999999999Z07:00",
+    "2006-01-02 15:04:05",
+    "2006-01-02 15:04:05-07:00"
+  ],
+  "DatesKeepUnread": true,
+  "IDs": [
+    {
+      "Name": "EnvironmentID",
+      "Base": "Integer"
+    },
+    {
+      "Name": "NotificationID",
+      "Base": "Integer"
+    },
+    {
+      "Name": "RegistryID",
+      "Base": "Integer"
+    },
+    {
+      "Name": "UserID",
+      "Base": "Integer"
+    },
+    {
+      "Name": "RoleID",
+      "Base": "Integer"
+    },
+    {
+      "Name": "GitRepositoryID",
+      "Base": "Integer"
+    },
+    {
+      "Name": "GitCredentialID",
+      "Base": "Integer"
+    },
+    {
+      "Name": "GitStackID",
+      "Base": "Integer"
+    },
+    {
+      "Name": "SecretProviderID",
+      "Base": "Integer"
+    },
+    {
+      "Name": "ConfigSetID",
+      "Base": "Integer"
+    },
+    {
+      "Name": "TagID",
+      "Base": "Integer"
+    },
+    {
+      "Name": "TemplateSourceID",
+      "Base": "Integer"
+    }
   ]
 }

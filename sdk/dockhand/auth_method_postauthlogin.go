@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostAuthLoginOperationResponse is the result of PostAuthLogin.
-type PostAuthLoginOperationResponse struct {
+// PostAuthLoginResponse is the result of PostAuthLogin.
+//
+// Answer is the PostAuthLoginAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostAuthLoginResponse struct {
 	HttpResponse *http.Response
-	Model        *PostAuthLoginResponse
+	Answer       *PostAuthLoginAnswer
+	*PostAuthLoginAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostAuthLoginResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostAuthLoginAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostAuthLoginResponse) Record() (PostAuthLoginAnswer, error) {
+	if r.Answer == nil {
+		return PostAuthLoginAnswer{}, errors.New("PostAuthLogin answered no PostAuthLoginAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostAuthLogin calls POST /api/auth/login. Authenticate with username/password (local or LDAP) and set the session cookie.
-func (c Client) PostAuthLogin(ctx context.Context, input PostAuthLoginRequest) (result PostAuthLoginOperationResponse, err error) {
+func (c Client) PostAuthLogin(ctx context.Context, input PostAuthLoginRequest) (result PostAuthLoginResponse, err error) {
+	result.PostAuthLoginAnswer = &PostAuthLoginAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostAuthLogin(ctx context.Context, input PostAuthLoginRequest) (
 		return
 	}
 
-	var model PostAuthLoginResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostAuthLoginAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostAuthLoginAnswer = result.Answer
 
 	return
 }

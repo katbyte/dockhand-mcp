@@ -1,4 +1,4 @@
-package dockhand
+package dockhand //nolint:revive // the package comment is in doc.go, which pandorest generates and a linter therefore passes over
 
 import (
 	"bytes"
@@ -71,8 +71,8 @@ func (c Client) sendExactly(ctx context.Context, method, path string, fields, mo
 
 // ForgetEnvironmentPublicIP has Dockhand forget the address an environment's published ports are reached at from outside. PutEnvironmentsById cannot:
 // it leaves an empty publicIp out of what it sends, as it does every text it is not given, and Dockhand keeps what it is not sent.
-func (c Client) ForgetEnvironmentPublicIP(ctx context.Context, id int) (result PutEnvironmentsByIdOperationResponse, err error) {
-	var model PutEnvironmentsByIdResponse
+func (c Client) ForgetEnvironmentPublicIP(ctx context.Context, id int) (result PutEnvironmentsByIdResponse, err error) {
+	var model PutEnvironmentsByIdAnswer
 	resp, err := c.sendExactly(ctx, http.MethodPut, fmt.Sprintf("/api/environments/%d", id), map[string]string{"publicIp": ""}, &model)
 	if resp != nil {
 		result.HttpResponse = resp.Response
@@ -80,7 +80,7 @@ func (c Client) ForgetEnvironmentPublicIP(ctx context.Context, id int) (result P
 	if err != nil {
 		return result, err
 	}
-	result.Model = &model
+	result.Answer = &model
 
 	return result, nil
 }
@@ -160,8 +160,8 @@ func looksLikeJSON(body []byte) bool {
 // ForgetRegistryCredentials has Dockhand forget the user name and password it signs in to a registry with. PutRegistriesById cannot: it leaves an
 // empty name and password out of what it sends, and Dockhand keeps what it is not sent. The registry's name and address go with it, since Dockhand
 // fails a change that does not carry the address.
-func (c Client) ForgetRegistryCredentials(ctx context.Context, id int, name, address string) (result PutRegistriesByIdOperationResponse, err error) {
-	var model PutRegistriesByIdResponse
+func (c Client) ForgetRegistryCredentials(ctx context.Context, id int, name, address string) (result PutRegistriesByIdResponse, err error) {
+	var model PutRegistriesByIdAnswer
 	resp, err := c.sendExactly(ctx, http.MethodPut, fmt.Sprintf("/api/registries/%d", id), map[string]string{"name": name, "url": address, "username": "", "password": ""}, &model)
 	if resp != nil {
 		result.HttpResponse = resp.Response
@@ -169,7 +169,7 @@ func (c Client) ForgetRegistryCredentials(ctx context.Context, id int, name, add
 	if err != nil {
 		return result, err
 	}
-	result.Model = &model
+	result.Answer = &model
 
 	return result, nil
 }
@@ -178,8 +178,8 @@ func (c Client) ForgetRegistryCredentials(ctx context.Context, id int, name, add
 // cannot say every value: it leaves a number that is 0 and a text that is empty out of what it sends, and Dockhand keeps what it is not sent. A grace
 // of no days is a setting Dockhand takes, and an empty text is how the place it keeps its stacks is forgotten. Dockhand can answer that the save
 // failed and have saved it all the same: what it has is told by reading the settings, not by this answer.
-func (c Client) SaveGeneralSettings(ctx context.Context, settings map[string]any) (result PostSettingsGeneralOperationResponse, err error) {
-	var model PostSettingsGeneralResponse
+func (c Client) SaveGeneralSettings(ctx context.Context, settings map[string]any) (result PostSettingsGeneralResponse, err error) {
+	var model PostSettingsGeneralAnswer
 	resp, err := c.sendExactly(ctx, http.MethodPost, "/api/settings/general", settings, &model)
 	if resp != nil {
 		result.HttpResponse = resp.Response
@@ -187,14 +187,14 @@ func (c Client) SaveGeneralSettings(ctx context.Context, settings map[string]any
 	if err != nil {
 		return result, err
 	}
-	result.Model = &model
+	result.Answer = &model
 
 	return result, nil
 }
 
 // ForgetUserDetails has Dockhand forget a user's email address, the name it shows for the user, or both. PutUsersById cannot: it leaves an empty text
 // out of what it sends, and Dockhand keeps what it is not sent.
-func (c Client) ForgetUserDetails(ctx context.Context, id int, email, displayName bool) (result PutUsersByIdOperationResponse, err error) {
+func (c Client) ForgetUserDetails(ctx context.Context, id int, email, displayName bool) (result PutUsersByIdResponse, err error) {
 	forgotten := map[string]string{}
 	if email {
 		forgotten["email"] = ""
@@ -203,7 +203,7 @@ func (c Client) ForgetUserDetails(ctx context.Context, id int, email, displayNam
 		forgotten["displayName"] = ""
 	}
 
-	var model PutUsersByIdResponse
+	var model PutUsersByIdAnswer
 	resp, err := c.sendExactly(ctx, http.MethodPut, fmt.Sprintf("/api/users/%d", id), forgotten, &model)
 	if resp != nil {
 		result.HttpResponse = resp.Response
@@ -211,15 +211,15 @@ func (c Client) ForgetUserDetails(ctx context.Context, id int, email, displayNam
 	if err != nil {
 		return result, err
 	}
-	result.Model = &model
+	result.Answer = &model
 
 	return result, nil
 }
 
 // NeverEndSessions has Dockhand keep a signed-in session until it is signed out of, however long that is. PutAuthSettings cannot: a session that
 // never ends is a time of 0, which it leaves out of what it sends.
-func (c Client) NeverEndSessions(ctx context.Context) (result PutAuthSettingsOperationResponse, err error) {
-	var model PutAuthSettingsResponse
+func (c Client) NeverEndSessions(ctx context.Context) (result PutAuthSettingsResponse, err error) {
+	var model PutAuthSettingsAnswer
 	resp, err := c.sendExactly(ctx, http.MethodPut, "/api/auth/settings", map[string]int{"sessionTimeout": 0}, &model)
 	if resp != nil {
 		result.HttpResponse = resp.Response
@@ -227,15 +227,15 @@ func (c Client) NeverEndSessions(ctx context.Context) (result PutAuthSettingsOpe
 	if err != nil {
 		return result, err
 	}
-	result.Model = &model
+	result.Answer = &model
 
 	return result, nil
 }
 
 // ForgetOidcAdminClaim has Dockhand forget the claim, and the value of it, that a single sign-on provider's record names for an administrator.
 // PutAuthOidcById cannot: it leaves an empty text out of what it sends, and Dockhand keeps what it is not sent.
-func (c Client) ForgetOidcAdminClaim(ctx context.Context, id int) (result PutAuthOidcByIdOperationResponse, err error) {
-	var model PutAuthOidcByIdResponse
+func (c Client) ForgetOidcAdminClaim(ctx context.Context, id int) (result PutAuthOidcByIdResponse, err error) {
+	var model PutAuthOidcByIdAnswer
 	resp, err := c.sendExactly(ctx, http.MethodPut, fmt.Sprintf("/api/auth/oidc/%d", id), map[string]string{"adminClaim": "", "adminValue": ""}, &model)
 	if resp != nil {
 		result.HttpResponse = resp.Response
@@ -243,15 +243,15 @@ func (c Client) ForgetOidcAdminClaim(ctx context.Context, id int) (result PutAut
 	if err != nil {
 		return result, err
 	}
-	result.Model = &model
+	result.Answer = &model
 
 	return result, nil
 }
 
 // ForgetTagIcon has Dockhand forget the icon a tag was given. PutTagsById cannot: it leaves an empty text out of what it sends, and Dockhand keeps
 // what it is not sent.
-func (c Client) ForgetTagIcon(ctx context.Context, id int) (result PutTagsByIdOperationResponse, err error) {
-	var model PutTagsByIdResponse
+func (c Client) ForgetTagIcon(ctx context.Context, id int) (result PutTagsByIdResponse, err error) {
+	var model PutTagsByIdAnswer
 	resp, err := c.sendExactly(ctx, http.MethodPut, fmt.Sprintf("/api/tags/%d", id), map[string]string{"icon": ""}, &model)
 	if resp != nil {
 		result.HttpResponse = resp.Response
@@ -259,15 +259,15 @@ func (c Client) ForgetTagIcon(ctx context.Context, id int) (result PutTagsByIdOp
 	if err != nil {
 		return result, err
 	}
-	result.Model = &model
+	result.Answer = &model
 
 	return result, nil
 }
 
 // ForgetConfigSetDescription has Dockhand forget the description a config set was given. PutConfigSetsById cannot: it leaves an empty text out of
 // what it sends, and Dockhand keeps what it is not sent.
-func (c Client) ForgetConfigSetDescription(ctx context.Context, id int) (result PutConfigSetsByIdOperationResponse, err error) {
-	var model PutConfigSetsByIdResponse
+func (c Client) ForgetConfigSetDescription(ctx context.Context, id int) (result PutConfigSetsByIdResponse, err error) {
+	var model PutConfigSetsByIdAnswer
 	resp, err := c.sendExactly(ctx, http.MethodPut, fmt.Sprintf("/api/config-sets/%d", id), map[string]string{"description": ""}, &model)
 	if resp != nil {
 		result.HttpResponse = resp.Response
@@ -275,14 +275,14 @@ func (c Client) ForgetConfigSetDescription(ctx context.Context, id int) (result 
 	if err != nil {
 		return result, err
 	}
-	result.Model = &model
+	result.Answer = &model
 
 	return result, nil
 }
 
 // ForgetNavigationPages has Dockhand forget the page it opens on, the page a click on an environment opens, or both, for everyone who chose none of
 // their own. PutSettingsNavigation cannot: it leaves an empty text out of what it sends, and Dockhand keeps what it is not sent.
-func (c Client) ForgetNavigationPages(ctx context.Context, landing, envClick bool) (result PutSettingsNavigationOperationResponse, err error) {
+func (c Client) ForgetNavigationPages(ctx context.Context, landing, envClick bool) (result PutSettingsNavigationResponse, err error) {
 	pages := map[string]any{}
 	if landing {
 		pages["landingPage"] = nil
@@ -290,7 +290,7 @@ func (c Client) ForgetNavigationPages(ctx context.Context, landing, envClick boo
 	if envClick {
 		pages["envClickPage"] = nil
 	}
-	var model PutSettingsNavigationResponse
+	var model PutSettingsNavigationAnswer
 	resp, err := c.sendExactly(ctx, http.MethodPut, "/api/settings/navigation?scope=global", pages, &model)
 	if resp != nil {
 		result.HttpResponse = resp.Response
@@ -298,15 +298,15 @@ func (c Client) ForgetNavigationPages(ctx context.Context, landing, envClick boo
 	if err != nil {
 		return result, err
 	}
-	result.Model = &model
+	result.Answer = &model
 
 	return result, nil
 }
 
 // SetLogFavorites saves everything kept for an environment's log view, in order: a container's name as a text and a group as a record of its name and
 // its containers. PostPreferencesFavorites cannot send a group: it takes names alone, and what is sent is all that is kept afterwards.
-func (c Client) SetLogFavorites(ctx context.Context, env int, kept []any) (result PostPreferencesFavoritesOperationResponse, err error) {
-	var model PostPreferencesFavoritesResponse
+func (c Client) SetLogFavorites(ctx context.Context, env int, kept []any) (result PostPreferencesFavoritesResponse, err error) {
+	var model PostPreferencesFavoritesAnswer
 	resp, err := c.sendExactly(ctx, http.MethodPost, "/api/preferences/favorites", map[string]any{"environmentId": env, "action": "reorder", "favorites": append([]any{}, kept...)}, &model)
 	if resp != nil {
 		result.HttpResponse = resp.Response
@@ -314,15 +314,15 @@ func (c Client) SetLogFavorites(ctx context.Context, env int, kept []any) (resul
 	if err != nil {
 		return result, err
 	}
-	result.Model = &model
+	result.Answer = &model
 
 	return result, nil
 }
 
 // ForgetStackSecretProvider saves a stack's compose file and takes the stack off the secret provider its secrets were loaded from.
 // PutStacksByNameCompose cannot: it leaves a provider of 0 out of what it sends, and Dockhand keeps the provider it is not sent.
-func (c Client) ForgetStackSecretProvider(ctx context.Context, name, content string, env int) (result PutStacksByNameComposeOperationResponse, err error) {
-	var model PutStacksByNameComposeResponse
+func (c Client) ForgetStackSecretProvider(ctx context.Context, name, content string, env int) (result PutStacksByNameComposeResponse, err error) {
+	var model PutStacksByNameComposeAnswer
 	resp, err := c.sendExactly(ctx, http.MethodPut, "/api/stacks/"+url.PathEscape(name)+"/compose?env="+strconv.Itoa(env), map[string]any{"content": content, "secretProviderId": nil}, &model)
 	if resp != nil {
 		result.HttpResponse = resp.Response
@@ -330,7 +330,7 @@ func (c Client) ForgetStackSecretProvider(ctx context.Context, name, content str
 	if err != nil {
 		return result, err
 	}
-	result.Model = &model
+	result.Answer = &model
 
 	return result, nil
 }
@@ -344,7 +344,7 @@ type GitStackSettings struct {
 // ForgetGitStackSettings takes the settings named away from a git stack, which then follows its repository's own branch, reads no extra .env file,
 // and so on. PutGitStacksById cannot: it leaves an empty value out of what it sends, and Dockhand keeps what it is not sent. The webhook is switched
 // off with its secret, since Dockhand refuses to forget the secret of one that is on.
-func (c Client) ForgetGitStackSettings(ctx context.Context, id int, which GitStackSettings) (result PutGitStacksByIdOperationResponse, err error) {
+func (c Client) ForgetGitStackSettings(ctx context.Context, id int, which GitStackSettings) (result PutGitStacksByIdResponse, err error) {
 	forgotten := map[string]any{}
 	for field, named := range map[string]bool{"branch": which.Branch, "envFilePath": which.EnvFilePath, "contextDir": which.ContextDir, "secretProviderId": which.SecretProvider, "webhookSecret": which.Webhook} {
 		if named {
@@ -355,7 +355,7 @@ func (c Client) ForgetGitStackSettings(ctx context.Context, id int, which GitSta
 		forgotten["webhookEnabled"] = false
 	}
 
-	var model PutGitStacksByIdResponse
+	var model PutGitStacksByIdAnswer
 	resp, err := c.sendExactly(ctx, http.MethodPut, fmt.Sprintf("/api/git/stacks/%d", id), forgotten, &model)
 	if resp != nil {
 		result.HttpResponse = resp.Response
@@ -363,15 +363,15 @@ func (c Client) ForgetGitStackSettings(ctx context.Context, id int, which GitSta
 	if err != nil {
 		return result, err
 	}
-	result.Model = &model
+	result.Answer = &model
 
 	return result, nil
 }
 
 // ForgetGitRepositoryCredential has a git repository fetched with no credential from then on. PutGitRepositoriesById cannot: it leaves a credential
 // of 0 out of what it sends, and Dockhand keeps the one it is not sent.
-func (c Client) ForgetGitRepositoryCredential(ctx context.Context, id int) (result PutGitRepositoriesByIdOperationResponse, err error) {
-	var model PutGitRepositoriesByIdResponse
+func (c Client) ForgetGitRepositoryCredential(ctx context.Context, id int) (result PutGitRepositoriesByIdResponse, err error) {
+	var model PutGitRepositoriesByIdAnswer
 	resp, err := c.sendExactly(ctx, http.MethodPut, fmt.Sprintf("/api/git/repositories/%d", id), map[string]any{"credentialId": nil}, &model)
 	if resp != nil {
 		result.HttpResponse = resp.Response
@@ -379,7 +379,7 @@ func (c Client) ForgetGitRepositoryCredential(ctx context.Context, id int) (resu
 	if err != nil {
 		return result, err
 	}
-	result.Model = &model
+	result.Answer = &model
 
 	return result, nil
 }

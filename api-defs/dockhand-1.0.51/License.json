@@ -12,7 +12,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteLicenseResponse"
+          "ReferenceName": "DeleteLicenseAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -29,7 +29,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetLicenseResponse"
+          "ReferenceName": "GetLicenseAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -53,7 +53,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostLicenseResponse"
+          "ReferenceName": "PostLicenseAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -63,7 +63,7 @@
   ],
   "Models": [
     {
-      "Name": "DeleteLicenseResponse",
+      "Name": "DeleteLicenseAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -76,7 +76,7 @@
       ]
     },
     {
-      "Name": "GetLicenseResponse",
+      "Name": "GetLicenseAnswer",
       "Fields": [
         {
           "Name": "Active",
@@ -104,28 +104,7 @@
       ]
     },
     {
-      "Name": "PostLicenseRequest",
-      "Fields": [
-        {
-          "Name": "Key",
-          "JsonName": "key",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Name",
-          "JsonName": "name",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostLicenseResponse",
+      "Name": "PostLicenseAnswer",
       "Fields": [
         {
           "Name": "License",
@@ -142,6 +121,27 @@
           "JsonName": "success",
           "Type": {
             "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostLicenseRequest",
+      "Fields": [
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
           },
           "Required": true
         }

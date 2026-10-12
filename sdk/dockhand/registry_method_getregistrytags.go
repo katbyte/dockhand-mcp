@@ -4,22 +4,44 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetRegistryTagsOperationResponse is the result of GetRegistryTags.
-type GetRegistryTagsOperationResponse struct {
+// GetRegistryTagsResponse is the result of GetRegistryTags.
+//
+// Answer is the GetRegistryTagsAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetRegistryTagsResponse struct {
 	HttpResponse *http.Response
-	Model        *GetRegistryTagsResponse
+	Answer       *GetRegistryTagsAnswer
+	*GetRegistryTagsAnswer
 }
 
-// GetRegistryTagsOperationOptions holds the query and header parameters of GetRegistryTags.
-type GetRegistryTagsOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetRegistryTagsResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetRegistryTagsAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetRegistryTagsResponse) Record() (GetRegistryTagsAnswer, error) {
+	if r.Answer == nil {
+		return GetRegistryTagsAnswer{}, errors.New("GetRegistryTags answered no GetRegistryTagsAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetRegistryTagsOptions holds the query and header parameters of GetRegistryTags.
+type GetRegistryTagsOptions struct {
 	// ID of the configured registry; omit to query Docker Hub (from GET /api/registries)
-	Registry *int
+	Registry RegistryID
 
 	// Repository/image name
 	Image string
@@ -32,16 +54,16 @@ type GetRegistryTagsOperationOptions struct {
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetRegistryTagsOperationOptions) ToHeaders() *client.Headers {
+func (o GetRegistryTagsOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetRegistryTagsOperationOptions) ToQuery() *client.QueryParams {
+func (o GetRegistryTagsOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Registry != nil {
-		out.Append("registry", strconv.Itoa(*o.Registry))
+	if o.Registry != 0 {
+		out.Append("registry", strconv.Itoa(int(o.Registry)))
 	}
 	if o.Image != "" {
 		out.Append("image", o.Image)
@@ -56,7 +78,8 @@ func (o GetRegistryTagsOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetRegistryTags calls GET /api/registry/tags. List the tags of an image from Docker Hub or a configured registry (paginated for Docker Hub).
-func (c Client) GetRegistryTags(ctx context.Context, options GetRegistryTagsOperationOptions) (result GetRegistryTagsOperationResponse, err error) {
+func (c Client) GetRegistryTags(ctx context.Context, options GetRegistryTagsOptions) (result GetRegistryTagsResponse, err error) {
+	result.GetRegistryTagsAnswer = &GetRegistryTagsAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -80,11 +103,12 @@ func (c Client) GetRegistryTags(ctx context.Context, options GetRegistryTagsOper
 		return
 	}
 
-	var model GetRegistryTagsResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetRegistryTagsAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetRegistryTagsAnswer = result.Answer
 
 	return
 }

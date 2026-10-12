@@ -9,14 +9,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetSecretProvidersOperationResponse is the result of GetSecretProviders.
-type GetSecretProvidersOperationResponse struct {
+// GetSecretProvidersResponse is the result of GetSecretProviders.
+type GetSecretProvidersResponse struct {
 	HttpResponse *http.Response
-	Model        []GetSecretProvidersResponse
+	Answer       []GetSecretProvidersAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetSecretProvidersResponse) Answered() bool { return r.Answer != nil }
+
 // GetSecretProviders calls GET /api/secret-providers. List configured secret providers (summaries never include the decrypted config).
-func (c Client) GetSecretProviders(ctx context.Context) (result GetSecretProvidersOperationResponse, err error) {
+func (c Client) GetSecretProviders(ctx context.Context) (result GetSecretProvidersResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,7 +43,7 @@ func (c Client) GetSecretProviders(ctx context.Context) (result GetSecretProvide
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

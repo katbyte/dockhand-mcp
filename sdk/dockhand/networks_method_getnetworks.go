@@ -4,47 +4,61 @@ package dockhand
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetNetworksOperationResponse is the result of GetNetworks.
-type GetNetworksOperationResponse struct {
+// GetNetworksResponse is the result of GetNetworks.
+type GetNetworksResponse struct {
 	HttpResponse *http.Response
-	Model        []GetNetworksResponse
+	Answer       []GetNetworksAnswer
 }
 
-// GetNetworksOperationOptions holds the query and header parameters of GetNetworks.
-type GetNetworksOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetNetworksResponse) Answered() bool { return r.Answer != nil }
+
+// GetNetworksOptions holds the query and header parameters of GetNetworks.
+type GetNetworksOptions struct {
 	// Environment ID to list networks from (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetNetworksOperationOptions) ToHeaders() *client.Headers {
+func (o GetNetworksOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetNetworksOperationOptions) ToQuery() *client.QueryParams {
+func (o GetNetworksOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetNetworks calls GET /api/networks. List Docker networks for an environment (returns an empty array when no env is given).
-func (c Client) GetNetworks(ctx context.Context, options GetNetworksOperationOptions) (result GetNetworksOperationResponse, err error) {
+func (c Client) GetNetworks(ctx context.Context, options ...GetNetworksOptions) (result GetNetworksResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetNetworks takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetNetworksOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/networks",
 	}
 
@@ -62,7 +76,7 @@ func (c Client) GetNetworks(ctx context.Context, options GetNetworksOperationOpt
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

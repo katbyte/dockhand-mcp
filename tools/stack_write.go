@@ -41,15 +41,15 @@ func (r *registry) noFile(ctx context.Context, env environment, stack string) er
 // fileGiven gives a stack Dockhand keeps a record of, and has no file for, the compose file at a path: the file is read where it lies and saved back
 // there as that stack's, unchanged, which is how Dockhand comes to have it.
 func (r *registry) fileGiven(ctx context.Context, env environment, stack, path string) error {
-	read, err := r.dock.GetSystemFilesContent(ctx, dockhand.GetSystemFilesContentOperationOptions{Path: path})
+	read, err := r.dock.GetSystemFilesContent(ctx, dockhand.GetSystemFilesContentOptions{Path: path})
 	if err != nil {
 		return fmt.Errorf("%s was not adopted: the compose file at %s could not be read: %w", stack, path, refusal(err))
 	}
-	saved, err := r.dock.PutStacksByNameCompose(ctx, stack, dockhand.PutStacksByNameComposeRequest{Content: read.Model.Content, ComposePath: path}, dockhand.PutStacksByNameComposeOperationOptions{Env: &env.ID})
+	saved, err := r.dock.PutStacksByNameCompose(ctx, stack, dockhand.PutStacksByNameComposeRequest{Content: read.Answer.Content, ComposePath: path}, dockhand.PutStacksByNameComposeOptions{Env: env.ID})
 	if err != nil {
 		return fmt.Errorf("%s was not adopted: %w", stack, refusal(err))
 	}
-	if !yes(saved.Model.Success) {
+	if !saved.Answer.Success {
 		return fmt.Errorf("%s was not adopted: %w", stack, errNotSaid)
 	}
 
@@ -71,7 +71,7 @@ func (r *registry) standing(ctx context.Context, env environment, stack string) 
 		}
 		slices.Sort(containers)
 
-		return listed[i].Status, containers, nil
+		return string(listed[i].Status), containers, nil
 	}
 
 	return stackGone, nil, nil
@@ -90,16 +90,16 @@ func (r *registry) newestRun(ctx context.Context, env environment, stack string)
 // deploy brings a stack up from the compose file Dockhand has for it, as a job Dockhand runs, and waits for it as long as the patience given. Still
 // running then, the state says so and there is nothing printed yet.
 func (r *registry) deploy(ctx context.Context, env environment, stack string, how dockhand.PostStacksByNameDeployRequest, patience time.Duration) (printed []string, state jobState, err error) {
-	started, err := r.dock.PostStacksByNameDeploy(ctx, stack, how, dockhand.PostStacksByNameDeployOperationOptions{Accept: dockhand.AcceptJob, Env: &env.ID})
+	started, err := r.dock.PostStacksByNameDeploy(ctx, stack, how, dockhand.PostStacksByNameDeployOptions{Accept: dockhand.AcceptJob, Env: env.ID})
 	if err != nil {
 		return nil, jobState{}, refusal(err)
 	}
-	outcome, state, err := settle(ctx, r, started.Model.JobId, started.Model, patience)
+	outcome, state, err := settle(ctx, r, started.Answer.JobId, started.Answer, patience)
 	if err != nil || state.Running {
 		return nil, state, err
 	}
 	// a caller made to wait is answered a failure with HTTP 200 all the same
-	if !yes(outcome.Success) {
+	if !outcome.Success {
 		return nil, state, errors.New(cmp.Or(lastLine(outcome.Error), "Dockhand says it could not, and gives no reason"))
 	}
 
@@ -125,7 +125,7 @@ func lastLines(printed string, keep int) []string {
 }
 
 // refusedBy is the findings that keep a compose file from being used, in words, and how many more findings there are that do not.
-func refusedBy(findings []dockhand.PostStacksByNameValidateResponseFindings) (errs []string, others int) {
+func refusedBy(findings []dockhand.PostStacksByNameValidateAnswerFindings) (errs []string, others int) {
 	for i := range findings {
 		if findings[i].Severity != findingError {
 			others++
@@ -195,7 +195,7 @@ func registerStackWriteTools(r *registry) {
 		if err != nil {
 			return nil, stackDeployOut{}, err
 		}
-		out := stackDeployOut{Env: env.Name, Stack: stack.Name, Was: stack.Status, Changes: []string{}, DryRun: in.DryRun}
+		out := stackDeployOut{Env: env.Name, Stack: stack.Name, Was: string(stack.Status), Changes: []string{}, DryRun: in.DryRun}
 
 		file, has, err := r.composeOf(ctx, env, stack.Name)
 		if err != nil {
@@ -219,7 +219,7 @@ func registerStackWriteTools(r *registry) {
 			how += ", " + strings.Join(first, " and ")
 		}
 		if in.DryRun {
-			out.Is = stack.Status
+			out.Is = string(stack.Status)
 			out.Changes = append(out.Changes, "would bring up "+how)
 
 			return nil, out, nil
@@ -245,8 +245,8 @@ func registerStackWriteTools(r *registry) {
 			}
 
 			// a stack whose secrets cannot be loaded is not deployed, and Dockhand says only that it failed
-			if vars, unread := r.dock.GetStacksByNameEnv(ctx, stack.Name, dockhand.GetStacksByNameEnvOperationOptions{Env: &env.ID}); unread == nil && vars.Model.SecretProvider != nil {
-				where += fmt.Sprintf("; its secrets are loaded from the secret provider %s, and a stack is not deployed while its provider cannot be reached or has nothing at the path the stack names", vars.Model.SecretProvider.Name)
+			if vars, unread := r.dock.GetStacksByNameEnv(ctx, stack.Name, dockhand.GetStacksByNameEnvOptions{Env: env.ID}); unread == nil && vars.Answer.SecretProvider != nil {
+				where += fmt.Sprintf("; its secrets are loaded from the secret provider %s, and a stack is not deployed while its provider cannot be reached or has nothing at the path the stack names", vars.Answer.SecretProvider.Name)
 			}
 
 			return nil, out, fmt.Errorf("%s on %s was not deployed: %w; what was running is left as it was%s", stack.Name, env.Name, err, where)
@@ -306,7 +306,7 @@ func registerStackWriteTools(r *registry) {
 		if err != nil {
 			return nil, stackDownOut{}, err
 		}
-		out := stackDownOut{Env: env.Name, Stack: stack.Name, Was: stack.Status, Removed: []string{}, DryRun: in.DryRun}
+		out := stackDownOut{Env: env.Name, Stack: stack.Name, Was: string(stack.Status), Removed: []string{}, DryRun: in.DryRun}
 
 		_, has, err := r.composeOf(ctx, env, stack.Name)
 		if err != nil {
@@ -318,11 +318,11 @@ func registerStackWriteTools(r *registry) {
 
 		var named []string
 		if in.RemoveVolumes {
-			preview, failed := r.dock.GetStacksByNameDeletePreview(ctx, stack.Name, dockhand.GetStacksByNameDeletePreviewOperationOptions{Env: &env.ID})
+			preview, failed := r.dock.GetStacksByNameDeletePreview(ctx, stack.Name, dockhand.GetStacksByNameDeletePreviewOptions{Env: env.ID})
 			if failed != nil {
 				return nil, out, fmt.Errorf("the volumes of %s could not be listed, so nothing was taken down: %w", stack.Name, refusal(failed))
 			}
-			named = preview.Model.NamedVolumes
+			named = preview.Answer.NamedVolumes
 		}
 		_, there, err := r.standing(ctx, env, stack.Name)
 		if err != nil {
@@ -331,7 +331,7 @@ func registerStackWriteTools(r *registry) {
 
 		const onlyStops = "Dockhand has no compose file for this stack, which was brought up on the host itself, so all it does is stop the stack's containers: nothing is removed"
 		if in.DryRun {
-			out.Is = stack.Status
+			out.Is = string(stack.Status)
 			if has {
 				out.Removed, out.Volumes = append(out.Removed, there...), named
 			} else {
@@ -345,11 +345,11 @@ func registerStackWriteTools(r *registry) {
 		if in.RemoveVolumes {
 			request.RemoveVolumes = new(true)
 		}
-		started, err := r.dock.PostStacksByNameDown(ctx, stack.Name, request, dockhand.PostStacksByNameDownOperationOptions{Accept: dockhand.AcceptJob, Env: &env.ID})
+		started, err := r.dock.PostStacksByNameDown(ctx, stack.Name, request, dockhand.PostStacksByNameDownOptions{Accept: dockhand.AcceptJob, Env: env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("%s on %s was not taken down: %w", stack.Name, env.Name, refusal(err))
 		}
-		outcome, state, err := settle(ctx, r, started.Model.JobId, started.Model, patience)
+		outcome, state, err := settle(ctx, r, started.Answer.JobId, started.Answer, patience)
 		out.jobState = state
 		if err != nil {
 			return nil, out, fmt.Errorf("%s on %s was not taken down: %w", stack.Name, env.Name, err)
@@ -359,7 +359,7 @@ func registerStackWriteTools(r *registry) {
 
 			return nil, out, nil
 		}
-		if !yes(outcome.Success) {
+		if !outcome.Success {
 			return nil, out, fmt.Errorf("%s on %s was not taken down: Dockhand says %s", stack.Name, env.Name, cmp.Or(lastLine(outcome.Error), "it could not, and gives no reason"))
 		}
 
@@ -392,7 +392,7 @@ func registerStackWriteTools(r *registry) {
 			}
 			var kept []string
 			for _, name := range named {
-				if slices.ContainsFunc(volumes, func(v dockhand.GetVolumesResponse) bool { return v.Name == name }) {
+				if slices.ContainsFunc(volumes, func(v dockhand.GetVolumesAnswer) bool { return v.Name == name }) {
 					kept = append(kept, name)
 				} else {
 					out.Volumes = append(out.Volumes, name)
@@ -476,11 +476,11 @@ func registerStackWriteTools(r *registry) {
 			return nil, out, fmt.Errorf("a stack named %s is already on %s: stack_edit changes its file, and a new stack takes a name of its own", name, env.Name)
 		}
 
-		checked, err := r.dock.PostStacksByNameValidate(ctx, name, dockhand.PostStacksByNameValidateRequest{Compose: in.Compose}, dockhand.PostStacksByNameValidateOperationOptions{Env: &env.ID})
+		checked, err := r.dock.PostStacksByNameValidate(ctx, name, dockhand.PostStacksByNameValidateRequest{Compose: in.Compose}, dockhand.PostStacksByNameValidateOptions{Env: env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("the compose file could not be checked, so nothing was made: %w", refusal(err))
 		}
-		wrong, others := refusedBy(checked.Model.Findings)
+		wrong, others := refusedBy(checked.Answer.Findings)
 		if len(wrong) > 0 {
 			return nil, out, fmt.Errorf("compose would not take the file, so nothing was made: %s", strings.Join(wrong, "; "))
 		}
@@ -503,10 +503,10 @@ func registerStackWriteTools(r *registry) {
 			}
 
 			// where the file would lie is Dockhand's to say: it depends on the host's name and on where Dockhand was told to keep stacks
-			if where, err := r.dock.GetStacksDefaultPath(ctx, dockhand.GetStacksDefaultPathOperationOptions{Name: name, Env: &env.ID}); err != nil {
+			if where, err := r.dock.GetStacksDefaultPath(ctx, dockhand.GetStacksDefaultPathOptions{Name: name, Env: env.ID}); err != nil {
 				out.Note = note(out.Note, "where Dockhand would keep its file could not be asked: "+err.Error())
 			} else {
-				out.ComposePath = where.Model.ComposePath
+				out.ComposePath = where.Answer.ComposePath
 			}
 
 			return nil, out, nil
@@ -523,12 +523,12 @@ func registerStackWriteTools(r *registry) {
 		for _, secret := range slices.Sorted(maps.Keys(in.Secrets)) {
 			request.EnvVars = append(request.EnvVars, map[string]any{"key": secret, "value": in.Secrets[secret], "isSecret": true})
 		}
-		made, err := r.dock.PostStacks(ctx, request, dockhand.PostStacksOperationOptions{Env: &env.ID})
+		made, err := r.dock.PostStacks(ctx, request, dockhand.PostStacksOptions{Env: env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("the stack %s was not made on %s: %w", name, env.Name, refusal(err))
 		}
-		if !yes(made.Model.Success) {
-			return nil, out, fmt.Errorf("the stack %s was not made on %s: Dockhand says %s", name, env.Name, cmp.Or(lastLine(made.Model.Error), "it could not, and gives no reason"))
+		if !made.Answer.Success {
+			return nil, out, fmt.Errorf("the stack %s was not made on %s: Dockhand says %s", name, env.Name, cmp.Or(lastLine(made.Answer.Error), "it could not, and gives no reason"))
 		}
 		out.Changes = append(out.Changes, fmt.Sprintf("made the stack %s on %s%s", name, env.Name, loaded))
 		if file, has, err := r.composeOf(ctx, env, name); err == nil && has {
@@ -605,7 +605,7 @@ func registerStackWriteTools(r *registry) {
 			return nil, stackEditOut{}, err
 		}
 		out := stackEditOut{Env: env.Name, Stack: stack.Name, Changes: []string{}, DryRun: in.DryRun}
-		at := &env.ID
+		at := env.ID
 
 		// a stack deployed from git is changed as one: its files are the repository's, replaced from there at each deploy, and the variables Dockhand
 		// keeps for it are not all secrets, so saving its secrets the way an ordinary stack's are saved would drop the rest
@@ -628,11 +628,11 @@ func registerStackWriteTools(r *registry) {
 		// everything is read and checked before anything is saved, so that what is refused is refused whole
 		newCompose := in.Compose != nil && *in.Compose != file.Content
 		if newCompose {
-			checked, err := r.dock.PostStacksByNameValidate(ctx, stack.Name, dockhand.PostStacksByNameValidateRequest{Compose: *in.Compose, Existing: new(true)}, dockhand.PostStacksByNameValidateOperationOptions{Env: at})
+			checked, err := r.dock.PostStacksByNameValidate(ctx, stack.Name, dockhand.PostStacksByNameValidateRequest{Compose: *in.Compose, Existing: new(true)}, dockhand.PostStacksByNameValidateOptions{Env: at})
 			if err != nil {
 				return nil, out, fmt.Errorf("the new compose file could not be checked, so nothing was changed: %w", refusal(err))
 			}
-			wrong, others := refusedBy(checked.Model.Findings)
+			wrong, others := refusedBy(checked.Answer.Findings)
 			switch {
 			case len(wrong) > 0 && !in.Force:
 				return nil, out, fmt.Errorf("compose would not take the new file, so nothing was changed: %s", strings.Join(wrong, "; "))
@@ -649,11 +649,11 @@ func registerStackWriteTools(r *registry) {
 		var envNow, envFile, pathNow string
 		otherLines := false
 		if in.EnvFile != nil || in.SecretPath != nil || in.SecretProvider != nil {
-			raw, err := r.dock.GetStacksByNameEnvRaw(ctx, stack.Name, dockhand.GetStacksByNameEnvRawOperationOptions{Env: at})
+			raw, err := r.dock.GetStacksByNameEnvRaw(ctx, stack.Name, dockhand.GetStacksByNameEnvRawOptions{Env: at})
 			if err != nil {
 				return nil, out, fmt.Errorf("the .env file of %s could not be read, so nothing was changed: %w", stack.Name, refusal(err))
 			}
-			envNow, envFile, pathNow = raw.Model.Content, raw.Model.Content, secretPathIn(raw.Model.Content)
+			envNow, envFile, pathNow = raw.Answer.Content, raw.Answer.Content, secretPathIn(raw.Answer.Content)
 		}
 		if in.EnvFile != nil {
 			envFile, otherLines = *in.EnvFile, withSecretPath(*in.EnvFile, "") != withSecretPath(envNow, "")
@@ -662,7 +662,7 @@ func registerStackWriteTools(r *registry) {
 				out.Note = "the path its secrets are loaded from, " + pathNow + ", was kept in the new .env file: secret_path with an empty text takes it out"
 			}
 		}
-		var provider *dockhand.GetSecretProvidersResponse
+		var provider *dockhand.GetSecretProvidersAnswer
 		if in.SecretProvider != nil || in.SecretPath != nil {
 			wanted, path, refused := r.secretsFor(ctx, in.SecretProvider, in.SecretPath, bound, secretPathIn(envFile))
 			if refused != nil {
@@ -674,18 +674,18 @@ func registerStackWriteTools(r *registry) {
 			}
 		}
 		newEnvFile := envFile != envNow
-		unbind, rebind := provider == nil && bound != 0 && in.SecretProvider != nil, provider != nil && provider.Id != bound
+		unbind, rebind := provider == nil && bound != 0 && in.SecretProvider != nil, provider != nil && int(provider.Id) != bound
 
 		var secrets []dockhand.PutStacksByNameEnvRequestVariables
 		if len(in.Secrets) > 0 || len(in.RemoveSecrets) > 0 {
-			vars, err := r.dock.GetStacksByNameEnv(ctx, stack.Name, dockhand.GetStacksByNameEnvOperationOptions{Env: at})
+			vars, err := r.dock.GetStacksByNameEnv(ctx, stack.Name, dockhand.GetStacksByNameEnvOptions{Env: at})
 			if err != nil {
 				return nil, out, fmt.Errorf("the secrets of %s could not be read, so nothing was changed: %w", stack.Name, refusal(err))
 			}
 			var existing []string
-			for i := range vars.Model.Variables {
-				if yes(vars.Model.Variables[i].IsSecret) {
-					existing = append(existing, vars.Model.Variables[i].Key)
+			for i := range vars.Answer.Variables {
+				if vars.Answer.Variables[i].IsSecret {
+					existing = append(existing, vars.Answer.Variables[i].Key)
 				}
 			}
 			for _, name := range in.RemoveSecrets {
@@ -731,11 +731,11 @@ func registerStackWriteTools(r *registry) {
 		if newCompose {
 			var err error
 			if !in.DryRun {
-				var answer dockhand.PutStacksByNameComposeOperationResponse
-				if answer, err = r.dock.PutStacksByNameCompose(ctx, stack.Name, dockhand.PutStacksByNameComposeRequest{Content: *in.Compose, Restart: new(false)}, dockhand.PutStacksByNameComposeOperationOptions{Env: at}); err != nil {
+				var answer dockhand.PutStacksByNameComposeResponse
+				if answer, err = r.dock.PutStacksByNameCompose(ctx, stack.Name, dockhand.PutStacksByNameComposeRequest{Content: *in.Compose, Restart: new(false)}, dockhand.PutStacksByNameComposeOptions{Env: at}); err != nil {
 					err = fmt.Errorf("its compose file could not be saved: %w", refusal(err))
-				} else if !yes(answer.Model.Success) {
-					err = fmt.Errorf("its compose file could not be saved: Dockhand says %s", cmp.Or(lastLine(answer.Model.Error), "it could not, and gives no reason"))
+				} else if !answer.Answer.Success {
+					err = fmt.Errorf("its compose file could not be saved: Dockhand says %s", cmp.Or(lastLine(answer.Answer.Error), "it could not, and gives no reason"))
 				}
 			}
 			lines := func(text string) int { return strings.Count(strings.TrimRight(text, "\n"), "\n") + 1 }
@@ -757,14 +757,14 @@ func registerStackWriteTools(r *registry) {
 			switch {
 			case in.DryRun:
 			case rebind:
-				var answer dockhand.PutStacksByNameComposeOperationResponse
-				if answer, err = r.dock.PutStacksByNameCompose(ctx, stack.Name, dockhand.PutStacksByNameComposeRequest{Content: content, SecretProviderId: provider.Id, Restart: new(false)}, dockhand.PutStacksByNameComposeOperationOptions{Env: at}); err != nil {
+				var answer dockhand.PutStacksByNameComposeResponse
+				if answer, err = r.dock.PutStacksByNameCompose(ctx, stack.Name, dockhand.PutStacksByNameComposeRequest{Content: content, SecretProviderId: provider.Id, Restart: new(false)}, dockhand.PutStacksByNameComposeOptions{Env: at}); err != nil {
 					err = fmt.Errorf("its secret provider could not be saved: %w", refusal(err))
-				} else if !yes(answer.Model.Success) {
-					err = fmt.Errorf("its secret provider could not be saved: Dockhand says %s", cmp.Or(lastLine(answer.Model.Error), "it could not, and gives no reason"))
+				} else if !answer.Answer.Success {
+					err = fmt.Errorf("its secret provider could not be saved: Dockhand says %s", cmp.Or(lastLine(answer.Answer.Error), "it could not, and gives no reason"))
 				}
 			default:
-				if _, err = r.dock.ForgetStackSecretProvider(ctx, stack.Name, content, env.ID); err != nil {
+				if _, err = r.dock.ForgetStackSecretProvider(ctx, stack.Name, content, int(env.ID)); err != nil {
 					err = fmt.Errorf("it could not be taken off its secret provider: %w", refusal(err))
 				}
 			}
@@ -779,7 +779,7 @@ func registerStackWriteTools(r *registry) {
 		if newEnvFile {
 			var err error
 			if !in.DryRun {
-				if _, err = r.dock.PutStacksByNameEnvRaw(ctx, stack.Name, dockhand.PutStacksByNameEnvRawRequest{Content: envFile}, dockhand.PutStacksByNameEnvRawOperationOptions{Env: at}); err != nil {
+				if _, err = r.dock.PutStacksByNameEnvRaw(ctx, stack.Name, dockhand.PutStacksByNameEnvRawRequest{Content: envFile}, dockhand.PutStacksByNameEnvRawOptions{Env: at}); err != nil {
 					err = fmt.Errorf("its .env file could not be saved: %w", refusal(err))
 				}
 			}
@@ -807,7 +807,7 @@ func registerStackWriteTools(r *registry) {
 		if secrets != nil {
 			var err error
 			if !in.DryRun {
-				if _, err = r.dock.PutStacksByNameEnv(ctx, stack.Name, dockhand.PutStacksByNameEnvRequest{Variables: secrets}, dockhand.PutStacksByNameEnvOperationOptions{Env: at}); err != nil {
+				if _, err = r.dock.PutStacksByNameEnv(ctx, stack.Name, dockhand.PutStacksByNameEnvRequest{Variables: secrets}, dockhand.PutStacksByNameEnvOptions{Env: at}); err != nil {
 					err = fmt.Errorf("its secrets could not be saved: %w", refusal(err))
 				}
 			}
@@ -861,17 +861,17 @@ func registerStackWriteTools(r *registry) {
 		}
 		out := stackDeleteOut{Env: env.Name, Stack: stack.Name, Containers: []string{}}
 
-		preview, err := r.dock.GetStacksByNameDeletePreview(ctx, stack.Name, dockhand.GetStacksByNameDeletePreviewOperationOptions{Env: &env.ID})
+		preview, err := r.dock.GetStacksByNameDeletePreview(ctx, stack.Name, dockhand.GetStacksByNameDeletePreviewOptions{Env: env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("what removing %s would take could not be read, so nothing was removed: %w", stack.Name, refusal(err))
 		}
-		out.Kept, out.Volumes = cmp.Or(preview.Model.SourceType, keptNowhere), preview.Model.NamedVolumes
+		out.Kept, out.Volumes = string(cmp.Or(preview.Answer.SourceType, keptNowhere)), preview.Answer.NamedVolumes
 		for i := range stack.ContainerDetails {
 			out.Containers = append(out.Containers, fmt.Sprintf("%s (%s)", stack.ContainerDetails[i].Name, stack.ContainerDetails[i].State))
 		}
 		slices.Sort(out.Containers)
-		if yes(preview.Model.CanDeleteFiles) && !in.KeepFiles {
-			out.Files = preview.Model.StackDir
+		if preview.Answer.CanDeleteFiles && !in.KeepFiles {
+			out.Files = preview.Answer.StackDir
 		}
 
 		found := fileless(out.Kept)
@@ -894,7 +894,7 @@ func registerStackWriteTools(r *registry) {
 
 		// force is what has Dockhand remove a running container of a stack it only found, and a stack whose compose file no longer parses: what goes
 		// was said before this was confirmed
-		options := dockhand.DeleteStacksByNameOperationOptions{Env: &env.ID, Force: new(true), Files: new(!in.KeepFiles)}
+		options := dockhand.DeleteStacksByNameOptions{Env: env.ID, Force: new(true), Files: new(!in.KeepFiles)}
 		if in.Volumes {
 			options.Volumes = new(true)
 		}
@@ -902,7 +902,7 @@ func registerStackWriteTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("%s on %s was not removed: %w", stack.Name, env.Name, refusal(err))
 		}
-		if !yes(removed.Model.Success) {
+		if !removed.Answer.Success {
 			return nil, out, fmt.Errorf("%s on %s was not removed, and Dockhand gives no reason", stack.Name, env.Name)
 		}
 
@@ -921,7 +921,7 @@ func registerStackWriteTools(r *registry) {
 			if volumes, err := r.volumesOf(ctx, env); err == nil {
 				var kept []string
 				for _, name := range out.Volumes {
-					if slices.ContainsFunc(volumes, func(v dockhand.GetVolumesResponse) bool { return v.Name == name }) {
+					if slices.ContainsFunc(volumes, func(v dockhand.GetVolumesAnswer) bool { return v.Name == name }) {
 						kept = append(kept, name)
 					}
 				}
@@ -965,29 +965,29 @@ func registerStackWriteTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("%s could not be looked for: %w", path, refusal(err))
 		}
-		if !yes(usable.Model.Valid) {
-			return nil, out, fmt.Errorf("%s cannot be looked through: Dockhand says %s. The path is looked for inside Dockhand's own container, where a folder of a Docker host is seen only when it is mounted in", path, cmp.Or(strings.TrimSpace(usable.Model.Error), "it cannot be used"))
+		if !usable.Answer.Valid {
+			return nil, out, fmt.Errorf("%s cannot be looked through: Dockhand says %s. The path is looked for inside Dockhand's own container, where a folder of a Docker host is seen only when it is mounted in", path, cmp.Or(strings.TrimSpace(usable.Answer.Error), "it cannot be used"))
 		}
 
 		scanned, err := r.dock.PostStacksScan(ctx, dockhand.PostStacksScanRequest{Path: path})
 		if err != nil {
 			return nil, out, fmt.Errorf("%s could not be looked through: %w", path, refusal(err))
 		}
-		for i := range scanned.Model.Discovered {
-			d := &scanned.Model.Discovered[i]
+		for i := range scanned.Answer.Discovered {
+			d := &scanned.Answer.Discovered[i]
 			row := scannedStack{Name: d.Name, ComposePath: d.ComposePath, EnvPath: d.EnvPath, Services: d.ServiceCount}
 			for _, on := range d.RunningOn {
 				row.RunningOn = append(row.RunningOn, fmt.Sprintf("%s (%d containers)", on.EnvName, on.ContainerCount))
 			}
 			out.Found = append(out.Found, row)
 		}
-		for i := range scanned.Model.Skipped {
-			s := &scanned.Model.Skipped[i]
+		for i := range scanned.Answer.Skipped {
+			s := &scanned.Answer.Skipped[i]
 			out.Found = append(out.Found, scannedStack{Name: s.Name, ComposePath: s.ComposePath, EnvPath: s.EnvPath, Services: s.ServiceCount, Adopted: true})
 		}
 		slices.SortFunc(out.Found, func(a, b scannedStack) int { return cmp.Compare(a.Name, b.Name) })
-		for i := range scanned.Model.Errors {
-			out.Errors = append(out.Errors, scanned.Model.Errors[i].Path+": "+scanned.Model.Errors[i].Error)
+		for i := range scanned.Answer.Errors {
+			out.Errors = append(out.Errors, scanned.Answer.Errors[i].Path+": "+scanned.Answer.Errors[i].Error)
 		}
 		if len(out.Found) == 0 {
 			out.Note = "no folder in that directory holds a compose file"
@@ -1063,10 +1063,10 @@ func registerStackWriteTools(r *registry) {
 			if refused != nil {
 				return nil, out, fmt.Errorf("%s was not adopted: %w", name, refusal(refused))
 			}
-			if failed := adopted.Model.Failed; len(failed) > 0 {
+			if failed := adopted.Answer.Failed; len(failed) > 0 {
 				return nil, out, fmt.Errorf("%s was not adopted: Dockhand says %s", name, cmp.Or(strings.TrimSpace(failed[0].Error), "it could not, and gives no reason"))
 			}
-			if !slices.Contains(adopted.Model.Adopted, name) {
+			if !slices.Contains(adopted.Answer.Adopted, name) {
 				return nil, out, fmt.Errorf("%s was not adopted, and Dockhand gives no reason", name)
 			}
 		}
@@ -1127,11 +1127,11 @@ func registerStackWriteTools(r *registry) {
 		}
 		out.Was, out.Is = file.ComposePath, file.ComposePath
 
-		change, err := r.dock.PostStacksByNameCheckPathChange(ctx, stack.Name, dockhand.PostStacksByNameCheckPathChangeRequest{NewComposePath: to}, dockhand.PostStacksByNameCheckPathChangeOperationOptions{Env: &env.ID})
+		change, err := r.dock.PostStacksByNameCheckPathChange(ctx, stack.Name, dockhand.PostStacksByNameCheckPathChangeRequest{NewComposePath: to}, dockhand.PostStacksByNameCheckPathChangeOptions{Env: env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("what moving %s would take could not be read, so nothing was moved: %w", stack.Name, refusal(err))
 		}
-		if to == file.ComposePath || !yes(change.Model.HasChanges) {
+		if to == file.ComposePath || !change.Answer.HasChanges {
 			out.Note = "nothing was moved: that is where the stack's files are already"
 
 			return nil, out, nil
@@ -1143,31 +1143,31 @@ func registerStackWriteTools(r *registry) {
 			return nil, out, fmt.Errorf("whether %s is there already could not be read, so nothing was moved: %w", folder, refusal(err))
 		}
 		switch {
-		case yes(there.Model.Valid) && !in.Overwrite:
+		case there.Answer.Valid && !in.Overwrite:
 			return nil, out, fmt.Errorf("%s is there already, and Dockhand would write over any file in it named as one of the stack's: give a folder that is not there yet, or overwrite when it is known to hold nothing that matters", folder)
-		case !yes(there.Model.Valid) && !strings.Contains(there.Model.Error, "does not exist"):
-			return nil, out, fmt.Errorf("the stack's files cannot be moved to %s: Dockhand says %s", folder, cmp.Or(strings.TrimSpace(there.Model.Error), "it cannot be used"))
+		case !there.Answer.Valid && !strings.Contains(there.Answer.Error, "does not exist"):
+			return nil, out, fmt.Errorf("the stack's files cannot be moved to %s: Dockhand says %s", folder, cmp.Or(strings.TrimSpace(there.Answer.Error), "it cannot be used"))
 		default:
 		}
-		if warning := strings.TrimSpace(change.Model.PersistenceWarning); warning != "" {
+		if warning := strings.TrimSpace(change.Answer.PersistenceWarning); warning != "" {
 			out.Note = "Dockhand warns: " + warning
 		}
 
-		what := fmt.Sprintf("the %d files of %s from %s to %s", change.Model.FileCount, stack.Name, change.Model.OldDir, folder)
+		what := fmt.Sprintf("the %d files of %s from %s to %s", change.Answer.FileCount, stack.Name, change.Answer.OldDir, folder)
 		if in.DryRun {
 			out.Changes = append(out.Changes, "would move "+what)
 
 			return nil, out, nil
 		}
 
-		moved, err := r.dock.PostStacksByNameRelocate(ctx, stack.Name, dockhand.PostStacksByNameRelocateRequest{OldDir: change.Model.OldDir, NewComposePath: to}, dockhand.PostStacksByNameRelocateOperationOptions{Env: &env.ID})
+		moved, err := r.dock.PostStacksByNameRelocate(ctx, stack.Name, dockhand.PostStacksByNameRelocateRequest{OldDir: change.Answer.OldDir, NewComposePath: to}, dockhand.PostStacksByNameRelocateOptions{Env: env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("the files of %s were not moved: %w", stack.Name, refusal(err))
 		}
-		if !yes(moved.Model.Success) {
-			return nil, out, fmt.Errorf("the files of %s were not moved: Dockhand says %s", stack.Name, cmp.Or(strings.Join(moved.Model.Errors, "; "), "it could not, and gives no reason"))
+		if !moved.Answer.Success {
+			return nil, out, fmt.Errorf("the files of %s were not moved: Dockhand says %s", stack.Name, cmp.Or(strings.Join(moved.Answer.Errors, "; "), "it could not, and gives no reason"))
 		}
-		out.Moved = append(out.Moved, moved.Model.MovedFiles...)
+		out.Moved = append(out.Moved, moved.Answer.MovedFiles...)
 		slices.Sort(out.Moved)
 		out.Changes = append(out.Changes, "moved "+what)
 
@@ -1207,7 +1207,7 @@ func registerStackWriteTools(r *registry) {
 		}
 		out := stackDeploysDeleteOut{Env: env.Name, Stack: stack.Name}
 
-		listed := func() (*dockhand.GetStacksByNameDeploysResponseRuns, error) {
+		listed := func() (*dockhand.GetStacksByNameDeploysAnswerRuns, error) {
 			runs, failed := r.deploysOf(ctx, env, stack.Name)
 			if failed != nil {
 				return nil, failed
@@ -1238,7 +1238,7 @@ func registerStackWriteTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("the record of deploy %d of %s was not removed: %w", in.Run, stack.Name, refusal(err))
 		}
-		if !yes(removed.Model.Success) {
+		if !removed.Answer.Success {
 			return nil, out, fmt.Errorf("the record of deploy %d of %s was not removed, and Dockhand gives no reason", in.Run, stack.Name)
 		}
 
@@ -1258,7 +1258,7 @@ func registerStackWriteTools(r *registry) {
 // secretsFor is the secret provider a stack is to have and the path in it, as a call asks: the provider named, or the one the stack has when none is,
 // or none when an empty name takes the stack off it. A path is held against the provider before anything is saved, since Dockhand saves a path
 // nothing is at and then cannot deploy the stack.
-func (r *registry) secretsFor(ctx context.Context, named any, path *string, bound int, pathNow string) (*dockhand.GetSecretProvidersResponse, string, error) {
+func (r *registry) secretsFor(ctx context.Context, named any, path *string, bound int, pathNow string) (*dockhand.GetSecretProvidersAnswer, string, error) {
 	wanted := pathNow
 	if path != nil {
 		wanted = strings.TrimSpace(*path)
@@ -1279,19 +1279,19 @@ func (r *registry) secretsFor(ctx context.Context, named any, path *string, boun
 	if err != nil {
 		return nil, "", err
 	}
-	var provider *dockhand.GetSecretProvidersResponse
+	var provider *dockhand.GetSecretProvidersAnswer
 	if named != nil {
 		if provider, err = secretProviderIn(listed, named, "secret_provider"); err != nil {
 			return nil, "", err
 		}
-	} else if i := slices.IndexFunc(listed, func(p dockhand.GetSecretProvidersResponse) bool { return p.Id == bound }); i >= 0 {
+	} else if i := slices.IndexFunc(listed, func(p dockhand.GetSecretProvidersAnswer) bool { return int(p.Id) == bound }); i >= 0 {
 		provider = &listed[i]
 	}
 	if provider == nil {
 		return nil, "", errors.New("the secret provider the stack has is no longer one the Dockhand keeps: secret_provider names another")
 	}
 	// only what the call changes is held against the provider: a path and a provider both left as they were are not asked about again
-	if wanted != "" && (wanted != pathNow || provider.Id != bound) {
+	if wanted != "" && (wanted != pathNow || int(provider.Id) != bound) {
 		if _, err := r.secretKeysAt(ctx, provider, wanted); err != nil {
 			return nil, "", err
 		}

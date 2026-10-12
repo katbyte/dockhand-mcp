@@ -12,40 +12,40 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteBackupSnapshotsByIdOperationResponse is the result of DeleteBackupSnapshotsById.
-type DeleteBackupSnapshotsByIdOperationResponse struct {
+// DeleteBackupSnapshotsByIdResponse is the result of DeleteBackupSnapshotsById.
+type DeleteBackupSnapshotsByIdResponse struct {
 	HttpResponse *http.Response
 }
 
-// DeleteBackupSnapshotsByIdOperationOptions holds the query and header parameters of DeleteBackupSnapshotsById.
-type DeleteBackupSnapshotsByIdOperationOptions struct {
+// DeleteBackupSnapshotsByIdOptions holds the query and header parameters of DeleteBackupSnapshotsById.
+type DeleteBackupSnapshotsByIdOptions struct {
 	// Destination holding the snapshot (required) (from GET /api/backup/destinations)
 	DestinationId *int
 
 	// Optional environment id for an early enterprise access check; the authoritative gate resolves the snapshot's owning environment server-side (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o DeleteBackupSnapshotsByIdOperationOptions) ToHeaders() *client.Headers {
+func (o DeleteBackupSnapshotsByIdOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o DeleteBackupSnapshotsByIdOperationOptions) ToQuery() *client.QueryParams {
+func (o DeleteBackupSnapshotsByIdOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.DestinationId != nil {
 		out.Append("destinationId", strconv.Itoa(*o.DestinationId))
 	}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // DeleteBackupSnapshotsById calls DELETE /api/backup/snapshots/{id}. Forget and prune a single snapshot from a destination (destructive restic forget --prune), with a server-authoritative environment access gate.
-func (c Client) DeleteBackupSnapshotsById(ctx context.Context, id string, options DeleteBackupSnapshotsByIdOperationOptions) (result DeleteBackupSnapshotsByIdOperationResponse, err error) {
+func (c Client) DeleteBackupSnapshotsById(ctx context.Context, id string, options DeleteBackupSnapshotsByIdOptions) (result DeleteBackupSnapshotsByIdResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,

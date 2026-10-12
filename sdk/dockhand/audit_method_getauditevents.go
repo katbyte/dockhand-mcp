@@ -4,21 +4,55 @@ package dockhand
 
 import (
 	"context"
+	"io"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetAuditEventsOperationResponse is the result of GetAuditEvents.
+// GetAuditEventsResponse is the result of GetAuditEvents.
 //
-// The operation answers text/event-stream, left unread in HttpResponse.Body, which
-// the caller must close.
-type GetAuditEventsOperationResponse struct {
+// The operation answers text/event-stream, left open in HttpResponse.Body: Reader hands it
+// over for the caller to read event by event and close; it has no end to copy to.
+type GetAuditEventsResponse struct {
 	HttpResponse *http.Response
 }
 
+// Reader is the file's body, for the caller to read and close, and the content
+// type the server named it; an empty body and "" when the operation gave no
+// answer, so a deferred Close is always safe. The body stays readable after
+// the result goes out of scope, and has no size or time limit of the client's:
+// the caller's context is the one bound on a slow read.
+func (r GetAuditEventsResponse) Reader() (io.ReadCloser, string) {
+	if r.HttpResponse == nil || r.HttpResponse.Body == nil {
+		return http.NoBody, ""
+	}
+
+	return r.HttpResponse.Body, r.HttpResponse.Header.Get("Content-Type")
+}
+
+// ContentLength is the file's length as the server named it, or -1 when it
+// did not, to refuse one too big before reading any of it.
+func (r GetAuditEventsResponse) ContentLength() int64 {
+	if r.HttpResponse == nil {
+		return -1
+	}
+
+	return r.HttpResponse.ContentLength
+}
+
+// Filename is the name the server gave the file (Content-Disposition), or ""
+// when it gave none, for a caller saving it under the server's name.
+func (r GetAuditEventsResponse) Filename() string {
+	if r.HttpResponse == nil {
+		return ""
+	}
+
+	return client.Filename(r.HttpResponse.Header)
+}
+
 // GetAuditEvents calls GET /api/audit/events. Stream live audit-log events over Server-Sent Events (Enterprise only).
-func (c Client) GetAuditEvents(ctx context.Context) (result GetAuditEventsOperationResponse, err error) {
+func (c Client) GetAuditEvents(ctx context.Context) (result GetAuditEventsResponse, err error) {
 	opts := client.RequestOptions{
 		Accept: "text/event-stream",
 		ExpectedStatusCodes: []int{

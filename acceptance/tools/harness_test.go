@@ -11,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/katbyte/dockhand-mcp/lib/testenv"
+	"github.com/katbyte/dockhand-mcp/sdk/dockhand"
 	"github.com/katbyte/dockhand-mcp/tools"
 	"github.com/katbyte/go-kt/mcp/acctest"
 	mcpregistry "github.com/katbyte/go-kt/mcp/registry"
@@ -162,7 +163,7 @@ func addHosts() error {
 		{testenv.Beta, map[string]any{"connection": testenv.ConnectionAgent, "host": agentHost, "port": agentPort, "agent_token": world.AgentToken}},
 	} {
 		if row, ok := there[host.name]; ok {
-			world.Manages(host.name, acctest.NumOr0(row["id"]))
+			world.Manages(host.name, dockhand.EnvironmentID(acctest.NumOr0(row["id"])))
 
 			continue
 		}
@@ -184,7 +185,7 @@ func addHosts() error {
 		if !ok {
 			return fmt.Errorf("adding %s answered no environment: %v", host.name, made)
 		}
-		world.Manages(host.name, acctest.NumOr0(row["id"]))
+		world.Manages(host.name, dockhand.EnvironmentID(acctest.NumOr0(row["id"])))
 		added[host.name] = made
 	}
 

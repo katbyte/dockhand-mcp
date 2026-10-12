@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostTemplatesSourcesOperationResponse is the result of PostTemplatesSources.
-type PostTemplatesSourcesOperationResponse struct {
+// PostTemplatesSourcesResponse is the result of PostTemplatesSources.
+//
+// Answer is the PostTemplatesSourcesAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostTemplatesSourcesResponse struct {
 	HttpResponse *http.Response
-	Model        *PostTemplatesSourcesResponse
+	Answer       *PostTemplatesSourcesAnswer
+	*PostTemplatesSourcesAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostTemplatesSourcesResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostTemplatesSourcesAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostTemplatesSourcesResponse) Record() (PostTemplatesSourcesAnswer, error) {
+	if r.Answer == nil {
+		return PostTemplatesSourcesAnswer{}, errors.New("PostTemplatesSources answered no PostTemplatesSourcesAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostTemplatesSources calls POST /api/templates/sources. Add a custom template source with a name and URL.
-func (c Client) PostTemplatesSources(ctx context.Context, input PostTemplatesSourcesRequest) (result PostTemplatesSourcesOperationResponse, err error) {
+func (c Client) PostTemplatesSources(ctx context.Context, input PostTemplatesSourcesRequest) (result PostTemplatesSourcesResponse, err error) {
+	result.PostTemplatesSourcesAnswer = &PostTemplatesSourcesAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostTemplatesSources(ctx context.Context, input PostTemplatesSou
 		return
 	}
 
-	var model PostTemplatesSourcesResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostTemplatesSourcesAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostTemplatesSourcesAnswer = result.Answer
 
 	return
 }

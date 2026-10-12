@@ -4,44 +4,66 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetStacksDefaultPathOperationResponse is the result of GetStacksDefaultPath.
-type GetStacksDefaultPathOperationResponse struct {
+// GetStacksDefaultPathResponse is the result of GetStacksDefaultPath.
+//
+// Answer is the GetStacksDefaultPathAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetStacksDefaultPathResponse struct {
 	HttpResponse *http.Response
-	Model        *GetStacksDefaultPathResponse
+	Answer       *GetStacksDefaultPathAnswer
+	*GetStacksDefaultPathAnswer
 }
 
-// GetStacksDefaultPathOperationOptions holds the query and header parameters of GetStacksDefaultPath.
-type GetStacksDefaultPathOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetStacksDefaultPathResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetStacksDefaultPathAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetStacksDefaultPathResponse) Record() (GetStacksDefaultPathAnswer, error) {
+	if r.Answer == nil {
+		return GetStacksDefaultPathAnswer{}, errors.New("GetStacksDefaultPath answered no GetStacksDefaultPathAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetStacksDefaultPathOptions holds the query and header parameters of GetStacksDefaultPath.
+type GetStacksDefaultPathOptions struct {
 	// Stack name
 	Name string
 
 	// Environment ID (scopes the path under the environment name) (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// Custom base location path
 	Location string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetStacksDefaultPathOperationOptions) ToHeaders() *client.Headers {
+func (o GetStacksDefaultPathOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetStacksDefaultPathOperationOptions) ToQuery() *client.QueryParams {
+func (o GetStacksDefaultPathOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Name != "" {
 		out.Append("name", o.Name)
 	}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	if o.Location != "" {
 		out.Append("location", o.Location)
@@ -50,7 +72,8 @@ func (o GetStacksDefaultPathOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetStacksDefaultPath calls GET /api/stacks/default-path. Compute the default compose/env file paths for a new stack, either under a custom base location or under Dockhand's default stacks directory.
-func (c Client) GetStacksDefaultPath(ctx context.Context, options GetStacksDefaultPathOperationOptions) (result GetStacksDefaultPathOperationResponse, err error) {
+func (c Client) GetStacksDefaultPath(ctx context.Context, options GetStacksDefaultPathOptions) (result GetStacksDefaultPathResponse, err error) {
+	result.GetStacksDefaultPathAnswer = &GetStacksDefaultPathAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -74,11 +97,12 @@ func (c Client) GetStacksDefaultPath(ctx context.Context, options GetStacksDefau
 		return
 	}
 
-	var model GetStacksDefaultPathResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetStacksDefaultPathAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetStacksDefaultPathAnswer = result.Answer
 
 	return
 }

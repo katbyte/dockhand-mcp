@@ -4,47 +4,61 @@ package dockhand
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetVolumesOperationResponse is the result of GetVolumes.
-type GetVolumesOperationResponse struct {
+// GetVolumesResponse is the result of GetVolumes.
+type GetVolumesResponse struct {
 	HttpResponse *http.Response
-	Model        []GetVolumesResponse
+	Answer       []GetVolumesAnswer
 }
 
-// GetVolumesOperationOptions holds the query and header parameters of GetVolumes.
-type GetVolumesOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetVolumesResponse) Answered() bool { return r.Answer != nil }
+
+// GetVolumesOptions holds the query and header parameters of GetVolumes.
+type GetVolumesOptions struct {
 	// Environment ID to list volumes for (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetVolumesOperationOptions) ToHeaders() *client.Headers {
+func (o GetVolumesOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetVolumesOperationOptions) ToQuery() *client.QueryParams {
+func (o GetVolumesOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetVolumes calls GET /api/volumes. List Docker volumes for an environment; returns an empty array when no environment is specified.
-func (c Client) GetVolumes(ctx context.Context, options GetVolumesOperationOptions) (result GetVolumesOperationResponse, err error) {
+func (c Client) GetVolumes(ctx context.Context, options ...GetVolumesOptions) (result GetVolumesResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetVolumes takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetVolumesOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/volumes",
 	}
 
@@ -62,7 +76,7 @@ func (c Client) GetVolumes(ctx context.Context, options GetVolumesOperationOptio
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

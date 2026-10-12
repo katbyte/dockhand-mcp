@@ -10,14 +10,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetProfilePreferencesOperationResponse is the result of GetProfilePreferences.
-type GetProfilePreferencesOperationResponse struct {
+// GetProfilePreferencesResponse is the result of GetProfilePreferences.
+type GetProfilePreferencesResponse struct {
 	HttpResponse *http.Response
-	Model        json.RawMessage
+	Answer       json.RawMessage
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetProfilePreferencesResponse) Answered() bool { return r.Answer != nil }
+
 // GetProfilePreferences calls GET /api/profile/preferences. Get the current user's UI preferences (theme, fonts, editor options).
-func (c Client) GetProfilePreferences(ctx context.Context) (result GetProfilePreferencesOperationResponse, err error) {
+func (c Client) GetProfilePreferences(ctx context.Context) (result GetProfilePreferencesResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -40,7 +44,7 @@ func (c Client) GetProfilePreferences(ctx context.Context) (result GetProfilePre
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

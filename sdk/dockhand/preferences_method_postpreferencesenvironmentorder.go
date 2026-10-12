@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostPreferencesEnvironmentOrderOperationResponse is the result of PostPreferencesEnvironmentOrder.
-type PostPreferencesEnvironmentOrderOperationResponse struct {
+// PostPreferencesEnvironmentOrderResponse is the result of PostPreferencesEnvironmentOrder.
+//
+// Answer is the PostPreferencesEnvironmentOrderAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostPreferencesEnvironmentOrderResponse struct {
 	HttpResponse *http.Response
-	Model        *PostPreferencesEnvironmentOrderResponse
+	Answer       *PostPreferencesEnvironmentOrderAnswer
+	*PostPreferencesEnvironmentOrderAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostPreferencesEnvironmentOrderResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostPreferencesEnvironmentOrderAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostPreferencesEnvironmentOrderResponse) Record() (PostPreferencesEnvironmentOrderAnswer, error) {
+	if r.Answer == nil {
+		return PostPreferencesEnvironmentOrderAnswer{}, errors.New("PostPreferencesEnvironmentOrder answered no PostPreferencesEnvironmentOrderAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostPreferencesEnvironmentOrder calls POST /api/preferences/environment-order. Save the environment order.
-func (c Client) PostPreferencesEnvironmentOrder(ctx context.Context, input PostPreferencesEnvironmentOrderRequest) (result PostPreferencesEnvironmentOrderOperationResponse, err error) {
+func (c Client) PostPreferencesEnvironmentOrder(ctx context.Context, input PostPreferencesEnvironmentOrderRequest) (result PostPreferencesEnvironmentOrderResponse, err error) {
+	result.PostPreferencesEnvironmentOrderAnswer = &PostPreferencesEnvironmentOrderAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostPreferencesEnvironmentOrder(ctx context.Context, input PostP
 		return
 	}
 
-	var model PostPreferencesEnvironmentOrderResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostPreferencesEnvironmentOrderAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostPreferencesEnvironmentOrderAnswer = result.Answer
 
 	return
 }

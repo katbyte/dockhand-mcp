@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -11,14 +12,36 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetStacksByNameDeploysByRunIdOperationResponse is the result of GetStacksByNameDeploysByRunId.
-type GetStacksByNameDeploysByRunIdOperationResponse struct {
+// GetStacksByNameDeploysByRunIdResponse is the result of GetStacksByNameDeploysByRunId.
+//
+// Answer is the GetStacksByNameDeploysByRunIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetStacksByNameDeploysByRunIdResponse struct {
 	HttpResponse *http.Response
-	Model        *GetStacksByNameDeploysByRunIdResponse
+	Answer       *GetStacksByNameDeploysByRunIdAnswer
+	*GetStacksByNameDeploysByRunIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetStacksByNameDeploysByRunIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetStacksByNameDeploysByRunIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetStacksByNameDeploysByRunIdResponse) Record() (GetStacksByNameDeploysByRunIdAnswer, error) {
+	if r.Answer == nil {
+		return GetStacksByNameDeploysByRunIdAnswer{}, errors.New("GetStacksByNameDeploysByRunId answered no GetStacksByNameDeploysByRunIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetStacksByNameDeploysByRunId calls GET /api/stacks/{name}/deploys/{runId}. Get a single deploy run's metadata (no log text -- see GET .../{runId}/log).
-func (c Client) GetStacksByNameDeploysByRunId(ctx context.Context, name string, runId int) (result GetStacksByNameDeploysByRunIdOperationResponse, err error) {
+func (c Client) GetStacksByNameDeploysByRunId(ctx context.Context, name string, runId int) (result GetStacksByNameDeploysByRunIdResponse, err error) {
+	result.GetStacksByNameDeploysByRunIdAnswer = &GetStacksByNameDeploysByRunIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -41,11 +64,12 @@ func (c Client) GetStacksByNameDeploysByRunId(ctx context.Context, name string, 
 		return
 	}
 
-	var model GetStacksByNameDeploysByRunIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetStacksByNameDeploysByRunIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetStacksByNameDeploysByRunIdAnswer = result.Answer
 
 	return
 }

@@ -4,5 +4,5 @@ package dockhand
 
 // PutSecretProvidersDefaultRequest is an object the document declares inline.
 type PutSecretProvidersDefaultRequest struct {
-	ProviderId int `json:"providerId,omitempty"`
+	ProviderId SecretProviderID `json:"providerId,omitempty"`
 }

@@ -4,32 +4,56 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetGitStacksByIdWebhookOperationResponse is the result of GetGitStacksByIdWebhook.
-type GetGitStacksByIdWebhookOperationResponse struct {
+// GetGitStacksByIdWebhookResponse is the result of GetGitStacksByIdWebhook.
+//
+// Answer is the GetGitStacksByIdWebhookAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetGitStacksByIdWebhookResponse struct {
 	HttpResponse *http.Response
-	Model        *GetGitStacksByIdWebhookResponse
+	Answer       *GetGitStacksByIdWebhookAnswer
+	*GetGitStacksByIdWebhookAnswer
 }
 
-// GetGitStacksByIdWebhookOperationOptions holds the query and header parameters of GetGitStacksByIdWebhook.
-type GetGitStacksByIdWebhookOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetGitStacksByIdWebhookResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetGitStacksByIdWebhookAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetGitStacksByIdWebhookResponse) Record() (GetGitStacksByIdWebhookAnswer, error) {
+	if r.Answer == nil {
+		return GetGitStacksByIdWebhookAnswer{}, errors.New("GetGitStacksByIdWebhook answered no GetGitStacksByIdWebhookAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetGitStacksByIdWebhookOptions holds the query and header parameters of GetGitStacksByIdWebhook.
+type GetGitStacksByIdWebhookOptions struct {
 	// Webhook secret; required only if the stack has a webhook secret configured
 	Secret string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetGitStacksByIdWebhookOperationOptions) ToHeaders() *client.Headers {
+func (o GetGitStacksByIdWebhookOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetGitStacksByIdWebhookOperationOptions) ToQuery() *client.QueryParams {
+func (o GetGitStacksByIdWebhookOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Secret != "" {
 		out.Append("secret", o.Secret)
@@ -38,14 +62,24 @@ func (o GetGitStacksByIdWebhookOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetGitStacksByIdWebhook calls GET /api/git/stacks/{id}/webhook. GET webhook trigger for a git stack, with the secret passed as the `secret` query parameter.
-func (c Client) GetGitStacksByIdWebhook(ctx context.Context, id int, options GetGitStacksByIdWebhookOperationOptions) (result GetGitStacksByIdWebhookOperationResponse, err error) {
+func (c Client) GetGitStacksByIdWebhook(ctx context.Context, id GitStackID, options ...GetGitStacksByIdWebhookOptions) (result GetGitStacksByIdWebhookResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetGitStacksByIdWebhook takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetGitStacksByIdWebhookOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetGitStacksByIdWebhookAnswer = &GetGitStacksByIdWebhookAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
-		Path:          fmt.Sprintf("/api/git/stacks/%d/webhook", id),
+		OptionsObject: option,
+		Path:          fmt.Sprintf("/api/git/stacks/%s/webhook", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -62,11 +96,12 @@ func (c Client) GetGitStacksByIdWebhook(ctx context.Context, id int, options Get
 		return
 	}
 
-	var model GetGitStacksByIdWebhookResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetGitStacksByIdWebhookAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetGitStacksByIdWebhookAnswer = result.Answer
 
 	return
 }

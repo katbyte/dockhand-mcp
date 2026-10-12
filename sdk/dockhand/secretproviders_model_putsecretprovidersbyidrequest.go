@@ -4,7 +4,7 @@ package dockhand
 
 // PutSecretProvidersByIdRequest is an object the document declares inline.
 type PutSecretProvidersByIdRequest struct {
-	Config map[string]any `json:"config,omitzero"`
-	Name   string         `json:"name,omitempty"`
-	Type   string         `json:"type,omitempty"`
+	Config map[string]any     `json:"config,omitzero"`
+	Name   string             `json:"name,omitempty"`
+	Type   SecretProviderType `json:"type,omitempty"`
 }

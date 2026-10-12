@@ -28,8 +28,12 @@ func TestOperationGetActivityEvents(t *testing.T) {
 	if result.HttpResponse == nil || result.HttpResponse.StatusCode != 200 {
 		t.Fatalf("HttpResponse = %+v", result.HttpResponse)
 	}
-	streamed, _ := io.ReadAll(result.HttpResponse.Body)
-	_ = result.HttpResponse.Body.Close()
+	stream, contentType := result.Reader()
+	if contentType == "" || result.ContentLength() == 0 {
+		t.Errorf("Reader = %q, length %d", contentType, result.ContentLength())
+	}
+	streamed, _ := io.ReadAll(stream)
+	_ = stream.Close()
 	if string(streamed) != "file bytes" {
 		t.Errorf("streamed body = %q", streamed)
 	}

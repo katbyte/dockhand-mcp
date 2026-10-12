@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteNotificationsByIdOperationResponse is the result of DeleteNotificationsById.
-type DeleteNotificationsByIdOperationResponse struct {
+// DeleteNotificationsByIdResponse is the result of DeleteNotificationsById.
+//
+// Answer is the DeleteNotificationsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteNotificationsByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteNotificationsByIdResponse
+	Answer       *DeleteNotificationsByIdAnswer
+	*DeleteNotificationsByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteNotificationsByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteNotificationsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteNotificationsByIdResponse) Record() (DeleteNotificationsByIdAnswer, error) {
+	if r.Answer == nil {
+		return DeleteNotificationsByIdAnswer{}, errors.New("DeleteNotificationsById answered no DeleteNotificationsByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // DeleteNotificationsById calls DELETE /api/notifications/{id}. Delete a notification setting by ID.
-func (c Client) DeleteNotificationsById(ctx context.Context, id int) (result DeleteNotificationsByIdOperationResponse, err error) {
+func (c Client) DeleteNotificationsById(ctx context.Context, id NotificationID) (result DeleteNotificationsByIdResponse, err error) {
+	result.DeleteNotificationsByIdAnswer = &DeleteNotificationsByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
-		Path:       fmt.Sprintf("/api/notifications/%d", id),
+		Path:       fmt.Sprintf("/api/notifications/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) DeleteNotificationsById(ctx context.Context, id int) (result Del
 		return
 	}
 
-	var model DeleteNotificationsByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteNotificationsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteNotificationsByIdAnswer = result.Answer
 
 	return
 }

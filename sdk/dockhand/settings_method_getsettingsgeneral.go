@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetSettingsGeneralOperationResponse is the result of GetSettingsGeneral.
-type GetSettingsGeneralOperationResponse struct {
+// GetSettingsGeneralResponse is the result of GetSettingsGeneral.
+//
+// Answer is the GetSettingsGeneralAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetSettingsGeneralResponse struct {
 	HttpResponse *http.Response
-	Model        *GetSettingsGeneralResponse
+	Answer       *GetSettingsGeneralAnswer
+	*GetSettingsGeneralAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetSettingsGeneralResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetSettingsGeneralAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetSettingsGeneralResponse) Record() (GetSettingsGeneralAnswer, error) {
+	if r.Answer == nil {
+		return GetSettingsGeneralAnswer{}, errors.New("GetSettingsGeneral answered no GetSettingsGeneralAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetSettingsGeneral calls GET /api/settings/general. Get global (instance-wide) general settings.
-func (c Client) GetSettingsGeneral(ctx context.Context) (result GetSettingsGeneralOperationResponse, err error) {
+func (c Client) GetSettingsGeneral(ctx context.Context) (result GetSettingsGeneralResponse, err error) {
+	result.GetSettingsGeneralAnswer = &GetSettingsGeneralAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) GetSettingsGeneral(ctx context.Context) (result GetSettingsGener
 		return
 	}
 
-	var model GetSettingsGeneralResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetSettingsGeneralAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetSettingsGeneralAnswer = result.Answer
 
 	return
 }

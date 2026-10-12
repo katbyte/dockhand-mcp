@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutSchedulesSettingsOperationResponse is the result of PutSchedulesSettings.
-type PutSchedulesSettingsOperationResponse struct {
+// PutSchedulesSettingsResponse is the result of PutSchedulesSettings.
+//
+// Answer is the PutSchedulesSettingsAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PutSchedulesSettingsResponse struct {
 	HttpResponse *http.Response
-	Model        *PutSchedulesSettingsResponse
+	Answer       *PutSchedulesSettingsAnswer
+	*PutSchedulesSettingsAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutSchedulesSettingsResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutSchedulesSettingsAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutSchedulesSettingsResponse) Record() (PutSchedulesSettingsAnswer, error) {
+	if r.Answer == nil {
+		return PutSchedulesSettingsAnswer{}, errors.New("PutSchedulesSettings answered no PutSchedulesSettingsAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PutSchedulesSettings calls PUT /api/schedules/settings. Update the schedules-page display preference (hide system jobs) for the current user.
-func (c Client) PutSchedulesSettings(ctx context.Context, input PutSchedulesSettingsRequest) (result PutSchedulesSettingsOperationResponse, err error) {
+func (c Client) PutSchedulesSettings(ctx context.Context, input PutSchedulesSettingsRequest) (result PutSchedulesSettingsResponse, err error) {
+	result.PutSchedulesSettingsAnswer = &PutSchedulesSettingsAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PutSchedulesSettings(ctx context.Context, input PutSchedulesSett
 		return
 	}
 
-	var model PutSchedulesSettingsResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PutSchedulesSettingsAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PutSchedulesSettingsAnswer = result.Answer
 
 	return
 }

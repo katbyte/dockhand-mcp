@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteGitCredentialsByIdOperationResponse is the result of DeleteGitCredentialsById.
-type DeleteGitCredentialsByIdOperationResponse struct {
+// DeleteGitCredentialsByIdResponse is the result of DeleteGitCredentialsById.
+//
+// Answer is the DeleteGitCredentialsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteGitCredentialsByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteGitCredentialsByIdResponse
+	Answer       *DeleteGitCredentialsByIdAnswer
+	*DeleteGitCredentialsByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteGitCredentialsByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteGitCredentialsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteGitCredentialsByIdResponse) Record() (DeleteGitCredentialsByIdAnswer, error) {
+	if r.Answer == nil {
+		return DeleteGitCredentialsByIdAnswer{}, errors.New("DeleteGitCredentialsById answered no DeleteGitCredentialsByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // DeleteGitCredentialsById calls DELETE /api/git/credentials/{id}. Delete a git credential by ID.
-func (c Client) DeleteGitCredentialsById(ctx context.Context, id int) (result DeleteGitCredentialsByIdOperationResponse, err error) {
+func (c Client) DeleteGitCredentialsById(ctx context.Context, id GitCredentialID) (result DeleteGitCredentialsByIdResponse, err error) {
+	result.DeleteGitCredentialsByIdAnswer = &DeleteGitCredentialsByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
-		Path:       fmt.Sprintf("/api/git/credentials/%d", id),
+		Path:       fmt.Sprintf("/api/git/credentials/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) DeleteGitCredentialsById(ctx context.Context, id int) (result De
 		return
 	}
 
-	var model DeleteGitCredentialsByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteGitCredentialsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteGitCredentialsByIdAnswer = result.Answer
 
 	return
 }

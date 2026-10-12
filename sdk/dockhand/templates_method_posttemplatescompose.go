@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostTemplatesComposeOperationResponse is the result of PostTemplatesCompose.
-type PostTemplatesComposeOperationResponse struct {
+// PostTemplatesComposeResponse is the result of PostTemplatesCompose.
+//
+// Answer is the PostTemplatesComposeAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostTemplatesComposeResponse struct {
 	HttpResponse *http.Response
-	Model        *PostTemplatesComposeResponse
+	Answer       *PostTemplatesComposeAnswer
+	*PostTemplatesComposeAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostTemplatesComposeResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostTemplatesComposeAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostTemplatesComposeResponse) Record() (PostTemplatesComposeAnswer, error) {
+	if r.Answer == nil {
+		return PostTemplatesComposeAnswer{}, errors.New("PostTemplatesCompose answered no PostTemplatesComposeAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostTemplatesCompose calls POST /api/templates/compose. Return the compose YAML for a template — generated for container templates, fetched from the repository for stack templates.
-func (c Client) PostTemplatesCompose(ctx context.Context, input PostTemplatesComposeRequest) (result PostTemplatesComposeOperationResponse, err error) {
+func (c Client) PostTemplatesCompose(ctx context.Context, input PostTemplatesComposeRequest) (result PostTemplatesComposeResponse, err error) {
+	result.PostTemplatesComposeAnswer = &PostTemplatesComposeAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostTemplatesCompose(ctx context.Context, input PostTemplatesCom
 		return
 	}
 
-	var model PostTemplatesComposeResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostTemplatesComposeAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostTemplatesComposeAnswer = result.Answer
 
 	return
 }

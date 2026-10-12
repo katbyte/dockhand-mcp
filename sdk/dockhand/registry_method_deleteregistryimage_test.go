@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"net/http"
+	"reflect"
 	"testing"
 
 	"github.com/katbyte/pandorest/client"
@@ -13,8 +14,8 @@ func TestOperationDeleteRegistryImage(t *testing.T) {
 	t.Parallel()
 
 	c, s := newOperationServer(t, 200, "application/json", "{}")
-	result, err := c.DeleteRegistryImage(t.Context(), DeleteRegistryImageOperationOptions{
-		Registry: new(7),
+	result, err := c.DeleteRegistryImage(t.Context(), DeleteRegistryImageOptions{
+		Registry: RegistryID(7),
 		Image:    "v-Image",
 		Tag:      "v-Tag",
 	})
@@ -30,14 +31,20 @@ func TestOperationDeleteRegistryImage(t *testing.T) {
 	if result.HttpResponse == nil || result.HttpResponse.StatusCode != 200 {
 		t.Fatalf("HttpResponse = %+v", result.HttpResponse)
 	}
-	if result.Model == nil {
-		t.Error("the model was not decoded")
+	if result.Answer == nil || !result.Answered() {
+		t.Error("the answer was not decoded")
+	}
+	if result.DeleteRegistryImageAnswer != result.Answer {
+		t.Error("the embedded answer is not the answer")
+	}
+	if record, err := result.Record(); err != nil || !reflect.DeepEqual(record, *result.Answer) {
+		t.Errorf("Record = %+v, %v", record, err)
 	}
 
 	// an answer that does not decode is an error, with the response
 	c, _ = newOperationServer(t, 200, "application/json", "<html>")
-	result, err = c.DeleteRegistryImage(t.Context(), DeleteRegistryImageOperationOptions{
-		Registry: new(7),
+	result, err = c.DeleteRegistryImage(t.Context(), DeleteRegistryImageOptions{
+		Registry: RegistryID(7),
 		Image:    "v-Image",
 		Tag:      "v-Tag",
 	})
@@ -47,8 +54,8 @@ func TestOperationDeleteRegistryImage(t *testing.T) {
 
 	// a status the operation does not document is an error, with the response
 	c, _ = newOperationServer(t, 418, "text/plain", "no")
-	result, err = c.DeleteRegistryImage(t.Context(), DeleteRegistryImageOperationOptions{
-		Registry: new(7),
+	result, err = c.DeleteRegistryImage(t.Context(), DeleteRegistryImageOptions{
+		Registry: RegistryID(7),
 		Image:    "v-Image",
 		Tag:      "v-Tag",
 	})

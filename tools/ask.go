@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/katbyte/dockhand-mcp/sdk/dockhand"
 	"github.com/katbyte/go-kt/parallel"
 )
 
@@ -40,7 +41,7 @@ func (a envArg) named() (string, error) {
 
 // environment is one Docker host the Dockhand manages.
 type environment struct {
-	ID   int
+	ID   dockhand.EnvironmentID
 	Name string
 }
 
@@ -57,9 +58,9 @@ func (r *registry) environments(ctx context.Context) ([]environment, error) {
 		return nil, fmt.Errorf("the environments could not be listed: %w", refusal(err))
 	}
 
-	out := make([]environment, 0, len(listed.Model))
-	for i := range listed.Model {
-		out = append(out, environment{ID: listed.Model[i].Id, Name: listed.Model[i].Name})
+	out := make([]environment, 0, len(listed.Answer))
+	for i := range listed.Answer {
+		out = append(out, environment{ID: listed.Answer[i].Id, Name: listed.Answer[i].Name})
 	}
 
 	return out, nil
@@ -89,7 +90,7 @@ func (r *registry) pick(ctx context.Context, in envArg) ([]environment, error) {
 		number, isNumber = n, true
 	}
 	for _, e := range all {
-		if strings.EqualFold(e.Name, arg) || (isNumber && e.ID == number) {
+		if strings.EqualFold(e.Name, arg) || (isNumber && int(e.ID) == number) {
 			return []environment{e}, nil
 		}
 	}

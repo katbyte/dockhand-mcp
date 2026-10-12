@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,42 +13,73 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostNetworksByIdDisconnectOperationResponse is the result of PostNetworksByIdDisconnect.
-type PostNetworksByIdDisconnectOperationResponse struct {
+// PostNetworksByIdDisconnectResponse is the result of PostNetworksByIdDisconnect.
+//
+// Answer is the PostNetworksByIdDisconnectAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostNetworksByIdDisconnectResponse struct {
 	HttpResponse *http.Response
-	Model        *PostNetworksByIdDisconnectResponse
+	Answer       *PostNetworksByIdDisconnectAnswer
+	*PostNetworksByIdDisconnectAnswer
 }
 
-// PostNetworksByIdDisconnectOperationOptions holds the query and header parameters of PostNetworksByIdDisconnect.
-type PostNetworksByIdDisconnectOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostNetworksByIdDisconnectResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostNetworksByIdDisconnectAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostNetworksByIdDisconnectResponse) Record() (PostNetworksByIdDisconnectAnswer, error) {
+	if r.Answer == nil {
+		return PostNetworksByIdDisconnectAnswer{}, errors.New("PostNetworksByIdDisconnect answered no PostNetworksByIdDisconnectAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostNetworksByIdDisconnectOptions holds the query and header parameters of PostNetworksByIdDisconnect.
+type PostNetworksByIdDisconnectOptions struct {
 	// Environment the network belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostNetworksByIdDisconnectOperationOptions) ToHeaders() *client.Headers {
+func (o PostNetworksByIdDisconnectOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostNetworksByIdDisconnectOperationOptions) ToQuery() *client.QueryParams {
+func (o PostNetworksByIdDisconnectOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostNetworksByIdDisconnect calls POST /api/networks/{id}/disconnect. Disconnect a container from a Docker network (optionally forcing the disconnect).
-func (c Client) PostNetworksByIdDisconnect(ctx context.Context, id string, input PostNetworksByIdDisconnectRequest, options PostNetworksByIdDisconnectOperationOptions) (result PostNetworksByIdDisconnectOperationResponse, err error) {
+func (c Client) PostNetworksByIdDisconnect(ctx context.Context, id string, input PostNetworksByIdDisconnectRequest, options ...PostNetworksByIdDisconnectOptions) (result PostNetworksByIdDisconnectResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostNetworksByIdDisconnect takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostNetworksByIdDisconnectOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostNetworksByIdDisconnectAnswer = &PostNetworksByIdDisconnectAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/networks/%s/disconnect", url.PathEscape(id)),
 	}
 
@@ -69,11 +101,12 @@ func (c Client) PostNetworksByIdDisconnect(ctx context.Context, id string, input
 		return
 	}
 
-	var model PostNetworksByIdDisconnectResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostNetworksByIdDisconnectAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostNetworksByIdDisconnectAnswer = result.Answer
 
 	return
 }

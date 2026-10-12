@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,42 +13,73 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostStacksByNameIconOperationResponse is the result of PostStacksByNameIcon.
-type PostStacksByNameIconOperationResponse struct {
+// PostStacksByNameIconResponse is the result of PostStacksByNameIcon.
+//
+// Answer is the PostStacksByNameIconAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostStacksByNameIconResponse struct {
 	HttpResponse *http.Response
-	Model        *PostStacksByNameIconResponse
+	Answer       *PostStacksByNameIconAnswer
+	*PostStacksByNameIconAnswer
 }
 
-// PostStacksByNameIconOperationOptions holds the query and header parameters of PostStacksByNameIcon.
-type PostStacksByNameIconOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostStacksByNameIconResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostStacksByNameIconAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostStacksByNameIconResponse) Record() (PostStacksByNameIconAnswer, error) {
+	if r.Answer == nil {
+		return PostStacksByNameIconAnswer{}, errors.New("PostStacksByNameIcon answered no PostStacksByNameIconAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostStacksByNameIconOptions holds the query and header parameters of PostStacksByNameIcon.
+type PostStacksByNameIconOptions struct {
 	// Environment id the stack belongs to
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostStacksByNameIconOperationOptions) ToHeaders() *client.Headers {
+func (o PostStacksByNameIconOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostStacksByNameIconOperationOptions) ToQuery() *client.QueryParams {
+func (o PostStacksByNameIconOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostStacksByNameIcon calls POST /api/stacks/{name}/icon. Set a stack's icon - either a name reference or an uploaded image.
-func (c Client) PostStacksByNameIcon(ctx context.Context, name string, input PostStacksByNameIconRequest, options PostStacksByNameIconOperationOptions) (result PostStacksByNameIconOperationResponse, err error) {
+func (c Client) PostStacksByNameIcon(ctx context.Context, name string, input PostStacksByNameIconRequest, options ...PostStacksByNameIconOptions) (result PostStacksByNameIconResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostStacksByNameIcon takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostStacksByNameIconOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostStacksByNameIconAnswer = &PostStacksByNameIconAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/icon", url.PathEscape(name)),
 	}
 
@@ -69,11 +101,12 @@ func (c Client) PostStacksByNameIcon(ctx context.Context, name string, input Pos
 		return
 	}
 
-	var model PostStacksByNameIconResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostStacksByNameIconAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostStacksByNameIconAnswer = result.Answer
 
 	return
 }

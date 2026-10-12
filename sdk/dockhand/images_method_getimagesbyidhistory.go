@@ -12,41 +12,54 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetImagesByIdHistoryOperationResponse is the result of GetImagesByIdHistory.
-type GetImagesByIdHistoryOperationResponse struct {
+// GetImagesByIdHistoryResponse is the result of GetImagesByIdHistory.
+type GetImagesByIdHistoryResponse struct {
 	HttpResponse *http.Response
-	Model        []GetImagesByIdHistoryResponse
+	Answer       []GetImagesByIdHistoryAnswer
 }
 
-// GetImagesByIdHistoryOperationOptions holds the query and header parameters of GetImagesByIdHistory.
-type GetImagesByIdHistoryOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetImagesByIdHistoryResponse) Answered() bool { return r.Answer != nil }
+
+// GetImagesByIdHistoryOptions holds the query and header parameters of GetImagesByIdHistory.
+type GetImagesByIdHistoryOptions struct {
 	// ID of the environment the image belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetImagesByIdHistoryOperationOptions) ToHeaders() *client.Headers {
+func (o GetImagesByIdHistoryOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetImagesByIdHistoryOperationOptions) ToQuery() *client.QueryParams {
+func (o GetImagesByIdHistoryOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetImagesByIdHistory calls GET /api/images/{id}/history. Return the layer build history of a Docker image.
-func (c Client) GetImagesByIdHistory(ctx context.Context, id string, options GetImagesByIdHistoryOperationOptions) (result GetImagesByIdHistoryOperationResponse, err error) {
+func (c Client) GetImagesByIdHistory(ctx context.Context, id string, options ...GetImagesByIdHistoryOptions) (result GetImagesByIdHistoryResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetImagesByIdHistory takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetImagesByIdHistoryOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/images/%s/history", url.PathEscape(id)),
 	}
 
@@ -64,7 +77,7 @@ func (c Client) GetImagesByIdHistory(ctx context.Context, id string, options Get
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

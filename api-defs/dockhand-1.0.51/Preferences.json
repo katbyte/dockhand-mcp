@@ -12,7 +12,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeletePreferencesEnvironmentOrderResponse"
+          "ReferenceName": "DeletePreferencesEnvironmentOrderAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -40,7 +40,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeletePreferencesGridResponse"
+          "ReferenceName": "DeletePreferencesGridAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -57,7 +57,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeletePreferencesSidebarResponse"
+          "ReferenceName": "DeletePreferencesSidebarAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -74,7 +74,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeletePreferencesTagOrderResponse"
+          "ReferenceName": "DeletePreferencesTagOrderAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -91,7 +91,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetPreferencesEnvironmentOrderResponse"
+          "ReferenceName": "GetPreferencesEnvironmentOrderAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -112,7 +112,8 @@
           "Description": "Environment ID (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -120,7 +121,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetPreferencesFavoriteGroupsResponse"
+          "ReferenceName": "GetPreferencesFavoriteGroupsAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -141,7 +142,8 @@
           "Description": "Environment ID (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -149,7 +151,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetPreferencesFavoritesResponse"
+          "ReferenceName": "GetPreferencesFavoritesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -166,7 +168,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetPreferencesGridResponse"
+          "ReferenceName": "GetPreferencesGridAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -183,7 +185,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetPreferencesSidebarResponse"
+          "ReferenceName": "GetPreferencesSidebarAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -200,7 +202,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetPreferencesTagOrderResponse"
+          "ReferenceName": "GetPreferencesTagOrderAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -224,7 +226,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostPreferencesEnvironmentOrderResponse"
+          "ReferenceName": "PostPreferencesEnvironmentOrderAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -248,7 +250,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostPreferencesFavoriteGroupsResponse"
+          "ReferenceName": "PostPreferencesFavoriteGroupsAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -272,7 +274,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostPreferencesFavoritesResponse"
+          "ReferenceName": "PostPreferencesFavoritesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -296,7 +298,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostPreferencesGridResponse"
+          "ReferenceName": "PostPreferencesGridAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -320,7 +322,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostPreferencesSidebarResponse"
+          "ReferenceName": "PostPreferencesSidebarAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -344,7 +346,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostPreferencesTagOrderResponse"
+          "ReferenceName": "PostPreferencesTagOrderAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -354,7 +356,7 @@
   ],
   "Models": [
     {
-      "Name": "DeletePreferencesEnvironmentOrderResponse",
+      "Name": "DeletePreferencesEnvironmentOrderAnswer",
       "Fields": [
         {
           "Name": "Order",
@@ -369,7 +371,7 @@
       ]
     },
     {
-      "Name": "DeletePreferencesGridResponse",
+      "Name": "DeletePreferencesGridAnswer",
       "Fields": [
         {
           "Name": "Preferences",
@@ -379,14 +381,14 @@
             "Type": "Dictionary",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "DeletePreferencesGridResponsePreferences"
+              "ReferenceName": "DeletePreferencesGridAnswerPreferences"
             }
           }
         }
       ]
     },
     {
-      "Name": "DeletePreferencesGridResponsePreferences",
+      "Name": "DeletePreferencesGridAnswerPreferences",
       "Fields": [
         {
           "Name": "Columns",
@@ -395,14 +397,14 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "DeletePreferencesGridResponsePreferencesColumns"
+              "ReferenceName": "DeletePreferencesGridAnswerPreferencesColumns"
             }
           }
         }
       ]
     },
     {
-      "Name": "DeletePreferencesGridResponsePreferencesColumns",
+      "Name": "DeletePreferencesGridAnswerPreferencesColumns",
       "Fields": [
         {
           "Name": "Id",
@@ -421,20 +423,20 @@
       ]
     },
     {
-      "Name": "DeletePreferencesSidebarResponse",
+      "Name": "DeletePreferencesSidebarAnswer",
       "Fields": [
         {
           "Name": "Preferences",
           "JsonName": "preferences",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "DeletePreferencesSidebarResponsePreferences"
+            "ReferenceName": "DeletePreferencesSidebarAnswerPreferences"
           }
         }
       ]
     },
     {
-      "Name": "DeletePreferencesSidebarResponsePreferences",
+      "Name": "DeletePreferencesSidebarAnswerPreferences",
       "Fields": [
         {
           "Name": "Hidden",
@@ -459,7 +461,7 @@
       ]
     },
     {
-      "Name": "DeletePreferencesTagOrderResponse",
+      "Name": "DeletePreferencesTagOrderAnswer",
       "Fields": [
         {
           "Name": "Order",
@@ -474,7 +476,7 @@
       ]
     },
     {
-      "Name": "GetPreferencesEnvironmentOrderResponse",
+      "Name": "GetPreferencesEnvironmentOrderAnswer",
       "Fields": [
         {
           "Name": "Order",
@@ -489,7 +491,7 @@
       ]
     },
     {
-      "Name": "GetPreferencesFavoriteGroupsResponse",
+      "Name": "GetPreferencesFavoriteGroupsAnswer",
       "Fields": [
         {
           "Name": "Groups",
@@ -505,7 +507,7 @@
       ]
     },
     {
-      "Name": "GetPreferencesFavoritesResponse",
+      "Name": "GetPreferencesFavoritesAnswer",
       "Fields": [
         {
           "Name": "Favorites",
@@ -521,7 +523,7 @@
       ]
     },
     {
-      "Name": "GetPreferencesGridResponse",
+      "Name": "GetPreferencesGridAnswer",
       "Fields": [
         {
           "Name": "Preferences",
@@ -531,14 +533,14 @@
             "Type": "Dictionary",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetPreferencesGridResponsePreferences"
+              "ReferenceName": "GetPreferencesGridAnswerPreferences"
             }
           }
         }
       ]
     },
     {
-      "Name": "GetPreferencesGridResponsePreferences",
+      "Name": "GetPreferencesGridAnswerPreferences",
       "Fields": [
         {
           "Name": "Columns",
@@ -547,14 +549,14 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetPreferencesGridResponsePreferencesColumns"
+              "ReferenceName": "GetPreferencesGridAnswerPreferencesColumns"
             }
           }
         }
       ]
     },
     {
-      "Name": "GetPreferencesGridResponsePreferencesColumns",
+      "Name": "GetPreferencesGridAnswerPreferencesColumns",
       "Fields": [
         {
           "Name": "Id",
@@ -573,20 +575,20 @@
       ]
     },
     {
-      "Name": "GetPreferencesSidebarResponse",
+      "Name": "GetPreferencesSidebarAnswer",
       "Fields": [
         {
           "Name": "Preferences",
           "JsonName": "preferences",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetPreferencesSidebarResponsePreferences"
+            "ReferenceName": "GetPreferencesSidebarAnswerPreferences"
           }
         }
       ]
     },
     {
-      "Name": "GetPreferencesSidebarResponsePreferences",
+      "Name": "GetPreferencesSidebarAnswerPreferences",
       "Fields": [
         {
           "Name": "Hidden",
@@ -611,7 +613,22 @@
       ]
     },
     {
-      "Name": "GetPreferencesTagOrderResponse",
+      "Name": "GetPreferencesTagOrderAnswer",
+      "Fields": [
+        {
+          "Name": "Order",
+          "JsonName": "order",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Integer"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostPreferencesEnvironmentOrderAnswer",
       "Fields": [
         {
           "Name": "Order",
@@ -642,15 +659,16 @@
       ]
     },
     {
-      "Name": "PostPreferencesEnvironmentOrderResponse",
+      "Name": "PostPreferencesFavoriteGroupsAnswer",
       "Fields": [
         {
-          "Name": "Order",
-          "JsonName": "order",
+          "Name": "Groups",
+          "JsonName": "groups",
+          "Description": "everything kept for the environment's log view, in order: a container's name as a text, and a group as a record of its name and its containers",
           "Type": {
             "Type": "List",
             "NestedItem": {
-              "Type": "Integer"
+              "Type": "Any"
             }
           }
         }
@@ -681,7 +699,8 @@
           "Name": "EnvironmentId",
           "JsonName": "environmentId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           },
           "Required": true
         },
@@ -736,11 +755,11 @@
       ]
     },
     {
-      "Name": "PostPreferencesFavoriteGroupsResponse",
+      "Name": "PostPreferencesFavoritesAnswer",
       "Fields": [
         {
-          "Name": "Groups",
-          "JsonName": "groups",
+          "Name": "Favorites",
+          "JsonName": "favorites",
           "Description": "everything kept for the environment's log view, in order: a container's name as a text, and a group as a record of its name and its containers",
           "Type": {
             "Type": "List",
@@ -773,7 +792,8 @@
           "Name": "EnvironmentId",
           "JsonName": "environmentId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           },
           "Required": true
         },
@@ -790,17 +810,53 @@
       ]
     },
     {
-      "Name": "PostPreferencesFavoritesResponse",
+      "Name": "PostPreferencesGridAnswer",
       "Fields": [
         {
-          "Name": "Favorites",
-          "JsonName": "favorites",
-          "Description": "everything kept for the environment's log view, in order: a container's name as a text, and a group as a record of its name and its containers",
+          "Name": "Preferences",
+          "JsonName": "preferences",
+          "Description": "the columns saved for each grid, by the grid's id",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostPreferencesGridAnswerPreferences"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostPreferencesGridAnswerPreferences",
+      "Fields": [
+        {
+          "Name": "Columns",
+          "JsonName": "columns",
           "Type": {
             "Type": "List",
             "NestedItem": {
-              "Type": "Any"
+              "Type": "Reference",
+              "ReferenceName": "PostPreferencesGridAnswerPreferencesColumns"
             }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostPreferencesGridAnswerPreferencesColumns",
+      "Fields": [
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Visible",
+          "JsonName": "visible",
+          "Type": {
+            "Type": "Boolean"
           }
         }
       ]
@@ -851,53 +907,39 @@
       ]
     },
     {
-      "Name": "PostPreferencesGridResponse",
+      "Name": "PostPreferencesSidebarAnswer",
       "Fields": [
         {
           "Name": "Preferences",
           "JsonName": "preferences",
-          "Description": "the columns saved for each grid, by the grid's id",
           "Type": {
-            "Type": "Dictionary",
-            "NestedItem": {
-              "Type": "Reference",
-              "ReferenceName": "PostPreferencesGridResponsePreferences"
-            }
+            "Type": "Reference",
+            "ReferenceName": "PostPreferencesSidebarAnswerPreferences"
           }
         }
       ]
     },
     {
-      "Name": "PostPreferencesGridResponsePreferences",
+      "Name": "PostPreferencesSidebarAnswerPreferences",
       "Fields": [
         {
-          "Name": "Columns",
-          "JsonName": "columns",
+          "Name": "Hidden",
+          "JsonName": "hidden",
           "Type": {
             "Type": "List",
             "NestedItem": {
-              "Type": "Reference",
-              "ReferenceName": "PostPreferencesGridResponsePreferencesColumns"
+              "Type": "String"
             }
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostPreferencesGridResponsePreferencesColumns",
-      "Fields": [
-        {
-          "Name": "Id",
-          "JsonName": "id",
-          "Type": {
-            "Type": "String"
           }
         },
         {
-          "Name": "Visible",
-          "JsonName": "visible",
+          "Name": "Order",
+          "JsonName": "order",
           "Type": {
-            "Type": "Boolean"
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
           }
         }
       ]
@@ -930,38 +972,15 @@
       ]
     },
     {
-      "Name": "PostPreferencesSidebarResponse",
+      "Name": "PostPreferencesTagOrderAnswer",
       "Fields": [
-        {
-          "Name": "Preferences",
-          "JsonName": "preferences",
-          "Type": {
-            "Type": "Reference",
-            "ReferenceName": "PostPreferencesSidebarResponsePreferences"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostPreferencesSidebarResponsePreferences",
-      "Fields": [
-        {
-          "Name": "Hidden",
-          "JsonName": "hidden",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
         {
           "Name": "Order",
           "JsonName": "order",
           "Type": {
             "Type": "List",
             "NestedItem": {
-              "Type": "String"
+              "Type": "Integer"
             }
           }
         }
@@ -980,21 +999,6 @@
             }
           },
           "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostPreferencesTagOrderResponse",
-      "Fields": [
-        {
-          "Name": "Order",
-          "JsonName": "order",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "Integer"
-            }
-          }
         }
       ]
     }

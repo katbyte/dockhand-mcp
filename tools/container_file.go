@@ -59,7 +59,7 @@ const gzipped = "tar.gz"
 // archiveOf is the archive Docker makes of a path inside a container, which it does of one that is running or not, as Dockhand sends it gzipped. The
 // caller closes it. A path that is not there is no archive and no error.
 func (r *registry) archiveOf(ctx context.Context, at *located, where string) (io.ReadCloser, error) {
-	got, err := r.dock.GetContainersByIdFilesDownload(ctx, at.Container.Id, dockhand.GetContainersByIdFilesDownloadOperationOptions{Env: &at.Env.ID, Path: where, Format: gzipped})
+	got, err := r.dock.GetContainersByIdFilesDownload(ctx, at.Container.Id, dockhand.GetContainersByIdFilesDownloadOptions{Env: at.Env.ID, Path: where, Format: gzipped})
 	if err != nil {
 		if got.HttpResponse != nil && got.HttpResponse.Body != nil {
 			_ = got.HttpResponse.Body.Close()
@@ -154,7 +154,7 @@ func (r *registry) placeFor(ctx context.Context, at *located, where string, over
 
 // mountAt is the mount of a container a path is in, or is: the volume's name, or the host's folder for a bind, and whether the path is the very place
 // it is mounted.
-func mountAt(c *dockhand.GetContainersResponse, where string) (what string, itself bool) {
+func mountAt(c *dockhand.GetContainersAnswer, where string) (what string, itself bool) {
 	for i := range c.Mounts {
 		m := &c.Mounts[i]
 		target := path.Clean("/" + m.Destination)
@@ -227,7 +227,7 @@ func registerContainerFileTools(r *registry) {
 			return nil, out, nil
 		}
 
-		if _, err := r.dock.PutContainersByIdFilesContent(ctx, at.Container.Id, dockhand.PutContainersByIdFilesContentRequest{Content: in.Content}, dockhand.PutContainersByIdFilesContentOperationOptions{Env: &at.Env.ID, Path: where}); err != nil {
+		if _, err := r.dock.PutContainersByIdFilesContent(ctx, at.Container.Id, dockhand.PutContainersByIdFilesContentRequest{Content: in.Content}, dockhand.PutContainersByIdFilesContentOptions{Env: at.Env.ID, Path: where}); err != nil {
 			return nil, out, fmt.Errorf("%s in %s was not written: %w", where, out.Container, refusal(err))
 		}
 		out.Changes, out.Created = append(out.Changes, did), was == ""
@@ -236,10 +236,10 @@ func registerContainerFileTools(r *registry) {
 		}
 
 		// a running container can be asked for the file back, and one that is stopped only whether it is there
-		if running(at.Container.State) {
-			if back, failed := r.dock.GetContainersByIdFilesContent(ctx, at.Container.Id, dockhand.GetContainersByIdFilesContentOperationOptions{Env: &at.Env.ID, Path: where}); failed != nil {
+		if running(string(at.Container.State)) {
+			if back, failed := r.dock.GetContainersByIdFilesContent(ctx, at.Container.Id, dockhand.GetContainersByIdFilesContentOptions{Env: at.Env.ID, Path: where}); failed != nil {
 				out.Note = noted(out.Note, "it could not be read back: "+refusal(failed).Error())
-			} else if back.Model.Content != in.Content {
+			} else if back.Answer.Content != in.Content {
 				out.Note = noted(out.Note, "Dockhand said it wrote the file, and read back it does not hold what was given")
 			}
 		} else if is, failed := r.kindAt(ctx, &at, where); failed != nil || is != kindFile {
@@ -295,7 +295,7 @@ func registerContainerFileTools(r *registry) {
 		default:
 		}
 
-		if _, err := r.dock.PostContainersByIdFilesCreate(ctx, at.Container.Id, dockhand.PostContainersByIdFilesCreateRequest{Path: where, Type: kindDirectory}, dockhand.PostContainersByIdFilesCreateOperationOptions{Env: &at.Env.ID}); err != nil {
+		if _, err := r.dock.PostContainersByIdFilesCreate(ctx, at.Container.Id, dockhand.PostContainersByIdFilesCreateRequest{Path: where, Type: kindDirectory}, dockhand.PostContainersByIdFilesCreateOptions{Env: at.Env.ID}); err != nil {
 			return nil, out, fmt.Errorf("the directory %s was not made in %s: %w", where, out.Container, refusal(err))
 		}
 		out.Changes = append(out.Changes, fmt.Sprintf("made the directory %s in %s", where, out.Container))
@@ -374,7 +374,7 @@ func registerContainerFileTools(r *registry) {
 			return nil, out, nil
 		}
 
-		if _, err := r.dock.PostContainersByIdFilesRename(ctx, at.Container.Id, dockhand.PostContainersByIdFilesRenameRequest{OldPath: from, NewPath: to}, dockhand.PostContainersByIdFilesRenameOperationOptions{Env: &at.Env.ID}); err != nil {
+		if _, err := r.dock.PostContainersByIdFilesRename(ctx, at.Container.Id, dockhand.PostContainersByIdFilesRenameRequest{OldPath: from, NewPath: to}, dockhand.PostContainersByIdFilesRenameOptions{Env: at.Env.ID}); err != nil {
 			return nil, out, fmt.Errorf("%s was not moved to %s in %s: %w", from, to, out.Container, refusal(err))
 		}
 		out.Changes = append(out.Changes, did)
@@ -432,16 +432,16 @@ func registerContainerFileTools(r *registry) {
 
 		// how it stands, as the directory it is in lists it: what is not listed there is not there
 		stands := func() (string, string, bool) {
-			listed, failed := r.dock.GetContainersByIdFiles(ctx, at.Container.Id, dockhand.GetContainersByIdFilesOperationOptions{Env: &at.Env.ID, Path: path.Dir(where)})
+			listed, failed := r.dock.GetContainersByIdFiles(ctx, at.Container.Id, dockhand.GetContainersByIdFilesOptions{Env: at.Env.ID, Path: path.Dir(where)})
 			if failed != nil {
 				return "", "", false
 			}
-			i := slices.IndexFunc(listed.Model.Entries, func(e dockhand.GetContainersByIdFilesResponseEntries) bool { return e.Name == path.Base(where) })
+			i := slices.IndexFunc(listed.Answer.Entries, func(e dockhand.GetContainersByIdFilesAnswerEntries) bool { return e.Name == path.Base(where) })
 			if i < 0 {
 				return "", "", false
 			}
 
-			return listed.Model.Entries[i].Permissions, listed.Model.Entries[i].Owner + ":" + listed.Model.Entries[i].Group, true
+			return listed.Answer.Entries[i].Permissions, listed.Answer.Entries[i].Owner + ":" + listed.Answer.Entries[i].Group, true
 		}
 		var there bool
 		if out.Mode, out.Owner, there = stands(); !there && where != "/" {
@@ -464,13 +464,13 @@ func registerContainerFileTools(r *registry) {
 		}
 
 		if mode != "" {
-			if _, err := r.dock.PostContainersByIdFilesChmod(ctx, at.Container.Id, dockhand.PostContainersByIdFilesChmodRequest{Path: where, Mode: mode, Recursive: new(in.Recursive)}, dockhand.PostContainersByIdFilesChmodOperationOptions{Env: &at.Env.ID}); err != nil {
+			if _, err := r.dock.PostContainersByIdFilesChmod(ctx, at.Container.Id, dockhand.PostContainersByIdFilesChmodRequest{Path: where, Mode: mode, Recursive: new(in.Recursive)}, dockhand.PostContainersByIdFilesChmodOptions{Env: at.Env.ID}); err != nil {
 				return nil, out, fmt.Errorf("the permissions of %s in %s were not set: %w", where, out.Container, refusal(err))
 			}
 			out.Changes = append(out.Changes, fmt.Sprintf("set the permissions of %s%s to %s", where, all, mode))
 		}
 		if owner != "" {
-			if _, err := r.dock.PostContainersByIdFilesChown(ctx, at.Container.Id, dockhand.PostContainersByIdFilesChownRequest{Path: where, Owner: owner, Recursive: new(in.Recursive)}, dockhand.PostContainersByIdFilesChownOperationOptions{Env: &at.Env.ID}); err != nil {
+			if _, err := r.dock.PostContainersByIdFilesChown(ctx, at.Container.Id, dockhand.PostContainersByIdFilesChownRequest{Path: where, Owner: owner, Recursive: new(in.Recursive)}, dockhand.PostContainersByIdFilesChownOptions{Env: at.Env.ID}); err != nil {
 				if mode != "" {
 					return nil, out, fmt.Errorf("the permissions of %s in %s were set, and it was not given to %s: %w", where, out.Container, owner, refusal(err))
 				}
@@ -536,8 +536,8 @@ func registerContainerFileTools(r *registry) {
 		default:
 		}
 		if out.Kind == kindDirectory {
-			if listed, failed := r.dock.GetContainersByIdFiles(ctx, at.Container.Id, dockhand.GetContainersByIdFilesOperationOptions{Env: &at.Env.ID, Path: where}); failed == nil {
-				out.Entries = len(listed.Model.Entries)
+			if listed, failed := r.dock.GetContainersByIdFiles(ctx, at.Container.Id, dockhand.GetContainersByIdFilesOptions{Env: at.Env.ID, Path: where}); failed == nil {
+				out.Entries = len(listed.Answer.Entries)
 			}
 		}
 		if out.Mount != "" {
@@ -549,7 +549,7 @@ func registerContainerFileTools(r *registry) {
 			return nil, out, nil
 		}
 
-		if _, err := r.dock.DeleteContainersByIdFilesDelete(ctx, at.Container.Id, dockhand.DeleteContainersByIdFilesDeleteOperationOptions{Env: &at.Env.ID, Path: where}); err != nil {
+		if _, err := r.dock.DeleteContainersByIdFilesDelete(ctx, at.Container.Id, dockhand.DeleteContainersByIdFilesDeleteOptions{Env: at.Env.ID, Path: where}); err != nil {
 			return nil, out, fmt.Errorf("%s in %s was not removed: %w", where, out.Container, refusal(err))
 		}
 
@@ -670,13 +670,13 @@ func registerContainerFileTools(r *registry) {
 			return nil, out, fmt.Errorf("the files could not be made ready to send: %w", err)
 		}
 
-		sent, err := r.dock.PostContainersByIdFilesUpload(ctx, at.Container.Id, &body, form.FormDataContentType(), dockhand.PostContainersByIdFilesUploadOperationOptions{Env: &at.Env.ID, Path: to})
+		sent, err := r.dock.PostContainersByIdFilesUpload(ctx, at.Container.Id, &body, form.FormDataContentType(), dockhand.PostContainersByIdFilesUploadOptions{Env: at.Env.ID, Path: to})
 		if err != nil {
 			out.Bytes = 0
 
 			return nil, out, fmt.Errorf("the files were not put in %s in %s: %w", to, out.Container, refusal(err))
 		}
-		out.Uploaded, out.Errors = orNone(sent.Model.Uploaded), sent.Model.Errors
+		out.Uploaded, out.Errors = orNone(sent.Answer.Uploaded), sent.Answer.Errors
 		if len(out.Errors) > 0 {
 			out.Note = noted(out.Note, fmt.Sprintf("%d of the %d files could not be put there: errors says why", len(out.Errors), len(names)))
 		}

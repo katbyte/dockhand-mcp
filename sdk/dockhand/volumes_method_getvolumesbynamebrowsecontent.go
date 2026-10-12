@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,41 +13,63 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetVolumesByNameBrowseContentOperationResponse is the result of GetVolumesByNameBrowseContent.
-type GetVolumesByNameBrowseContentOperationResponse struct {
+// GetVolumesByNameBrowseContentResponse is the result of GetVolumesByNameBrowseContent.
+//
+// Answer is the GetVolumesByNameBrowseContentAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetVolumesByNameBrowseContentResponse struct {
 	HttpResponse *http.Response
-	Model        *GetVolumesByNameBrowseContentResponse
+	Answer       *GetVolumesByNameBrowseContentAnswer
+	*GetVolumesByNameBrowseContentAnswer
 }
 
-// GetVolumesByNameBrowseContentOperationOptions holds the query and header parameters of GetVolumesByNameBrowseContent.
-type GetVolumesByNameBrowseContentOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetVolumesByNameBrowseContentResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetVolumesByNameBrowseContentAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetVolumesByNameBrowseContentResponse) Record() (GetVolumesByNameBrowseContentAnswer, error) {
+	if r.Answer == nil {
+		return GetVolumesByNameBrowseContentAnswer{}, errors.New("GetVolumesByNameBrowseContent answered no GetVolumesByNameBrowseContentAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetVolumesByNameBrowseContentOptions holds the query and header parameters of GetVolumesByNameBrowseContent.
+type GetVolumesByNameBrowseContentOptions struct {
 	// File path inside the volume to read
 	Path string
 
 	// Environment ID the volume belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetVolumesByNameBrowseContentOperationOptions) ToHeaders() *client.Headers {
+func (o GetVolumesByNameBrowseContentOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetVolumesByNameBrowseContentOperationOptions) ToQuery() *client.QueryParams {
+func (o GetVolumesByNameBrowseContentOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Path != "" {
 		out.Append("path", o.Path)
 	}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetVolumesByNameBrowseContent calls GET /api/volumes/{name}/browse/content. Read the content of a single file inside a Docker volume (files larger than 1MB are rejected).
-func (c Client) GetVolumesByNameBrowseContent(ctx context.Context, name string, options GetVolumesByNameBrowseContentOperationOptions) (result GetVolumesByNameBrowseContentOperationResponse, err error) {
+func (c Client) GetVolumesByNameBrowseContent(ctx context.Context, name string, options GetVolumesByNameBrowseContentOptions) (result GetVolumesByNameBrowseContentResponse, err error) {
+	result.GetVolumesByNameBrowseContentAnswer = &GetVolumesByNameBrowseContentAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -70,11 +93,12 @@ func (c Client) GetVolumesByNameBrowseContent(ctx context.Context, name string, 
 		return
 	}
 
-	var model GetVolumesByNameBrowseContentResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetVolumesByNameBrowseContentAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetVolumesByNameBrowseContentAnswer = result.Answer
 
 	return
 }

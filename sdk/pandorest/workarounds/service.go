@@ -7,6 +7,8 @@
 package workarounds
 
 import (
+	"time"
+
 	"github.com/katbyte/pandorest/config"
 	pandorest "github.com/katbyte/pandorest/importer/workarounds"
 )
@@ -28,7 +30,12 @@ var Services = []config.Service{{
 	// the document's required properties are read out of what each handler refuses a body without, and a body has to be able to send one empty:
 	// saving a stack's .env file with nothing in it is how the file is removed, and a body with no content at all is refused
 	SendRequired: true,
-	Notes:        "Nearly every call that is about a Docker host takes it as the query parameter env, the environment's number from GetEnvironments. Left out, most calls answer with nothing rather than an error, so a caller sets it.",
+	IDs:          ids,
+	Plain:        plain,
+	// a date is sent as RFC 3339, and read in that and in the two other forms Dockhand writes one in; one in no form known is kept as its text and
+	// read as no date, which the live sweep then fails on, so that a new form is found there and not by a tool failing to read an answer
+	Dates: config.Dates{Send: time.RFC3339Nano, Read: []string{"2006-01-02 15:04:05", "2006-01-02 15:04:05-07:00"}, KeepUnread: true},
+	Notes: "Nearly every call that is about a Docker host takes it as the query parameter env, the environment's number from GetEnvironments. Left out, most calls answer with nothing rather than an error, so a caller sets it.",
 }}
 
 // All is every workaround, in the order they are applied.
@@ -70,4 +77,8 @@ var All = []pandorest.Workaround{
 	secretProviderAnswers{},
 	gitAnswers{},
 	jobAccept{},
+	unsaidFlags{},
 }
+
+// the dates and the value sets go last: see valueSets
+func init() { All = append(append(All, dates...), valueSets...) }

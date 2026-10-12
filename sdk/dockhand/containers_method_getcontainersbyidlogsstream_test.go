@@ -15,8 +15,8 @@ func TestOperationGetContainersByIdLogsStream(t *testing.T) {
 	t.Parallel()
 
 	c, s := newOperationServer(t, 200, "text/event-stream", "file bytes")
-	result, err := c.GetContainersByIdLogsStream(t.Context(), "p/id", GetContainersByIdLogsStreamOperationOptions{
-		Env:   new(7),
+	result, err := c.GetContainersByIdLogsStream(t.Context(), "p/id", GetContainersByIdLogsStreamOptions{
+		Env:   EnvironmentID(7),
 		Tail:  "v-Tail",
 		Since: "v-Since",
 		Until: "v-Until",
@@ -37,16 +37,20 @@ func TestOperationGetContainersByIdLogsStream(t *testing.T) {
 	if result.HttpResponse == nil || result.HttpResponse.StatusCode != 200 {
 		t.Fatalf("HttpResponse = %+v", result.HttpResponse)
 	}
-	streamed, _ := io.ReadAll(result.HttpResponse.Body)
-	_ = result.HttpResponse.Body.Close()
+	stream, contentType := result.Reader()
+	if contentType == "" || result.ContentLength() == 0 {
+		t.Errorf("Reader = %q, length %d", contentType, result.ContentLength())
+	}
+	streamed, _ := io.ReadAll(stream)
+	_ = stream.Close()
 	if string(streamed) != "file bytes" {
 		t.Errorf("streamed body = %q", streamed)
 	}
 
 	// a status the operation does not document is an error, with the response
 	c, _ = newOperationServer(t, 418, "text/plain", "no")
-	result, err = c.GetContainersByIdLogsStream(t.Context(), "p/id", GetContainersByIdLogsStreamOperationOptions{
-		Env:   new(7),
+	result, err = c.GetContainersByIdLogsStream(t.Context(), "p/id", GetContainersByIdLogsStreamOptions{
+		Env:   EnvironmentID(7),
 		Tail:  "v-Tail",
 		Since: "v-Since",
 		Until: "v-Until",

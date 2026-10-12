@@ -211,12 +211,12 @@ func TestJobToolsByKind(t *testing.T) {
 func TestProgressOf(t *testing.T) {
 	t.Parallel()
 
-	line := func(event string, data map[string]any) dockhand.GetJobsByIdResponseLines {
-		return dockhand.GetJobsByIdResponseLines{Event: event, Data: data}
+	line := func(event string, data map[string]any) dockhand.GetJobsByIdAnswerLines {
+		return dockhand.GetJobsByIdAnswerLines{Event: event, Data: data}
 	}
 
 	// only the last few, the result left out, a repeat said once, and a line with nothing to say left out
-	lines := []dockhand.GetJobsByIdResponseLines{
+	lines := []dockhand.GetJobsByIdAnswerLines{
 		line("progress", map[string]any{"status": "one"}),
 		line("progress", map[string]any{"status": "two"}),
 		line("progress", map[string]any{"status": "two"}),

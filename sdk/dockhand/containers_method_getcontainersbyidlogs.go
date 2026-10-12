@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,16 +13,37 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetContainersByIdLogsOperationResponse is the result of GetContainersByIdLogs.
-type GetContainersByIdLogsOperationResponse struct {
+// GetContainersByIdLogsResponse is the result of GetContainersByIdLogs.
+//
+// Answer is the GetContainersByIdLogsAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetContainersByIdLogsResponse struct {
 	HttpResponse *http.Response
-	Model        *GetContainersByIdLogsResponse
+	Answer       *GetContainersByIdLogsAnswer
+	*GetContainersByIdLogsAnswer
 }
 
-// GetContainersByIdLogsOperationOptions holds the query and header parameters of GetContainersByIdLogs.
-type GetContainersByIdLogsOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetContainersByIdLogsResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetContainersByIdLogsAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetContainersByIdLogsResponse) Record() (GetContainersByIdLogsAnswer, error) {
+	if r.Answer == nil {
+		return GetContainersByIdLogsAnswer{}, errors.New("GetContainersByIdLogs answered no GetContainersByIdLogsAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetContainersByIdLogsOptions holds the query and header parameters of GetContainersByIdLogs.
+type GetContainersByIdLogsOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// Number of trailing log lines to return (default 100)
 	Tail *int
@@ -34,16 +56,16 @@ type GetContainersByIdLogsOperationOptions struct {
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetContainersByIdLogsOperationOptions) ToHeaders() *client.Headers {
+func (o GetContainersByIdLogsOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetContainersByIdLogsOperationOptions) ToQuery() *client.QueryParams {
+func (o GetContainersByIdLogsOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	if o.Tail != nil {
 		out.Append("tail", strconv.Itoa(*o.Tail))
@@ -58,7 +80,8 @@ func (o GetContainersByIdLogsOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetContainersByIdLogs calls GET /api/containers/{id}/logs. Return the last N lines of a container's combined stdout/stderr logs as a single string.
-func (c Client) GetContainersByIdLogs(ctx context.Context, id string, options GetContainersByIdLogsOperationOptions) (result GetContainersByIdLogsOperationResponse, err error) {
+func (c Client) GetContainersByIdLogs(ctx context.Context, id string, options GetContainersByIdLogsOptions) (result GetContainersByIdLogsResponse, err error) {
+	result.GetContainersByIdLogsAnswer = &GetContainersByIdLogsAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -82,11 +105,12 @@ func (c Client) GetContainersByIdLogs(ctx context.Context, id string, options Ge
 		return
 	}
 
-	var model GetContainersByIdLogsResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetContainersByIdLogsAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetContainersByIdLogsAnswer = result.Answer
 
 	return
 }

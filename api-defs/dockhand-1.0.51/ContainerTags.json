@@ -15,7 +15,8 @@
           "In": "Query",
           "Description": "Environment id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -57,7 +58,8 @@
           "In": "Query",
           "Description": "Environment id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -65,7 +67,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetContainerTagsByNameResponse"
+          "ReferenceName": "GetContainerTagsByNameAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -94,7 +96,8 @@
           "In": "Query",
           "Description": "Environment id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -109,7 +112,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PutContainerTagsByNameResponse"
+          "ReferenceName": "PutContainerTagsByNameAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -119,7 +122,7 @@
   ],
   "Models": [
     {
-      "Name": "GetContainerTagsByNameResponse",
+      "Name": "GetContainerTagsByNameAnswer",
       "Fields": [
         {
           "Name": "TagIds",
@@ -127,7 +130,25 @@
           "Type": {
             "Type": "List",
             "NestedItem": {
-              "Type": "Integer"
+              "Type": "ID",
+              "ReferenceName": "TagID"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutContainerTagsByNameAnswer",
+      "Fields": [
+        {
+          "Name": "TagIds",
+          "JsonName": "tagIds",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "ID",
+              "ReferenceName": "TagID"
             }
           },
           "Required": true
@@ -143,23 +164,8 @@
           "Type": {
             "Type": "List",
             "NestedItem": {
-              "Type": "Integer"
-            }
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PutContainerTagsByNameResponse",
-      "Fields": [
-        {
-          "Name": "TagIds",
-          "JsonName": "tagIds",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "Integer"
+              "Type": "ID",
+              "ReferenceName": "TagID"
             }
           },
           "Required": true

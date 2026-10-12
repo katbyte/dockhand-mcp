@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetPreferencesSidebarOperationResponse is the result of GetPreferencesSidebar.
-type GetPreferencesSidebarOperationResponse struct {
+// GetPreferencesSidebarResponse is the result of GetPreferencesSidebar.
+//
+// Answer is the GetPreferencesSidebarAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetPreferencesSidebarResponse struct {
 	HttpResponse *http.Response
-	Model        *GetPreferencesSidebarResponse
+	Answer       *GetPreferencesSidebarAnswer
+	*GetPreferencesSidebarAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetPreferencesSidebarResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetPreferencesSidebarAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetPreferencesSidebarResponse) Record() (GetPreferencesSidebarAnswer, error) {
+	if r.Answer == nil {
+		return GetPreferencesSidebarAnswer{}, errors.New("GetPreferencesSidebar answered no GetPreferencesSidebarAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetPreferencesSidebar calls GET /api/preferences/sidebar. Retrieve the saved sidebar menu preferences (order and hidden items).
-func (c Client) GetPreferencesSidebar(ctx context.Context) (result GetPreferencesSidebarOperationResponse, err error) {
+func (c Client) GetPreferencesSidebar(ctx context.Context) (result GetPreferencesSidebarResponse, err error) {
+	result.GetPreferencesSidebarAnswer = &GetPreferencesSidebarAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) GetPreferencesSidebar(ctx context.Context) (result GetPreference
 		return
 	}
 
-	var model GetPreferencesSidebarResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetPreferencesSidebarAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetPreferencesSidebarAnswer = result.Answer
 
 	return
 }

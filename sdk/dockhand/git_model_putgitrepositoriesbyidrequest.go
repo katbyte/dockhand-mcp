@@ -4,8 +4,8 @@ package dockhand
 
 // PutGitRepositoriesByIdRequest is an object the document declares inline.
 type PutGitRepositoriesByIdRequest struct {
-	Branch       string `json:"branch,omitempty"`
-	CredentialId int    `json:"credentialId,omitempty"`
-	Name         string `json:"name,omitempty"`
-	Url          string `json:"url,omitempty"`
+	Branch       string          `json:"branch,omitempty"`
+	CredentialId GitCredentialID `json:"credentialId,omitempty"`
+	Name         string          `json:"name,omitempty"`
+	Url          string          `json:"url,omitempty"`
 }

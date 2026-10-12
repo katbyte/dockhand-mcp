@@ -31,7 +31,7 @@ type PutGitStacksByIdRequest struct {
 	ForceRedeploy    *bool                            `json:"forceRedeploy,omitempty"`
 	NoBuildCache     *bool                            `json:"noBuildCache,omitempty"`
 	RepullImages     *bool                            `json:"repullImages,omitempty"`
-	SecretProviderId int                              `json:"secretProviderId,omitempty"`
+	SecretProviderId SecretProviderID                 `json:"secretProviderId,omitempty"`
 	StackName        string                           `json:"stackName,omitempty"`
 	WebhookEnabled   *bool                            `json:"webhookEnabled,omitempty"`
 	WebhookSecret    string                           `json:"webhookSecret,omitempty"`

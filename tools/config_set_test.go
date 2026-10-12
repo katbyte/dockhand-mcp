@@ -58,7 +58,7 @@ func TestConfigSetList(t *testing.T) {
 	if vars["MODE"] != "demo" || vars["API_TOKEN"] != "***" || vars["DB"] != hiddenWord || acctest.Num(t, web["hidden"], "hidden") != 2 || strings.Contains(flat(out), aToken) || strings.Contains(flat(out), "not-a-real-word") {
 		t.Errorf("the variables of a set, its secrets hidden = %v", web)
 	}
-	if web["description"] != "a made-up web server" || acctest.Object(t, web["labels"], "labels")["team"] != "ops" || strings.Join(acctest.Strs(t, web["ports"], "ports"), " ") != "8080:80/tcp 53/udp" || strings.Join(acctest.Strs(t, web["volumes"], "volumes"), " ") != "data:/var/lib/app:rw" || web["network_mode"] != "bridge" || web["restart_policy"] != "unless-stopped" || web["updated"] != "2026-10-10 20:01:30" || web["note"] != nil {
+	if web["description"] != "a made-up web server" || acctest.Object(t, web["labels"], "labels")["team"] != "ops" || strings.Join(acctest.Strs(t, web["ports"], "ports"), " ") != "8080:80/tcp 53/udp" || strings.Join(acctest.Strs(t, web["volumes"], "volumes"), " ") != "data:/var/lib/app:rw" || web["network_mode"] != "bridge" || web["restart_policy"] != "unless-stopped" || web["updated"] != "2026-10-10T20:01:30Z" || web["note"] != nil {
 		t.Errorf("a set in full = %v", web)
 	}
 	// one that holds nothing, and one that holds a name twice: the last value is the one given, and it is said

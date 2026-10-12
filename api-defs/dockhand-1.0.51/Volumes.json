@@ -24,7 +24,8 @@
           "In": "Query",
           "Description": "Environment ID the volume belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -41,7 +42,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteVolumesByNameResponse"
+          "ReferenceName": "DeleteVolumesByNameAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -61,7 +62,8 @@
           "In": "Query",
           "Description": "Environment ID to list volumes for (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -71,7 +73,7 @@
           "Type": "List",
           "NestedItem": {
             "Type": "Reference",
-            "ReferenceName": "GetVolumesResponse"
+            "ReferenceName": "GetVolumesAnswer"
           }
         }
       },
@@ -101,7 +103,8 @@
           "In": "Query",
           "Description": "Environment ID the volume belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -109,7 +112,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetVolumesByNameResponse"
+          "ReferenceName": "GetVolumesByNameAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -138,7 +141,8 @@
           "In": "Query",
           "Description": "Environment ID the volume belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -155,7 +159,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetVolumesByNameBrowseResponse"
+          "ReferenceName": "GetVolumesByNameBrowseAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -194,7 +198,8 @@
           "In": "Query",
           "Description": "Environment ID the volume belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -202,7 +207,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetVolumesByNameBrowseContentResponse"
+          "ReferenceName": "GetVolumesByNameBrowseContentAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -231,7 +236,8 @@
           "In": "Query",
           "Description": "Environment ID the volume belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -285,7 +291,8 @@
           "In": "Query",
           "Description": "Environment ID the volume belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -293,7 +300,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetVolumesByNameInspectResponse"
+          "ReferenceName": "GetVolumesByNameInspectAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -313,7 +320,8 @@
           "In": "Query",
           "Description": "Environment ID to create the volume in (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -328,7 +336,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostVolumesResponse"
+          "ReferenceName": "PostVolumesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -357,7 +365,8 @@
           "In": "Query",
           "Description": "Environment ID the volume belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -365,7 +374,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostVolumesByNameBrowseReleaseResponse"
+          "ReferenceName": "PostVolumesByNameBrowseReleaseAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -394,7 +403,8 @@
           "In": "Query",
           "Description": "Environment ID the volume belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -409,7 +419,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostVolumesByNameCloneResponse"
+          "ReferenceName": "PostVolumesByNameCloneAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -419,7 +429,7 @@
   ],
   "Models": [
     {
-      "Name": "DeleteVolumesByNameResponse",
+      "Name": "DeleteVolumesByNameAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -432,28 +442,154 @@
       ]
     },
     {
-      "Name": "GetVolumesByNameBrowseContentResponse",
+      "Name": "GetVolumesAnswer",
       "Fields": [
         {
-          "Name": "Content",
-          "JsonName": "content",
+          "Name": "Created",
+          "JsonName": "created",
+          "Description": "when the volume was made, as 2006-01-02T15:04:05Z",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Driver",
+          "JsonName": "driver",
+          "Description": "local, for a volume kept on the host's own disk",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Mountpoint",
+          "JsonName": "mountpoint",
+          "Description": "where the volume's files are on the host",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Scope",
+          "JsonName": "scope",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UsedBy",
+          "JsonName": "usedBy",
+          "Description": "the containers that mount the volume, running or not; none for a volume nothing uses",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetVolumesAnswerUsedBy"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetVolumesAnswerUsedBy",
+      "Fields": [
+        {
+          "Name": "ContainerId",
+          "JsonName": "containerId",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ContainerName",
+          "JsonName": "containerName",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetVolumesByNameAnswer",
+      "Fields": [
+        {
+          "Name": "CreatedAt",
+          "JsonName": "CreatedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "Driver",
+          "JsonName": "Driver",
           "Type": {
             "Type": "String"
           },
           "Required": true
         },
         {
-          "Name": "Path",
-          "JsonName": "path",
+          "Name": "Labels",
+          "JsonName": "Labels",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Mountpoint",
+          "JsonName": "Mountpoint",
           "Type": {
             "Type": "String"
           },
           "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "Name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Options",
+          "JsonName": "Options",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Scope",
+          "JsonName": "Scope",
+          "Type": {
+            "Type": "String"
+          }
         }
       ]
     },
     {
-      "Name": "GetVolumesByNameBrowseResponse",
+      "Name": "GetVolumesByNameBrowseAnswer",
       "Fields": [
         {
           "Name": "Entries",
@@ -462,7 +598,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetVolumesByNameBrowseResponseEntries"
+              "ReferenceName": "GetVolumesByNameBrowseAnswerEntries"
             }
           },
           "Required": true
@@ -498,7 +634,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetVolumesByNameBrowseResponseUsage"
+              "ReferenceName": "GetVolumesByNameBrowseAnswerUsage"
             }
           },
           "Required": true
@@ -506,7 +642,7 @@
       ]
     },
     {
-      "Name": "GetVolumesByNameBrowseResponseEntries",
+      "Name": "GetVolumesByNameBrowseAnswerEntries",
       "Fields": [
         {
           "Name": "Group",
@@ -568,14 +704,15 @@
           "Name": "Type",
           "JsonName": "type",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "FileType"
           },
           "Required": true
         }
       ]
     },
     {
-      "Name": "GetVolumesByNameBrowseResponseUsage",
+      "Name": "GetVolumesByNameBrowseAnswerUsage",
       "Fields": [
         {
           "Name": "ContainerId",
@@ -604,13 +741,34 @@
       ]
     },
     {
-      "Name": "GetVolumesByNameInspectResponse",
+      "Name": "GetVolumesByNameBrowseContentAnswer",
+      "Fields": [
+        {
+          "Name": "Content",
+          "JsonName": "content",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetVolumesByNameInspectAnswer",
       "Fields": [
         {
           "Name": "CreatedAt",
           "JsonName": "CreatedAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -667,155 +825,50 @@
       ]
     },
     {
-      "Name": "GetVolumesByNameResponse",
+      "Name": "PostVolumesAnswer",
       "Fields": [
-        {
-          "Name": "CreatedAt",
-          "JsonName": "CreatedAt",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Driver",
-          "JsonName": "Driver",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Labels",
-          "JsonName": "Labels",
-          "Type": {
-            "Type": "Dictionary",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Mountpoint",
-          "JsonName": "Mountpoint",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Name",
-          "JsonName": "Name",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Options",
-          "JsonName": "Options",
-          "Type": {
-            "Type": "Dictionary",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Scope",
-          "JsonName": "Scope",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetVolumesResponse",
-      "Fields": [
-        {
-          "Name": "Created",
-          "JsonName": "created",
-          "Description": "when the volume was made, as 2006-01-02T15:04:05Z",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Driver",
-          "JsonName": "driver",
-          "Description": "local, for a volume kept on the host's own disk",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Labels",
-          "JsonName": "labels",
-          "Type": {
-            "Type": "Dictionary",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Mountpoint",
-          "JsonName": "mountpoint",
-          "Description": "where the volume's files are on the host",
-          "Type": {
-            "Type": "String"
-          }
-        },
         {
           "Name": "Name",
           "JsonName": "name",
           "Type": {
             "Type": "String"
-          }
+          },
+          "Required": true
         },
         {
-          "Name": "Scope",
-          "JsonName": "scope",
+          "Name": "Success",
+          "JsonName": "success",
           "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "UsedBy",
-          "JsonName": "usedBy",
-          "Description": "the containers that mount the volume, running or not; none for a volume nothing uses",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "Reference",
-              "ReferenceName": "GetVolumesResponseUsedBy"
-            }
-          }
+            "Type": "Boolean"
+          },
+          "Required": true
         }
       ]
     },
     {
-      "Name": "GetVolumesResponseUsedBy",
+      "Name": "PostVolumesByNameBrowseReleaseAnswer",
       "Fields": [
         {
-          "Name": "ContainerId",
-          "JsonName": "containerId",
+          "Name": "Success",
+          "JsonName": "success",
           "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "ContainerName",
-          "JsonName": "containerName",
-          "Type": {
-            "Type": "String"
-          }
+            "Type": "Boolean"
+          },
+          "Required": true
         }
       ]
     },
     {
-      "Name": "PostVolumesByNameBrowseReleaseResponse",
+      "Name": "PostVolumesByNameCloneAnswer",
       "Fields": [
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
         {
           "Name": "Success",
           "JsonName": "success",
@@ -834,27 +887,6 @@
           "JsonName": "name",
           "Type": {
             "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostVolumesByNameCloneResponse",
-      "Fields": [
-        {
-          "Name": "Name",
-          "JsonName": "name",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
           },
           "Required": true
         }
@@ -895,27 +927,6 @@
           "JsonName": "name",
           "Type": {
             "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostVolumesResponse",
-      "Fields": [
-        {
-          "Name": "Name",
-          "JsonName": "name",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
           },
           "Required": true
         }

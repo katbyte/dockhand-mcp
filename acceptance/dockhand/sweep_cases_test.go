@@ -90,7 +90,6 @@ var alwaysCases = map[string]sweep.Case{
 	"GetStacksByNameEnv":               {Empty: "the sweep's stack has no variables kept for it by Dockhand"},
 	"GetStacksByNameEnvRaw":            {Empty: "the sweep's stack has no variables kept for it by Dockhand"},
 	"GetStacksByNameTags":              {Empty: "the sweep's stack has no tag"},
-	"GetStacksSources":                 {Empty: "no stack on the host was made by Dockhand, which is what this lists the source of"},
 
 	// what nobody has made on a server as it comes
 	"GetAuthOidc":                        {Empty: "no single sign-on provider is set up"},

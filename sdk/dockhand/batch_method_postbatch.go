@@ -4,47 +4,57 @@ package dockhand
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostBatchOperationResponse is the result of PostBatch.
-type PostBatchOperationResponse struct {
+// PostBatchResponse is the result of PostBatch.
+type PostBatchResponse struct {
 	HttpResponse *http.Response
 }
 
-// PostBatchOperationOptions holds the query and header parameters of PostBatch.
-type PostBatchOperationOptions struct {
+// PostBatchOptions holds the query and header parameters of PostBatch.
+type PostBatchOptions struct {
 	// Environment ID the entities belong to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostBatchOperationOptions) ToHeaders() *client.Headers {
+func (o PostBatchOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostBatchOperationOptions) ToQuery() *client.QueryParams {
+func (o PostBatchOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostBatch calls POST /api/batch. Run a bulk operation (start/stop/restart/pause/unpause/remove/down, depending on entity type) across many containers, images, volumes, networks, or stacks; clients that send Accept application/json get a synchronous summary, others get a jobId and progress over Server-Sent Events.
-func (c Client) PostBatch(ctx context.Context, input PostBatchRequest, options PostBatchOperationOptions) (result PostBatchOperationResponse, err error) {
+func (c Client) PostBatch(ctx context.Context, input PostBatchRequest, options ...PostBatchOptions) (result PostBatchResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostBatch takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostBatchOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/batch",
 	}
 

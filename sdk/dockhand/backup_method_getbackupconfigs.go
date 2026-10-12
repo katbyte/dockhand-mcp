@@ -5,20 +5,25 @@ package dockhand
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetBackupConfigsOperationResponse is the result of GetBackupConfigs.
-type GetBackupConfigsOperationResponse struct {
+// GetBackupConfigsResponse is the result of GetBackupConfigs.
+type GetBackupConfigsResponse struct {
 	HttpResponse *http.Response
-	Model        json.RawMessage
+	Answer       json.RawMessage
 }
 
-// GetBackupConfigsOperationOptions holds the query and header parameters of GetBackupConfigs.
-type GetBackupConfigsOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetBackupConfigsResponse) Answered() bool { return r.Answer != nil }
+
+// GetBackupConfigsOptions holds the query and header parameters of GetBackupConfigs.
+type GetBackupConfigsOptions struct {
 	// Filter by backup config type (e.g. "container", "stack")
 	Type string
 
@@ -26,17 +31,17 @@ type GetBackupConfigsOperationOptions struct {
 	Target string
 
 	// Filter by environment id (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetBackupConfigsOperationOptions) ToHeaders() *client.Headers {
+func (o GetBackupConfigsOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetBackupConfigsOperationOptions) ToQuery() *client.QueryParams {
+func (o GetBackupConfigsOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Type != "" {
 		out.Append("type", o.Type)
@@ -44,20 +49,29 @@ func (o GetBackupConfigsOperationOptions) ToQuery() *client.QueryParams {
 	if o.Target != "" {
 		out.Append("target", o.Target)
 	}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetBackupConfigs calls GET /api/backup/configs. List backup configurations, optionally filtered by type, target and environment (enterprise callers only see configs for environments they can access).
-func (c Client) GetBackupConfigs(ctx context.Context, options GetBackupConfigsOperationOptions) (result GetBackupConfigsOperationResponse, err error) {
+func (c Client) GetBackupConfigs(ctx context.Context, options ...GetBackupConfigsOptions) (result GetBackupConfigsResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetBackupConfigs takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetBackupConfigsOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/backup/configs",
 	}
 
@@ -75,7 +89,7 @@ func (c Client) GetBackupConfigs(ctx context.Context, options GetBackupConfigsOp
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

@@ -74,23 +74,23 @@ type userRow struct {
 	Created     string `json:"created,omitempty"`
 }
 
-func userRowOf(u *dockhand.GetUsersResponse) userRow {
-	return userRow{ID: u.Id, Username: u.Username, DisplayName: u.DisplayName, Email: u.Email, Admin: yes(u.IsAdmin), Active: yes(u.IsActive), Provider: u.AuthProvider, MFA: yes(u.MfaEnabled), LastLogin: u.LastLogin, Created: u.CreatedAt}
+func userRowOf(u *dockhand.GetUsersAnswer) userRow {
+	return userRow{ID: int(u.Id), Username: u.Username, DisplayName: u.DisplayName, Email: u.Email, Admin: u.IsAdmin, Active: u.IsActive, Provider: u.AuthProvider, MFA: u.MfaEnabled, LastLogin: when(u.LastLogin), Created: when(u.CreatedAt)}
 }
 
 // users is every user the Dockhand has.
-func (r *registry) users(ctx context.Context) ([]dockhand.GetUsersResponse, error) {
+func (r *registry) users(ctx context.Context) ([]dockhand.GetUsersAnswer, error) {
 	listed, err := r.dock.GetUsers(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("the users could not be listed: %w", refusal(err))
 	}
 
-	return listed.Model, nil
+	return listed.Answer, nil
 }
 
 // userIn is the user of a list a call names, by its name whatever its case or by its number. A name that is no user's is refused with the ones there
 // are.
-func userIn(listed []dockhand.GetUsersResponse, a userArg) (*dockhand.GetUsersResponse, error) {
+func userIn(listed []dockhand.GetUsersAnswer, a userArg) (*dockhand.GetUsersAnswer, error) {
 	wanted, err := named(a.User, "user")
 	if err != nil {
 		return nil, err
@@ -100,7 +100,7 @@ func userIn(listed []dockhand.GetUsersResponse, a userArg) (*dockhand.GetUsersRe
 	}
 	names := make([]string, 0, len(listed))
 	for i := range listed {
-		if strings.EqualFold(listed[i].Username, wanted) || strconv.Itoa(listed[i].Id) == wanted {
+		if strings.EqualFold(listed[i].Username, wanted) || strconv.Itoa(int(listed[i].Id)) == wanted {
 			return &listed[i], nil
 		}
 		names = append(names, listed[i].Username)
@@ -110,16 +110,16 @@ func userIn(listed []dockhand.GetUsersResponse, a userArg) (*dockhand.GetUsersRe
 }
 
 // signsIn reports whether a user is one a Dockhand with its login on would let in and let do everything: switched on, and an administrator.
-func signsIn(u *dockhand.GetUsersResponse) bool { return yes(u.IsActive) && yes(u.IsAdmin) }
+func signsIn(u *dockhand.GetUsersAnswer) bool { return u.IsActive && u.IsAdmin }
 
 // onlyAdministrator reports whether a user is the only one that is both switched on and an administrator: the one the tools leave as it is.
 // Dockhand's own guard is narrower. It refuses to switch off, unmark or remove the only user there is, and with a second user of any kind it does all
 // three, a last administrator switched off with the login left on among them.
-func onlyAdministrator(listed []dockhand.GetUsersResponse, id int) bool {
+func onlyAdministrator(listed []dockhand.GetUsersAnswer, id int) bool {
 	is := false
 	for i := range listed {
 		switch {
-		case listed[i].Id == id:
+		case int(listed[i].Id) == id:
 			is = signsIn(&listed[i])
 		case signsIn(&listed[i]):
 			return false
@@ -137,7 +137,7 @@ func (r *registry) loginOn(ctx context.Context) (bool, error) {
 		return false, fmt.Errorf("whether the login is on could not be read: %w", refusal(err))
 	}
 
-	return yes(settings.Model.AuthEnabled), nil
+	return settings.Answer.AuthEnabled, nil
 }
 
 // passwordOf is a password checked against the one rule Dockhand has for one, without a word of it going into what is said.
@@ -174,8 +174,8 @@ type loginState struct {
 	DefaultProvider string `json:"default_provider,omitempty" jsonschema:"the provider marked as the default, by its id among providers"`
 }
 
-func loginStateOf(enabled *bool, timeout int, provider string) loginState {
-	return loginState{Enabled: yes(enabled), SessionTimeout: timeout, DefaultProvider: provider}
+func loginStateOf(enabled bool, timeout int, provider string) loginState {
+	return loginState{Enabled: enabled, SessionTimeout: timeout, DefaultProvider: provider}
 }
 
 //nolint:gocyclo,maintidx // seven tools registered in one function, each a handler of its own: the count is theirs added up
@@ -239,7 +239,7 @@ func registerUserTools(r *registry) {
 		if err != nil {
 			return nil, userChangeOut{}, err
 		}
-		if slices.ContainsFunc(listed, func(u dockhand.GetUsersResponse) bool { return strings.EqualFold(u.Username, name) }) {
+		if slices.ContainsFunc(listed, func(u dockhand.GetUsersAnswer) bool { return strings.EqualFold(u.Username, name) }) {
 			return nil, userChangeOut{}, fmt.Errorf("a user is already named %q: user_list gives it, and another name is needed for another", name)
 		}
 
@@ -255,7 +255,7 @@ func registerUserTools(r *registry) {
 			return nil, out, fmt.Errorf("%s was not made: %w", name, refusal(err))
 		}
 		out.Changes = append(out.Changes, "made the user "+name)
-		if yes(made.Model.IsAdmin) {
+		if made.Answer.IsAdmin {
 			out.Note = madeAnAdmin
 		}
 
@@ -265,7 +265,7 @@ func registerUserTools(r *registry) {
 
 			return nil, out, nil //nolint:nilerr // the user was made: that it could not be read back is said in the answer
 		}
-		i := slices.IndexFunc(after, func(u dockhand.GetUsersResponse) bool { return u.Id == made.Model.Id })
+		i := slices.IndexFunc(after, func(u dockhand.GetUsersAnswer) bool { return u.Id == made.Answer.Id })
 		if i < 0 {
 			return nil, out, fmt.Errorf("the making of %s was answered as done, and it is not listed", name)
 		}
@@ -334,7 +334,7 @@ func registerUserTools(r *registry) {
 		request := dockhand.PutUsersByIdRequest{}
 		sends := false
 		if name != "" && name != saved.Username {
-			if slices.ContainsFunc(listed, func(u dockhand.GetUsersResponse) bool { return u.Id != saved.Id && strings.EqualFold(u.Username, name) }) {
+			if slices.ContainsFunc(listed, func(u dockhand.GetUsersAnswer) bool { return u.Id != saved.Id && strings.EqualFold(u.Username, name) }) {
 				return nil, out, fmt.Errorf("another user is named %q, so %s is not renamed to it", name, saved.Username)
 			}
 			request.Username, sends = name, true
@@ -361,11 +361,11 @@ func registerUserTools(r *registry) {
 			out.Changes = append(out.Changes, done("forgot", "would forget")+" its display name")
 		}
 		marks := false
-		if in.Active != nil && *in.Active != yes(saved.IsActive) {
+		if in.Active != nil && *in.Active != saved.IsActive {
 			request.IsActive, sends, marks = in.Active, true, true
 			out.Changes = append(out.Changes, map[bool]string{true: done("switched", "would switch") + " it on", false: done("switched", "would switch") + " it off"}[*in.Active])
 		}
-		if in.Admin != nil && *in.Admin != yes(saved.IsAdmin) {
+		if in.Admin != nil && *in.Admin != saved.IsAdmin {
 			request.IsAdmin, sends, marks = in.Admin, true, true
 			out.Changes = append(out.Changes, map[bool]string{true: done("marked", "would mark") + " it an administrator", false: done("took", "would take") + " the administrator's mark from it"}[*in.Admin])
 		}
@@ -388,7 +388,7 @@ func registerUserTools(r *registry) {
 			}
 		}
 		lessens := (request.IsActive != nil && !*request.IsActive) || (request.IsAdmin != nil && !*request.IsAdmin)
-		if lessens && onlyAdministrator(listed, saved.Id) {
+		if lessens && onlyAdministrator(listed, int(saved.Id)) {
 			return nil, userChangeOut{}, fmt.Errorf(lastAdministrator, saved.Username)
 		}
 		if in.DryRun {
@@ -403,7 +403,7 @@ func registerUserTools(r *registry) {
 			}
 		}
 		if forgetEmail || forgetDisplay {
-			if _, err := r.dock.ForgetUserDetails(ctx, saved.Id, forgetEmail, forgetDisplay); err != nil {
+			if _, err := r.dock.ForgetUserDetails(ctx, int(saved.Id), forgetEmail, forgetDisplay); err != nil {
 				return nil, out, fmt.Errorf("%s was changed in part, and what was to be forgotten was not: %w", saved.Username, refusal(err))
 			}
 		}
@@ -419,7 +419,7 @@ func registerUserTools(r *registry) {
 
 			return nil, out, nil //nolint:nilerr // the change went through: that it could not be read back is said in the answer
 		}
-		i := slices.IndexFunc(after, func(u dockhand.GetUsersResponse) bool { return u.Id == saved.Id })
+		i := slices.IndexFunc(after, func(u dockhand.GetUsersAnswer) bool { return u.Id == saved.Id })
 		if i < 0 {
 			return nil, out, fmt.Errorf("%s was changed, and is no longer listed", saved.Username)
 		}
@@ -468,7 +468,7 @@ func registerUserTools(r *registry) {
 		if err != nil {
 			return nil, out, err
 		}
-		if on && onlyAdministrator(listed, saved.Id) {
+		if on && onlyAdministrator(listed, int(saved.Id)) {
 			return nil, out, fmt.Errorf(lastAdministrator, saved.Username)
 		}
 		if !in.Confirm {
@@ -481,11 +481,11 @@ func registerUserTools(r *registry) {
 			return nil, out, nil
 		}
 
-		gone, err := r.dock.DeleteUsersById(ctx, saved.Id, dockhand.DeleteUsersByIdOperationOptions{})
+		gone, err := r.dock.DeleteUsersById(ctx, saved.Id, dockhand.DeleteUsersByIdOptions{})
 		if err != nil {
 			return nil, out, fmt.Errorf("%s was not removed: %w", saved.Username, refusal(err))
 		}
-		if !yes(gone.Model.Success) {
+		if !gone.Answer.Success {
 			return nil, out, fmt.Errorf("the removal of %s was answered without its being said to have succeeded: user_list says whether it is still there", saved.Username)
 		}
 		left, err := r.users(ctx)
@@ -499,7 +499,7 @@ func registerUserTools(r *registry) {
 
 			return nil, out, nil //nolint:nilerr // the removal went through: that it could not be read back is said in the answer
 		}
-		if slices.ContainsFunc(left, func(u dockhand.GetUsersResponse) bool { return u.Id == saved.Id }) {
+		if slices.ContainsFunc(left, func(u dockhand.GetUsersAnswer) bool { return u.Id == saved.Id }) {
 			return nil, out, fmt.Errorf("the removal of %s was answered as done, and it is still listed", saved.Username)
 		}
 		out.Removed = true
@@ -527,7 +527,7 @@ func registerUserTools(r *registry) {
 		if err != nil {
 			return nil, loginGetOut{}, fmt.Errorf("how the Dockhand is signed in to could not be read: %w", refusal(err))
 		}
-		out := loginGetOut{loginState: loginStateOf(settings.Model.AuthEnabled, settings.Model.SessionTimeout, settings.Model.DefaultProvider), Providers: []loginProvider{}}
+		out := loginGetOut{loginState: loginStateOf(settings.Answer.AuthEnabled, settings.Answer.SessionTimeout, settings.Answer.DefaultProvider), Providers: []loginProvider{}}
 		if !out.Enabled {
 			out.Note = openToAll
 		}
@@ -536,14 +536,14 @@ func registerUserTools(r *registry) {
 		if err != nil {
 			out.Note = note(out.Note, "what is offered at sign-in could not be read: "+refusal(err).Error())
 		} else {
-			for i := range offered.Model.Providers {
-				out.Providers = append(out.Providers, loginProvider{ID: offered.Model.Providers[i].Id, Name: offered.Model.Providers[i].Name, Type: offered.Model.Providers[i].Type})
+			for i := range offered.Answer.Providers {
+				out.Providers = append(out.Providers, loginProvider{ID: offered.Answer.Providers[i].Id, Name: offered.Answer.Providers[i].Name, Type: string(offered.Answer.Providers[i].Type)})
 			}
 		}
 		if licence, err := r.dock.GetLicense(ctx); err != nil {
 			out.Note = note(out.Note, "whether there is a licence could not be read: "+refusal(err).Error())
 		} else {
-			out.Licensed = yes(licence.Model.Active) && yes(licence.Model.Valid)
+			out.Licensed = licence.Answer.Active && licence.Answer.Valid
 		}
 
 		return nil, out, nil
@@ -578,20 +578,20 @@ func registerUserTools(r *registry) {
 		if err != nil {
 			return nil, loginSetOut{}, fmt.Errorf("how the Dockhand is signed in to could not be read: %w", refusal(err))
 		}
-		out := loginSetOut{loginState: loginStateOf(before.Model.AuthEnabled, before.Model.SessionTimeout, before.Model.DefaultProvider), Changes: []string{}}
+		out := loginSetOut{loginState: loginStateOf(before.Answer.AuthEnabled, before.Answer.SessionTimeout, before.Answer.DefaultProvider), Changes: []string{}}
 
 		if provider != "" {
 			offered, failed := r.dock.GetAuthProviders(ctx)
 			if failed != nil {
 				return nil, out, fmt.Errorf("what is offered at sign-in could not be read: %w", refusal(failed))
 			}
-			ids := make([]string, 0, len(offered.Model.Providers))
+			ids := make([]string, 0, len(offered.Answer.Providers))
 			found := ""
-			for i := range offered.Model.Providers {
-				if p := offered.Model.Providers[i]; strings.EqualFold(p.Id, provider) || strings.EqualFold(p.Name, provider) {
+			for i := range offered.Answer.Providers {
+				if p := offered.Answer.Providers[i]; strings.EqualFold(p.Id, provider) || strings.EqualFold(p.Name, provider) {
 					found = p.Id
 				}
-				ids = append(ids, offered.Model.Providers[i].Id)
+				ids = append(ids, offered.Answer.Providers[i].Id)
 			}
 			if found == "" {
 				return nil, out, fmt.Errorf("default_provider is %q, which is not offered at sign-in: there is %s. Dockhand would save it all the same", provider, strings.Join(ids, ", "))
@@ -667,7 +667,7 @@ func registerUserTools(r *registry) {
 		if switches {
 			out.Changes = append(out.Changes, "switched the login "+map[bool]string{true: "on", false: "off"}[*in.Enabled])
 		}
-		out.loginState = loginStateOf(saved.Model.AuthEnabled, saved.Model.SessionTimeout, saved.Model.DefaultProvider)
+		out.loginState = loginStateOf(saved.Answer.AuthEnabled, saved.Answer.SessionTimeout, saved.Answer.DefaultProvider)
 
 		// read back, which is also how this server learns whether it is still let in
 		after, err := r.dock.GetAuthSettings(ctx)
@@ -677,7 +677,7 @@ func registerUserTools(r *registry) {
 		case err != nil:
 			out.Note = "it was changed, and could not be read back: " + refusal(err).Error()
 		default:
-			out.loginState = loginStateOf(after.Model.AuthEnabled, after.Model.SessionTimeout, after.Model.DefaultProvider)
+			out.loginState = loginStateOf(after.Answer.AuthEnabled, after.Answer.SessionTimeout, after.Answer.DefaultProvider)
 			if switches && out.Enabled != *in.Enabled {
 				return nil, out, fmt.Errorf("the change was answered as done, and the login is read back as %s", map[bool]string{true: "on", false: "off"}[out.Enabled])
 			}
@@ -718,9 +718,9 @@ func registerUserTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("the tokens could not be listed: %w", refusal(err))
 		}
-		for i := range listed.Model {
-			t := &listed.Model[i]
-			out.Tokens = append(out.Tokens, tokenRow{ID: t.Id, Name: t.Name, Prefix: t.TokenPrefix, Created: t.CreatedAt, LastUsed: t.LastUsed, Expires: t.ExpiresAt})
+		for i := range listed.Answer {
+			t := &listed.Answer[i]
+			out.Tokens = append(out.Tokens, tokenRow{ID: t.Id, Name: t.Name, Prefix: t.TokenPrefix, Created: when(t.CreatedAt), LastUsed: when(t.LastUsed), Expires: when(t.ExpiresAt)})
 		}
 		slices.SortStableFunc(out.Tokens, func(a, b tokenRow) int { return cmp.Compare(b.ID, a.ID) })
 		out.Total = len(out.Tokens)

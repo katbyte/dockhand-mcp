@@ -4,41 +4,64 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetPreferencesFavoriteGroupsOperationResponse is the result of GetPreferencesFavoriteGroups.
-type GetPreferencesFavoriteGroupsOperationResponse struct {
+// GetPreferencesFavoriteGroupsResponse is the result of GetPreferencesFavoriteGroups.
+//
+// Answer is the GetPreferencesFavoriteGroupsAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetPreferencesFavoriteGroupsResponse struct {
 	HttpResponse *http.Response
-	Model        *GetPreferencesFavoriteGroupsResponse
+	Answer       *GetPreferencesFavoriteGroupsAnswer
+	*GetPreferencesFavoriteGroupsAnswer
 }
 
-// GetPreferencesFavoriteGroupsOperationOptions holds the query and header parameters of GetPreferencesFavoriteGroups.
-type GetPreferencesFavoriteGroupsOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetPreferencesFavoriteGroupsResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetPreferencesFavoriteGroupsAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetPreferencesFavoriteGroupsResponse) Record() (GetPreferencesFavoriteGroupsAnswer, error) {
+	if r.Answer == nil {
+		return GetPreferencesFavoriteGroupsAnswer{}, errors.New("GetPreferencesFavoriteGroups answered no GetPreferencesFavoriteGroupsAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetPreferencesFavoriteGroupsOptions holds the query and header parameters of GetPreferencesFavoriteGroups.
+type GetPreferencesFavoriteGroupsOptions struct {
 	// Environment ID (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetPreferencesFavoriteGroupsOperationOptions) ToHeaders() *client.Headers {
+func (o GetPreferencesFavoriteGroupsOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetPreferencesFavoriteGroupsOperationOptions) ToQuery() *client.QueryParams {
+func (o GetPreferencesFavoriteGroupsOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetPreferencesFavoriteGroups calls GET /api/preferences/favorite-groups. Get the saved log favorite-groups for an environment.
-func (c Client) GetPreferencesFavoriteGroups(ctx context.Context, options GetPreferencesFavoriteGroupsOperationOptions) (result GetPreferencesFavoriteGroupsOperationResponse, err error) {
+func (c Client) GetPreferencesFavoriteGroups(ctx context.Context, options GetPreferencesFavoriteGroupsOptions) (result GetPreferencesFavoriteGroupsResponse, err error) {
+	result.GetPreferencesFavoriteGroupsAnswer = &GetPreferencesFavoriteGroupsAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -62,11 +85,12 @@ func (c Client) GetPreferencesFavoriteGroups(ctx context.Context, options GetPre
 		return
 	}
 
-	var model GetPreferencesFavoriteGroupsResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetPreferencesFavoriteGroupsAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetPreferencesFavoriteGroupsAnswer = result.Answer
 
 	return
 }

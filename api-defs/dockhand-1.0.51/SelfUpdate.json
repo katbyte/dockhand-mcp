@@ -12,7 +12,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetSelfUpdateCheckResponse"
+          "ReferenceName": "GetSelfUpdateCheckAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -41,7 +41,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetSelfUpdateProgressResponse"
+          "ReferenceName": "GetSelfUpdateProgressAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -68,7 +68,7 @@
   ],
   "Models": [
     {
-      "Name": "GetSelfUpdateCheckResponse",
+      "Name": "GetSelfUpdateCheckAnswer",
       "Fields": [
         {
           "Name": "ContainerName",
@@ -144,7 +144,7 @@
       ]
     },
     {
-      "Name": "GetSelfUpdateProgressResponse",
+      "Name": "GetSelfUpdateProgressAnswer",
       "Fields": [
         {
           "Name": "ExitCode",

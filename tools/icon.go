@@ -77,20 +77,20 @@ func (t *iconTarget) called() string {
 func (r *registry) iconNow(ctx context.Context, t *iconTarget) (string, error) {
 	switch t.Kind {
 	case iconOfContainer:
-		given, err := r.dock.GetContainerIcons(ctx, dockhand.GetContainerIconsOperationOptions{Env: &t.Env.ID})
+		given, err := r.dock.GetContainerIcons(ctx, dockhand.GetContainerIconsOptions{Env: t.Env.ID})
 		if err != nil {
 			return "", refusal(err)
 		}
 
-		return given.Model[t.Name], nil
+		return given.Answer[t.Name], nil
 	case iconOfStack:
-		sources, err := r.dock.GetStacksSources(ctx, dockhand.GetStacksSourcesOperationOptions{Env: &t.Env.ID})
+		sources, err := r.dock.GetStacksSources(ctx, dockhand.GetStacksSourcesOptions{Env: t.Env.ID})
 		if err != nil {
 			return "", refusal(err)
 		}
 		t.Kept = keptNowhere
-		if source, has := sources.Model[t.Name]; has {
-			t.Kept = cmp.Or(source.SourceType, keptInternal)
+		if source, has := sources.Answer[t.Name]; has {
+			t.Kept = string(cmp.Or(source.SourceType, keptInternal))
 
 			return source.Icon, nil
 		}
@@ -102,7 +102,7 @@ func (r *registry) iconNow(ctx context.Context, t *iconTarget) (string, error) {
 			return "", refusal(err)
 		}
 
-		return record.Model.Icon, nil
+		return record.Answer.Icon, nil
 	}
 }
 
@@ -132,7 +132,7 @@ func (r *registry) iconOf(ctx context.Context, in iconOfArg) (*iconTarget, error
 		if failed != nil {
 			return nil, fmt.Errorf("the stacks of %s could not be listed: %w", env.Name, failed)
 		}
-		t.There = slices.ContainsFunc(stacks, func(s dockhand.GetStacksResponse) bool { return s.Name == stack })
+		t.There = slices.ContainsFunc(stacks, func(s dockhand.GetStacksAnswer) bool { return s.Name == stack })
 	default:
 	}
 	if t.Icon, err = r.iconNow(ctx, t); err != nil {
@@ -171,13 +171,13 @@ func pictureAt(file string) (address, kind string, err error) {
 }
 
 // selfhst is every icon selfh.st has, as Dockhand lists them. Dockhand fetches the list from selfh.st's own address and keeps it a week.
-func (r *registry) selfhst(ctx context.Context) ([]dockhand.GetIconsSelfhstManifestResponse, error) {
+func (r *registry) selfhst(ctx context.Context) ([]dockhand.GetIconsSelfhstManifestAnswer, error) {
 	listed, err := r.dock.GetIconsSelfhstManifest(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("the list of selfh.st's icons could not be had, which Dockhand fetches from selfh.st and keeps a week: %w", refusal(err))
 	}
 
-	return listed.Model, nil
+	return listed.Answer, nil
 }
 
 // savedHere writes what a call answered to a new file on this machine, for its owner alone, and gives its size. It never writes over a file.
@@ -231,22 +231,22 @@ func registerIconTools(r *registry) {
 			if err != nil {
 				return held{}, err
 			}
-			containers, err := r.dock.GetContainerIcons(ctx, dockhand.GetContainerIconsOperationOptions{Env: &env.ID})
+			containers, err := r.dock.GetContainerIcons(ctx, dockhand.GetContainerIconsOptions{Env: env.ID})
 			if err != nil {
 				return held{}, refusal(err)
 			}
-			sources, err := r.dock.GetStacksSources(ctx, dockhand.GetStacksSourcesOperationOptions{Env: &env.ID})
+			sources, err := r.dock.GetStacksSources(ctx, dockhand.GetStacksSourcesOptions{Env: env.ID})
 			if err != nil {
 				return held{}, refusal(err)
 			}
 			stacks := map[string]string{}
-			for name, source := range sources.Model {
+			for name, source := range sources.Answer {
 				if source.Icon != "" {
 					stacks[name] = source.Icon
 				}
 			}
 
-			return held{Own: own, Containers: containers.Model, Stacks: stacks}, nil
+			return held{Own: own, Containers: containers.Answer, Stacks: stacks}, nil
 		}) {
 			if answer.Err != nil {
 				out.Failed = append(out.Failed, envFailure{Env: answer.Env.Name, Error: answer.Err.Error()})
@@ -341,17 +341,17 @@ func registerIconTools(r *registry) {
 		var answered string
 		switch {
 		case t.Kind == iconOfContainer:
-			set, failed := r.dock.PostContainerIconsByName(ctx, t.Name, dockhand.PostContainerIconsByNameRequest{Icon: icon, Image: picture}, dockhand.PostContainerIconsByNameOperationOptions{Env: &t.Env.ID})
+			set, failed := r.dock.PostContainerIconsByName(ctx, t.Name, dockhand.PostContainerIconsByNameRequest{Icon: icon, Image: picture}, dockhand.PostContainerIconsByNameOptions{Env: t.Env.ID})
 			if failed != nil {
 				return nil, out, fmt.Errorf("%s was not given the icon: %w", t.called(), refusal(failed))
 			}
-			answered = set.Model.Icon
+			answered = set.Answer.Icon
 		case t.Kind == iconOfStack:
-			set, failed := r.dock.PostStacksByNameIcon(ctx, t.Name, dockhand.PostStacksByNameIconRequest{Icon: icon, Image: picture}, dockhand.PostStacksByNameIconOperationOptions{Env: &t.Env.ID})
+			set, failed := r.dock.PostStacksByNameIcon(ctx, t.Name, dockhand.PostStacksByNameIconRequest{Icon: icon, Image: picture}, dockhand.PostStacksByNameIconOptions{Env: t.Env.ID})
 			if failed != nil {
 				return nil, out, fmt.Errorf("%s was not given the icon: %w", t.called(), refusal(failed))
 			}
-			answered = set.Model.Icon
+			answered = set.Answer.Icon
 			if t.Kept == keptNowhere {
 				out.Note = "Dockhand keeps a record of the stack from now on, with no compose file: stack_get says how it is kept, and stack_adopt gives it its file"
 			}
@@ -360,13 +360,13 @@ func registerIconTools(r *registry) {
 			if failed != nil {
 				return nil, out, fmt.Errorf("%s was not given the icon: %w", t.called(), refusal(failed))
 			}
-			answered = set.Model.Icon
+			answered = set.Answer.Icon
 		default:
 			set, failed := r.dock.PutEnvironmentsById(ctx, t.Env.ID, dockhand.PutEnvironmentsByIdRequest{Icon: icon})
 			if failed != nil {
 				return nil, out, fmt.Errorf("%s was not given the icon: %w", t.called(), refusal(failed))
 			}
-			answered = set.Model.Icon
+			answered = set.Answer.Icon
 		}
 		out.Changes = append(out.Changes, fmt.Sprintf("gave %s %s", t.called(), what))
 
@@ -435,28 +435,28 @@ func registerIconTools(r *registry) {
 			return nil, out, nil
 		}
 
-		var said *bool
+		var said bool
 		switch t.Kind {
 		case iconOfContainer:
-			gone, failed := r.dock.DeleteContainerIconsByName(ctx, t.Name, dockhand.DeleteContainerIconsByNameOperationOptions{Env: &t.Env.ID})
+			gone, failed := r.dock.DeleteContainerIconsByName(ctx, t.Name, dockhand.DeleteContainerIconsByNameOptions{Env: t.Env.ID})
 			if failed != nil {
 				return nil, out, fmt.Errorf("the icon of %s was not removed: %w", t.called(), refusal(failed))
 			}
-			said = gone.Model.Success
+			said = gone.Answer.Success
 		case iconOfStack:
-			gone, failed := r.dock.DeleteStacksByNameIcon(ctx, t.Name, dockhand.DeleteStacksByNameIconOperationOptions{Env: &t.Env.ID})
+			gone, failed := r.dock.DeleteStacksByNameIcon(ctx, t.Name, dockhand.DeleteStacksByNameIconOptions{Env: t.Env.ID})
 			if failed != nil {
 				return nil, out, fmt.Errorf("the icon of %s was not removed: %w", t.called(), refusal(failed))
 			}
-			said = gone.Model.Success
+			said = gone.Answer.Success
 		default:
 			gone, failed := r.dock.DeleteEnvironmentsByIdIcon(ctx, t.Env.ID)
 			if failed != nil {
 				return nil, out, fmt.Errorf("the icon of %s was not removed: %w", t.called(), refusal(failed))
 			}
-			said = gone.Model.Success
+			said = gone.Answer.Success
 		}
-		if !yes(said) {
+		if !said {
 			return nil, out, fmt.Errorf("the removal of the icon of %s was answered without its being said to have succeeded: icon_list says whether it is still there", t.called())
 		}
 		back, err := r.iconNow(ctx, t)
@@ -516,7 +516,7 @@ func registerIconTools(r *registry) {
 			if err != nil {
 				return nil, out, err
 			}
-			if !slices.ContainsFunc(listed, func(i dockhand.GetIconsSelfhstManifestResponse) bool { return i.Reference == ref }) {
+			if !slices.ContainsFunc(listed, func(i dockhand.GetIconsSelfhstManifestAnswer) bool { return i.Reference == ref }) {
 				return nil, out, fmt.Errorf("selfh.st has no icon with the reference %q: icon_search finds the ones it has", ref)
 			}
 			fetched, err := r.dock.GetIconsSelfhstByRef(ctx, ref)
@@ -534,16 +534,16 @@ func registerIconTools(r *registry) {
 			switch t.Kind {
 			case iconOfContainer:
 				out.Container = t.Name
-				var fetched dockhand.GetContainerIconsByNameOperationResponse
-				fetched, failed = r.dock.GetContainerIconsByName(ctx, t.Name, dockhand.GetContainerIconsByNameOperationOptions{Env: &t.Env.ID})
+				var fetched dockhand.GetContainerIconsByNameResponse
+				fetched, failed = r.dock.GetContainerIconsByName(ctx, t.Name, dockhand.GetContainerIconsByNameOptions{Env: t.Env.ID})
 				picture = fetched.HttpResponse
 			case iconOfStack:
 				out.Stack = t.Name
-				var fetched dockhand.GetStacksByNameIconOperationResponse
-				fetched, failed = r.dock.GetStacksByNameIcon(ctx, t.Name, dockhand.GetStacksByNameIconOperationOptions{Env: &t.Env.ID})
+				var fetched dockhand.GetStacksByNameIconResponse
+				fetched, failed = r.dock.GetStacksByNameIcon(ctx, t.Name, dockhand.GetStacksByNameIconOptions{Env: t.Env.ID})
 				picture = fetched.HttpResponse
 			default:
-				var fetched dockhand.GetEnvironmentsByIdIconOperationResponse
+				var fetched dockhand.GetEnvironmentsByIdIconResponse
 				fetched, failed = r.dock.GetEnvironmentsByIdIcon(ctx, t.Env.ID)
 				picture = fetched.HttpResponse
 			}

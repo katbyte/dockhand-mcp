@@ -10,34 +10,34 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostContainersBatchUpdateStreamOperationResponse is the result of PostContainersBatchUpdateStream.
-type PostContainersBatchUpdateStreamOperationResponse struct {
+// PostContainersBatchUpdateStreamResponse is the result of PostContainersBatchUpdateStream.
+type PostContainersBatchUpdateStreamResponse struct {
 	HttpResponse *http.Response
 }
 
-// PostContainersBatchUpdateStreamOperationOptions holds the query and header parameters of PostContainersBatchUpdateStream.
-type PostContainersBatchUpdateStreamOperationOptions struct {
+// PostContainersBatchUpdateStreamOptions holds the query and header parameters of PostContainersBatchUpdateStream.
+type PostContainersBatchUpdateStreamOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostContainersBatchUpdateStreamOperationOptions) ToHeaders() *client.Headers {
+func (o PostContainersBatchUpdateStreamOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostContainersBatchUpdateStreamOperationOptions) ToQuery() *client.QueryParams {
+func (o PostContainersBatchUpdateStreamOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostContainersBatchUpdateStream calls POST /api/containers/batch-update-stream. Recreate a set of containers with live streaming progress (Server-Sent Events), optionally blocking on vulnerability criteria (requires the 'create' permission).
-func (c Client) PostContainersBatchUpdateStream(ctx context.Context, input PostContainersBatchUpdateStreamRequest, options PostContainersBatchUpdateStreamOperationOptions) (result PostContainersBatchUpdateStreamOperationResponse, err error) {
+func (c Client) PostContainersBatchUpdateStream(ctx context.Context, input PostContainersBatchUpdateStreamRequest, options PostContainersBatchUpdateStreamOptions) (result PostContainersBatchUpdateStreamResponse, err error) {
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{

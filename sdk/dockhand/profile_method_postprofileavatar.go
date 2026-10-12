@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostProfileAvatarOperationResponse is the result of PostProfileAvatar.
-type PostProfileAvatarOperationResponse struct {
+// PostProfileAvatarResponse is the result of PostProfileAvatar.
+//
+// Answer is the PostProfileAvatarAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostProfileAvatarResponse struct {
 	HttpResponse *http.Response
-	Model        *PostProfileAvatarResponse
+	Answer       *PostProfileAvatarAnswer
+	*PostProfileAvatarAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostProfileAvatarResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostProfileAvatarAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostProfileAvatarResponse) Record() (PostProfileAvatarAnswer, error) {
+	if r.Answer == nil {
+		return PostProfileAvatarAnswer{}, errors.New("PostProfileAvatar answered no PostProfileAvatarAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostProfileAvatar calls POST /api/profile/avatar. Upload the authenticated user's avatar as a base64 image data URL (max ~500KB).
-func (c Client) PostProfileAvatar(ctx context.Context, input PostProfileAvatarRequest) (result PostProfileAvatarOperationResponse, err error) {
+func (c Client) PostProfileAvatar(ctx context.Context, input PostProfileAvatarRequest) (result PostProfileAvatarResponse, err error) {
+	result.PostProfileAvatarAnswer = &PostProfileAvatarAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostProfileAvatar(ctx context.Context, input PostProfileAvatarRe
 		return
 	}
 
-	var model PostProfileAvatarResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostProfileAvatarAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostProfileAvatarAnswer = result.Answer
 
 	return
 }

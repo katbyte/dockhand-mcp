@@ -46,12 +46,12 @@ func (m netMember) active() bool {
 
 // membersOf is the containers of an environment by the name of each network they are on, running or not. It is read from the containers: a network's
 // own record names only the ones that are running, and one put on a network while it was stopped is in nobody's list but its own.
-func membersOf(containers []dockhand.GetContainersResponse) map[string][]netMember {
+func membersOf(containers []dockhand.GetContainersAnswer) map[string][]netMember {
 	members := map[string][]netMember{}
 	for i := range containers {
 		c := &containers[i]
 		for network := range c.Networks {
-			members[network] = append(members[network], netMember{ID: c.Id, Name: c.Name, State: c.State, Address: c.Networks[network].IpAddress})
+			members[network] = append(members[network], netMember{ID: c.Id, Name: c.Name, State: string(c.State), Address: c.Networks[network].IpAddress})
 		}
 	}
 	for network := range members {
@@ -62,8 +62,8 @@ func membersOf(containers []dockhand.GetContainersResponse) map[string][]netMemb
 }
 
 // networkRowOf is a network of an environment as the tools give one, with the containers that are on it.
-func networkRowOf(env string, n *dockhand.GetNetworksResponse, members []netMember) networkRow {
-	row := networkRow{Env: env, Name: n.Name, ID: n.Id, Driver: n.Driver, Internal: yes(n.Internal), Builtin: slices.Contains(builtinNetworks, n.Name), Containers: make([]string, 0, len(members))}
+func networkRowOf(env string, n *dockhand.GetNetworksAnswer, members []netMember) networkRow {
+	row := networkRow{Env: env, Name: n.Name, ID: n.Id, Driver: n.Driver, Internal: n.Internal, Builtin: slices.Contains(builtinNetworks, n.Name), Containers: make([]string, 0, len(members))}
 	if len(row.ID) > shortID {
 		row.ID = row.ID[:shortID]
 	}
@@ -83,14 +83,14 @@ func networkRowOf(env string, n *dockhand.GetNetworksResponse, members []netMemb
 
 // hostNetworks is the networks of an environment and who is on each.
 type hostNetworks struct {
-	Networks []dockhand.GetNetworksResponse
+	Networks []dockhand.GetNetworksAnswer
 	Members  map[string][]netMember
 }
 
 // networksOf is every network on an environment, and the containers on each. Both are needed to say anything of a network that can be relied on, so
 // one that cannot be read fails the two.
 func (r *registry) networksOf(ctx context.Context, env environment) (hostNetworks, error) {
-	listed, err := r.dock.GetNetworks(ctx, dockhand.GetNetworksOperationOptions{Env: &env.ID})
+	listed, err := r.dock.GetNetworks(ctx, dockhand.GetNetworksOptions{Env: env.ID})
 	if err != nil {
 		return hostNetworks{}, refusal(err)
 	}
@@ -99,7 +99,7 @@ func (r *registry) networksOf(ctx context.Context, env environment) (hostNetwork
 		return hostNetworks{}, fmt.Errorf("its networks were listed and its containers, which say who is on them, could not be: %w", err)
 	}
 
-	return hostNetworks{Networks: listed.Model, Members: membersOf(containers)}, nil
+	return hostNetworks{Networks: listed.Answer, Members: membersOf(containers)}, nil
 }
 
 // networkArg is the arguments of a tool about one network: which, and where to look for it.
@@ -112,7 +112,7 @@ type networkArg struct {
 // locatedNetwork is one network, the environment it is on and the containers on it.
 type locatedNetwork struct {
 	Env     environment
-	Network dockhand.GetNetworksResponse
+	Network dockhand.GetNetworksAnswer
 	Members []netMember
 }
 
@@ -332,17 +332,17 @@ func registerNetworkTools(r *registry) {
 		}
 
 		// Docker's own record of the network has what the list leaves out, and the running containers' ends of it
-		ends := map[string]dockhand.GetNetworksByIdInspectResponseContainers{}
-		if one, err := r.dock.GetNetworksByIdInspect(ctx, at.Network.Id, dockhand.GetNetworksByIdInspectOperationOptions{Env: &at.Env.ID}); err != nil {
+		ends := map[string]dockhand.GetNetworksByIdInspectAnswerContainers{}
+		if one, err := r.dock.GetNetworksByIdInspect(ctx, at.Network.Id, dockhand.GetNetworksByIdInspectOptions{Env: at.Env.ID}); err != nil {
 			out.Note = "the rest of its record could not be read: " + refusal(err).Error()
 		} else {
-			labels, hidden := maskedLabels(one.Model.Labels, in.RevealSecrets)
-			out.Labels, out.Options, out.Stack = labels, one.Model.Options, one.Model.Labels[labelStack]
-			out.Created, out.Attachable, out.IPv6 = dockerTime(one.Model.Created), yes(one.Model.Attachable), yes(one.Model.EnableIPv6)
+			labels, hidden := maskedLabels(one.Answer.Labels, in.RevealSecrets)
+			out.Labels, out.Options, out.Stack = labels, one.Answer.Options, one.Answer.Labels[labelStack]
+			out.Created, out.Attachable, out.IPv6 = dockerTime(one.Answer.Created), one.Answer.Attachable, one.Answer.EnableIPv6
 			if hidden > 0 {
 				out.Note = hiddenNote(hidden, "told by the names beside them")
 			}
-			ends = one.Model.Containers
+			ends = one.Answer.Containers
 		}
 
 		for i := range at.Members {
@@ -394,7 +394,7 @@ func registerNetworkTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("the networks of %s could not be listed, so nothing was made: %w", env.Name, err)
 		}
-		if slices.ContainsFunc(before.Networks, func(n dockhand.GetNetworksResponse) bool { return n.Name == name }) {
+		if slices.ContainsFunc(before.Networks, func(n dockhand.GetNetworksAnswer) bool { return n.Name == name }) {
 			return nil, out, fmt.Errorf("%s already has a network named %s, which was left as it is: network_get describes it", env.Name, name)
 		}
 		if in.DryRun {
@@ -428,11 +428,11 @@ func registerNetworkTools(r *registry) {
 			}
 		}
 
-		made, err := r.dock.PostNetworks(ctx, body, dockhand.PostNetworksOperationOptions{Env: &env.ID})
+		made, err := r.dock.PostNetworks(ctx, body, dockhand.PostNetworksOptions{Env: env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("the network %s was not made on %s: %w", name, env.Name, refusal(err))
 		}
-		if !yes(made.Model.Success) {
+		if !made.Answer.Success {
 			return nil, out, fmt.Errorf("making the network %s was answered without its being said to have succeeded: network_list says whether it is there", name)
 		}
 
@@ -502,22 +502,22 @@ func registerNetworkTools(r *registry) {
 			return out, nil
 		}
 
-		var succeeded *bool
+		var succeeded bool
 		if on {
-			answer, failed := r.dock.PostNetworksByIdConnect(ctx, at.Network.Id, dockhand.PostNetworksByIdConnectRequest{ContainerId: container.Container.Id, ContainerName: container.Container.Name}, dockhand.PostNetworksByIdConnectOperationOptions{Env: &at.Env.ID})
+			answer, failed := r.dock.PostNetworksByIdConnect(ctx, at.Network.Id, dockhand.PostNetworksByIdConnectRequest{ContainerId: container.Container.Id, ContainerName: container.Container.Name}, dockhand.PostNetworksByIdConnectOptions{Env: at.Env.ID})
 			if err = failed; err == nil {
-				succeeded = answer.Model.Success
+				succeeded = answer.Answer.Success
 			}
 		} else {
-			answer, failed := r.dock.PostNetworksByIdDisconnect(ctx, at.Network.Id, dockhand.PostNetworksByIdDisconnectRequest{ContainerId: container.Container.Id, ContainerName: container.Container.Name}, dockhand.PostNetworksByIdDisconnectOperationOptions{Env: &at.Env.ID})
+			answer, failed := r.dock.PostNetworksByIdDisconnect(ctx, at.Network.Id, dockhand.PostNetworksByIdDisconnectRequest{ContainerId: container.Container.Id, ContainerName: container.Container.Name}, dockhand.PostNetworksByIdDisconnectOptions{Env: at.Env.ID})
 			if err = failed; err == nil {
-				succeeded = answer.Model.Success
+				succeeded = answer.Answer.Success
 			}
 		}
 		if err != nil {
 			return out, fmt.Errorf("%s was not %s %s: %w", out.Container, verb, out.Network, refusal(err))
 		}
-		if !yes(succeeded) {
+		if !succeeded {
 			return out, fmt.Errorf("%s being %s %s was answered without its being said to have succeeded: network_get says what is on it", out.Container, verb, out.Network)
 		}
 
@@ -594,11 +594,11 @@ func registerNetworkTools(r *registry) {
 			return nil, out, nil
 		}
 
-		gone, err := r.dock.DeleteNetworksById(ctx, at.Network.Id, dockhand.DeleteNetworksByIdOperationOptions{Env: &at.Env.ID})
+		gone, err := r.dock.DeleteNetworksById(ctx, at.Network.Id, dockhand.DeleteNetworksByIdOptions{Env: at.Env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("the network %s was not removed: %w", row.Name, refusal(err))
 		}
-		if !yes(gone.Model.Success) {
+		if !gone.Answer.Success {
 			return nil, out, fmt.Errorf("the removal of the network %s was answered without its being said to have succeeded: network_list says whether it is still there", row.Name)
 		}
 
@@ -683,16 +683,16 @@ func registerNetworkTools(r *registry) {
 		default:
 		}
 
-		pruned, err := r.dock.PostPruneNetworks(ctx, dockhand.PostPruneNetworksOperationOptions{Env: &env.ID})
+		pruned, err := r.dock.PostPruneNetworks(ctx, dockhand.PostPruneNetworksOptions{Env: env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("the networks of %s were not pruned: %w", env.Name, refusal(err))
 		}
-		if !yes(pruned.Model.Success) || pruned.Model.Result == nil {
+		if !pruned.Answer.Success || pruned.Answer.Result == nil {
 			return nil, out, fmt.Errorf("the pruning of %s was answered without its being said to have succeeded: network_list says what is left", env.Name)
 		}
 
 		out.WouldGo, out.WouldStrand = nil, nil
-		out.Removed = append(out.Removed, pruned.Model.Result.NetworksDeleted...)
+		out.Removed = append(out.Removed, pruned.Answer.Result.NetworksDeleted...)
 		slices.Sort(out.Removed)
 		for _, name := range out.Removed {
 			out.Stranded = append(out.Stranded, stranded[name]...)

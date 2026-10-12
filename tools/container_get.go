@@ -115,6 +115,16 @@ func dockerTime(written string) string {
 	return t.UTC().Format(time.RFC3339)
 }
 
+// when is a date Dockhand keeps, as every tool gives one: UTC, to the second. "" is no date; one written in a form nobody knows is given as it was
+// written.
+func when(kept dockhand.Time) string {
+	if kept.IsZero() {
+		return kept.Unread
+	}
+
+	return kept.UTC().Format(time.RFC3339)
+}
+
 // variable is one of the variables a container was started with.
 type variable struct {
 	Name   string `json:"name"`
@@ -270,13 +280,13 @@ func detailOf(at *located, doc *inspected, reveal bool) containerDetail {
 
 // inspect reads a container's inspect document from the environment it is on.
 func (r *registry) inspect(ctx context.Context, at *located) (*inspected, error) {
-	answer, err := r.dock.GetContainersByIdInspect(ctx, at.Container.Id, dockhand.GetContainersByIdInspectOperationOptions{Env: &at.Env.ID})
+	answer, err := r.dock.GetContainersByIdInspect(ctx, at.Container.Id, dockhand.GetContainersByIdInspectOptions{Env: at.Env.ID})
 	if err != nil {
 		return nil, fmt.Errorf("%s on %s could not be inspected: %w", at.Container.Name, at.Env.Name, refusal(err))
 	}
 
 	var doc inspected
-	if err := json.Unmarshal(answer.Model, &doc); err != nil {
+	if err := json.Unmarshal(answer.Answer, &doc); err != nil {
 		return nil, fmt.Errorf("%s on %s: what was answered is not Docker's inspect document: %w", at.Container.Name, at.Env.Name, err)
 	}
 

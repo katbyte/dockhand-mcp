@@ -4,47 +4,80 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostPruneContainersOperationResponse is the result of PostPruneContainers.
-type PostPruneContainersOperationResponse struct {
+// PostPruneContainersResponse is the result of PostPruneContainers.
+//
+// Answer is the PostPruneContainersAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostPruneContainersResponse struct {
 	HttpResponse *http.Response
-	Model        *PostPruneContainersResponse
+	Answer       *PostPruneContainersAnswer
+	*PostPruneContainersAnswer
 }
 
-// PostPruneContainersOperationOptions holds the query and header parameters of PostPruneContainers.
-type PostPruneContainersOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostPruneContainersResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostPruneContainersAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostPruneContainersResponse) Record() (PostPruneContainersAnswer, error) {
+	if r.Answer == nil {
+		return PostPruneContainersAnswer{}, errors.New("PostPruneContainers answered no PostPruneContainersAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostPruneContainersOptions holds the query and header parameters of PostPruneContainers.
+type PostPruneContainersOptions struct {
 	// Target environment id; scopes both the prune operation and the permission check (defaults to the local environment) (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostPruneContainersOperationOptions) ToHeaders() *client.Headers {
+func (o PostPruneContainersOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostPruneContainersOperationOptions) ToQuery() *client.QueryParams {
+func (o PostPruneContainersOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostPruneContainers calls POST /api/prune/containers. Prune (delete) all stopped containers in the target environment.
-func (c Client) PostPruneContainers(ctx context.Context, options PostPruneContainersOperationOptions) (result PostPruneContainersOperationResponse, err error) {
+func (c Client) PostPruneContainers(ctx context.Context, options ...PostPruneContainersOptions) (result PostPruneContainersResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostPruneContainers takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostPruneContainersOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostPruneContainersAnswer = &PostPruneContainersAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/prune/containers",
 	}
 
@@ -62,11 +95,12 @@ func (c Client) PostPruneContainers(ctx context.Context, options PostPruneContai
 		return
 	}
 
-	var model PostPruneContainersResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostPruneContainersAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostPruneContainersAnswer = result.Answer
 
 	return
 }

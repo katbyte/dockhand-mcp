@@ -4,29 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostVulnerabilitiesScanAllOperationResponse is the result of PostVulnerabilitiesScanAll.
-type PostVulnerabilitiesScanAllOperationResponse struct {
+// PostVulnerabilitiesScanAllResponse is the result of PostVulnerabilitiesScanAll.
+//
+// Answer is the PostVulnerabilitiesScanAllAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostVulnerabilitiesScanAllResponse struct {
 	HttpResponse *http.Response
-	Model        *PostVulnerabilitiesScanAllResponse
+	Answer       *PostVulnerabilitiesScanAllAnswer
+	*PostVulnerabilitiesScanAllAnswer
 }
 
-// PostVulnerabilitiesScanAllOperationOptions holds the query and header parameters of PostVulnerabilitiesScanAll.
-type PostVulnerabilitiesScanAllOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostVulnerabilitiesScanAllResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostVulnerabilitiesScanAllAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostVulnerabilitiesScanAllResponse) Record() (PostVulnerabilitiesScanAllAnswer, error) {
+	if r.Answer == nil {
+		return PostVulnerabilitiesScanAllAnswer{}, errors.New("PostVulnerabilitiesScanAll answered no PostVulnerabilitiesScanAllAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostVulnerabilitiesScanAllOptions holds the query and header parameters of PostVulnerabilitiesScanAll.
+type PostVulnerabilitiesScanAllOptions struct {
 	// ID of the environment whose images to scan (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once
 	Accept string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostVulnerabilitiesScanAllOperationOptions) ToHeaders() *client.Headers {
+func (o PostVulnerabilitiesScanAllOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	if o.Accept != "" {
 		out.Append("Accept", o.Accept)
@@ -35,22 +58,32 @@ func (o PostVulnerabilitiesScanAllOperationOptions) ToHeaders() *client.Headers 
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostVulnerabilitiesScanAllOperationOptions) ToQuery() *client.QueryParams {
+func (o PostVulnerabilitiesScanAllOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostVulnerabilitiesScanAll calls POST /api/vulnerabilities/scan-all. Scan every image in an environment for vulnerabilities, streaming per-image progress as Server-Sent Events.
-func (c Client) PostVulnerabilitiesScanAll(ctx context.Context, options PostVulnerabilitiesScanAllOperationOptions) (result PostVulnerabilitiesScanAllOperationResponse, err error) {
+func (c Client) PostVulnerabilitiesScanAll(ctx context.Context, options ...PostVulnerabilitiesScanAllOptions) (result PostVulnerabilitiesScanAllResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostVulnerabilitiesScanAll takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostVulnerabilitiesScanAllOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostVulnerabilitiesScanAllAnswer = &PostVulnerabilitiesScanAllAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/vulnerabilities/scan-all",
 	}
 
@@ -68,11 +101,12 @@ func (c Client) PostVulnerabilitiesScanAll(ctx context.Context, options PostVuln
 		return
 	}
 
-	var model PostVulnerabilitiesScanAllResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostVulnerabilitiesScanAllAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostVulnerabilitiesScanAllAnswer = result.Answer
 
 	return
 }

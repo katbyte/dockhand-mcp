@@ -4,7 +4,7 @@ package dockhand
 
 // PostSecretProvidersRequest is an object the document declares inline.
 type PostSecretProvidersRequest struct {
-	Config map[string]any `json:"config"`
-	Name   string         `json:"name"`
-	Type   string         `json:"type"`
+	Config map[string]any     `json:"config"`
+	Name   string             `json:"name"`
+	Type   SecretProviderType `json:"type"`
 }

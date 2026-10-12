@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostGitRepositoriesOperationResponse is the result of PostGitRepositories.
-type PostGitRepositoriesOperationResponse struct {
+// PostGitRepositoriesResponse is the result of PostGitRepositories.
+//
+// Answer is the PostGitRepositoriesAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostGitRepositoriesResponse struct {
 	HttpResponse *http.Response
-	Model        *PostGitRepositoriesResponse
+	Answer       *PostGitRepositoriesAnswer
+	*PostGitRepositoriesAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostGitRepositoriesResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostGitRepositoriesAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostGitRepositoriesResponse) Record() (PostGitRepositoriesAnswer, error) {
+	if r.Answer == nil {
+		return PostGitRepositoriesAnswer{}, errors.New("PostGitRepositories answered no PostGitRepositoriesAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostGitRepositories calls POST /api/git/repositories. Create a git repository (branch defaults to main); deployment config lives on git stacks, not here.
-func (c Client) PostGitRepositories(ctx context.Context, input PostGitRepositoriesRequest) (result PostGitRepositoriesOperationResponse, err error) {
+func (c Client) PostGitRepositories(ctx context.Context, input PostGitRepositoriesRequest) (result PostGitRepositoriesResponse, err error) {
+	result.PostGitRepositoriesAnswer = &PostGitRepositoriesAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostGitRepositories(ctx context.Context, input PostGitRepositori
 		return
 	}
 
-	var model PostGitRepositoriesResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostGitRepositoriesAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostGitRepositoriesAnswer = result.Answer
 
 	return
 }

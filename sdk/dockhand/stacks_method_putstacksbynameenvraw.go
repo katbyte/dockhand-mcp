@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,42 +13,73 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutStacksByNameEnvRawOperationResponse is the result of PutStacksByNameEnvRaw.
-type PutStacksByNameEnvRawOperationResponse struct {
+// PutStacksByNameEnvRawResponse is the result of PutStacksByNameEnvRaw.
+//
+// Answer is the PutStacksByNameEnvRawAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PutStacksByNameEnvRawResponse struct {
 	HttpResponse *http.Response
-	Model        *PutStacksByNameEnvRawResponse
+	Answer       *PutStacksByNameEnvRawAnswer
+	*PutStacksByNameEnvRawAnswer
 }
 
-// PutStacksByNameEnvRawOperationOptions holds the query and header parameters of PutStacksByNameEnvRaw.
-type PutStacksByNameEnvRawOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutStacksByNameEnvRawResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutStacksByNameEnvRawAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutStacksByNameEnvRawResponse) Record() (PutStacksByNameEnvRawAnswer, error) {
+	if r.Answer == nil {
+		return PutStacksByNameEnvRawAnswer{}, errors.New("PutStacksByNameEnvRaw answered no PutStacksByNameEnvRawAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PutStacksByNameEnvRawOptions holds the query and header parameters of PutStacksByNameEnvRaw.
+type PutStacksByNameEnvRawOptions struct {
 	// Environment ID the stack belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PutStacksByNameEnvRawOperationOptions) ToHeaders() *client.Headers {
+func (o PutStacksByNameEnvRawOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PutStacksByNameEnvRawOperationOptions) ToQuery() *client.QueryParams {
+func (o PutStacksByNameEnvRawOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PutStacksByNameEnvRaw calls PUT /api/stacks/{name}/env/raw. Write raw .env file content to disk for a stack; empty content deletes the .env file, and masked "***" placeholders are rejected to avoid corrupting secrets.
-func (c Client) PutStacksByNameEnvRaw(ctx context.Context, name string, input PutStacksByNameEnvRawRequest, options PutStacksByNameEnvRawOperationOptions) (result PutStacksByNameEnvRawOperationResponse, err error) {
+func (c Client) PutStacksByNameEnvRaw(ctx context.Context, name string, input PutStacksByNameEnvRawRequest, options ...PutStacksByNameEnvRawOptions) (result PutStacksByNameEnvRawResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PutStacksByNameEnvRaw takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PutStacksByNameEnvRawOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PutStacksByNameEnvRawAnswer = &PutStacksByNameEnvRawAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPut,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/env/raw", url.PathEscape(name)),
 	}
 
@@ -69,11 +101,12 @@ func (c Client) PutStacksByNameEnvRaw(ctx context.Context, name string, input Pu
 		return
 	}
 
-	var model PutStacksByNameEnvRawResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PutStacksByNameEnvRawAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PutStacksByNameEnvRawAnswer = result.Answer
 
 	return
 }

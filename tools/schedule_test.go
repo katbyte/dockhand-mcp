@@ -57,10 +57,10 @@ func TestScheduleList(t *testing.T) {
 	if acctest.Num(t, out["total"], "total") != 5 || len(rows) != 5 || rows[0]["type"] != "container-update" || rows[1]["type"] != "env-update-check" || rows[2]["type"] != "image-prune" || rows[3]["name"] != "Container event cleanup" || rows[4]["name"] != "Volume helper cleanup" || out["note"] != nil {
 		t.Fatalf("what Dockhand does by itself = %v", out)
 	}
-	if kept := rows[0]; acctest.Num(t, kept["id"], "id") != 8 || kept["name"] != "Update container: loose" || kept["env"] != "alpha" || !acctest.IsBool(kept["enabled"], true) || kept["cron"] != "0 4 * * *" || kept["next_run"] != "2026-10-11T04:00:00.000Z" || kept["does"] != nil || kept["system"] != nil {
+	if kept := rows[0]; acctest.Num(t, kept["id"], "id") != 8 || kept["name"] != "Update container: loose" || kept["env"] != "alpha" || !acctest.IsBool(kept["enabled"], true) || kept["cron"] != "0 4 * * *" || kept["next_run"] != "2026-10-11T04:00:00Z" || kept["does"] != nil || kept["system"] != nil {
 		t.Errorf("a container kept on the newest image = %v", kept)
 	}
-	if last := acctest.Object(t, rows[0]["last_run"], "last_run"); acctest.Num(t, last["run"], "run") != 186 || last["status"] != "skipped" || last["triggered_by"] != "manual" || last["at"] != "2026-10-10T14:06:34.602Z" || acctest.Decimal(t, last["seconds"], "seconds") != 0.9 || acctest.Object(t, last["details"], "details")["reason"] != "Already up-to-date" || last["error"] != nil {
+	if last := acctest.Object(t, rows[0]["last_run"], "last_run"); acctest.Num(t, last["run"], "run") != 186 || last["status"] != "skipped" || last["triggered_by"] != "manual" || last["at"] != "2026-10-10T14:06:34Z" || acctest.Decimal(t, last["seconds"], "seconds") != 0.9 || acctest.Object(t, last["details"], "details")["reason"] != "Already up-to-date" || last["error"] != nil {
 		t.Errorf("its latest run = %v", last)
 	}
 	if off, own := rows[2], rows[3]; !acctest.IsBool(off["enabled"], false) || off["next_run"] != nil || off["does"] != "Prune dangling images only" || off["env"] != "beta" || off["last_run"] != nil || !acctest.IsBool(own["system"], true) || own["env"] != nil {
@@ -335,7 +335,7 @@ func TestScheduleSet(t *testing.T) {
 	// an environment's check is not listed while it is off: switched on it is turned over unseen, switched off there is nothing to do
 	dock.Answer(check, `{"success":true,"enabled":true}`)
 	dock.Then(check, func(dockhandtest.Request) { dock.Answer(scheduleList, `{"schedules":[`+checkAlpha+`]}`) })
-	if out = suite.Call(t, "schedule_set", map[string]any{"type": "env_update_check", "id": 1, "enabled": true}); acctest.Strs(t, out["changes"], "changes")[0] != "switched the env-update-check numbered 1 on" || !acctest.IsBool(out["enabled"], true) || out["next_run"] != "2026-10-11T04:00:00.000Z" || out["name"] != "Update environment: alpha" {
+	if out = suite.Call(t, "schedule_set", map[string]any{"type": "env_update_check", "id": 1, "enabled": true}); acctest.Strs(t, out["changes"], "changes")[0] != "switched the env-update-check numbered 1 on" || !acctest.IsBool(out["enabled"], true) || out["next_run"] != "2026-10-11T04:00:00Z" || out["name"] != "Update environment: alpha" {
 		t.Errorf("an environment's check switched on = %v", out)
 	}
 	if out = suite.Call(t, "schedule_set", map[string]any{"type": "env_update_check", "id": 2, "enabled": false}); !strings.Contains(acctest.Str(out["note"]), "is switched off already") {

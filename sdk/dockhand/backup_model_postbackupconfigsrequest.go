@@ -7,7 +7,7 @@ type PostBackupConfigsRequest struct {
 	AllVolumes       *bool                              `json:"allVolumes,omitempty"`
 	DestinationId    int                                `json:"destinationId"`
 	Enabled          *bool                              `json:"enabled,omitempty"`
-	EnvironmentId    int                                `json:"environmentId,omitempty"`
+	EnvironmentId    EnvironmentID                      `json:"environmentId,omitempty"`
 	Options          map[string]any                     `json:"options,omitzero"`
 	Retention        *PostBackupConfigsRequestRetention `json:"retention,omitempty"`
 	Schedule         string                             `json:"schedule,omitempty"`

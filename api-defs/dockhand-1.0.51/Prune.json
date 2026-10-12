@@ -15,7 +15,8 @@
           "In": "Query",
           "Description": "Target environment id; scopes both the prune operation and the permission check (defaults to the local environment) (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -23,7 +24,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostPruneAllResponse"
+          "ReferenceName": "PostPruneAllAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -43,7 +44,8 @@
           "In": "Query",
           "Description": "Target environment id; scopes both the prune operation and the permission check (defaults to the local environment) (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -51,7 +53,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostPruneContainersResponse"
+          "ReferenceName": "PostPruneContainersAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -80,7 +82,8 @@
           "In": "Query",
           "Description": "Target environment id; scopes both the prune operation and the permission check (defaults to the local environment) (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -97,7 +100,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostPruneImagesResponse"
+          "ReferenceName": "PostPruneImagesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -117,7 +120,8 @@
           "In": "Query",
           "Description": "Target environment id; scopes both the prune operation and the permission check (defaults to the local environment) (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -125,7 +129,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostPruneNetworksResponse"
+          "ReferenceName": "PostPruneNetworksAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -145,7 +149,8 @@
           "In": "Query",
           "Description": "Target environment id; scopes both the prune operation and the permission check (defaults to the local environment) (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -153,7 +158,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostPruneVolumesResponse"
+          "ReferenceName": "PostPruneVolumesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -163,14 +168,14 @@
   ],
   "Models": [
     {
-      "Name": "PostPruneAllResponse",
+      "Name": "PostPruneAllAnswer",
       "Fields": [
         {
           "Name": "Result",
           "JsonName": "result",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "PostPruneAllResponseResult"
+            "ReferenceName": "PostPruneAllAnswerResult"
           }
         },
         {
@@ -183,14 +188,14 @@
       ]
     },
     {
-      "Name": "PostPruneAllResponseResult",
+      "Name": "PostPruneAllAnswerResult",
       "Fields": [
         {
           "Name": "Containers",
           "JsonName": "containers",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "PostPruneAllResponseResultContainers"
+            "ReferenceName": "PostPruneAllAnswerResultContainers"
           }
         },
         {
@@ -198,7 +203,7 @@
           "JsonName": "images",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "PostPruneAllResponseResultImages"
+            "ReferenceName": "PostPruneAllAnswerResultImages"
           }
         },
         {
@@ -206,7 +211,7 @@
           "JsonName": "networks",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "PostPruneAllResponseResultNetworks"
+            "ReferenceName": "PostPruneAllAnswerResultNetworks"
           }
         },
         {
@@ -214,13 +219,13 @@
           "JsonName": "volumes",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "PostPruneAllResponseResultVolumes"
+            "ReferenceName": "PostPruneAllAnswerResultVolumes"
           }
         }
       ]
     },
     {
-      "Name": "PostPruneAllResponseResultContainers",
+      "Name": "PostPruneAllAnswerResultContainers",
       "Fields": [
         {
           "Name": "ContainersDeleted",
@@ -244,7 +249,7 @@
       ]
     },
     {
-      "Name": "PostPruneAllResponseResultImages",
+      "Name": "PostPruneAllAnswerResultImages",
       "Fields": [
         {
           "Name": "ImagesDeleted",
@@ -254,7 +259,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "PostPruneAllResponseResultImagesImagesDeleted"
+              "ReferenceName": "PostPruneAllAnswerResultImagesImagesDeleted"
             }
           }
         },
@@ -269,7 +274,7 @@
       ]
     },
     {
-      "Name": "PostPruneAllResponseResultImagesImagesDeleted",
+      "Name": "PostPruneAllAnswerResultImagesImagesDeleted",
       "Fields": [
         {
           "Name": "Deleted",
@@ -290,7 +295,7 @@
       ]
     },
     {
-      "Name": "PostPruneAllResponseResultNetworks",
+      "Name": "PostPruneAllAnswerResultNetworks",
       "Fields": [
         {
           "Name": "NetworksDeleted",
@@ -306,7 +311,7 @@
       ]
     },
     {
-      "Name": "PostPruneAllResponseResultVolumes",
+      "Name": "PostPruneAllAnswerResultVolumes",
       "Fields": [
         {
           "Name": "SpaceReclaimed",
@@ -330,14 +335,14 @@
       ]
     },
     {
-      "Name": "PostPruneContainersResponse",
+      "Name": "PostPruneContainersAnswer",
       "Fields": [
         {
           "Name": "Result",
           "JsonName": "result",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "PostPruneContainersResponseResult"
+            "ReferenceName": "PostPruneContainersAnswerResult"
           }
         },
         {
@@ -350,7 +355,7 @@
       ]
     },
     {
-      "Name": "PostPruneContainersResponseResult",
+      "Name": "PostPruneContainersAnswerResult",
       "Fields": [
         {
           "Name": "ContainersDeleted",
@@ -374,7 +379,7 @@
       ]
     },
     {
-      "Name": "PostPruneImagesResponse",
+      "Name": "PostPruneImagesAnswer",
       "Fields": [
         {
           "Name": "Error",
@@ -397,7 +402,7 @@
           "JsonName": "result",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "PostPruneImagesResponseResult"
+            "ReferenceName": "PostPruneImagesAnswerResult"
           }
         },
         {
@@ -410,7 +415,7 @@
       ]
     },
     {
-      "Name": "PostPruneImagesResponseResult",
+      "Name": "PostPruneImagesAnswerResult",
       "Fields": [
         {
           "Name": "ImagesDeleted",
@@ -420,7 +425,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "PostPruneImagesResponseResultImagesDeleted"
+              "ReferenceName": "PostPruneImagesAnswerResultImagesDeleted"
             }
           }
         },
@@ -435,7 +440,7 @@
       ]
     },
     {
-      "Name": "PostPruneImagesResponseResultImagesDeleted",
+      "Name": "PostPruneImagesAnswerResultImagesDeleted",
       "Fields": [
         {
           "Name": "Deleted",
@@ -456,14 +461,14 @@
       ]
     },
     {
-      "Name": "PostPruneNetworksResponse",
+      "Name": "PostPruneNetworksAnswer",
       "Fields": [
         {
           "Name": "Result",
           "JsonName": "result",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "PostPruneNetworksResponseResult"
+            "ReferenceName": "PostPruneNetworksAnswerResult"
           }
         },
         {
@@ -476,7 +481,7 @@
       ]
     },
     {
-      "Name": "PostPruneNetworksResponseResult",
+      "Name": "PostPruneNetworksAnswerResult",
       "Fields": [
         {
           "Name": "NetworksDeleted",
@@ -492,14 +497,14 @@
       ]
     },
     {
-      "Name": "PostPruneVolumesResponse",
+      "Name": "PostPruneVolumesAnswer",
       "Fields": [
         {
           "Name": "Result",
           "JsonName": "result",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "PostPruneVolumesResponseResult"
+            "ReferenceName": "PostPruneVolumesAnswerResult"
           }
         },
         {
@@ -512,7 +517,7 @@
       ]
     },
     {
-      "Name": "PostPruneVolumesResponseResult",
+      "Name": "PostPruneVolumesAnswerResult",
       "Fields": [
         {
           "Name": "SpaceReclaimed",

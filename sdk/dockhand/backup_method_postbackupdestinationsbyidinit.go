@@ -10,13 +10,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostBackupDestinationsByIdInitOperationResponse is the result of PostBackupDestinationsByIdInit.
-type PostBackupDestinationsByIdInitOperationResponse struct {
+// PostBackupDestinationsByIdInitResponse is the result of PostBackupDestinationsByIdInit.
+type PostBackupDestinationsByIdInitResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostBackupDestinationsByIdInit calls POST /api/backup/destinations/{id}/init. Initialize the restic repository for a destination and record the resulting test status.
-func (c Client) PostBackupDestinationsByIdInit(ctx context.Context, id int) (result PostBackupDestinationsByIdInitOperationResponse, err error) {
+func (c Client) PostBackupDestinationsByIdInit(ctx context.Context, id int) (result PostBackupDestinationsByIdInitResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,

@@ -4,47 +4,80 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostPruneVolumesOperationResponse is the result of PostPruneVolumes.
-type PostPruneVolumesOperationResponse struct {
+// PostPruneVolumesResponse is the result of PostPruneVolumes.
+//
+// Answer is the PostPruneVolumesAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostPruneVolumesResponse struct {
 	HttpResponse *http.Response
-	Model        *PostPruneVolumesResponse
+	Answer       *PostPruneVolumesAnswer
+	*PostPruneVolumesAnswer
 }
 
-// PostPruneVolumesOperationOptions holds the query and header parameters of PostPruneVolumes.
-type PostPruneVolumesOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostPruneVolumesResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostPruneVolumesAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostPruneVolumesResponse) Record() (PostPruneVolumesAnswer, error) {
+	if r.Answer == nil {
+		return PostPruneVolumesAnswer{}, errors.New("PostPruneVolumes answered no PostPruneVolumesAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostPruneVolumesOptions holds the query and header parameters of PostPruneVolumes.
+type PostPruneVolumesOptions struct {
 	// Target environment id; scopes both the prune operation and the permission check (defaults to the local environment) (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostPruneVolumesOperationOptions) ToHeaders() *client.Headers {
+func (o PostPruneVolumesOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostPruneVolumesOperationOptions) ToQuery() *client.QueryParams {
+func (o PostPruneVolumesOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostPruneVolumes calls POST /api/prune/volumes. Prune (delete) all unused Docker volumes in the target environment.
-func (c Client) PostPruneVolumes(ctx context.Context, options PostPruneVolumesOperationOptions) (result PostPruneVolumesOperationResponse, err error) {
+func (c Client) PostPruneVolumes(ctx context.Context, options ...PostPruneVolumesOptions) (result PostPruneVolumesResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostPruneVolumes takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostPruneVolumesOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostPruneVolumesAnswer = &PostPruneVolumesAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/prune/volumes",
 	}
 
@@ -62,11 +95,12 @@ func (c Client) PostPruneVolumes(ctx context.Context, options PostPruneVolumesOp
 		return
 	}
 
-	var model PostPruneVolumesResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostPruneVolumesAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostPruneVolumesAnswer = result.Answer
 
 	return
 }

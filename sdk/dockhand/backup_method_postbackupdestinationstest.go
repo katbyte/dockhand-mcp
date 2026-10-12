@@ -9,13 +9,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostBackupDestinationsTestOperationResponse is the result of PostBackupDestinationsTest.
-type PostBackupDestinationsTestOperationResponse struct {
+// PostBackupDestinationsTestResponse is the result of PostBackupDestinationsTest.
+type PostBackupDestinationsTestResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostBackupDestinationsTest calls POST /api/backup/destinations/test. Test a backup repository — either a saved destination (by destinationId) or inline credentials supplied for a not-yet-saved destination.
-func (c Client) PostBackupDestinationsTest(ctx context.Context, input PostBackupDestinationsTestRequest) (result PostBackupDestinationsTestOperationResponse, err error) {
+func (c Client) PostBackupDestinationsTest(ctx context.Context, input PostBackupDestinationsTestRequest) (result PostBackupDestinationsTestResponse, err error) {
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{

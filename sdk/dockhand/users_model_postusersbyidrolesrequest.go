@@ -4,6 +4,6 @@ package dockhand
 
 // PostUsersByIdRolesRequest is an object the document declares inline.
 type PostUsersByIdRolesRequest struct {
-	EnvironmentId int `json:"environmentId,omitempty"`
-	RoleId        int `json:"roleId"`
+	EnvironmentId EnvironmentID `json:"environmentId,omitempty"`
+	RoleId        RoleID        `json:"roleId"`
 }

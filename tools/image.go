@@ -40,7 +40,7 @@ func shortImageID(id string) string {
 }
 
 // tagsOf is the names and tags an image goes by on its host, sorted, and none for an image that has no name left.
-func tagsOf(img *dockhand.GetImagesResponse) []string {
+func tagsOf(img *dockhand.GetImagesAnswer) []string {
 	tags := make([]string, 0, len(img.RepoTags))
 	for _, tag := range img.RepoTags {
 		if tag != "" && tag != noTag {
@@ -64,7 +64,7 @@ type imageRow struct {
 }
 
 // imageRowOf is an image of an environment as the tools give one.
-func imageRowOf(env string, img *dockhand.GetImagesResponse) imageRow {
+func imageRowOf(env string, img *dockhand.GetImagesAnswer) imageRow {
 	row := imageRow{Env: env, ID: shortImageID(img.Id), Tags: tagsOf(img), SizeMB: megabytes(img.Size), Containers: img.Containers}
 	row.Untagged = len(row.Tags) == 0
 	if img.Created > 0 {
@@ -75,13 +75,13 @@ func imageRowOf(env string, img *dockhand.GetImagesResponse) imageRow {
 }
 
 // imagesOf is every image on an environment.
-func (r *registry) imagesOf(ctx context.Context, env environment) ([]dockhand.GetImagesResponse, error) {
-	listed, err := r.dock.GetImages(ctx, dockhand.GetImagesOperationOptions{Env: &env.ID})
+func (r *registry) imagesOf(ctx context.Context, env environment) ([]dockhand.GetImagesAnswer, error) {
+	listed, err := r.dock.GetImages(ctx, dockhand.GetImagesOptions{Env: env.ID})
 	if err != nil {
 		return nil, refusal(err)
 	}
 
-	return listed.Model, nil
+	return listed.Answer, nil
 }
 
 // imageArg is the arguments of a tool about one image: which, and where to look for it.
@@ -94,7 +94,7 @@ type imageArg struct {
 // locatedImage is one image and the environment it is on.
 type locatedImage struct {
 	Env   environment
-	Image dockhand.GetImagesResponse
+	Image dockhand.GetImagesAnswer
 }
 
 // repository is the name of an image without its tag: what is before the last colon, unless that colon is a registry's port.
@@ -108,7 +108,7 @@ func repository(tag string) string {
 
 // matchImage says how an image answers to what a call names: by one of its names and tags in full, by its name alone or the end of it (busybox for
 // registry.example/library/busybox:1.37), by the start of its id, or not at all.
-func matchImage(img *dockhand.GetImagesResponse, want string) (exact, byName, byID bool) {
+func matchImage(img *dockhand.GetImagesAnswer, want string) (exact, byName, byID bool) {
 	for _, tag := range tagsOf(img) {
 		switch name := repository(tag); {
 		case tag == want:
@@ -210,7 +210,7 @@ func (r *registry) usersOf(ctx context.Context, at *locatedImage) ([]string, err
 	users := []string{}
 	for i := range containers {
 		if containers[i].ImageId == at.Image.Id {
-			users = append(users, containers[i].Name+" ("+containers[i].State+")")
+			users = append(users, containers[i].Name+" ("+string(containers[i].State)+")")
 		}
 	}
 	slices.Sort(users)
@@ -274,12 +274,12 @@ func (r *registry) imageNamed(ctx context.Context, env environment, name string)
 // pull fetches an image to a host from its registry, as a job on Dockhand, and waits for it as long as the patience given. A state that is running
 // means the wait ran out first and the pull goes on; an error is why the image was not pulled.
 func (r *registry) pull(ctx context.Context, env environment, name string, patience time.Duration) (jobState, error) {
-	started, err := r.dock.PostImagesPull(ctx, dockhand.PostImagesPullRequest{Image: name}, dockhand.PostImagesPullOperationOptions{Accept: dockhand.AcceptJob, Env: &env.ID})
+	started, err := r.dock.PostImagesPull(ctx, dockhand.PostImagesPullRequest{Image: name}, dockhand.PostImagesPullOptions{Accept: dockhand.AcceptJob, Env: env.ID})
 	if err != nil {
 		return jobState{}, refusal(err)
 	}
 
-	outcome, state, err := settle(ctx, r, started.Model.JobId, started.Model, patience)
+	outcome, state, err := settle(ctx, r, started.Answer.JobId, started.Answer, patience)
 	if err != nil || state.Running {
 		return state, err
 	}
@@ -404,13 +404,13 @@ func registerImageTools(r *registry) {
 		}
 
 		// the two that follow describe an image that is known to be there, and one of them failing is said rather than hiding the rest
-		if history, err := r.dock.GetImagesByIdHistory(ctx, at.Image.Id, dockhand.GetImagesByIdHistoryOperationOptions{Env: &at.Env.ID}); err != nil {
+		if history, err := r.dock.GetImagesByIdHistory(ctx, at.Image.Id, dockhand.GetImagesByIdHistoryOptions{Env: at.Env.ID}); err != nil {
 			out.Note = note(out.Note, "how it was built could not be read: "+refusal(err).Error())
 		} else {
-			for i := range history.Model {
-				layer := imageLayer{CreatedBy: strings.TrimSpace(history.Model[i].CreatedBy), SizeMB: megabytes(history.Model[i].Size)}
-				if history.Model[i].Created > 0 {
-					layer.Created = time.Unix(int64(history.Model[i].Created), 0).UTC().Format(time.RFC3339)
+			for i := range history.Answer {
+				layer := imageLayer{CreatedBy: strings.TrimSpace(history.Answer[i].CreatedBy), SizeMB: megabytes(history.Answer[i].Size)}
+				if history.Answer[i].Created > 0 {
+					layer.Created = time.Unix(int64(history.Answer[i].Created), 0).UTC().Format(time.RFC3339)
 				}
 				out.Layers = append(out.Layers, layer)
 			}
@@ -569,11 +569,11 @@ func registerImageTools(r *registry) {
 			out.Note = fmt.Sprintf("%s was the name of another image, %s, which no longer goes by it", as, other)
 		}
 
-		done, err := r.dock.PostImagesByIdTag(ctx, at.Image.Id, dockhand.PostImagesByIdTagRequest{Repo: repo, Tag: tag}, dockhand.PostImagesByIdTagOperationOptions{Env: &at.Env.ID})
+		done, err := r.dock.PostImagesByIdTag(ctx, at.Image.Id, dockhand.PostImagesByIdTagRequest{Repo: repo, Tag: tag}, dockhand.PostImagesByIdTagOptions{Env: at.Env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("%s was not given the name %s: %w", out.ID, as, refusal(err))
 		}
-		if !yes(done.Model.Success) {
+		if !done.Answer.Success {
 			return nil, out, fmt.Errorf("giving %s the name %s was answered without its being said to have succeeded: image_get says what it goes by", out.ID, as)
 		}
 
@@ -646,11 +646,11 @@ func registerImageTools(r *registry) {
 
 		// Dockhand wants force for an image with more than one name as well as for one a stopped container was made from
 		force := in.Force || len(tags) > 1
-		gone, err := r.dock.DeleteImagesById(ctx, at.Image.Id, dockhand.DeleteImagesByIdOperationOptions{Env: &at.Env.ID, Force: &force})
+		gone, err := r.dock.DeleteImagesById(ctx, at.Image.Id, dockhand.DeleteImagesByIdOptions{Env: at.Env.ID, Force: &force})
 		if err != nil {
 			return nil, out, fmt.Errorf("%s was not removed: %w", out.ID, refusal(err))
 		}
-		if !yes(gone.Model.Success) {
+		if !gone.Answer.Success {
 			return nil, out, fmt.Errorf("the removal of %s was answered without its being said to have succeeded: image_list says whether it is still there", out.ID)
 		}
 
@@ -660,7 +660,7 @@ func registerImageTools(r *registry) {
 
 			return nil, out, nil //nolint:nilerr // the removal went through: that it could not be read back is said in the answer
 		}
-		if slices.ContainsFunc(left, func(img dockhand.GetImagesResponse) bool { return img.Id == at.Image.Id }) {
+		if slices.ContainsFunc(left, func(img dockhand.GetImagesAnswer) bool { return img.Id == at.Image.Id }) {
 			return nil, out, fmt.Errorf("the removal of %s was answered as done, and it is still listed", out.ID)
 		}
 		out.Removed, out.WouldGo = true, nil
@@ -755,11 +755,11 @@ func registerImageTools(r *registry) {
 			return nil, out, nil
 		}
 
-		started, err := r.dock.PostPruneImages(ctx, dockhand.PostPruneImagesOperationOptions{Accept: dockhand.AcceptJob, Env: &env.ID, Dangling: new(!in.All)})
+		started, err := r.dock.PostPruneImages(ctx, dockhand.PostPruneImagesOptions{Accept: dockhand.AcceptJob, Env: env.ID, Dangling: new(!in.All)})
 		if err != nil {
 			return nil, out, fmt.Errorf("the images of %s were not pruned: %w", env.Name, refusal(err))
 		}
-		outcome, state, err := settle(ctx, r, started.Model.JobId, started.Model, patience)
+		outcome, state, err := settle(ctx, r, started.Answer.JobId, started.Answer, patience)
 		out.jobState = state
 		if err != nil {
 			return nil, out, fmt.Errorf("the images of %s were not pruned: %w", env.Name, err)
@@ -772,7 +772,7 @@ func registerImageTools(r *registry) {
 		if outcome.Error != "" {
 			return nil, out, fmt.Errorf("the images of %s were not pruned: %s", env.Name, plainly(outcome.Error))
 		}
-		if !yes(outcome.Success) || outcome.Result == nil {
+		if !outcome.Success || outcome.Result == nil {
 			return nil, out, fmt.Errorf("the pruning of %s was answered without its being said to have succeeded: image_list says what is left", env.Name)
 		}
 

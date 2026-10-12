@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostGitStacksByIdTestOperationResponse is the result of PostGitStacksByIdTest.
-type PostGitStacksByIdTestOperationResponse struct {
+// PostGitStacksByIdTestResponse is the result of PostGitStacksByIdTest.
+//
+// Answer is the PostGitStacksByIdTestAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostGitStacksByIdTestResponse struct {
 	HttpResponse *http.Response
-	Model        *PostGitStacksByIdTestResponse
+	Answer       *PostGitStacksByIdTestAnswer
+	*PostGitStacksByIdTestAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostGitStacksByIdTestResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostGitStacksByIdTestAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostGitStacksByIdTestResponse) Record() (PostGitStacksByIdTestAnswer, error) {
+	if r.Answer == nil {
+		return PostGitStacksByIdTestAnswer{}, errors.New("PostGitStacksByIdTest answered no PostGitStacksByIdTestAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostGitStacksByIdTest calls POST /api/git/stacks/{id}/test. Test a git stack's repository access and compose configuration without deploying.
-func (c Client) PostGitStacksByIdTest(ctx context.Context, id int) (result PostGitStacksByIdTestOperationResponse, err error) {
+func (c Client) PostGitStacksByIdTest(ctx context.Context, id GitStackID) (result PostGitStacksByIdTestResponse, err error) {
+	result.PostGitStacksByIdTestAnswer = &PostGitStacksByIdTestAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
-		Path:       fmt.Sprintf("/api/git/stacks/%d/test", id),
+		Path:       fmt.Sprintf("/api/git/stacks/%s/test", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) PostGitStacksByIdTest(ctx context.Context, id int) (result PostG
 		return
 	}
 
-	var model PostGitStacksByIdTestResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostGitStacksByIdTestAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostGitStacksByIdTestAnswer = result.Answer
 
 	return
 }

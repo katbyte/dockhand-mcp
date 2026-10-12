@@ -4,47 +4,61 @@ package dockhand
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetAutoUpdateOperationResponse is the result of GetAutoUpdate.
-type GetAutoUpdateOperationResponse struct {
+// GetAutoUpdateResponse is the result of GetAutoUpdate.
+type GetAutoUpdateResponse struct {
 	HttpResponse *http.Response
-	Model        map[string]GetAutoUpdateResponse
+	Answer       map[string]GetAutoUpdateAnswer
 }
 
-// GetAutoUpdateOperationOptions holds the query and header parameters of GetAutoUpdate.
-type GetAutoUpdateOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetAutoUpdateResponse) Answered() bool { return r.Answer != nil }
+
+// GetAutoUpdateOptions holds the query and header parameters of GetAutoUpdate.
+type GetAutoUpdateOptions struct {
 	// Environment ID to read settings for (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetAutoUpdateOperationOptions) ToHeaders() *client.Headers {
+func (o GetAutoUpdateOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetAutoUpdateOperationOptions) ToQuery() *client.QueryParams {
+func (o GetAutoUpdateOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetAutoUpdate calls GET /api/auto-update. Get all enabled auto-update settings for an environment, keyed by container name.
-func (c Client) GetAutoUpdate(ctx context.Context, options GetAutoUpdateOperationOptions) (result GetAutoUpdateOperationResponse, err error) {
+func (c Client) GetAutoUpdate(ctx context.Context, options ...GetAutoUpdateOptions) (result GetAutoUpdateResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetAutoUpdate takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetAutoUpdateOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/auto-update",
 	}
 
@@ -62,7 +76,7 @@ func (c Client) GetAutoUpdate(ctx context.Context, options GetAutoUpdateOperatio
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

@@ -4,31 +4,53 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetSystemFilesContentOperationResponse is the result of GetSystemFilesContent.
-type GetSystemFilesContentOperationResponse struct {
+// GetSystemFilesContentResponse is the result of GetSystemFilesContent.
+//
+// Answer is the GetSystemFilesContentAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetSystemFilesContentResponse struct {
 	HttpResponse *http.Response
-	Model        *GetSystemFilesContentResponse
+	Answer       *GetSystemFilesContentAnswer
+	*GetSystemFilesContentAnswer
 }
 
-// GetSystemFilesContentOperationOptions holds the query and header parameters of GetSystemFilesContent.
-type GetSystemFilesContentOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetSystemFilesContentResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetSystemFilesContentAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetSystemFilesContentResponse) Record() (GetSystemFilesContentAnswer, error) {
+	if r.Answer == nil {
+		return GetSystemFilesContentAnswer{}, errors.New("GetSystemFilesContent answered no GetSystemFilesContentAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetSystemFilesContentOptions holds the query and header parameters of GetSystemFilesContent.
+type GetSystemFilesContentOptions struct {
 	// Absolute path of the file to read
 	Path string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetSystemFilesContentOperationOptions) ToHeaders() *client.Headers {
+func (o GetSystemFilesContentOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetSystemFilesContentOperationOptions) ToQuery() *client.QueryParams {
+func (o GetSystemFilesContentOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Path != "" {
 		out.Append("path", o.Path)
@@ -37,7 +59,8 @@ func (o GetSystemFilesContentOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetSystemFilesContent calls GET /api/system/files/content. Read a text file from Dockhand's local filesystem (max 10MB, protected paths denied).
-func (c Client) GetSystemFilesContent(ctx context.Context, options GetSystemFilesContentOperationOptions) (result GetSystemFilesContentOperationResponse, err error) {
+func (c Client) GetSystemFilesContent(ctx context.Context, options GetSystemFilesContentOptions) (result GetSystemFilesContentResponse, err error) {
+	result.GetSystemFilesContentAnswer = &GetSystemFilesContentAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -61,11 +84,12 @@ func (c Client) GetSystemFilesContent(ctx context.Context, options GetSystemFile
 		return
 	}
 
-	var model GetSystemFilesContentResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetSystemFilesContentAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetSystemFilesContentAnswer = result.Answer
 
 	return
 }

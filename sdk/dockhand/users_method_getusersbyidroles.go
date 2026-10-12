@@ -6,24 +6,30 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetUsersByIdRolesOperationResponse is the result of GetUsersByIdRoles.
-type GetUsersByIdRolesOperationResponse struct {
+// GetUsersByIdRolesResponse is the result of GetUsersByIdRoles.
+type GetUsersByIdRolesResponse struct {
 	HttpResponse *http.Response
-	Model        []GetUsersByIdRolesResponse
+	Answer       []GetUsersByIdRolesAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetUsersByIdRolesResponse) Answered() bool { return r.Answer != nil }
+
 // GetUsersByIdRoles calls GET /api/users/{id}/roles. List the roles assigned to a user (enterprise only).
-func (c Client) GetUsersByIdRoles(ctx context.Context, id int) (result GetUsersByIdRolesOperationResponse, err error) {
+func (c Client) GetUsersByIdRoles(ctx context.Context, id UserID) (result GetUsersByIdRolesResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
-		Path:       fmt.Sprintf("/api/users/%d/roles", id),
+		Path:       fmt.Sprintf("/api/users/%s/roles", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,7 +46,7 @@ func (c Client) GetUsersByIdRoles(ctx context.Context, id int) (result GetUsersB
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,32 +13,53 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteImagesByIdOperationResponse is the result of DeleteImagesById.
-type DeleteImagesByIdOperationResponse struct {
+// DeleteImagesByIdResponse is the result of DeleteImagesById.
+//
+// Answer is the DeleteImagesByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteImagesByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteImagesByIdResponse
+	Answer       *DeleteImagesByIdAnswer
+	*DeleteImagesByIdAnswer
 }
 
-// DeleteImagesByIdOperationOptions holds the query and header parameters of DeleteImagesById.
-type DeleteImagesByIdOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteImagesByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteImagesByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteImagesByIdResponse) Record() (DeleteImagesByIdAnswer, error) {
+	if r.Answer == nil {
+		return DeleteImagesByIdAnswer{}, errors.New("DeleteImagesById answered no DeleteImagesByIdAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// DeleteImagesByIdOptions holds the query and header parameters of DeleteImagesById.
+type DeleteImagesByIdOptions struct {
 	// ID of the environment the image belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// Force removal even if the image is tagged or referenced (default false)
 	Force *bool
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o DeleteImagesByIdOperationOptions) ToHeaders() *client.Headers {
+func (o DeleteImagesByIdOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o DeleteImagesByIdOperationOptions) ToQuery() *client.QueryParams {
+func (o DeleteImagesByIdOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	if o.Force != nil {
 		out.Append("force", strconv.FormatBool(*o.Force))
@@ -46,13 +68,23 @@ func (o DeleteImagesByIdOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // DeleteImagesById calls DELETE /api/images/{id}. Remove a Docker image by ID or name (optionally forced), scoped to an environment.
-func (c Client) DeleteImagesById(ctx context.Context, id string, options DeleteImagesByIdOperationOptions) (result DeleteImagesByIdOperationResponse, err error) {
+func (c Client) DeleteImagesById(ctx context.Context, id string, options ...DeleteImagesByIdOptions) (result DeleteImagesByIdResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("DeleteImagesById takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option DeleteImagesByIdOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.DeleteImagesByIdAnswer = &DeleteImagesByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/images/%s", url.PathEscape(id)),
 	}
 
@@ -70,11 +102,12 @@ func (c Client) DeleteImagesById(ctx context.Context, id string, options DeleteI
 		return
 	}
 
-	var model DeleteImagesByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteImagesByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteImagesByIdAnswer = result.Answer
 
 	return
 }

@@ -4,8 +4,8 @@ package dockhand
 
 // PostPreferencesFavoritesRequest is an object the document declares inline.
 type PostPreferencesFavoritesRequest struct {
-	Action        string   `json:"action"`
-	ContainerName string   `json:"containerName,omitempty"`
-	EnvironmentId int      `json:"environmentId"`
-	Favorites     []string `json:"favorites,omitzero"`
+	Action        string        `json:"action"`
+	ContainerName string        `json:"containerName,omitempty"`
+	EnvironmentId EnvironmentID `json:"environmentId"`
+	Favorites     []string      `json:"favorites,omitzero"`
 }

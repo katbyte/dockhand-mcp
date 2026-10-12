@@ -192,15 +192,16 @@ func (r *Request) Execute(ctx context.Context) (*Response, error) {
 		return r.stream(req)
 	}
 	service := r.client.service
+	r.client.calls.record(r.Method, r.URL.Path)
 
 	// the whole answer, asked for again if it stops part way, through whatever HTTPClient is now: a test puts its own there
 	whole := *r.client.retries
 	whole.Client = r.sender(cmp.Or(r.client.HTTPClient.Timeout, service.timeout()))
 	httpResp, body, err := whole.Fetch(req, service.maxResponse()) //nolint:bodyclose // Fetch hands the response back with its body read and closed
 	if httpResp == nil {
-		return nil, fmt.Errorf("%s %s: %w", r.Method, r.URL.Path, chttp.RedactError(err))
+		return nil, r.client.redactErr(fmt.Errorf("%s %s: %w", r.Method, r.URL.Path, chttp.RedactError(err)))
 	}
-	resp := held(httpResp, body)
+	resp := held(httpResp, body, r.client)
 
 	// a status the operation does not document keeps its status whether or not its body could be read
 	if !slices.Contains(r.ExpectedStatusCodes, httpResp.StatusCode) {
@@ -211,11 +212,12 @@ func (r *Request) Execute(ctx context.Context) (*Response, error) {
 	case errors.Is(err, chttp.ErrTooLarge):
 		return resp, fmt.Errorf("%s %s: the answer is over %d MiB, more than this client holds: ask for less at a time", r.Method, r.URL.Path, service.maxResponse()>>20)
 	case err != nil:
-		return resp, fmt.Errorf("%s %s: %w", r.Method, r.URL.Path, chttp.RedactError(err))
+		return resp, r.client.redactErr(fmt.Errorf("%s %s: %w", r.Method, r.URL.Path, chttp.RedactError(err)))
 	case !redirect(httpResp.StatusCode) && chttp.IsWebPage(httpResp.Header.Get("Content-Type"), body):
 		return resp, fmt.Errorf("%s %s: answered with a web page, not %s's API: %s", r.Method, r.URL.Path, service.name(), cmp.Or(service.WebPageAdvice, "check the server url"))
 	default:
-		return resp, nil
+		// a service that says in the body whether the call worked is read there
+		return resp, r.outcomeError(body)
 	}
 }
 
@@ -223,19 +225,20 @@ func (r *Request) Execute(ctx context.Context) (*Response, error) {
 // back unread, and has as long as its context gives it rather than the time
 // one answer read whole gets.
 func (r *Request) stream(req *http.Request) (*Response, error) {
+	r.client.calls.record(r.Method, r.URL.Path)
 	httpResp, err := r.sender(0).Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("%s %s: %w", r.Method, r.URL.Path, chttp.RedactError(err))
+		return nil, r.client.redactErr(fmt.Errorf("%s %s: %w", r.Method, r.URL.Path, chttp.RedactError(err)))
 	}
 	if slices.Contains(r.ExpectedStatusCodes, httpResp.StatusCode) {
-		return &Response{Response: httpResp}, nil
+		return &Response{Response: httpResp, client: r.client}, nil
 	}
 
 	// a refusal is small whatever the call would have streamed
 	body, _ := io.ReadAll(io.LimitReader(httpResp.Body, r.client.service.maxResponse()))
 	_ = httpResp.Body.Close()
 
-	return held(httpResp, body), r.statusError(httpResp, body)
+	return held(httpResp, body, r.client), r.statusError(httpResp, body)
 }
 
 func redirect(status int) bool {
@@ -279,7 +282,7 @@ func (r *Request) sender(timeout time.Duration) *http.Client {
 // and what the service knows of that status.
 func (r *Request) statusError(resp *http.Response, body []byte) *StatusError {
 	service := r.client.service
-	e := &StatusError{StatusError: &chttp.StatusError{Method: r.Method, Path: r.URL.Path, StatusCode: resp.StatusCode, Expected: r.ExpectedStatusCodes, Body: chttp.Preview(body)}}
+	e := &StatusError{StatusError: &chttp.StatusError{Method: r.Method, Path: r.client.redact(r.URL.Path), StatusCode: resp.StatusCode, Expected: r.ExpectedStatusCodes, Body: r.client.redact(chttp.Preview(body))}}
 
 	// a request sent once says nothing of how often it was sent
 	if tries := chttp.Tries(resp); tries > 1 {
@@ -287,6 +290,9 @@ func (r *Request) statusError(resp *http.Response, body []byte) *StatusError {
 	}
 	if service.Messages != nil {
 		e.Messages = service.Messages(body)
+		for i, m := range e.Messages {
+			e.Messages[i] = r.client.redact(m)
+		}
 	}
 	if len(e.Messages) > 0 {
 		e.Body = strings.Join(e.Messages, "; ")
@@ -305,18 +311,50 @@ type Response struct {
 	// body is the answer when it was read whole; a stream has none
 	body []byte
 	held bool
+	// client is the one that asked, whose secrets an error must not repeat
+	client *Client
 }
 
 // held is a response whose body has been read, and can be read again.
-func held(resp *http.Response, body []byte) *Response {
+func held(resp *http.Response, body []byte, c *Client) *Response {
 	resp.Body = io.NopCloser(bytes.NewReader(body))
 
-	return &Response{Response: resp, body: body, held: true}
+	return &Response{Response: resp, body: body, held: true, client: c}
 }
 
 // Unmarshal decodes the JSON body into model, leaving the body readable
 // again. An empty body leaves model as it is.
 func (r *Response) Unmarshal(model any) error {
+	if err := r.hold(); err != nil {
+		return err
+	}
+
+	if len(bytes.TrimSpace(r.body)) == 0 {
+		return nil
+	}
+	if err := json.Unmarshal(r.body, model); err != nil {
+		return fmt.Errorf("%s %s: the answer is not what this client reads there (%w): %s", r.Request.Method, r.Request.URL.Path, err, r.client.redact(chttp.Preview(r.body)))
+	}
+
+	return nil
+}
+
+// Text sets into to the body as it was sent, for an operation that answers
+// short text and not JSON, leaving the body readable again. What the server
+// calls the answer is not looked at: one that sends bare text may label it
+// JSON.
+func (r *Response) Text(into *string) error {
+	if err := r.hold(); err != nil {
+		return err
+	}
+	*into = string(r.body)
+
+	return nil
+}
+
+// hold reads the body whole, if it has not been, and leaves it readable
+// again.
+func (r *Response) hold() error {
 	if !r.held {
 		body, err := io.ReadAll(io.LimitReader(r.Body, DefaultMaxResponse))
 		_ = r.Body.Close()
@@ -326,13 +364,6 @@ func (r *Response) Unmarshal(model any) error {
 		r.body, r.held = body, true
 	}
 	r.Body = io.NopCloser(bytes.NewReader(r.body))
-
-	if len(bytes.TrimSpace(r.body)) == 0 {
-		return nil
-	}
-	if err := json.Unmarshal(r.body, model); err != nil {
-		return fmt.Errorf("%s %s: the answer is not what this client reads there (%w): %s", r.Request.Method, r.Request.URL.Path, err, chttp.Preview(r.body))
-	}
 
 	return nil
 }
@@ -381,6 +412,31 @@ func IsUnauthorized(err error) bool { return StatusCode(err) == http.StatusUnaut
 // IsForbidden reports whether err is the server refusing what was asked to
 // the one who asked.
 func IsForbidden(err error) bool { return StatusCode(err) == http.StatusForbidden }
+
+// IsBadRequest reports whether err is the server refusing what was sent as
+// malformed or not allowed: a 400 or a 422.
+func IsBadRequest(err error) bool {
+	code := StatusCode(err)
+
+	return code == http.StatusBadRequest || code == http.StatusUnprocessableEntity
+}
+
+// IsConflict reports whether err is the server refusing a change that clashes
+// with what it holds: a record that is already there, or one changed since it
+// was read.
+func IsConflict(err error) bool { return StatusCode(err) == http.StatusConflict }
+
+// IsTooManyRequests reports whether err is the server asking for fewer
+// requests, which a retry after a wait may get past.
+func IsTooManyRequests(err error) bool { return StatusCode(err) == http.StatusTooManyRequests }
+
+// IsServerError reports whether err is the server failing on its side, any
+// 5xx, which what was asked for had no part in.
+func IsServerError(err error) bool {
+	code := StatusCode(err)
+
+	return code >= http.StatusInternalServerError && code < 600
+}
 
 // WasNotFound reports whether a response is a 404.
 func WasNotFound(resp *http.Response) bool {

@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostNotificationsTriggerTestOperationResponse is the result of PostNotificationsTriggerTest.
-type PostNotificationsTriggerTestOperationResponse struct {
+// PostNotificationsTriggerTestResponse is the result of PostNotificationsTriggerTest.
+//
+// Answer is the PostNotificationsTriggerTestAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostNotificationsTriggerTestResponse struct {
 	HttpResponse *http.Response
-	Model        *PostNotificationsTriggerTestResponse
+	Answer       *PostNotificationsTriggerTestAnswer
+	*PostNotificationsTriggerTestAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostNotificationsTriggerTestResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostNotificationsTriggerTestAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostNotificationsTriggerTestResponse) Record() (PostNotificationsTriggerTestAnswer, error) {
+	if r.Answer == nil {
+		return PostNotificationsTriggerTestAnswer{}, errors.New("PostNotificationsTriggerTest answered no PostNotificationsTriggerTestAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostNotificationsTriggerTest calls POST /api/notifications/trigger-test. Trigger a real notification for a given event type (development/testing helper).
-func (c Client) PostNotificationsTriggerTest(ctx context.Context, input PostNotificationsTriggerTestRequest) (result PostNotificationsTriggerTestOperationResponse, err error) {
+func (c Client) PostNotificationsTriggerTest(ctx context.Context, input PostNotificationsTriggerTestRequest) (result PostNotificationsTriggerTestResponse, err error) {
+	result.PostNotificationsTriggerTestAnswer = &PostNotificationsTriggerTestAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostNotificationsTriggerTest(ctx context.Context, input PostNoti
 		return
 	}
 
-	var model PostNotificationsTriggerTestResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostNotificationsTriggerTestAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostNotificationsTriggerTestAnswer = result.Answer
 
 	return
 }

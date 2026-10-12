@@ -4,27 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutRegistriesByIdOperationResponse is the result of PutRegistriesById.
-type PutRegistriesByIdOperationResponse struct {
+// PutRegistriesByIdResponse is the result of PutRegistriesById.
+//
+// Answer is the PutRegistriesByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PutRegistriesByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *PutRegistriesByIdResponse
+	Answer       *PutRegistriesByIdAnswer
+	*PutRegistriesByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutRegistriesByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutRegistriesByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutRegistriesByIdResponse) Record() (PutRegistriesByIdAnswer, error) {
+	if r.Answer == nil {
+		return PutRegistriesByIdAnswer{}, errors.New("PutRegistriesById answered no PutRegistriesByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PutRegistriesById calls PUT /api/registries/{id}. Update a registry (optionally set as default); credentials are trimmed and the response strips the password.
-func (c Client) PutRegistriesById(ctx context.Context, id int, input PutRegistriesByIdRequest) (result PutRegistriesByIdOperationResponse, err error) {
+func (c Client) PutRegistriesById(ctx context.Context, id RegistryID, input PutRegistriesByIdRequest) (result PutRegistriesByIdResponse, err error) {
+	result.PutRegistriesByIdAnswer = &PutRegistriesByIdAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
-		Path:       fmt.Sprintf("/api/registries/%d", id),
+		Path:       fmt.Sprintf("/api/registries/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -45,11 +70,12 @@ func (c Client) PutRegistriesById(ctx context.Context, id int, input PutRegistri
 		return
 	}
 
-	var model PutRegistriesByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PutRegistriesByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PutRegistriesByIdAnswer = result.Answer
 
 	return
 }

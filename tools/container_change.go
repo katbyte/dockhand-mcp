@@ -71,14 +71,14 @@ func registerContainerChangeTools(r *registry) {
 				return nil, actionOut{}, err
 			}
 			name, env, was := at.Container.Name, at.Env.Name, at.Container.State
-			out := actionOut{Env: env, Name: name, Was: was, Is: was, Changes: []string{}, DryRun: in.DryRun}
+			out := actionOut{Env: env, Name: name, Was: string(was), Is: string(was), Changes: []string{}, DryRun: in.DryRun}
 
 			from, to, done := stateRunning, statePaused, "paused"
 			if tool.action == actUnpause {
 				from, to, done = statePaused, stateRunning, "let go on"
 			}
 			switch {
-			case was != from:
+			case string(was) != from:
 				out.Note = fmt.Sprintf("%s is %s, and only a container that is %s can be %s: nothing was done", name, was, from, done)
 
 				return nil, out, nil
@@ -90,9 +90,9 @@ func registerContainerChangeTools(r *registry) {
 			}
 
 			if tool.action == actPause {
-				_, err = r.dock.PostContainersByIdPause(ctx, at.Container.Id, dockhand.PostContainersByIdPauseOperationOptions{Env: &at.Env.ID})
+				_, err = r.dock.PostContainersByIdPause(ctx, at.Container.Id, dockhand.PostContainersByIdPauseOptions{Env: at.Env.ID})
 			} else {
-				_, err = r.dock.PostContainersByIdUnpause(ctx, at.Container.Id, dockhand.PostContainersByIdUnpauseOperationOptions{Env: &at.Env.ID})
+				_, err = r.dock.PostContainersByIdUnpause(ctx, at.Container.Id, dockhand.PostContainersByIdUnpauseOptions{Env: at.Env.ID})
 			}
 			if err != nil {
 				return nil, out, fmt.Errorf("%s on %s was not %s: %w", name, env, done, refusal(err))
@@ -146,7 +146,7 @@ func registerContainerChangeTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("the containers of %s could not be listed, so nothing was renamed: %w", out.Env, err)
 		}
-		if slices.ContainsFunc(others, func(c dockhand.GetContainersResponse) bool { return c.Name == to }) {
+		if slices.ContainsFunc(others, func(c dockhand.GetContainersAnswer) bool { return c.Name == to }) {
 			return nil, out, fmt.Errorf("another container on %s is named %s already", out.Env, to)
 		}
 		if stack := at.Container.Labels[labelStack]; stack != "" {
@@ -158,7 +158,7 @@ func registerContainerChangeTools(r *registry) {
 			return nil, out, nil
 		}
 
-		if _, err := r.dock.PostContainersByIdRename(ctx, at.Container.Id, dockhand.PostContainersByIdRenameRequest{Name: to}, dockhand.PostContainersByIdRenameOperationOptions{Env: &at.Env.ID}); err != nil {
+		if _, err := r.dock.PostContainersByIdRename(ctx, at.Container.Id, dockhand.PostContainersByIdRenameRequest{Name: to}, dockhand.PostContainersByIdRenameOptions{Env: at.Env.ID}); err != nil {
 			return nil, out, fmt.Errorf("%s on %s was not renamed: %w", out.Was, out.Env, refusal(err))
 		}
 		out.Changes = append(out.Changes, fmt.Sprintf("renamed %s on %s to %s", out.Was, out.Env, to))
@@ -169,7 +169,7 @@ func registerContainerChangeTools(r *registry) {
 
 			return nil, out, nil //nolint:nilerr // it was renamed: that it could not be read back is said in the answer
 		}
-		if i := slices.IndexFunc(after, func(c dockhand.GetContainersResponse) bool { return c.Id == at.Container.Id }); i >= 0 {
+		if i := slices.IndexFunc(after, func(c dockhand.GetContainersAnswer) bool { return c.Id == at.Container.Id }); i >= 0 {
 			out.Is = after[i].Name
 		}
 		if out.Is != to {
@@ -215,7 +215,7 @@ func registerContainerChangeTools(r *registry) {
 		}
 		out := containerExecOut{Env: at.Env.Name, Container: at.Container.Name}
 
-		ran, err := r.dock.PostContainersByIdExecRun(ctx, at.Container.Id, dockhand.PostContainersByIdExecRunRequest{Cmd: in.Command, User: strings.TrimSpace(in.User), WorkingDir: strings.TrimSpace(in.Workdir)}, dockhand.PostContainersByIdExecRunOperationOptions{EnvId: &at.Env.ID})
+		ran, err := r.dock.PostContainersByIdExecRun(ctx, at.Container.Id, dockhand.PostContainersByIdExecRunRequest{Cmd: in.Command, User: strings.TrimSpace(in.User), WorkingDir: strings.TrimSpace(in.Workdir)}, dockhand.PostContainersByIdExecRunOptions{EnvId: at.Env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("the command was not run in %s: %w", out.Container, refusal(err))
 		}
@@ -225,13 +225,13 @@ func registerContainerChangeTools(r *registry) {
 			limit = in.MaxChars
 		}
 		var chars, hidden int
-		out.ExitCode = ran.Model.ExitCode
-		out.Stdout, chars, out.Hidden = tailOf(ran.Model.Stdout, limit, in.RevealSecrets)
+		out.ExitCode = ran.Answer.ExitCode
+		out.Stdout, chars, out.Hidden = tailOf(ran.Answer.Stdout, limit, in.RevealSecrets)
 		if chars > limit {
 			out.Truncated = true
 			out.Note = fmt.Sprintf("it printed %d characters and the last %d are given: raise max_chars for more", chars, limit)
 		}
-		out.Stderr, chars, hidden = tailOf(ran.Model.Stderr, limit, in.RevealSecrets)
+		out.Stderr, chars, hidden = tailOf(ran.Answer.Stderr, limit, in.RevealSecrets)
 		if out.Hidden += hidden; chars > limit {
 			out.Truncated = true
 			out.Note = noted(out.Note, fmt.Sprintf("it printed %d characters of errors and the last %d are given", chars, limit))
@@ -241,8 +241,8 @@ func registerContainerChangeTools(r *registry) {
 		}
 		// a shell the container has not is the commonest thing to be missing, and Dockhand can say which it has
 		if out.ExitCode == noSuchCommand && slices.Contains(shellNames, path.Base(in.Command[0])) {
-			if has, failed := r.dock.GetContainersByIdShells(ctx, at.Container.Id, dockhand.GetContainersByIdShellsOperationOptions{Env: &at.Env.ID}); failed == nil && len(has.Model.Shells) > 0 {
-				out.Note = noted(out.Note, "the shells it has are "+strings.Join(has.Model.Shells, " and "))
+			if has, failed := r.dock.GetContainersByIdShells(ctx, at.Container.Id, dockhand.GetContainersByIdShellsOptions{Env: at.Env.ID}); failed == nil && len(has.Answer.Shells) > 0 {
+				out.Note = noted(out.Note, "the shells it has are "+strings.Join(has.Answer.Shells, " and "))
 			}
 		}
 		if out.Hidden > 0 {
@@ -277,7 +277,7 @@ func registerContainerChangeTools(r *registry) {
 			return nil, containerDeleteOut{}, err
 		}
 		c := &at.Container
-		out := containerDeleteOut{Env: at.Env.Name, Name: c.Name, State: c.State, Image: c.Image, Stack: c.Labels[labelStack]}
+		out := containerDeleteOut{Env: at.Env.Name, Name: c.Name, State: string(c.State), Image: c.Image, Stack: c.Labels[labelStack]}
 		for i := range c.Mounts {
 			if c.Mounts[i].Type == "volume" && c.Mounts[i].Name != "" {
 				out.Volumes = append(out.Volumes, c.Mounts[i].Name)
@@ -288,7 +288,7 @@ func registerContainerChangeTools(r *registry) {
 			out.Note = fmt.Sprintf("it belongs to the stack %s, whose next deploy makes it again", out.Stack)
 		}
 
-		alive := running(c.State)
+		alive := running(string(c.State))
 		switch {
 		case !in.Confirm && alive && !in.Force:
 			out.Note = noted(out.Note, fmt.Sprintf("nothing was removed: it is %s, so removing it takes force as well as confirm, or stopping it first", c.State))
@@ -303,7 +303,7 @@ func registerContainerChangeTools(r *registry) {
 		default:
 		}
 
-		options := dockhand.DeleteContainersByIdOperationOptions{Env: &at.Env.ID}
+		options := dockhand.DeleteContainersByIdOptions{Env: at.Env.ID}
 		if alive {
 			options.Force = new(true)
 		}
@@ -318,7 +318,7 @@ func registerContainerChangeTools(r *registry) {
 
 			return nil, out, nil //nolint:nilerr // Dockhand said it removed the container: that it could not be read back is said in the answer
 		}
-		out.Removed = !slices.ContainsFunc(after, func(other dockhand.GetContainersResponse) bool { return other.Id == c.Id })
+		out.Removed = !slices.ContainsFunc(after, func(other dockhand.GetContainersAnswer) bool { return other.Id == c.Id })
 		if !out.Removed {
 			out.Note = noted(out.Note, "Dockhand said it removed the container and it is still listed")
 		}
@@ -357,7 +357,7 @@ func registerContainerChangeTools(r *registry) {
 			c := &listed[i]
 			names[c.Id] = c.Name
 			// Docker prunes what is not running, restarting or paused
-			if running(c.State) {
+			if running(string(c.State)) {
 				continue
 			}
 			would := fmt.Sprintf("%s (%s)", c.Name, c.State)
@@ -379,15 +379,15 @@ func registerContainerChangeTools(r *registry) {
 		default:
 		}
 
-		pruned, err := r.dock.PostPruneContainers(ctx, dockhand.PostPruneContainersOperationOptions{Env: &env.ID})
+		pruned, err := r.dock.PostPruneContainers(ctx, dockhand.PostPruneContainersOptions{Env: env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("the stopped containers of %s were not removed: %w", env.Name, refusal(err))
 		}
-		if !yes(pruned.Model.Success) {
+		if !pruned.Answer.Success {
 			return nil, out, fmt.Errorf("the stopped containers of %s were not removed, and Dockhand gives no reason", env.Name)
 		}
 		out.WouldGo = nil
-		if report := pruned.Model.Result; report != nil {
+		if report := pruned.Answer.Result; report != nil {
 			for _, id := range report.ContainersDeleted {
 				out.Removed = append(out.Removed, cmpName(names[id], id))
 			}

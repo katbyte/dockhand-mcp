@@ -7,3 +7,9 @@ type PostBatchRequestItems struct {
 	Id   string `json:"id"`
 	Name string `json:"name"`
 }
+
+// GetName is the record's Name, for code that handles records of several types alike.
+func (m PostBatchRequestItems) GetName() string { return m.Name }
+
+// GetId is the record's Id, for code that handles records of several types alike.
+func (m PostBatchRequestItems) GetId() string { return m.Id }

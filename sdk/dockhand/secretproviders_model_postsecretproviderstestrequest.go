@@ -4,6 +4,6 @@ package dockhand
 
 // PostSecretProvidersTestRequest is an object the document declares inline.
 type PostSecretProvidersTestRequest struct {
-	Config map[string]any `json:"config"`
-	Type   string         `json:"type"`
+	Config map[string]any     `json:"config"`
+	Type   SecretProviderType `json:"type"`
 }

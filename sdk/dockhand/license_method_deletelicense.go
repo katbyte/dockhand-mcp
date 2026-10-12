@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteLicenseOperationResponse is the result of DeleteLicense.
-type DeleteLicenseOperationResponse struct {
+// DeleteLicenseResponse is the result of DeleteLicense.
+//
+// Answer is the DeleteLicenseAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteLicenseResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteLicenseResponse
+	Answer       *DeleteLicenseAnswer
+	*DeleteLicenseAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteLicenseResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteLicenseAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteLicenseResponse) Record() (DeleteLicenseAnswer, error) {
+	if r.Answer == nil {
+		return DeleteLicenseAnswer{}, errors.New("DeleteLicense answered no DeleteLicenseAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // DeleteLicense calls DELETE /api/license. Deactivate the currently active license.
-func (c Client) DeleteLicense(ctx context.Context) (result DeleteLicenseOperationResponse, err error) {
+func (c Client) DeleteLicense(ctx context.Context) (result DeleteLicenseResponse, err error) {
+	result.DeleteLicenseAnswer = &DeleteLicenseAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) DeleteLicense(ctx context.Context) (result DeleteLicenseOperatio
 		return
 	}
 
-	var model DeleteLicenseResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteLicenseAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteLicenseAnswer = result.Answer
 
 	return
 }

@@ -15,12 +15,12 @@ func TestOperationGetLogsMerged(t *testing.T) {
 	t.Parallel()
 
 	c, s := newOperationServer(t, 200, "text/event-stream", "file bytes")
-	result, err := c.GetLogsMerged(t.Context(), GetLogsMergedOperationOptions{
+	result, err := c.GetLogsMerged(t.Context(), GetLogsMergedOptions{
 		Containers: "v-Containers",
 		Tail:       "v-Tail",
 		Since:      "v-Since",
 		Until:      "v-Until",
-		Env:        new(7),
+		Env:        EnvironmentID(7),
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -39,20 +39,24 @@ func TestOperationGetLogsMerged(t *testing.T) {
 	if result.HttpResponse == nil || result.HttpResponse.StatusCode != 200 {
 		t.Fatalf("HttpResponse = %+v", result.HttpResponse)
 	}
-	streamed, _ := io.ReadAll(result.HttpResponse.Body)
-	_ = result.HttpResponse.Body.Close()
+	stream, contentType := result.Reader()
+	if contentType == "" || result.ContentLength() == 0 {
+		t.Errorf("Reader = %q, length %d", contentType, result.ContentLength())
+	}
+	streamed, _ := io.ReadAll(stream)
+	_ = stream.Close()
 	if string(streamed) != "file bytes" {
 		t.Errorf("streamed body = %q", streamed)
 	}
 
 	// a status the operation does not document is an error, with the response
 	c, _ = newOperationServer(t, 418, "text/plain", "no")
-	result, err = c.GetLogsMerged(t.Context(), GetLogsMergedOperationOptions{
+	result, err = c.GetLogsMerged(t.Context(), GetLogsMergedOptions{
 		Containers: "v-Containers",
 		Tail:       "v-Tail",
 		Since:      "v-Since",
 		Until:      "v-Until",
-		Env:        new(7),
+		Env:        EnvironmentID(7),
 	})
 	if client.StatusCode(err) != 418 || result.HttpResponse == nil {
 		t.Errorf("an undocumented status = %v, %+v", err, result.HttpResponse)

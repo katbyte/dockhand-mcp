@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostPreferencesSidebarOperationResponse is the result of PostPreferencesSidebar.
-type PostPreferencesSidebarOperationResponse struct {
+// PostPreferencesSidebarResponse is the result of PostPreferencesSidebar.
+//
+// Answer is the PostPreferencesSidebarAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostPreferencesSidebarResponse struct {
 	HttpResponse *http.Response
-	Model        *PostPreferencesSidebarResponse
+	Answer       *PostPreferencesSidebarAnswer
+	*PostPreferencesSidebarAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostPreferencesSidebarResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostPreferencesSidebarAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostPreferencesSidebarResponse) Record() (PostPreferencesSidebarAnswer, error) {
+	if r.Answer == nil {
+		return PostPreferencesSidebarAnswer{}, errors.New("PostPreferencesSidebar answered no PostPreferencesSidebarAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostPreferencesSidebar calls POST /api/preferences/sidebar. Save the sidebar menu preferences (order and hidden items).
-func (c Client) PostPreferencesSidebar(ctx context.Context, input PostPreferencesSidebarRequest) (result PostPreferencesSidebarOperationResponse, err error) {
+func (c Client) PostPreferencesSidebar(ctx context.Context, input PostPreferencesSidebarRequest) (result PostPreferencesSidebarResponse, err error) {
+	result.PostPreferencesSidebarAnswer = &PostPreferencesSidebarAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostPreferencesSidebar(ctx context.Context, input PostPreference
 		return
 	}
 
-	var model PostPreferencesSidebarResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostPreferencesSidebarAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostPreferencesSidebarAnswer = result.Answer
 
 	return
 }

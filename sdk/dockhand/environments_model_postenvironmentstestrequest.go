@@ -4,15 +4,15 @@ package dockhand
 
 // PostEnvironmentsTestRequest is an object the document declares inline.
 type PostEnvironmentsTestRequest struct {
-	ConnectionType string `json:"connectionType"`
-	EnvironmentId  int    `json:"environmentId,omitempty"`
-	HawserToken    string `json:"hawserToken,omitempty"`
-	Host           string `json:"host,omitempty"`
-	Port           int    `json:"port,omitempty"`
-	Protocol       string `json:"protocol,omitempty"`
-	SocketPath     string `json:"socketPath,omitempty"`
-	TlsCa          string `json:"tlsCa,omitempty"`
-	TlsCert        string `json:"tlsCert,omitempty"`
-	TlsKey         string `json:"tlsKey,omitempty"`
-	TlsSkipVerify  *bool  `json:"tlsSkipVerify,omitempty"`
+	ConnectionType ConnectionType      `json:"connectionType"`
+	EnvironmentId  EnvironmentID       `json:"environmentId,omitempty"`
+	HawserToken    string              `json:"hawserToken,omitempty"`
+	Host           string              `json:"host,omitempty"`
+	Port           int                 `json:"port,omitempty"`
+	Protocol       EnvironmentProtocol `json:"protocol,omitempty"`
+	SocketPath     string              `json:"socketPath,omitempty"`
+	TlsCa          string              `json:"tlsCa,omitempty"`
+	TlsCert        string              `json:"tlsCert,omitempty"`
+	TlsKey         string              `json:"tlsKey,omitempty"`
+	TlsSkipVerify  *bool               `json:"tlsSkipVerify,omitempty"`
 }

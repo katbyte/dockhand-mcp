@@ -4,47 +4,80 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetStacksBasePathOperationResponse is the result of GetStacksBasePath.
-type GetStacksBasePathOperationResponse struct {
+// GetStacksBasePathResponse is the result of GetStacksBasePath.
+//
+// Answer is the GetStacksBasePathAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetStacksBasePathResponse struct {
 	HttpResponse *http.Response
-	Model        *GetStacksBasePathResponse
+	Answer       *GetStacksBasePathAnswer
+	*GetStacksBasePathAnswer
 }
 
-// GetStacksBasePathOperationOptions holds the query and header parameters of GetStacksBasePath.
-type GetStacksBasePathOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetStacksBasePathResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetStacksBasePathAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetStacksBasePathResponse) Record() (GetStacksBasePathAnswer, error) {
+	if r.Answer == nil {
+		return GetStacksBasePathAnswer{}, errors.New("GetStacksBasePath answered no GetStacksBasePathAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetStacksBasePathOptions holds the query and header parameters of GetStacksBasePath.
+type GetStacksBasePathOptions struct {
 	// Environment ID used to select the local or environment-scoped stacks root
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetStacksBasePathOperationOptions) ToHeaders() *client.Headers {
+func (o GetStacksBasePathOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetStacksBasePathOperationOptions) ToQuery() *client.QueryParams {
+func (o GetStacksBasePathOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetStacksBasePath calls GET /api/stacks/base-path. Return the default Dockhand stacks directory ($DATA_DIR/stacks/) where new stacks are stored by default.
-func (c Client) GetStacksBasePath(ctx context.Context, options GetStacksBasePathOperationOptions) (result GetStacksBasePathOperationResponse, err error) {
+func (c Client) GetStacksBasePath(ctx context.Context, options ...GetStacksBasePathOptions) (result GetStacksBasePathResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetStacksBasePath takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetStacksBasePathOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetStacksBasePathAnswer = &GetStacksBasePathAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/stacks/base-path",
 	}
 
@@ -62,11 +95,12 @@ func (c Client) GetStacksBasePath(ctx context.Context, options GetStacksBasePath
 		return
 	}
 
-	var model GetStacksBasePathResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetStacksBasePathAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetStacksBasePathAnswer = result.Answer
 
 	return
 }

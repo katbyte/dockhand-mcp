@@ -80,8 +80,8 @@ func registerServerAboutTools(r *registry) {
 		if err != nil {
 			return nil, updateCheckOut{}, fmt.Errorf("the Dockhand could not be asked whether an update is out: %w", refusal(err))
 		}
-		found := check.Model
-		out := updateCheckOut{UpdateAvailable: yes(found.UpdateAvailable), Checked: found.Error == "", Image: found.CurrentImage, NewerImage: found.NewImage, LatestVersion: found.LatestVersion, Digest: found.CurrentDigest, NewerDigest: found.NewDigest, Container: found.ContainerName, ComposeManaged: yes(found.IsComposeManaged), LocalImage: yes(found.IsLocalImage)}
+		found := check.Answer
+		out := updateCheckOut{UpdateAvailable: found.UpdateAvailable, Checked: found.Error == "", Image: found.CurrentImage, NewerImage: found.NewImage, LatestVersion: found.LatestVersion, Digest: found.CurrentDigest, NewerDigest: found.NewDigest, Container: found.ContainerName, ComposeManaged: found.IsComposeManaged, LocalImage: found.IsLocalImage}
 
 		switch {
 		case noSocket(found.Error):
@@ -141,11 +141,11 @@ func registerServerAboutTools(r *registry) {
 			if err != nil {
 				return nil, out, fmt.Errorf("what the Dockhand is built from could not be read: %w", refusal(err))
 			}
-			out.Total = len(listed.Model)
+			out.Total = len(listed.Answer)
 
 			counts := map[string]int{}
 			rows := []dependencyRow{}
-			for _, dependency := range listed.Model {
+			for _, dependency := range listed.Answer {
 				counts[dependency.License]++
 				if strings.Contains(strings.ToLower(dependency.Name), find) && (under == "" || strings.EqualFold(dependency.License, under)) {
 					rows = append(rows, dependencyRow{Name: dependency.Name, Version: dependency.Version, Licence: dependency.License, Repository: dependency.Repository})
@@ -173,17 +173,17 @@ func registerServerAboutTools(r *registry) {
 		limit := min(cmp.Or(in.Limit, defaultAboutText), maxAboutText)
 		var text string
 		if what == aboutPrivacy {
-			privacy, err := r.dock.GetLegalPrivacy(ctx, dockhand.GetLegalPrivacyOperationOptions{})
+			privacy, err := r.dock.GetLegalPrivacy(ctx, dockhand.GetLegalPrivacyOptions{})
 			if err != nil {
 				return nil, out, fmt.Errorf("the Dockhand's privacy policy could not be read: %w", refusal(err))
 			}
-			text = privacy.Model.Content
+			text = privacy.Answer.Content
 		} else {
-			licence, err := r.dock.GetLegalLicense(ctx, dockhand.GetLegalLicenseOperationOptions{})
+			licence, err := r.dock.GetLegalLicense(ctx, dockhand.GetLegalLicenseOptions{})
 			if err != nil {
 				return nil, out, fmt.Errorf("the Dockhand's licence could not be read: %w", refusal(err))
 			}
-			text = licence.Model.Content
+			text = licence.Answer.Content
 		}
 
 		runes := []rune(text)

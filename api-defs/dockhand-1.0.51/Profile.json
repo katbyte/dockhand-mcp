@@ -12,7 +12,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteProfileAvatarResponse"
+          "ReferenceName": "DeleteProfileAvatarAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -29,7 +29,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetProfileResponse"
+          "ReferenceName": "GetProfileAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -69,7 +69,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostProfileAvatarResponse"
+          "ReferenceName": "PostProfileAvatarAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -93,7 +93,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PutProfileResponse"
+          "ReferenceName": "PutProfileAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -120,7 +120,7 @@
   ],
   "Models": [
     {
-      "Name": "DeleteProfileAvatarResponse",
+      "Name": "DeleteProfileAvatarAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -133,7 +133,7 @@
       ]
     },
     {
-      "Name": "GetProfileResponse",
+      "Name": "GetProfileAnswer",
       "Fields": [
         {
           "Name": "Avatar",
@@ -146,7 +146,7 @@
           "Name": "CreatedAt",
           "JsonName": "createdAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           },
           "Required": true
         },
@@ -184,7 +184,7 @@
           "Name": "LastLogin",
           "JsonName": "lastLogin",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -207,7 +207,7 @@
           "Name": "UpdatedAt",
           "JsonName": "updatedAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           },
           "Required": true
         },
@@ -216,6 +216,27 @@
           "JsonName": "username",
           "Type": {
             "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostProfileAvatarAnswer",
+      "Fields": [
+        {
+          "Name": "Avatar",
+          "JsonName": "avatar",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
           },
           "Required": true
         }
@@ -235,21 +256,81 @@
       ]
     },
     {
-      "Name": "PostProfileAvatarResponse",
+      "Name": "PutProfileAnswer",
       "Fields": [
         {
           "Name": "Avatar",
           "JsonName": "avatar",
           "Type": {
             "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
           },
           "Required": true
         },
         {
-          "Name": "Success",
-          "JsonName": "success",
+          "Name": "DisplayName",
+          "JsonName": "displayName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Email",
+          "JsonName": "email",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "IsAdmin",
+          "JsonName": "isAdmin",
           "Type": {
             "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "LastLogin",
+          "JsonName": "lastLogin",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "MfaEnabled",
+          "JsonName": "mfaEnabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "DateTime"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
           },
           "Required": true
         }
@@ -374,87 +455,6 @@
           "Type": {
             "Type": "String"
           }
-        }
-      ]
-    },
-    {
-      "Name": "PutProfileResponse",
-      "Fields": [
-        {
-          "Name": "Avatar",
-          "JsonName": "avatar",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "CreatedAt",
-          "JsonName": "createdAt",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "DisplayName",
-          "JsonName": "displayName",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Email",
-          "JsonName": "email",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Id",
-          "JsonName": "id",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        },
-        {
-          "Name": "IsAdmin",
-          "JsonName": "isAdmin",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "LastLogin",
-          "JsonName": "lastLogin",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "MfaEnabled",
-          "JsonName": "mfaEnabled",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "UpdatedAt",
-          "JsonName": "updatedAt",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Username",
-          "JsonName": "username",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
         }
       ]
     }

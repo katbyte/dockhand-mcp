@@ -295,7 +295,7 @@ import "github.com/katbyte/dockhand-mcp/sdk/dockhand"
 
 client, err := dockhand.New("http://dockhand:3000", os.Getenv("DOCKHAND_TOKEN"))
 environments, err := client.GetEnvironments(ctx)
-containers, err := client.GetContainers(ctx, dockhand.GetContainersOperationOptions{Env: &environments.Model[0].Id})
+containers, err := client.GetContainers(ctx, dockhand.GetContainersOptions{Env: &environments.Answer[0].Id})
 ```
 
 `dockhand.NewWithoutLogin` makes a client for a Dockhand with its login switched off. A read is asked for again when a gateway could not reach the server (502, 503, 504) or the connection dropped, three times in all; a write is sent once; a redirect is refused rather than followed. It logs nothing unless handed a logger with `client.WithLog`, and then traces every request and answer with tokens, passwords and keys blanked: dockhand-mcp hands it its own, so `DOCKHAND_LOG=trace` shows the traffic. A status a call does not document is a `*client.StatusError` carrying what Dockhand said; `client.IsNotFound`, `IsUnauthorized` and `IsForbidden` read the common ones.
@@ -303,6 +303,8 @@ containers, err := client.GetContainers(ctx, dockhand.GetContainersOperationOpti
 It has a method for **every one of the 395 operations** in Dockhand's document, named for its method and path: `GET /api/stacks/{name}/compose` is `GetStacksByNameCompose`. `make apicheck` fails if one is missing, so the claim is checked rather than asserted.
 
 That document comes from Dockhand itself: every Dockhand server serves a description of its own API at `/openapi.json`, and `api-defs/get.sh` starts a throwaway server of the published image, asks it for that, and removes it again. Nothing is taken from Dockhand's source repository. The document is Dockhand's own, so it is not kept in this repository: what is committed is a pin (the version, the image and a checksum of the document's content), the definitions imported from the document, and the client generated from those. A document whose checksum is not the pinned one is refused, and `make` fetches it before anything reads it.
+
+Three things the document never says are declared here and checked against a real server: which fields are dates (read in each of the forms Dockhand writes one in), which take a value from a fixed set (a container's state, a job's status, how an environment is reached: 24 sets, each a type with its values), and which ids are of which record (12 kinds, so an environment's number handed to a call that wants a registry's does not compile). A true or false in an answer is a plain `bool`; one in a body that is sent stays unset until it is set, so that a change to one setting never sends the others.
 
 Dockhand writes that document from its own code, and what a call answers is the part it gets least right: a quarter of the calls say nothing of their answer and others declare a fraction of it. Each such fault that has been found is fixed with a named workaround (`sdk/pandorest/workarounds`), proved against a running server, and written up in [api-defs/README.md](api-defs/README.md) beside what the server does that no document says. An answer no workaround has given a shape yet is handed back as raw JSON.
 

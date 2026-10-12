@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetRegistriesByIdOperationResponse is the result of GetRegistriesById.
-type GetRegistriesByIdOperationResponse struct {
+// GetRegistriesByIdResponse is the result of GetRegistriesById.
+//
+// Answer is the GetRegistriesByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetRegistriesByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *GetRegistriesByIdResponse
+	Answer       *GetRegistriesByIdAnswer
+	*GetRegistriesByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetRegistriesByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetRegistriesByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetRegistriesByIdResponse) Record() (GetRegistriesByIdAnswer, error) {
+	if r.Answer == nil {
+		return GetRegistriesByIdAnswer{}, errors.New("GetRegistriesById answered no GetRegistriesByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetRegistriesById calls GET /api/registries/{id}. Get a single registry by ID with the password stripped (only a hasCredentials flag).
-func (c Client) GetRegistriesById(ctx context.Context, id int) (result GetRegistriesByIdOperationResponse, err error) {
+func (c Client) GetRegistriesById(ctx context.Context, id RegistryID) (result GetRegistriesByIdResponse, err error) {
+	result.GetRegistriesByIdAnswer = &GetRegistriesByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
-		Path:       fmt.Sprintf("/api/registries/%d", id),
+		Path:       fmt.Sprintf("/api/registries/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) GetRegistriesById(ctx context.Context, id int) (result GetRegist
 		return
 	}
 
-	var model GetRegistriesByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetRegistriesByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetRegistriesByIdAnswer = result.Answer
 
 	return
 }

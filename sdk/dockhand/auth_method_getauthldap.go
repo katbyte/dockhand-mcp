@@ -9,14 +9,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetAuthLdapOperationResponse is the result of GetAuthLdap.
-type GetAuthLdapOperationResponse struct {
+// GetAuthLdapResponse is the result of GetAuthLdap.
+type GetAuthLdapResponse struct {
 	HttpResponse *http.Response
-	Model        []GetAuthLdapResponse
+	Answer       []GetAuthLdapAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetAuthLdapResponse) Answered() bool { return r.Answer != nil }
+
 // GetAuthLdap calls GET /api/auth/ldap. List all configured LDAP providers (enterprise only; bind passwords are masked).
-func (c Client) GetAuthLdap(ctx context.Context) (result GetAuthLdapOperationResponse, err error) {
+func (c Client) GetAuthLdap(ctx context.Context) (result GetAuthLdapResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,7 +43,7 @@ func (c Client) GetAuthLdap(ctx context.Context) (result GetAuthLdapOperationRes
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

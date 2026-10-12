@@ -4,8 +4,8 @@ package dockhand
 
 // PostGitRepositoriesRequest is an object the document declares inline.
 type PostGitRepositoriesRequest struct {
-	Branch       string `json:"branch,omitempty"`
-	CredentialId int    `json:"credentialId,omitempty"`
-	Name         string `json:"name"`
-	Url          string `json:"url"`
+	Branch       string          `json:"branch,omitempty"`
+	CredentialId GitCredentialID `json:"credentialId,omitempty"`
+	Name         string          `json:"name"`
+	Url          string          `json:"url"`
 }

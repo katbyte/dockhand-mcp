@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostGitStacksByIdSyncOperationResponse is the result of PostGitStacksByIdSync.
-type PostGitStacksByIdSyncOperationResponse struct {
+// PostGitStacksByIdSyncResponse is the result of PostGitStacksByIdSync.
+//
+// Answer is the PostGitStacksByIdSyncAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostGitStacksByIdSyncResponse struct {
 	HttpResponse *http.Response
-	Model        *PostGitStacksByIdSyncResponse
+	Answer       *PostGitStacksByIdSyncAnswer
+	*PostGitStacksByIdSyncAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostGitStacksByIdSyncResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostGitStacksByIdSyncAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostGitStacksByIdSyncResponse) Record() (PostGitStacksByIdSyncAnswer, error) {
+	if r.Answer == nil {
+		return PostGitStacksByIdSyncAnswer{}, errors.New("PostGitStacksByIdSync answered no PostGitStacksByIdSyncAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostGitStacksByIdSync calls POST /api/git/stacks/{id}/sync. Sync (git pull) a git stack's repository clone to the latest tracked commit.
-func (c Client) PostGitStacksByIdSync(ctx context.Context, id int) (result PostGitStacksByIdSyncOperationResponse, err error) {
+func (c Client) PostGitStacksByIdSync(ctx context.Context, id GitStackID) (result PostGitStacksByIdSyncResponse, err error) {
+	result.PostGitStacksByIdSyncAnswer = &PostGitStacksByIdSyncAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
-		Path:       fmt.Sprintf("/api/git/stacks/%d/sync", id),
+		Path:       fmt.Sprintf("/api/git/stacks/%s/sync", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) PostGitStacksByIdSync(ctx context.Context, id int) (result PostG
 		return
 	}
 
-	var model PostGitStacksByIdSyncResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostGitStacksByIdSyncAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostGitStacksByIdSyncAnswer = result.Answer
 
 	return
 }

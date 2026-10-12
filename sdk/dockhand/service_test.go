@@ -90,8 +90,8 @@ func TestForgetEnvironmentPublicIP(t *testing.T) {
 
 	// the one thing sent is the address, empty, which the generated call leaves out
 	forgot, err := c.ForgetEnvironmentPublicIP(context.Background(), 2)
-	if err != nil || method != http.MethodPut || path != "/api/environments/2" || body != `{"publicIp":""}` || forgot.Model.Name != "beta" || forgot.Model.PublicIp != "" {
-		t.Errorf("forgetting sent %s %s %s and answered %+v, %v", method, path, body, forgot.Model, err)
+	if err != nil || method != http.MethodPut || path != "/api/environments/2" || body != `{"publicIp":""}` || forgot.Answer.Name != "beta" || forgot.Answer.PublicIp != "" {
+		t.Errorf("forgetting sent %s %s %s and answered %+v, %v", method, path, body, forgot.Answer, err)
 	}
 	if _, err := c.ForgetEnvironmentPublicIP(context.Background(), 9); !client.IsNotFound(err) {
 		t.Errorf("forgetting the address of an environment there is none of = %v", err)
@@ -177,11 +177,11 @@ func TestRefusals(t *testing.T) {
 	if !client.IsUnauthorized(err) || !strings.Contains(err.Error(), "login switched on") || !strings.Contains(err.Error(), "Profile, API tokens") {
 		t.Errorf("no token where one is due = %v", err)
 	}
-	_, err = withToken.GetAudit(context.Background(), GetAuditOperationOptions{})
+	_, err = withToken.GetAudit(context.Background(), GetAuditOptions{})
 	if !client.IsForbidden(err) || !strings.Contains(err.Error(), "Enterprise license required") || !strings.Contains(err.Error(), "Enterprise edition") {
 		t.Errorf("a call of the Enterprise edition = %v", err)
 	}
-	_, err = withToken.GetBackupConfigs(context.Background(), GetBackupConfigsOperationOptions{})
+	_, err = withToken.GetBackupConfigs(context.Background(), GetBackupConfigsOptions{})
 	if !client.IsNotFound(err) || !strings.Contains(err.Error(), "does not answer this call") {
 		t.Errorf("a call the server does not answer = %v", err)
 	}
@@ -288,8 +288,8 @@ func TestForgetRegistryCredentials(t *testing.T) {
 
 	// the name and password go empty, which the generated call leaves out, beside the name and address a change must carry
 	forgot, err := c.ForgetRegistryCredentials(context.Background(), 2, "mirror", "https://mirror.example")
-	if err != nil || method != http.MethodPut || path != "/api/registries/2" || body != `{"name":"mirror","password":"","url":"https://mirror.example","username":""}` || forgot.Model.Name != "mirror" || forgot.Model.Username != "" || forgot.Model.HasCredentials == nil || *forgot.Model.HasCredentials {
-		t.Errorf("forgetting sent %s %s %s and answered %+v, %v", method, path, body, forgot.Model, err)
+	if err != nil || method != http.MethodPut || path != "/api/registries/2" || body != `{"name":"mirror","password":"","url":"https://mirror.example","username":""}` || forgot.Answer.Name != "mirror" || forgot.Answer.Username != "" || forgot.Answer.HasCredentials {
+		t.Errorf("forgetting sent %s %s %s and answered %+v, %v", method, path, body, forgot.Answer, err)
 	}
 	if _, err := c.ForgetRegistryCredentials(context.Background(), 9, "mirror", "https://mirror.example"); !client.IsNotFound(err) {
 		t.Errorf("forgetting the credentials of a registry there is none of = %v", err)
@@ -322,8 +322,8 @@ func TestSaveGeneralSettings(t *testing.T) {
 	if err != nil || method != http.MethodPost || path != "/api/settings/general" || body != `{"externalStackPaths":["/srv/stacks"],"primaryStackLocation":"","scanRetentionGraceDays":0,"showWhatsNew":false}` {
 		t.Fatalf("saving sent %s %s %s, %v", method, path, body, err)
 	}
-	if saved.Model.ScanRetentionGraceDays != 0 || saved.Model.PrimaryStackLocation != "" || len(saved.Model.ExternalStackPaths) != 1 || saved.Model.ShowWhatsNew == nil || *saved.Model.ShowWhatsNew || saved.Model.DefaultTimezone != "UTC" {
-		t.Errorf("saving answered %+v", saved.Model)
+	if saved.Answer.ScanRetentionGraceDays != 0 || saved.Answer.PrimaryStackLocation != "" || len(saved.Answer.ExternalStackPaths) != 1 || saved.Answer.ShowWhatsNew || saved.Answer.DefaultTimezone != "UTC" {
+		t.Errorf("saving answered %+v", saved.Answer)
 	}
 
 	// a save Dockhand says failed is an error, whatever it kept of it
@@ -355,8 +355,8 @@ func TestForgetUserDetails(t *testing.T) {
 
 	// each goes empty, which the generated call leaves out, and only the one asked for is sent
 	forgot, err := c.ForgetUserDetails(context.Background(), 2, true, true)
-	if err != nil || method != http.MethodPut || path != "/api/users/2" || body != `{"displayName":"","email":""}` || forgot.Model.Username != "second" || forgot.Model.Email != "" || forgot.Model.DisplayName != "" {
-		t.Errorf("forgetting both sent %s %s %s and answered %+v, %v", method, path, body, forgot.Model, err)
+	if err != nil || method != http.MethodPut || path != "/api/users/2" || body != `{"displayName":"","email":""}` || forgot.Answer.Username != "second" || forgot.Answer.Email != "" || forgot.Answer.DisplayName != "" {
+		t.Errorf("forgetting both sent %s %s %s and answered %+v, %v", method, path, body, forgot.Answer, err)
 	}
 	if _, err := c.ForgetUserDetails(context.Background(), 2, true, false); err != nil || body != `{"email":""}` {
 		t.Errorf("forgetting the email alone sent %s, %v", body, err)
@@ -393,14 +393,14 @@ func TestNeverEndSessionsAndForgetOidcAdminClaim(t *testing.T) {
 
 	// a time of 0 is sent as it is, which the generated call leaves out
 	never, err := c.NeverEndSessions(context.Background())
-	if err != nil || method != http.MethodPut || path != "/api/auth/settings" || body != `{"sessionTimeout":0}` || never.Model.SessionTimeout != 0 || never.Model.AuthEnabled == nil || !*never.Model.AuthEnabled {
-		t.Errorf("never ending a session sent %s %s %s and answered %+v, %v", method, path, body, never.Model, err)
+	if err != nil || method != http.MethodPut || path != "/api/auth/settings" || body != `{"sessionTimeout":0}` || never.Answer.SessionTimeout != 0 || !never.Answer.AuthEnabled {
+		t.Errorf("never ending a session sent %s %s %s and answered %+v, %v", method, path, body, never.Answer, err)
 	}
 
 	// the claim and its value go empty together
 	forgot, err := c.ForgetOidcAdminClaim(context.Background(), 2)
-	if err != nil || method != http.MethodPut || path != "/api/auth/oidc/2" || body != `{"adminClaim":"","adminValue":""}` || forgot.Model.Name != "company" || forgot.Model.AdminClaim != "" || forgot.Model.RoleMappingsClaim != "groups" {
-		t.Errorf("forgetting the claim sent %s %s %s and answered %+v, %v", method, path, body, forgot.Model, err)
+	if err != nil || method != http.MethodPut || path != "/api/auth/oidc/2" || body != `{"adminClaim":"","adminValue":""}` || forgot.Answer.Name != "company" || forgot.Answer.AdminClaim != "" || forgot.Answer.RoleMappingsClaim != "groups" {
+		t.Errorf("forgetting the claim sent %s %s %s and answered %+v, %v", method, path, body, forgot.Answer, err)
 	}
 	if _, err := c.ForgetOidcAdminClaim(context.Background(), 9); !client.IsNotFound(err) {
 		t.Errorf("forgetting the claim of a provider there is none of = %v", err)
@@ -429,10 +429,10 @@ func TestForgetTagIcon(t *testing.T) {
 
 	// the icon is sent empty, which the generated call leaves out
 	forgot, err := c.ForgetTagIcon(context.Background(), 7)
-	if err != nil || method != http.MethodPut || path != "/api/tags/7" || body != `{"icon":""}` || forgot.Model.Success == nil || !*forgot.Model.Success || forgot.HttpResponse == nil {
-		t.Errorf("forgetting an icon sent %s %s %s and answered %+v, %v", method, path, body, forgot.Model, err)
+	if err != nil || method != http.MethodPut || path != "/api/tags/7" || body != `{"icon":""}` || !forgot.Answer.Success || forgot.HttpResponse == nil {
+		t.Errorf("forgetting an icon sent %s %s %s and answered %+v, %v", method, path, body, forgot.Answer, err)
 	}
-	if refused, err := c.ForgetTagIcon(context.Background(), 0); client.StatusCode(err) != http.StatusBadRequest || refused.Model != nil || refused.HttpResponse == nil {
+	if refused, err := c.ForgetTagIcon(context.Background(), 0); client.StatusCode(err) != http.StatusBadRequest || refused.Answer != nil || refused.HttpResponse == nil {
 		t.Errorf("forgetting the icon of a tag there is none of = %+v, %v", refused, err)
 	}
 }
@@ -459,10 +459,10 @@ func TestForgetConfigSetDescription(t *testing.T) {
 
 	// the description is sent empty, which the generated call leaves out
 	forgot, err := c.ForgetConfigSetDescription(context.Background(), 4)
-	if err != nil || method != http.MethodPut || path != "/api/config-sets/4" || body != `{"description":""}` || forgot.Model.Name != "web" || forgot.Model.Description != "" || len(forgot.Model.EnvVars) != 1 || forgot.Model.Labels != nil || forgot.HttpResponse == nil {
-		t.Errorf("forgetting a description sent %s %s %s and answered %+v, %v", method, path, body, forgot.Model, err)
+	if err != nil || method != http.MethodPut || path != "/api/config-sets/4" || body != `{"description":""}` || forgot.Answer.Name != "web" || forgot.Answer.Description != "" || len(forgot.Answer.EnvVars) != 1 || forgot.Answer.Labels != nil || forgot.HttpResponse == nil {
+		t.Errorf("forgetting a description sent %s %s %s and answered %+v, %v", method, path, body, forgot.Answer, err)
 	}
-	if refused, err := c.ForgetConfigSetDescription(context.Background(), 9); !client.IsNotFound(err) || refused.Model != nil || refused.HttpResponse == nil {
+	if refused, err := c.ForgetConfigSetDescription(context.Background(), 9); !client.IsNotFound(err) || refused.Answer != nil || refused.HttpResponse == nil {
 		t.Errorf("forgetting the description of a set there is none of = %+v, %v", refused, err)
 	}
 }
@@ -483,8 +483,8 @@ func TestForgetNavigationPages(t *testing.T) {
 
 	// each page named is sent as nothing, which the generated call leaves out, and only for everyone: a token may change no user's own
 	forgot, err := c.ForgetNavigationPages(context.Background(), true, false)
-	if err != nil || method != http.MethodPut || path != "/api/settings/navigation" || query != "scope=global" || body != `{"landingPage":null}` || forgot.Model.Success == nil || !*forgot.Model.Success || forgot.Model.Global == nil || forgot.Model.Global.LandingPage != "" || forgot.Model.Global.EnvClickPage != "logs" {
-		t.Errorf("forgetting the landing page sent %s %s?%s %s and answered %+v, %v", method, path, query, body, forgot.Model, err)
+	if err != nil || method != http.MethodPut || path != "/api/settings/navigation" || query != "scope=global" || body != `{"landingPage":null}` || !forgot.Answer.Success || forgot.Answer.Global == nil || forgot.Answer.Global.LandingPage != "" || forgot.Answer.Global.EnvClickPage != "logs" {
+		t.Errorf("forgetting the landing page sent %s %s?%s %s and answered %+v, %v", method, path, query, body, forgot.Answer, err)
 	}
 	if _, err = c.ForgetNavigationPages(context.Background(), true, true); err != nil || body != `{"envClickPage":null,"landingPage":null}` {
 		t.Errorf("forgetting both pages sent %s, %v", body, err)
@@ -513,13 +513,13 @@ func TestSetLogFavorites(t *testing.T) {
 
 	// names and groups go together in the one list, and none at all is sent as an empty list
 	set, err := c.SetLogFavorites(context.Background(), 1, []any{"loose", map[string]any{"name": "front", "containers": []string{"web-1"}}})
-	if err != nil || method != http.MethodPost || path != "/api/preferences/favorites" || body != `{"action":"reorder","environmentId":1,"favorites":["loose",{"containers":["web-1"],"name":"front"}]}` || len(set.Model.Favorites) != 2 || set.Model.Favorites[0] != "loose" {
-		t.Errorf("setting the favourites sent %s %s %s and answered %+v, %v", method, path, body, set.Model, err)
+	if err != nil || method != http.MethodPost || path != "/api/preferences/favorites" || body != `{"action":"reorder","environmentId":1,"favorites":["loose",{"containers":["web-1"],"name":"front"}]}` || len(set.Answer.Favorites) != 2 || set.Answer.Favorites[0] != "loose" {
+		t.Errorf("setting the favourites sent %s %s %s and answered %+v, %v", method, path, body, set.Answer, err)
 	}
 	if _, err = c.SetLogFavorites(context.Background(), 1, nil); err != nil || body != `{"action":"reorder","environmentId":1,"favorites":[]}` {
 		t.Errorf("setting no favourites sent %s, %v", body, err)
 	}
-	if refused, err := c.SetLogFavorites(context.Background(), 9, nil); client.StatusCode(err) != http.StatusInternalServerError || refused.Model != nil {
+	if refused, err := c.SetLogFavorites(context.Background(), 9, nil); client.StatusCode(err) != http.StatusInternalServerError || refused.Answer != nil {
 		t.Errorf("the favourites of an environment there is none of = %+v, %v", refused, err)
 	}
 }
@@ -546,8 +546,8 @@ func TestForgetStackSecretProvider(t *testing.T) {
 
 	// the provider is sent as nothing, which the generated call leaves out, with the file Dockhand will not save a stack without
 	saved, err := c.ForgetStackSecretProvider(context.Background(), "a web", "services: {}\n", 2)
-	if err != nil || method != http.MethodPut || path != "/api/stacks/a%20web/compose" || query != "env=2" || body != `{"content":"services: {}\n","secretProviderId":null}` || saved.Model.Success == nil || !*saved.Model.Success {
-		t.Errorf("taking a stack off its provider sent %s %s?%s %s and answered %+v, %v", method, path, query, body, saved.Model, err)
+	if err != nil || method != http.MethodPut || path != "/api/stacks/a%20web/compose" || query != "env=2" || body != `{"content":"services: {}\n","secretProviderId":null}` || !saved.Answer.Success {
+		t.Errorf("taking a stack off its provider sent %s %s?%s %s and answered %+v, %v", method, path, query, body, saved.Answer, err)
 	}
 	if _, err = c.ForgetStackSecretProvider(context.Background(), "nope", "x", 1); err == nil || !strings.Contains(err.Error(), "Stack not found") {
 		t.Errorf("a stack there is none of = %v", err)
@@ -576,8 +576,8 @@ func TestForgetGitStackSettings(t *testing.T) {
 
 	// each setting named is sent as nothing, which the generated call leaves out, and the ones not named are not sent at all
 	saved, err := c.ForgetGitStackSettings(context.Background(), 4, GitStackSettings{Branch: true, SecretProvider: true})
-	if err != nil || method != http.MethodPut || path != "/api/git/stacks/4" || body != `{"branch":null,"secretProviderId":null}` || saved.Model.StackName != "web" {
-		t.Errorf("taking a git stack's branch and provider away sent %s %s %s and answered %+v, %v", method, path, body, saved.Model, err)
+	if err != nil || method != http.MethodPut || path != "/api/git/stacks/4" || body != `{"branch":null,"secretProviderId":null}` || saved.Answer.StackName != "web" {
+		t.Errorf("taking a git stack's branch and provider away sent %s %s %s and answered %+v, %v", method, path, body, saved.Answer, err)
 	}
 	if _, err = c.ForgetGitStackSettings(context.Background(), 4, GitStackSettings{EnvFilePath: true, ContextDir: true}); err != nil || body != `{"contextDir":null,"envFilePath":null}` {
 		t.Errorf("taking a git stack's two paths away sent %s, %v", body, err)
@@ -614,8 +614,8 @@ func TestForgetGitRepositoryCredential(t *testing.T) {
 
 	// the credential is sent as nothing, which the generated call leaves out
 	saved, err := c.ForgetGitRepositoryCredential(context.Background(), 2)
-	if err != nil || method != http.MethodPut || path != "/api/git/repositories/2" || body != `{"credentialId":null}` || saved.Model.Name != "app" || saved.Model.CredentialId != 0 {
-		t.Errorf("taking a repository's credential away sent %s %s %s and answered %+v, %v", method, path, body, saved.Model, err)
+	if err != nil || method != http.MethodPut || path != "/api/git/repositories/2" || body != `{"credentialId":null}` || saved.Answer.Name != "app" || saved.Answer.CredentialId != 0 {
+		t.Errorf("taking a repository's credential away sent %s %s %s and answered %+v, %v", method, path, body, saved.Answer, err)
 	}
 	if _, err = c.ForgetGitRepositoryCredential(context.Background(), 9); err == nil || !strings.Contains(err.Error(), "Repository not found") {
 		t.Errorf("a repository there is none of = %v", err)

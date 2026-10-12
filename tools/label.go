@@ -44,15 +44,15 @@ func (r *registry) labels(ctx context.Context) ([]labelRow, error) {
 		return nil, fmt.Errorf("the labels could not be listed: %w", refusal(err))
 	}
 
-	rows := make([]labelRow, 0, len(listed.Model.Labels))
-	for _, l := range listed.Model.Labels {
-		row := labelRow{Label: l.Label, Color: cmp.Or(l.Color, listed.Model.Colors[l.Label]), Environments: make([]string, 0, len(l.Environments))}
+	rows := make([]labelRow, 0, len(listed.Answer.Labels))
+	for _, l := range listed.Answer.Labels {
+		row := labelRow{Label: l.Label, Color: cmp.Or(l.Color, listed.Answer.Colors[l.Label]), Environments: make([]string, 0, len(l.Environments))}
 		for _, e := range l.Environments {
 			row.Environments = append(row.Environments, e.EnvName)
 		}
 		rows = append(rows, row)
 	}
-	for label, colour := range listed.Model.Colors {
+	for label, colour := range listed.Answer.Colors {
 		if !slices.ContainsFunc(rows, func(row labelRow) bool { return row.Label == label }) {
 			rows = append(rows, labelRow{Label: label, Color: colour, Environments: []string{}})
 		}
@@ -94,11 +94,11 @@ func (r *registry) labelAct(ctx context.Context, request dockhand.PostLabelsRequ
 	if err != nil {
 		return 0, refusal(err)
 	}
-	if !yes(answer.Model.Success) {
+	if !answer.Answer.Success {
 		return 0, errNotSaid
 	}
 
-	return answer.Model.Affected, nil
+	return answer.Answer.Affected, nil
 }
 
 // labelChangeOut is what changing a label, or which environments have it, answers.
@@ -280,12 +280,12 @@ func registerLabelTools(r *registry) {
 				if unknown != nil {
 					return nil, unknown
 				}
-				i := slices.IndexFunc(listed.Model, func(e dockhand.GetEnvironmentsResponse) bool {
-					return strconv.Itoa(e.Id) == wanted || strings.EqualFold(e.Name, wanted)
+				i := slices.IndexFunc(listed.Answer, func(e dockhand.GetEnvironmentsAnswer) bool {
+					return strconv.Itoa(int(e.Id)) == wanted || strings.EqualFold(e.Name, wanted)
 				})
 				if i < 0 {
-					names := make([]string, 0, len(listed.Model))
-					for _, e := range listed.Model {
+					names := make([]string, 0, len(listed.Answer))
+					for _, e := range listed.Answer {
 						names = append(names, e.Name)
 					}
 
@@ -307,7 +307,7 @@ func registerLabelTools(r *registry) {
 			return nil, labelChangeOut{}, err
 		}
 		if i := slices.IndexFunc(adds, func(i int) bool { return slices.Contains(removes, i) }); i >= 0 {
-			return nil, labelChangeOut{}, fmt.Errorf("%s is in both add and remove: the label is given to it or taken from it, not both", listed.Model[adds[i]].Name)
+			return nil, labelChangeOut{}, fmt.Errorf("%s is in both add and remove: the label is given to it or taken from it, not both", listed.Answer[adds[i]].Name)
 		}
 
 		out := labelChangeOut{Changes: []string{}, DryRun: in.DryRun}
@@ -318,22 +318,22 @@ func registerLabelTools(r *registry) {
 
 			return did
 		}
-		has := func(i int) bool { return slices.Contains(listed.Model[i].Labels, label) }
+		has := func(i int) bool { return slices.Contains(listed.Answer[i].Labels, label) }
 		adds = slices.DeleteFunc(adds, has)
 		removes = slices.DeleteFunc(removes, func(i int) bool { return !has(i) })
 		called := func(places []int) string {
 			names := make([]string, 0, len(places))
 			for _, i := range places {
-				names = append(names, listed.Model[i].Name)
+				names = append(names, listed.Answer[i].Name)
 			}
 
 			return strings.Join(names, ", ")
 		}
-		isNew := !slices.ContainsFunc(listed.Model, func(e dockhand.GetEnvironmentsResponse) bool { return slices.Contains(e.Labels, label) })
+		isNew := !slices.ContainsFunc(listed.Answer, func(e dockhand.GetEnvironmentsAnswer) bool { return slices.Contains(e.Labels, label) })
 		if len(adds) > 0 {
 			out.Changes = append(out.Changes, fmt.Sprintf("%s %s to %s", done("gave", "would give"), label, called(adds)))
 			if isNew {
-				for _, e := range listed.Model {
+				for _, e := range listed.Answer {
 					if i := slices.IndexFunc(e.Labels, func(other string) bool { return strings.EqualFold(other, label) }); i >= 0 {
 						out.Note = fmt.Sprintf("%s is a new label, and another from %s, which %s has: labels differ by their case", label, e.Labels[i], e.Name)
 
@@ -372,9 +372,9 @@ func registerLabelTools(r *registry) {
 		}
 
 		if len(adds) > 0 {
-			ids := make([]int, 0, len(adds))
+			ids := make([]dockhand.EnvironmentID, 0, len(adds))
 			for _, i := range adds {
-				ids = append(ids, listed.Model[i].Id)
+				ids = append(ids, listed.Answer[i].Id)
 			}
 			given, failed := r.labelAct(ctx, dockhand.PostLabelsRequest{Action: labelAdd, Label: label, EnvironmentIds: ids})
 			if failed != nil {
@@ -388,15 +388,15 @@ func registerLabelTools(r *registry) {
 		}
 		for n, i := range removes {
 			// every label it is to keep, sent as a list even when that is none: one left out would be kept as it is
-			kept := slices.DeleteFunc(slices.Clone(listed.Model[i].Labels), func(other string) bool { return other == label })
-			if _, failed := r.dock.PutEnvironmentsById(ctx, listed.Model[i].Id, dockhand.PutEnvironmentsByIdRequest{Labels: append([]string{}, kept...)}); failed != nil {
+			kept := slices.DeleteFunc(slices.Clone(listed.Answer[i].Labels), func(other string) bool { return other == label })
+			if _, failed := r.dock.PutEnvironmentsById(ctx, listed.Answer[i].Id, dockhand.PutEnvironmentsByIdRequest{Labels: append([]string{}, kept...)}); failed != nil {
 				out.Changes = []string{}
 				was := "nothing else was done"
 				if len(adds) > 0 || n > 0 {
 					was = "what came before it was done: label_list says where the label is now"
 				}
 
-				return nil, out, fmt.Errorf("the label %s was not taken from %s, and %s: %w", label, listed.Model[i].Name, was, refusal(failed))
+				return nil, out, fmt.Errorf("the label %s was not taken from %s, and %s: %w", label, listed.Answer[i].Name, was, refusal(failed))
 			}
 		}
 		back()

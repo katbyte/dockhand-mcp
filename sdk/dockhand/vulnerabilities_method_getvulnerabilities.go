@@ -4,22 +4,45 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetVulnerabilitiesOperationResponse is the result of GetVulnerabilities.
-type GetVulnerabilitiesOperationResponse struct {
+// GetVulnerabilitiesResponse is the result of GetVulnerabilities.
+//
+// Answer is the GetVulnerabilitiesAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetVulnerabilitiesResponse struct {
 	HttpResponse *http.Response
-	Model        *GetVulnerabilitiesResponse
+	Answer       *GetVulnerabilitiesAnswer
+	*GetVulnerabilitiesAnswer
 }
 
-// GetVulnerabilitiesOperationOptions holds the query and header parameters of GetVulnerabilities.
-type GetVulnerabilitiesOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetVulnerabilitiesResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetVulnerabilitiesAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetVulnerabilitiesResponse) Record() (GetVulnerabilitiesAnswer, error) {
+	if r.Answer == nil {
+		return GetVulnerabilitiesAnswer{}, errors.New("GetVulnerabilities answered no GetVulnerabilitiesAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetVulnerabilitiesOptions holds the query and header parameters of GetVulnerabilities.
+type GetVulnerabilitiesOptions struct {
 	// the environment whose findings are asked for: with none, nothing is found
-	Env *int
+	Env EnvironmentID
 
 	// only findings whose CVE, package, image, container or stack holds this text, whatever its case
 	Q string
@@ -50,16 +73,16 @@ type GetVulnerabilitiesOperationOptions struct {
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetVulnerabilitiesOperationOptions) ToHeaders() *client.Headers {
+func (o GetVulnerabilitiesOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetVulnerabilitiesOperationOptions) ToQuery() *client.QueryParams {
+func (o GetVulnerabilitiesOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	if o.Q != "" {
 		out.Append("q", o.Q)
@@ -92,13 +115,23 @@ func (o GetVulnerabilitiesOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetVulnerabilities calls GET /api/vulnerabilities. A filtered, sorted page of aggregated vulnerability findings for an environment.
-func (c Client) GetVulnerabilities(ctx context.Context, options GetVulnerabilitiesOperationOptions) (result GetVulnerabilitiesOperationResponse, err error) {
+func (c Client) GetVulnerabilities(ctx context.Context, options ...GetVulnerabilitiesOptions) (result GetVulnerabilitiesResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetVulnerabilities takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetVulnerabilitiesOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetVulnerabilitiesAnswer = &GetVulnerabilitiesAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/vulnerabilities",
 	}
 
@@ -116,11 +149,12 @@ func (c Client) GetVulnerabilities(ctx context.Context, options GetVulnerabiliti
 		return
 	}
 
-	var model GetVulnerabilitiesResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetVulnerabilitiesAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetVulnerabilitiesAnswer = result.Answer
 
 	return
 }

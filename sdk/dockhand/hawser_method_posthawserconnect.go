@@ -9,13 +9,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostHawserConnectOperationResponse is the result of PostHawserConnect.
-type PostHawserConnectOperationResponse struct {
+// PostHawserConnectResponse is the result of PostHawserConnect.
+type PostHawserConnectResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostHawserConnect calls POST /api/hawser/connect. Fallback for non-WebSocket clients; always advises upgrading to a WebSocket connection.
-func (c Client) PostHawserConnect(ctx context.Context) (result PostHawserConnectOperationResponse, err error) {
+func (c Client) PostHawserConnect(ctx context.Context) (result PostHawserConnectResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,

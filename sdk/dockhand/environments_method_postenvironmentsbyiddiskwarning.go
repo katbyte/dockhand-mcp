@@ -4,27 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostEnvironmentsByIdDiskWarningOperationResponse is the result of PostEnvironmentsByIdDiskWarning.
-type PostEnvironmentsByIdDiskWarningOperationResponse struct {
+// PostEnvironmentsByIdDiskWarningResponse is the result of PostEnvironmentsByIdDiskWarning.
+//
+// Answer is the PostEnvironmentsByIdDiskWarningAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostEnvironmentsByIdDiskWarningResponse struct {
 	HttpResponse *http.Response
-	Model        *PostEnvironmentsByIdDiskWarningResponse
+	Answer       *PostEnvironmentsByIdDiskWarningAnswer
+	*PostEnvironmentsByIdDiskWarningAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostEnvironmentsByIdDiskWarningResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostEnvironmentsByIdDiskWarningAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostEnvironmentsByIdDiskWarningResponse) Record() (PostEnvironmentsByIdDiskWarningAnswer, error) {
+	if r.Answer == nil {
+		return PostEnvironmentsByIdDiskWarningAnswer{}, errors.New("PostEnvironmentsByIdDiskWarning answered no PostEnvironmentsByIdDiskWarningAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostEnvironmentsByIdDiskWarning calls POST /api/environments/{id}/disk-warning. Save the disk-space warning thresholds for an environment (each field optional/independent).
-func (c Client) PostEnvironmentsByIdDiskWarning(ctx context.Context, id int, input PostEnvironmentsByIdDiskWarningRequest) (result PostEnvironmentsByIdDiskWarningOperationResponse, err error) {
+func (c Client) PostEnvironmentsByIdDiskWarning(ctx context.Context, id EnvironmentID, input PostEnvironmentsByIdDiskWarningRequest) (result PostEnvironmentsByIdDiskWarningResponse, err error) {
+	result.PostEnvironmentsByIdDiskWarningAnswer = &PostEnvironmentsByIdDiskWarningAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
-		Path:       fmt.Sprintf("/api/environments/%d/disk-warning", id),
+		Path:       fmt.Sprintf("/api/environments/%s/disk-warning", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -45,11 +70,12 @@ func (c Client) PostEnvironmentsByIdDiskWarning(ctx context.Context, id int, inp
 		return
 	}
 
-	var model PostEnvironmentsByIdDiskWarningResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostEnvironmentsByIdDiskWarningAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostEnvironmentsByIdDiskWarningAnswer = result.Answer
 
 	return
 }

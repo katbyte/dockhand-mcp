@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,23 +13,44 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostStacksByNameDeployOperationResponse is the result of PostStacksByNameDeploy.
-type PostStacksByNameDeployOperationResponse struct {
+// PostStacksByNameDeployResponse is the result of PostStacksByNameDeploy.
+//
+// Answer is the PostStacksByNameDeployAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostStacksByNameDeployResponse struct {
 	HttpResponse *http.Response
-	Model        *PostStacksByNameDeployResponse
+	Answer       *PostStacksByNameDeployAnswer
+	*PostStacksByNameDeployAnswer
 }
 
-// PostStacksByNameDeployOperationOptions holds the query and header parameters of PostStacksByNameDeploy.
-type PostStacksByNameDeployOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostStacksByNameDeployResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostStacksByNameDeployAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostStacksByNameDeployResponse) Record() (PostStacksByNameDeployAnswer, error) {
+	if r.Answer == nil {
+		return PostStacksByNameDeployAnswer{}, errors.New("PostStacksByNameDeploy answered no PostStacksByNameDeployAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostStacksByNameDeployOptions holds the query and header parameters of PostStacksByNameDeploy.
+type PostStacksByNameDeployOptions struct {
 	// Environment ID the stack belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once
 	Accept string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostStacksByNameDeployOperationOptions) ToHeaders() *client.Headers {
+func (o PostStacksByNameDeployOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	if o.Accept != "" {
 		out.Append("Accept", o.Accept)
@@ -37,23 +59,33 @@ func (o PostStacksByNameDeployOperationOptions) ToHeaders() *client.Headers {
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostStacksByNameDeployOperationOptions) ToQuery() *client.QueryParams {
+func (o PostStacksByNameDeployOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostStacksByNameDeploy calls POST /api/stacks/{name}/deploy. Deploy (docker compose up) a stack, optionally pulling images, building, and force-recreating; progress and the final result stream over Server-Sent Events.
-func (c Client) PostStacksByNameDeploy(ctx context.Context, name string, input PostStacksByNameDeployRequest, options PostStacksByNameDeployOperationOptions) (result PostStacksByNameDeployOperationResponse, err error) {
+func (c Client) PostStacksByNameDeploy(ctx context.Context, name string, input PostStacksByNameDeployRequest, options ...PostStacksByNameDeployOptions) (result PostStacksByNameDeployResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostStacksByNameDeploy takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostStacksByNameDeployOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostStacksByNameDeployAnswer = &PostStacksByNameDeployAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/deploy", url.PathEscape(name)),
 	}
 
@@ -75,11 +107,12 @@ func (c Client) PostStacksByNameDeploy(ctx context.Context, name string, input P
 		return
 	}
 
-	var model PostStacksByNameDeployResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostStacksByNameDeployAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostStacksByNameDeployAnswer = result.Answer
 
 	return
 }

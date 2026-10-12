@@ -4,7 +4,9 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -12,44 +14,110 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetStacksByNameIconOperationResponse is the result of GetStacksByNameIcon.
+// GetStacksByNameIconResponse is the result of GetStacksByNameIcon.
 //
-// The operation answers image/*, left unread in HttpResponse.Body, which
-// the caller must close.
-type GetStacksByNameIconOperationResponse struct {
+// The operation answers image/*, left unread in HttpResponse.Body. WriteTo copies
+// it out and Bytes reads it whole up to a size, each closing it; Reader hands it over
+// for the caller to read and close. After any of them the body is spent. A failed call
+// has no open body: the base client reads a refusal and closes it.
+type GetStacksByNameIconResponse struct {
 	HttpResponse *http.Response
 }
 
-// GetStacksByNameIconOperationOptions holds the query and header parameters of GetStacksByNameIcon.
-type GetStacksByNameIconOperationOptions struct {
+// Reader is the file's body, for the caller to read and close, and the content
+// type the server named it; an empty body and "" when the operation gave no
+// answer, so a deferred Close is always safe. The body stays readable after
+// the result goes out of scope, and has no size or time limit of the client's:
+// the caller's context is the one bound on a slow read.
+func (r GetStacksByNameIconResponse) Reader() (io.ReadCloser, string) {
+	if r.HttpResponse == nil || r.HttpResponse.Body == nil {
+		return http.NoBody, ""
+	}
+
+	return r.HttpResponse.Body, r.HttpResponse.Header.Get("Content-Type")
+}
+
+// ContentLength is the file's length as the server named it, or -1 when it
+// did not, to refuse one too big before reading any of it.
+func (r GetStacksByNameIconResponse) ContentLength() int64 {
+	if r.HttpResponse == nil {
+		return -1
+	}
+
+	return r.HttpResponse.ContentLength
+}
+
+// Filename is the name the server gave the file (Content-Disposition), or ""
+// when it gave none, for a caller saving it under the server's name.
+func (r GetStacksByNameIconResponse) Filename() string {
+	if r.HttpResponse == nil {
+		return ""
+	}
+
+	return client.Filename(r.HttpResponse.Header)
+}
+
+// WriteTo copies the file to w and closes the body whatever happens, which is
+// the one way to take the answer that cannot leave it open. A writer that
+// failed is a client.WriteError, as against the server's side breaking off;
+// it fails when the operation gave no answer, and again once the body is spent.
+func (r GetStacksByNameIconResponse) WriteTo(w io.Writer) (int64, error) {
+	if r.HttpResponse == nil || r.HttpResponse.Body == nil {
+		return 0, errors.New("no answer to write")
+	}
+
+	return client.Copy(w, r.HttpResponse.Body)
+}
+
+// Bytes reads the file whole, up to max bytes, and closes the body: a file
+// over max is a client.TooLargeError rather than cut short without a word.
+func (r GetStacksByNameIconResponse) Bytes(max int64) ([]byte, error) {
+	if r.HttpResponse == nil || r.HttpResponse.Body == nil {
+		return nil, errors.New("no answer to read")
+	}
+
+	return client.ReadAtMost(r.HttpResponse.Body, max)
+}
+
+// GetStacksByNameIconOptions holds the query and header parameters of GetStacksByNameIcon.
+type GetStacksByNameIconOptions struct {
 	// Environment id the stack belongs to
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetStacksByNameIconOperationOptions) ToHeaders() *client.Headers {
+func (o GetStacksByNameIconOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetStacksByNameIconOperationOptions) ToQuery() *client.QueryParams {
+func (o GetStacksByNameIconOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetStacksByNameIcon calls GET /api/stacks/{name}/icon. Get a stack's uploaded custom icon (raw image/webp bytes, not JSON).
-func (c Client) GetStacksByNameIcon(ctx context.Context, name string, options GetStacksByNameIconOperationOptions) (result GetStacksByNameIconOperationResponse, err error) {
+func (c Client) GetStacksByNameIcon(ctx context.Context, name string, options ...GetStacksByNameIconOptions) (result GetStacksByNameIconResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetStacksByNameIcon takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetStacksByNameIconOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		Accept: "image/*",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
-		OptionsObject:  options,
+		OptionsObject:  option,
 		Path:           fmt.Sprintf("/api/stacks/%s/icon", url.PathEscape(name)),
 		StreamResponse: true,
 	}

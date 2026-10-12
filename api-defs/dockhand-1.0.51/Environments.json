@@ -13,7 +13,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -21,7 +22,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteEnvironmentsByIdResponse"
+          "ReferenceName": "DeleteEnvironmentsByIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -39,7 +40,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -47,7 +49,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteEnvironmentsByIdIconResponse"
+          "ReferenceName": "DeleteEnvironmentsByIdIconAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -65,14 +67,16 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
           "Name": "notificationId",
           "Argument": "notificationId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "NotificationID"
           }
         }
       ],
@@ -80,7 +84,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteEnvironmentsByIdNotificationsByNotificationIdResponse"
+          "ReferenceName": "DeleteEnvironmentsByIdNotificationsByNotificationIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -99,7 +103,7 @@
           "Type": "List",
           "NestedItem": {
             "Type": "Reference",
-            "ReferenceName": "GetEnvironmentsResponse"
+            "ReferenceName": "GetEnvironmentsAnswer"
           }
         }
       },
@@ -118,7 +122,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -126,7 +131,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetEnvironmentsByIdResponse"
+          "ReferenceName": "GetEnvironmentsByIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -144,7 +149,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -152,7 +158,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetEnvironmentsByIdDiskWarningResponse"
+          "ReferenceName": "GetEnvironmentsByIdDiskWarningAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -170,7 +176,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -195,7 +202,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -203,7 +211,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetEnvironmentsByIdImagePruneResponse"
+          "ReferenceName": "GetEnvironmentsByIdImagePruneAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -221,7 +229,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -231,7 +240,7 @@
           "Type": "List",
           "NestedItem": {
             "Type": "Reference",
-            "ReferenceName": "GetEnvironmentsByIdNotificationsResponse"
+            "ReferenceName": "GetEnvironmentsByIdNotificationsAnswer"
           }
         }
       },
@@ -250,14 +259,16 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
           "Name": "notificationId",
           "Argument": "notificationId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "NotificationID"
           }
         }
       ],
@@ -265,7 +276,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetEnvironmentsByIdNotificationsByNotificationIdResponse"
+          "ReferenceName": "GetEnvironmentsByIdNotificationsByNotificationIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -283,7 +294,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -291,7 +303,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetEnvironmentsByIdRemoteStacksDirResponse"
+          "ReferenceName": "GetEnvironmentsByIdRemoteStacksDirAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -309,7 +321,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -317,7 +330,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetEnvironmentsByIdTimezoneResponse"
+          "ReferenceName": "GetEnvironmentsByIdTimezoneAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -335,7 +348,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -343,7 +357,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetEnvironmentsByIdUpdateCheckResponse"
+          "ReferenceName": "GetEnvironmentsByIdUpdateCheckAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -360,7 +374,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetEnvironmentsDetectSocketResponse"
+          "ReferenceName": "GetEnvironmentsDetectSocketAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -384,7 +398,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostEnvironmentsResponse"
+          "ReferenceName": "PostEnvironmentsAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -402,7 +416,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -417,7 +432,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostEnvironmentsByIdDiskWarningResponse"
+          "ReferenceName": "PostEnvironmentsByIdDiskWarningAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -435,7 +450,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -450,7 +466,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostEnvironmentsByIdIconResponse"
+          "ReferenceName": "PostEnvironmentsByIdIconAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -468,7 +484,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -483,7 +500,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostEnvironmentsByIdImagePruneResponse"
+          "ReferenceName": "PostEnvironmentsByIdImagePruneAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -501,7 +518,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -516,7 +534,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostEnvironmentsByIdNotificationsResponse"
+          "ReferenceName": "PostEnvironmentsByIdNotificationsAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -534,7 +552,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -549,7 +568,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostEnvironmentsByIdRemoteStacksDirResponse"
+          "ReferenceName": "PostEnvironmentsByIdRemoteStacksDirAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -567,7 +586,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -575,7 +595,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostEnvironmentsByIdTestResponse"
+          "ReferenceName": "PostEnvironmentsByIdTestAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -593,7 +613,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -608,7 +629,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostEnvironmentsByIdTimezoneResponse"
+          "ReferenceName": "PostEnvironmentsByIdTimezoneAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -626,7 +647,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -641,7 +663,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostEnvironmentsByIdUpdateCheckResponse"
+          "ReferenceName": "PostEnvironmentsByIdUpdateCheckAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -665,7 +687,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostEnvironmentsTestResponse"
+          "ReferenceName": "PostEnvironmentsTestAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -683,7 +705,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -698,7 +721,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PutEnvironmentsByIdResponse"
+          "ReferenceName": "PutEnvironmentsByIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -716,7 +739,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -724,7 +748,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PutEnvironmentsByIdImagePruneResponse"
+          "ReferenceName": "PutEnvironmentsByIdImagePruneAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -742,14 +766,16 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
           "Name": "notificationId",
           "Argument": "notificationId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "NotificationID"
           }
         }
       ],
@@ -764,7 +790,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PutEnvironmentsByIdNotificationsByNotificationIdResponse"
+          "ReferenceName": "PutEnvironmentsByIdNotificationsByNotificationIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -774,7 +800,20 @@
   ],
   "Models": [
     {
-      "Name": "DeleteEnvironmentsByIdIconResponse",
+      "Name": "DeleteEnvironmentsByIdAnswer",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "DeleteEnvironmentsByIdIconAnswer",
       "Fields": [
         {
           "Name": "Icon",
@@ -795,7 +834,7 @@
       ]
     },
     {
-      "Name": "DeleteEnvironmentsByIdNotificationsByNotificationIdResponse",
+      "Name": "DeleteEnvironmentsByIdNotificationsByNotificationIdAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -808,290 +847,7 @@
       ]
     },
     {
-      "Name": "DeleteEnvironmentsByIdResponse",
-      "Fields": [
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "GetEnvironmentsByIdDiskWarningResponse",
-      "Fields": [
-        {
-          "Name": "Enabled",
-          "JsonName": "enabled",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Mode",
-          "JsonName": "mode",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "PercentageSupported",
-          "JsonName": "percentageSupported",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "StorageDriver",
-          "JsonName": "storageDriver",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Threshold",
-          "JsonName": "threshold",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        },
-        {
-          "Name": "ThresholdGb",
-          "JsonName": "thresholdGb",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "GetEnvironmentsByIdImagePruneResponse",
-      "Fields": [
-        {
-          "Name": "Settings",
-          "JsonName": "settings",
-          "Type": {
-            "Type": "Reference",
-            "ReferenceName": "GetEnvironmentsByIdImagePruneResponseSettings"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "GetEnvironmentsByIdImagePruneResponseSettings",
-      "Fields": [
-        {
-          "Name": "CronExpression",
-          "JsonName": "cronExpression",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Enabled",
-          "JsonName": "enabled",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "PruneMode",
-          "JsonName": "pruneMode",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "GetEnvironmentsByIdNotificationsByNotificationIdResponse",
-      "Fields": [
-        {
-          "Name": "ChannelEnabled",
-          "JsonName": "channelEnabled",
-          "Description": "whether the channel itself is switched on: a link that is on sends nothing through a channel that is off",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "ChannelName",
-          "JsonName": "channelName",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "ChannelType",
-          "JsonName": "channelType",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "CreatedAt",
-          "JsonName": "createdAt",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Enabled",
-          "JsonName": "enabled",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "EnvironmentId",
-          "JsonName": "environmentId",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "EventTypes",
-          "JsonName": "eventTypes",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Id",
-          "JsonName": "id",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        },
-        {
-          "Name": "NotificationId",
-          "JsonName": "notificationId",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        },
-        {
-          "Name": "UpdatedAt",
-          "JsonName": "updatedAt",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetEnvironmentsByIdNotificationsResponse",
-      "Fields": [
-        {
-          "Name": "ChannelEnabled",
-          "JsonName": "channelEnabled",
-          "Description": "whether the channel itself is switched on: a link that is on sends nothing through a channel that is off",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "ChannelName",
-          "JsonName": "channelName",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "ChannelType",
-          "JsonName": "channelType",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "CreatedAt",
-          "JsonName": "createdAt",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Enabled",
-          "JsonName": "enabled",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "EnvironmentId",
-          "JsonName": "environmentId",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "EventTypes",
-          "JsonName": "eventTypes",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Id",
-          "JsonName": "id",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        },
-        {
-          "Name": "NotificationId",
-          "JsonName": "notificationId",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        },
-        {
-          "Name": "UpdatedAt",
-          "JsonName": "updatedAt",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetEnvironmentsByIdRemoteStacksDirResponse",
-      "Fields": [
-        {
-          "Name": "RemoteStacksDir",
-          "JsonName": "remoteStacksDir",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetEnvironmentsByIdResponse",
+      "Name": "GetEnvironmentsAnswer",
       "Fields": [
         {
           "Name": "CollectActivity",
@@ -1112,14 +868,16 @@
           "JsonName": "connectionType",
           "Description": "how the host is reached: socket, direct, hawser-standard or hawser-edge",
           "Type": {
-            "Type": "String"
-          }
+            "Type": "Reference",
+            "ReferenceName": "ConnectionType"
+          },
+          "Required": true
         },
         {
           "Name": "CreatedAt",
           "JsonName": "createdAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -1157,7 +915,7 @@
           "JsonName": "hawserLastSeen",
           "Description": "when an agent that calls in was last heard from; empty for every other connection",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -1193,308 +951,8 @@
           "Name": "Id",
           "JsonName": "id",
           "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Labels",
-          "JsonName": "labels",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Name",
-          "JsonName": "name",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Port",
-          "JsonName": "port",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Protocol",
-          "JsonName": "protocol",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "PublicIp",
-          "JsonName": "publicIp",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "SocketPath",
-          "JsonName": "socketPath",
-          "Description": "the Docker socket, for a socket connection; sent for the others too, and means nothing there",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "TlsCa",
-          "JsonName": "tlsCa",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "TlsCert",
-          "JsonName": "tlsCert",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "TlsSkipVerify",
-          "JsonName": "tlsSkipVerify",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "UpdatedAt",
-          "JsonName": "updatedAt",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetEnvironmentsByIdTimezoneResponse",
-      "Fields": [
-        {
-          "Name": "Timezone",
-          "JsonName": "timezone",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "GetEnvironmentsByIdUpdateCheckResponse",
-      "Fields": [
-        {
-          "Name": "Settings",
-          "JsonName": "settings",
-          "Type": {
-            "Type": "Reference",
-            "ReferenceName": "GetEnvironmentsByIdUpdateCheckResponseSettings"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "GetEnvironmentsByIdUpdateCheckResponseSettings",
-      "Fields": [
-        {
-          "Name": "AutoUpdate",
-          "JsonName": "autoUpdate",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Cron",
-          "JsonName": "cron",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Enabled",
-          "JsonName": "enabled",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "VulnerabilityCriteria",
-          "JsonName": "vulnerabilityCriteria",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "GetEnvironmentsDetectSocketResponse",
-      "Fields": [
-        {
-          "Name": "Homedir",
-          "JsonName": "homedir",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Sockets",
-          "JsonName": "sockets",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "Reference",
-              "ReferenceName": "GetEnvironmentsDetectSocketResponseSockets"
-            }
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "GetEnvironmentsDetectSocketResponseSockets",
-      "Fields": [
-        {
-          "Name": "Exists",
-          "JsonName": "exists",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Name",
-          "JsonName": "name",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Path",
-          "JsonName": "path",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "GetEnvironmentsResponse",
-      "Fields": [
-        {
-          "Name": "CollectActivity",
-          "JsonName": "collectActivity",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "CollectMetrics",
-          "JsonName": "collectMetrics",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "ConnectionType",
-          "JsonName": "connectionType",
-          "Description": "how the host is reached: socket, direct, hawser-standard or hawser-edge",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "CreatedAt",
-          "JsonName": "createdAt",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "HasHawserToken",
-          "JsonName": "hasHawserToken",
-          "Description": "an agent's token is kept for the host; the token itself is never sent",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "HasTlsKey",
-          "JsonName": "hasTlsKey",
-          "Description": "a TLS key is kept for the host; the key itself is never sent",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "HawserAgentId",
-          "JsonName": "hawserAgentId",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "HawserAgentName",
-          "JsonName": "hawserAgentName",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "HawserLastSeen",
-          "JsonName": "hawserLastSeen",
-          "Description": "when an agent that calls in was last heard from; empty for every other connection",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "HawserVersion",
-          "JsonName": "hawserVersion",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "HighlightChanges",
-          "JsonName": "highlightChanges",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "Host",
-          "JsonName": "host",
-          "Description": "the host or its agent, for every connection but a socket",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Icon",
-          "JsonName": "icon",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Id",
-          "JsonName": "id",
-          "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           },
           "Required": true
         },
@@ -1534,7 +992,8 @@
           "Name": "Protocol",
           "JsonName": "protocol",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "EnvironmentProtocol"
           }
         },
         {
@@ -1598,654 +1057,13 @@
           "Name": "UpdatedAt",
           "JsonName": "updatedAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         }
       ]
     },
     {
-      "Name": "PostEnvironmentsByIdDiskWarningRequest",
-      "Fields": [
-        {
-          "Name": "Enabled",
-          "JsonName": "enabled",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "Mode",
-          "JsonName": "mode",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Threshold",
-          "JsonName": "threshold",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "ThresholdGb",
-          "JsonName": "thresholdGb",
-          "Type": {
-            "Type": "Integer"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostEnvironmentsByIdDiskWarningResponse",
-      "Fields": [
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostEnvironmentsByIdIconRequest",
-      "Fields": [
-        {
-          "Name": "Image",
-          "JsonName": "image",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostEnvironmentsByIdIconResponse",
-      "Fields": [
-        {
-          "Name": "Icon",
-          "JsonName": "icon",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostEnvironmentsByIdImagePruneRequest",
-      "Fields": [
-        {
-          "Name": "CronExpression",
-          "JsonName": "cronExpression",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Enabled",
-          "JsonName": "enabled",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "PruneMode",
-          "JsonName": "pruneMode",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostEnvironmentsByIdImagePruneResponse",
-      "Fields": [
-        {
-          "Name": "Settings",
-          "JsonName": "settings",
-          "Type": {
-            "Type": "Reference",
-            "ReferenceName": "PostEnvironmentsByIdImagePruneResponseSettings"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostEnvironmentsByIdImagePruneResponseSettings",
-      "Fields": [
-        {
-          "Name": "CronExpression",
-          "JsonName": "cronExpression",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Enabled",
-          "JsonName": "enabled",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "PruneMode",
-          "JsonName": "pruneMode",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostEnvironmentsByIdNotificationsRequest",
-      "Fields": [
-        {
-          "Name": "Enabled",
-          "JsonName": "enabled",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "EventTypes",
-          "JsonName": "eventTypes",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "NotificationId",
-          "JsonName": "notificationId",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostEnvironmentsByIdNotificationsResponse",
-      "Fields": [
-        {
-          "Name": "ChannelEnabled",
-          "JsonName": "channelEnabled",
-          "Description": "whether the channel itself is switched on: a link that is on sends nothing through a channel that is off",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "ChannelName",
-          "JsonName": "channelName",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "ChannelType",
-          "JsonName": "channelType",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "CreatedAt",
-          "JsonName": "createdAt",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Enabled",
-          "JsonName": "enabled",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "EnvironmentId",
-          "JsonName": "environmentId",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "EventTypes",
-          "JsonName": "eventTypes",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Id",
-          "JsonName": "id",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        },
-        {
-          "Name": "NotificationId",
-          "JsonName": "notificationId",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        },
-        {
-          "Name": "UpdatedAt",
-          "JsonName": "updatedAt",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostEnvironmentsByIdRemoteStacksDirRequest",
-      "Fields": [
-        {
-          "Name": "RemoteStacksDir",
-          "JsonName": "remoteStacksDir",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostEnvironmentsByIdRemoteStacksDirResponse",
-      "Fields": [
-        {
-          "Name": "RemoteStacksDir",
-          "JsonName": "remoteStacksDir",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostEnvironmentsByIdTestResponse",
-      "Fields": [
-        {
-          "Name": "Error",
-          "JsonName": "error",
-          "Description": "why the host could not be reached, when success is false",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Hawser",
-          "JsonName": "hawser",
-          "Type": {
-            "Type": "Dictionary",
-            "NestedItem": {
-              "Type": "Any"
-            }
-          }
-        },
-        {
-          "Name": "Info",
-          "JsonName": "info",
-          "Type": {
-            "Type": "Reference",
-            "ReferenceName": "PostEnvironmentsByIdTestResponseInfo"
-          }
-        },
-        {
-          "Name": "IsEdgeMode",
-          "JsonName": "isEdgeMode",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostEnvironmentsByIdTestResponseInfo",
-      "Fields": [
-        {
-          "Name": "Containers",
-          "JsonName": "containers",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Engine",
-          "JsonName": "engine",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Images",
-          "JsonName": "images",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Name",
-          "JsonName": "name",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "ServerVersion",
-          "JsonName": "serverVersion",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostEnvironmentsByIdTimezoneRequest",
-      "Fields": [
-        {
-          "Name": "Timezone",
-          "JsonName": "timezone",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostEnvironmentsByIdTimezoneResponse",
-      "Fields": [
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Timezone",
-          "JsonName": "timezone",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostEnvironmentsByIdUpdateCheckRequest",
-      "Fields": [
-        {
-          "Name": "AutoUpdate",
-          "JsonName": "autoUpdate",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "Cron",
-          "JsonName": "cron",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Enabled",
-          "JsonName": "enabled",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "VulnerabilityCriteria",
-          "JsonName": "vulnerabilityCriteria",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostEnvironmentsByIdUpdateCheckResponse",
-      "Fields": [
-        {
-          "Name": "Settings",
-          "JsonName": "settings",
-          "Type": {
-            "Type": "Reference",
-            "ReferenceName": "PostEnvironmentsByIdUpdateCheckResponseSettings"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostEnvironmentsByIdUpdateCheckResponseSettings",
-      "Fields": [
-        {
-          "Name": "AutoUpdate",
-          "JsonName": "autoUpdate",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Cron",
-          "JsonName": "cron",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Enabled",
-          "JsonName": "enabled",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "VulnerabilityCriteria",
-          "JsonName": "vulnerabilityCriteria",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostEnvironmentsRequest",
-      "Fields": [
-        {
-          "Name": "CollectActivity",
-          "JsonName": "collectActivity",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "CollectMetrics",
-          "JsonName": "collectMetrics",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "ConnectionType",
-          "JsonName": "connectionType",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "HawserToken",
-          "JsonName": "hawserToken",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "HighlightChanges",
-          "JsonName": "highlightChanges",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "Host",
-          "JsonName": "host",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Icon",
-          "JsonName": "icon",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Labels",
-          "JsonName": "labels",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Name",
-          "JsonName": "name",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Port",
-          "JsonName": "port",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Protocol",
-          "JsonName": "protocol",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "PublicIp",
-          "JsonName": "publicIp",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "SocketPath",
-          "JsonName": "socketPath",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "TlsCa",
-          "JsonName": "tlsCa",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "TlsCert",
-          "JsonName": "tlsCert",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "TlsKey",
-          "JsonName": "tlsKey",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "TlsSkipVerify",
-          "JsonName": "tlsSkipVerify",
-          "Type": {
-            "Type": "Boolean"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostEnvironmentsResponse",
+      "Name": "GetEnvironmentsByIdAnswer",
       "Fields": [
         {
           "Name": "CollectActivity",
@@ -2266,14 +1084,15 @@
           "JsonName": "connectionType",
           "Description": "how the host is reached: socket, direct, hawser-standard or hawser-edge",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "ConnectionType"
           }
         },
         {
           "Name": "CreatedAt",
           "JsonName": "createdAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -2311,7 +1130,7 @@
           "JsonName": "hawserLastSeen",
           "Description": "when an agent that calls in was last heard from; empty for every other connection",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -2347,15 +1166,18 @@
           "Name": "Id",
           "JsonName": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
           "Name": "Labels",
           "JsonName": "labels",
-          "Description": "the labels given, as the text of a JSON list: [\"a\",\"b\"]; every other call answers the list itself",
           "Type": {
-            "Type": "String"
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
           }
         },
         {
@@ -2376,7 +1198,8 @@
           "Name": "Protocol",
           "JsonName": "protocol",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "EnvironmentProtocol"
           }
         },
         {
@@ -2419,19 +1242,143 @@
           "Name": "UpdatedAt",
           "JsonName": "updatedAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         }
       ]
     },
     {
-      "Name": "PostEnvironmentsTestRequest",
+      "Name": "GetEnvironmentsByIdDiskWarningAnswer",
       "Fields": [
         {
-          "Name": "ConnectionType",
-          "JsonName": "connectionType",
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Mode",
+          "JsonName": "mode",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "DiskWarningMode"
+          },
+          "Required": true
+        },
+        {
+          "Name": "PercentageSupported",
+          "JsonName": "percentageSupported",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "StorageDriver",
+          "JsonName": "storageDriver",
           "Type": {
             "Type": "String"
+          }
+        },
+        {
+          "Name": "Threshold",
+          "JsonName": "threshold",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ThresholdGb",
+          "JsonName": "thresholdGb",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetEnvironmentsByIdImagePruneAnswer",
+      "Fields": [
+        {
+          "Name": "Settings",
+          "JsonName": "settings",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetEnvironmentsByIdImagePruneAnswerSettings"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetEnvironmentsByIdImagePruneAnswerSettings",
+      "Fields": [
+        {
+          "Name": "CronExpression",
+          "JsonName": "cronExpression",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "PruneMode",
+          "JsonName": "pruneMode",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetEnvironmentsByIdNotificationsAnswer",
+      "Fields": [
+        {
+          "Name": "ChannelEnabled",
+          "JsonName": "channelEnabled",
+          "Description": "whether the channel itself is switched on: a link that is on sends nothing through a channel that is off",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ChannelName",
+          "JsonName": "channelName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ChannelType",
+          "JsonName": "channelType",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
           },
           "Required": true
         },
@@ -2439,19 +1386,379 @@
           "Name": "EnvironmentId",
           "JsonName": "environmentId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
-          "Name": "HawserToken",
-          "JsonName": "hawserToken",
+          "Name": "EventTypes",
+          "JsonName": "eventTypes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "NotificationId",
+          "JsonName": "notificationId",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "NotificationID"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetEnvironmentsByIdNotificationsByNotificationIdAnswer",
+      "Fields": [
+        {
+          "Name": "ChannelEnabled",
+          "JsonName": "channelEnabled",
+          "Description": "whether the channel itself is switched on: a link that is on sends nothing through a channel that is off",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ChannelName",
+          "JsonName": "channelName",
           "Type": {
             "Type": "String"
           }
         },
         {
+          "Name": "ChannelType",
+          "JsonName": "channelType",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
+          }
+        },
+        {
+          "Name": "EventTypes",
+          "JsonName": "eventTypes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "NotificationId",
+          "JsonName": "notificationId",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "NotificationID"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetEnvironmentsByIdRemoteStacksDirAnswer",
+      "Fields": [
+        {
+          "Name": "RemoteStacksDir",
+          "JsonName": "remoteStacksDir",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetEnvironmentsByIdTimezoneAnswer",
+      "Fields": [
+        {
+          "Name": "Timezone",
+          "JsonName": "timezone",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetEnvironmentsByIdUpdateCheckAnswer",
+      "Fields": [
+        {
+          "Name": "Settings",
+          "JsonName": "settings",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetEnvironmentsByIdUpdateCheckAnswerSettings"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetEnvironmentsByIdUpdateCheckAnswerSettings",
+      "Fields": [
+        {
+          "Name": "AutoUpdate",
+          "JsonName": "autoUpdate",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Cron",
+          "JsonName": "cron",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "VulnerabilityCriteria",
+          "JsonName": "vulnerabilityCriteria",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetEnvironmentsDetectSocketAnswer",
+      "Fields": [
+        {
+          "Name": "Homedir",
+          "JsonName": "homedir",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Sockets",
+          "JsonName": "sockets",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetEnvironmentsDetectSocketAnswerSockets"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetEnvironmentsDetectSocketAnswerSockets",
+      "Fields": [
+        {
+          "Name": "Exists",
+          "JsonName": "exists",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsAnswer",
+      "Fields": [
+        {
+          "Name": "CollectActivity",
+          "JsonName": "collectActivity",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "CollectMetrics",
+          "JsonName": "collectMetrics",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ConnectionType",
+          "JsonName": "connectionType",
+          "Description": "how the host is reached: socket, direct, hawser-standard or hawser-edge",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "ConnectionType"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "HasHawserToken",
+          "JsonName": "hasHawserToken",
+          "Description": "an agent's token is kept for the host; the token itself is never sent",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "HasTlsKey",
+          "JsonName": "hasTlsKey",
+          "Description": "a TLS key is kept for the host; the key itself is never sent",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "HawserAgentId",
+          "JsonName": "hawserAgentId",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HawserAgentName",
+          "JsonName": "hawserAgentName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HawserLastSeen",
+          "JsonName": "hawserLastSeen",
+          "Description": "when an agent that calls in was last heard from; empty for every other connection",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "HawserVersion",
+          "JsonName": "hawserVersion",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HighlightChanges",
+          "JsonName": "highlightChanges",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
           "Name": "Host",
           "JsonName": "host",
+          "Description": "the host or its agent, for every connection but a socket",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Icon",
+          "JsonName": "icon",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
+          }
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Description": "the labels given, as the text of a JSON list: [\"a\",\"b\"]; every other call answers the list itself",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
           "Type": {
             "Type": "String"
           }
@@ -2466,6 +1773,662 @@
         {
           "Name": "Protocol",
           "JsonName": "protocol",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "EnvironmentProtocol"
+          }
+        },
+        {
+          "Name": "PublicIp",
+          "JsonName": "publicIp",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SocketPath",
+          "JsonName": "socketPath",
+          "Description": "the Docker socket, for a socket connection; sent for the others too, and means nothing there",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TlsCa",
+          "JsonName": "tlsCa",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TlsCert",
+          "JsonName": "tlsCert",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TlsSkipVerify",
+          "JsonName": "tlsSkipVerify",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsByIdDiskWarningAnswer",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsByIdDiskWarningRequest",
+      "Fields": [
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Mode",
+          "JsonName": "mode",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "DiskWarningMode"
+          }
+        },
+        {
+          "Name": "Threshold",
+          "JsonName": "threshold",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ThresholdGb",
+          "JsonName": "thresholdGb",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsByIdIconAnswer",
+      "Fields": [
+        {
+          "Name": "Icon",
+          "JsonName": "icon",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsByIdIconRequest",
+      "Fields": [
+        {
+          "Name": "Image",
+          "JsonName": "image",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsByIdImagePruneAnswer",
+      "Fields": [
+        {
+          "Name": "Settings",
+          "JsonName": "settings",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostEnvironmentsByIdImagePruneAnswerSettings"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsByIdImagePruneAnswerSettings",
+      "Fields": [
+        {
+          "Name": "CronExpression",
+          "JsonName": "cronExpression",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "PruneMode",
+          "JsonName": "pruneMode",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsByIdImagePruneRequest",
+      "Fields": [
+        {
+          "Name": "CronExpression",
+          "JsonName": "cronExpression",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "PruneMode",
+          "JsonName": "pruneMode",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsByIdNotificationsAnswer",
+      "Fields": [
+        {
+          "Name": "ChannelEnabled",
+          "JsonName": "channelEnabled",
+          "Description": "whether the channel itself is switched on: a link that is on sends nothing through a channel that is off",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ChannelName",
+          "JsonName": "channelName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ChannelType",
+          "JsonName": "channelType",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
+          }
+        },
+        {
+          "Name": "EventTypes",
+          "JsonName": "eventTypes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "NotificationId",
+          "JsonName": "notificationId",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "NotificationID"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsByIdNotificationsRequest",
+      "Fields": [
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "EventTypes",
+          "JsonName": "eventTypes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "NotificationId",
+          "JsonName": "notificationId",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "NotificationID"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsByIdRemoteStacksDirAnswer",
+      "Fields": [
+        {
+          "Name": "RemoteStacksDir",
+          "JsonName": "remoteStacksDir",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsByIdRemoteStacksDirRequest",
+      "Fields": [
+        {
+          "Name": "RemoteStacksDir",
+          "JsonName": "remoteStacksDir",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsByIdTestAnswer",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Description": "why the host could not be reached, when success is false",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Hawser",
+          "JsonName": "hawser",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Info",
+          "JsonName": "info",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostEnvironmentsByIdTestAnswerInfo"
+          }
+        },
+        {
+          "Name": "IsEdgeMode",
+          "JsonName": "isEdgeMode",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsByIdTestAnswerInfo",
+      "Fields": [
+        {
+          "Name": "Containers",
+          "JsonName": "containers",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Engine",
+          "JsonName": "engine",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Images",
+          "JsonName": "images",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ServerVersion",
+          "JsonName": "serverVersion",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsByIdTimezoneAnswer",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Timezone",
+          "JsonName": "timezone",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsByIdTimezoneRequest",
+      "Fields": [
+        {
+          "Name": "Timezone",
+          "JsonName": "timezone",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsByIdUpdateCheckAnswer",
+      "Fields": [
+        {
+          "Name": "Settings",
+          "JsonName": "settings",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostEnvironmentsByIdUpdateCheckAnswerSettings"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsByIdUpdateCheckAnswerSettings",
+      "Fields": [
+        {
+          "Name": "AutoUpdate",
+          "JsonName": "autoUpdate",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Cron",
+          "JsonName": "cron",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "VulnerabilityCriteria",
+          "JsonName": "vulnerabilityCriteria",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsByIdUpdateCheckRequest",
+      "Fields": [
+        {
+          "Name": "AutoUpdate",
+          "JsonName": "autoUpdate",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Cron",
+          "JsonName": "cron",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "VulnerabilityCriteria",
+          "JsonName": "vulnerabilityCriteria",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostEnvironmentsRequest",
+      "Fields": [
+        {
+          "Name": "CollectActivity",
+          "JsonName": "collectActivity",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "CollectMetrics",
+          "JsonName": "collectMetrics",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ConnectionType",
+          "JsonName": "connectionType",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "ConnectionType"
+          }
+        },
+        {
+          "Name": "HawserToken",
+          "JsonName": "hawserToken",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HighlightChanges",
+          "JsonName": "highlightChanges",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Host",
+          "JsonName": "host",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Icon",
+          "JsonName": "icon",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Port",
+          "JsonName": "port",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Protocol",
+          "JsonName": "protocol",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "EnvironmentProtocol"
+          }
+        },
+        {
+          "Name": "PublicIp",
+          "JsonName": "publicIp",
           "Type": {
             "Type": "String"
           }
@@ -2508,7 +2471,7 @@
       ]
     },
     {
-      "Name": "PostEnvironmentsTestResponse",
+      "Name": "PostEnvironmentsTestAnswer",
       "Fields": [
         {
           "Name": "Error",
@@ -2533,7 +2496,7 @@
           "JsonName": "info",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "PostEnvironmentsTestResponseInfo"
+            "ReferenceName": "PostEnvironmentsTestAnswerInfo"
           }
         },
         {
@@ -2547,7 +2510,7 @@
       ]
     },
     {
-      "Name": "PostEnvironmentsTestResponseInfo",
+      "Name": "PostEnvironmentsTestAnswerInfo",
       "Fields": [
         {
           "Name": "Containers",
@@ -2594,7 +2557,278 @@
       ]
     },
     {
-      "Name": "PutEnvironmentsByIdImagePruneResponse",
+      "Name": "PostEnvironmentsTestRequest",
+      "Fields": [
+        {
+          "Name": "ConnectionType",
+          "JsonName": "connectionType",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "ConnectionType"
+          },
+          "Required": true
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
+          }
+        },
+        {
+          "Name": "HawserToken",
+          "JsonName": "hawserToken",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Host",
+          "JsonName": "host",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Port",
+          "JsonName": "port",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Protocol",
+          "JsonName": "protocol",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "EnvironmentProtocol"
+          }
+        },
+        {
+          "Name": "SocketPath",
+          "JsonName": "socketPath",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TlsCa",
+          "JsonName": "tlsCa",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TlsCert",
+          "JsonName": "tlsCert",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TlsKey",
+          "JsonName": "tlsKey",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TlsSkipVerify",
+          "JsonName": "tlsSkipVerify",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutEnvironmentsByIdAnswer",
+      "Fields": [
+        {
+          "Name": "CollectActivity",
+          "JsonName": "collectActivity",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "CollectMetrics",
+          "JsonName": "collectMetrics",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ConnectionType",
+          "JsonName": "connectionType",
+          "Description": "how the host is reached: socket, direct, hawser-standard or hawser-edge",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "ConnectionType"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "HasHawserToken",
+          "JsonName": "hasHawserToken",
+          "Description": "an agent's token is kept for the host; the token itself is never sent",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "HasTlsKey",
+          "JsonName": "hasTlsKey",
+          "Description": "a TLS key is kept for the host; the key itself is never sent",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "HawserAgentId",
+          "JsonName": "hawserAgentId",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HawserAgentName",
+          "JsonName": "hawserAgentName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HawserLastSeen",
+          "JsonName": "hawserLastSeen",
+          "Description": "when an agent that calls in was last heard from; empty for every other connection",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "HawserVersion",
+          "JsonName": "hawserVersion",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HighlightChanges",
+          "JsonName": "highlightChanges",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Host",
+          "JsonName": "host",
+          "Description": "the host or its agent, for every connection but a socket",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Icon",
+          "JsonName": "icon",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
+          }
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Port",
+          "JsonName": "port",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Protocol",
+          "JsonName": "protocol",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "EnvironmentProtocol"
+          }
+        },
+        {
+          "Name": "PublicIp",
+          "JsonName": "publicIp",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SocketPath",
+          "JsonName": "socketPath",
+          "Description": "the Docker socket, for a socket connection; sent for the others too, and means nothing there",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TlsCa",
+          "JsonName": "tlsCa",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TlsCert",
+          "JsonName": "tlsCert",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TlsSkipVerify",
+          "JsonName": "tlsSkipVerify",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutEnvironmentsByIdImagePruneAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -2607,29 +2841,7 @@
       ]
     },
     {
-      "Name": "PutEnvironmentsByIdNotificationsByNotificationIdRequest",
-      "Fields": [
-        {
-          "Name": "Enabled",
-          "JsonName": "enabled",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "EventTypes",
-          "JsonName": "eventTypes",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PutEnvironmentsByIdNotificationsByNotificationIdResponse",
+      "Name": "PutEnvironmentsByIdNotificationsByNotificationIdAnswer",
       "Fields": [
         {
           "Name": "ChannelEnabled",
@@ -2657,7 +2869,7 @@
           "Name": "CreatedAt",
           "JsonName": "createdAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -2672,7 +2884,8 @@
           "Name": "EnvironmentId",
           "JsonName": "environmentId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -2697,7 +2910,8 @@
           "Name": "NotificationId",
           "JsonName": "notificationId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "NotificationID"
           },
           "Required": true
         },
@@ -2705,7 +2919,29 @@
           "Name": "UpdatedAt",
           "JsonName": "updatedAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutEnvironmentsByIdNotificationsByNotificationIdRequest",
+      "Fields": [
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "EventTypes",
+          "JsonName": "eventTypes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
           }
         }
       ]
@@ -2731,7 +2967,8 @@
           "Name": "ConnectionType",
           "JsonName": "connectionType",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "ConnectionType"
           }
         },
         {
@@ -2790,7 +3027,8 @@
           "Name": "Protocol",
           "JsonName": "protocol",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "EnvironmentProtocol"
           }
         },
         {
@@ -2836,186 +3074,56 @@
           }
         }
       ]
+    }
+  ],
+  "Constants": [
+    {
+      "Name": "ConnectionType",
+      "SchemaName": "ConnectionType",
+      "Values": [
+        {
+          "Name": "ConnectionTypeSocket",
+          "Value": "socket"
+        },
+        {
+          "Name": "ConnectionTypeDirect",
+          "Value": "direct"
+        },
+        {
+          "Name": "ConnectionTypeHawserStandard",
+          "Value": "hawser-standard"
+        },
+        {
+          "Name": "ConnectionTypeHawserEdge",
+          "Value": "hawser-edge"
+        }
+      ]
     },
     {
-      "Name": "PutEnvironmentsByIdResponse",
-      "Fields": [
+      "Name": "DiskWarningMode",
+      "SchemaName": "DiskWarningMode",
+      "Values": [
         {
-          "Name": "CollectActivity",
-          "JsonName": "collectActivity",
-          "Type": {
-            "Type": "Boolean"
-          }
+          "Name": "DiskWarningModePercentage",
+          "Value": "percentage"
         },
         {
-          "Name": "CollectMetrics",
-          "JsonName": "collectMetrics",
-          "Type": {
-            "Type": "Boolean"
-          }
+          "Name": "DiskWarningModeAbsolute",
+          "Value": "absolute"
+        }
+      ]
+    },
+    {
+      "Name": "EnvironmentProtocol",
+      "SchemaName": "EnvironmentProtocol",
+      "Values": [
+        {
+          "Name": "EnvironmentProtocolHttp",
+          "Value": "http"
         },
         {
-          "Name": "ConnectionType",
-          "JsonName": "connectionType",
-          "Description": "how the host is reached: socket, direct, hawser-standard or hawser-edge",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "CreatedAt",
-          "JsonName": "createdAt",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "HasHawserToken",
-          "JsonName": "hasHawserToken",
-          "Description": "an agent's token is kept for the host; the token itself is never sent",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "HasTlsKey",
-          "JsonName": "hasTlsKey",
-          "Description": "a TLS key is kept for the host; the key itself is never sent",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "HawserAgentId",
-          "JsonName": "hawserAgentId",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "HawserAgentName",
-          "JsonName": "hawserAgentName",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "HawserLastSeen",
-          "JsonName": "hawserLastSeen",
-          "Description": "when an agent that calls in was last heard from; empty for every other connection",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "HawserVersion",
-          "JsonName": "hawserVersion",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "HighlightChanges",
-          "JsonName": "highlightChanges",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "Host",
-          "JsonName": "host",
-          "Description": "the host or its agent, for every connection but a socket",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Icon",
-          "JsonName": "icon",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Id",
-          "JsonName": "id",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Labels",
-          "JsonName": "labels",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Name",
-          "JsonName": "name",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Port",
-          "JsonName": "port",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Protocol",
-          "JsonName": "protocol",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "PublicIp",
-          "JsonName": "publicIp",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "SocketPath",
-          "JsonName": "socketPath",
-          "Description": "the Docker socket, for a socket connection; sent for the others too, and means nothing there",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "TlsCa",
-          "JsonName": "tlsCa",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "TlsCert",
-          "JsonName": "tlsCert",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "TlsSkipVerify",
-          "JsonName": "tlsSkipVerify",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "UpdatedAt",
-          "JsonName": "updatedAt",
-          "Type": {
-            "Type": "String"
-          }
+          "Name": "EnvironmentProtocolHttps",
+          "Value": "https"
         }
       ]
     }

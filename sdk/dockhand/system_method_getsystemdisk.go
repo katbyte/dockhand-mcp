@@ -4,41 +4,64 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetSystemDiskOperationResponse is the result of GetSystemDisk.
-type GetSystemDiskOperationResponse struct {
+// GetSystemDiskResponse is the result of GetSystemDisk.
+//
+// Answer is the GetSystemDiskAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetSystemDiskResponse struct {
 	HttpResponse *http.Response
-	Model        *GetSystemDiskResponse
+	Answer       *GetSystemDiskAnswer
+	*GetSystemDiskAnswer
 }
 
-// GetSystemDiskOperationOptions holds the query and header parameters of GetSystemDisk.
-type GetSystemDiskOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetSystemDiskResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetSystemDiskAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetSystemDiskResponse) Record() (GetSystemDiskAnswer, error) {
+	if r.Answer == nil {
+		return GetSystemDiskAnswer{}, errors.New("GetSystemDisk answered no GetSystemDiskAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetSystemDiskOptions holds the query and header parameters of GetSystemDisk.
+type GetSystemDiskOptions struct {
 	// ID of the environment to query disk usage for (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetSystemDiskOperationOptions) ToHeaders() *client.Headers {
+func (o GetSystemDiskOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetSystemDiskOperationOptions) ToQuery() *client.QueryParams {
+func (o GetSystemDiskOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetSystemDisk calls GET /api/system/disk. Return Docker disk usage (df) for an environment, or null when collection is disabled, times out, or fails.
-func (c Client) GetSystemDisk(ctx context.Context, options GetSystemDiskOperationOptions) (result GetSystemDiskOperationResponse, err error) {
+func (c Client) GetSystemDisk(ctx context.Context, options GetSystemDiskOptions) (result GetSystemDiskResponse, err error) {
+	result.GetSystemDiskAnswer = &GetSystemDiskAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -62,11 +85,12 @@ func (c Client) GetSystemDisk(ctx context.Context, options GetSystemDiskOperatio
 		return
 	}
 
-	var model GetSystemDiskResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetSystemDiskAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetSystemDiskAnswer = result.Answer
 
 	return
 }

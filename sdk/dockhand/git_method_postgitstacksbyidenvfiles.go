@@ -4,27 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostGitStacksByIdEnvFilesOperationResponse is the result of PostGitStacksByIdEnvFiles.
-type PostGitStacksByIdEnvFilesOperationResponse struct {
+// PostGitStacksByIdEnvFilesResponse is the result of PostGitStacksByIdEnvFiles.
+//
+// Answer is the PostGitStacksByIdEnvFilesAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostGitStacksByIdEnvFilesResponse struct {
 	HttpResponse *http.Response
-	Model        *PostGitStacksByIdEnvFilesResponse
+	Answer       *PostGitStacksByIdEnvFilesAnswer
+	*PostGitStacksByIdEnvFilesAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostGitStacksByIdEnvFilesResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostGitStacksByIdEnvFilesAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostGitStacksByIdEnvFilesResponse) Record() (PostGitStacksByIdEnvFilesAnswer, error) {
+	if r.Answer == nil {
+		return PostGitStacksByIdEnvFilesAnswer{}, errors.New("PostGitStacksByIdEnvFiles answered no PostGitStacksByIdEnvFilesAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostGitStacksByIdEnvFiles calls POST /api/git/stacks/{id}/env-files. Read and parse one .env file from a git stack's repository into a key/value map.
-func (c Client) PostGitStacksByIdEnvFiles(ctx context.Context, id int, input PostGitStacksByIdEnvFilesRequest) (result PostGitStacksByIdEnvFilesOperationResponse, err error) {
+func (c Client) PostGitStacksByIdEnvFiles(ctx context.Context, id GitStackID, input PostGitStacksByIdEnvFilesRequest) (result PostGitStacksByIdEnvFilesResponse, err error) {
+	result.PostGitStacksByIdEnvFilesAnswer = &PostGitStacksByIdEnvFilesAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
-		Path:       fmt.Sprintf("/api/git/stacks/%d/env-files", id),
+		Path:       fmt.Sprintf("/api/git/stacks/%s/env-files", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -45,11 +70,12 @@ func (c Client) PostGitStacksByIdEnvFiles(ctx context.Context, id int, input Pos
 		return
 	}
 
-	var model PostGitStacksByIdEnvFilesResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostGitStacksByIdEnvFilesAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostGitStacksByIdEnvFilesAnswer = result.Answer
 
 	return
 }

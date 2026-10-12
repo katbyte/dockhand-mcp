@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostStacksScanOperationResponse is the result of PostStacksScan.
-type PostStacksScanOperationResponse struct {
+// PostStacksScanResponse is the result of PostStacksScan.
+//
+// Answer is the PostStacksScanAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostStacksScanResponse struct {
 	HttpResponse *http.Response
-	Model        *PostStacksScanResponse
+	Answer       *PostStacksScanAnswer
+	*PostStacksScanAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostStacksScanResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostStacksScanAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostStacksScanResponse) Record() (PostStacksScanAnswer, error) {
+	if r.Answer == nil {
+		return PostStacksScanAnswer{}, errors.New("PostStacksScan answered no PostStacksScanAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostStacksScan calls POST /api/stacks/scan. Scan a given filesystem path (or all configured external paths when none is given) for compose stacks, flagging which discovered stacks are already running.
-func (c Client) PostStacksScan(ctx context.Context, input PostStacksScanRequest) (result PostStacksScanOperationResponse, err error) {
+func (c Client) PostStacksScan(ctx context.Context, input PostStacksScanRequest) (result PostStacksScanResponse, err error) {
+	result.PostStacksScanAnswer = &PostStacksScanAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostStacksScan(ctx context.Context, input PostStacksScanRequest)
 		return
 	}
 
-	var model PostStacksScanResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostStacksScanAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostStacksScanAnswer = result.Answer
 
 	return
 }

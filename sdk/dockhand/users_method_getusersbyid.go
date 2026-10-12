@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetUsersByIdOperationResponse is the result of GetUsersById.
-type GetUsersByIdOperationResponse struct {
+// GetUsersByIdResponse is the result of GetUsersById.
+//
+// Answer is the GetUsersByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetUsersByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *GetUsersByIdResponse
+	Answer       *GetUsersByIdAnswer
+	*GetUsersByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetUsersByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetUsersByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetUsersByIdResponse) Record() (GetUsersByIdAnswer, error) {
+	if r.Answer == nil {
+		return GetUsersByIdAnswer{}, errors.New("GetUsersById answered no GetUsersByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetUsersById calls GET /api/users/{id}. Get a single user by id (password hash is never returned; isAdmin is derived from role assignment).
-func (c Client) GetUsersById(ctx context.Context, id int) (result GetUsersByIdOperationResponse, err error) {
+func (c Client) GetUsersById(ctx context.Context, id UserID) (result GetUsersByIdResponse, err error) {
+	result.GetUsersByIdAnswer = &GetUsersByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
-		Path:       fmt.Sprintf("/api/users/%d", id),
+		Path:       fmt.Sprintf("/api/users/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) GetUsersById(ctx context.Context, id int) (result GetUsersByIdOp
 		return
 	}
 
-	var model GetUsersByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetUsersByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetUsersByIdAnswer = result.Answer
 
 	return
 }

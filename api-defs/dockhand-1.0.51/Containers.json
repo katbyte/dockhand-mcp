@@ -25,7 +25,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -42,7 +43,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteContainersByIdResponse"
+          "ReferenceName": "DeleteContainersByIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -72,7 +73,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -90,7 +92,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteContainersByIdFilesDeleteResponse"
+          "ReferenceName": "DeleteContainersByIdFilesDeleteAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -111,7 +113,8 @@
           "Description": "The target environment ID (required) (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -128,7 +131,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteContainersPendingUpdatesResponse"
+          "ReferenceName": "DeleteContainersPendingUpdatesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -148,7 +151,8 @@
           "In": "Query",
           "Description": "Environment id — an empty array is returned if omitted (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -167,7 +171,7 @@
           "Type": "List",
           "NestedItem": {
             "Type": "Reference",
-            "ReferenceName": "GetContainersResponse"
+            "ReferenceName": "GetContainersAnswer"
           }
         }
       },
@@ -198,7 +202,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -235,7 +240,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -243,7 +249,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetContainersByIdComposeResponse"
+          "ReferenceName": "GetContainersByIdComposeAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -273,7 +279,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -299,7 +306,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetContainersByIdFilesResponse"
+          "ReferenceName": "GetContainersByIdFilesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -329,7 +336,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -347,7 +355,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetContainersByIdFilesContentResponse"
+          "ReferenceName": "GetContainersByIdFilesContentAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -377,7 +385,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -433,7 +442,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -470,7 +480,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -505,7 +516,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetContainersByIdLogsResponse"
+          "ReferenceName": "GetContainersByIdLogsAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -535,7 +546,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -599,7 +611,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -607,7 +620,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetContainersByIdShellsResponse"
+          "ReferenceName": "GetContainersByIdShellsAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -637,7 +650,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -645,7 +659,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetContainersByIdStatsResponse"
+          "ReferenceName": "GetContainersByIdStatsAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -675,7 +689,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -683,7 +698,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetContainersByIdTopResponse"
+          "ReferenceName": "GetContainersByIdTopAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -713,7 +728,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -731,7 +747,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetContainersByIdVersionNotesResponse"
+          "ReferenceName": "GetContainersByIdVersionNotesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -752,7 +768,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -760,7 +777,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetContainersCheckUpdatesResponse"
+          "ReferenceName": "GetContainersCheckUpdatesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -781,7 +798,8 @@
           "Description": "The target environment ID (required) (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -789,7 +807,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetContainersPendingUpdatesResponse"
+          "ReferenceName": "GetContainersPendingUpdatesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -810,7 +828,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -820,7 +839,7 @@
           "Type": "Dictionary",
           "NestedItem": {
             "Type": "Reference",
-            "ReferenceName": "GetContainersSizesResponse"
+            "ReferenceName": "GetContainersSizesAnswer"
           }
         }
       },
@@ -842,7 +861,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -861,7 +881,7 @@
           "Type": "List",
           "NestedItem": {
             "Type": "Reference",
-            "ReferenceName": "GetContainersStatsResponse"
+            "ReferenceName": "GetContainersStatsAnswer"
           }
         }
       },
@@ -882,7 +902,8 @@
           "In": "Query",
           "Description": "Environment id — an immediate \"done\" event is sent if omitted or no environments are configured (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -909,7 +930,8 @@
           "In": "Query",
           "Description": "Environment id (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -924,7 +946,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostContainersResponse"
+          "ReferenceName": "PostContainersAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -945,7 +967,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -960,7 +983,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostContainersBatchUpdateResponse"
+          "ReferenceName": "PostContainersBatchUpdateAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -981,7 +1004,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1019,7 +1043,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1034,7 +1059,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostContainersByIdExecResponse"
+          "ReferenceName": "PostContainersByIdExecAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1064,7 +1089,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1079,7 +1105,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostContainersByIdExecRunResponse"
+          "ReferenceName": "PostContainersByIdExecRunAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1109,7 +1135,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1124,7 +1151,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostContainersByIdFilesChmodResponse"
+          "ReferenceName": "PostContainersByIdFilesChmodAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1154,7 +1181,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1169,7 +1197,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostContainersByIdFilesChownResponse"
+          "ReferenceName": "PostContainersByIdFilesChownAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1199,7 +1227,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1214,7 +1243,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostContainersByIdFilesCreateResponse"
+          "ReferenceName": "PostContainersByIdFilesCreateAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1244,7 +1273,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1259,7 +1289,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostContainersByIdFilesRenameResponse"
+          "ReferenceName": "PostContainersByIdFilesRenameAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1289,7 +1319,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -1313,7 +1344,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostContainersByIdFilesUploadResponse"
+          "ReferenceName": "PostContainersByIdFilesUploadAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1343,7 +1374,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1351,7 +1383,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostContainersByIdPauseResponse"
+          "ReferenceName": "PostContainersByIdPauseAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1381,7 +1413,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1396,7 +1429,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostContainersByIdRenameResponse"
+          "ReferenceName": "PostContainersByIdRenameAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1426,7 +1459,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1434,7 +1468,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostContainersByIdRestartResponse"
+          "ReferenceName": "PostContainersByIdRestartAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1464,7 +1498,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1472,7 +1507,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostContainersByIdStartResponse"
+          "ReferenceName": "PostContainersByIdStartAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1502,7 +1537,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1510,7 +1546,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostContainersByIdStopResponse"
+          "ReferenceName": "PostContainersByIdStopAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1540,7 +1576,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1548,7 +1585,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostContainersByIdUnpauseResponse"
+          "ReferenceName": "PostContainersByIdUnpauseAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1578,7 +1615,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1593,7 +1631,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostContainersByIdUpdateResponse"
+          "ReferenceName": "PostContainersByIdUpdateAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1622,7 +1660,8 @@
           "In": "Query",
           "Description": "Environment id (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1637,7 +1676,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostContainersByIdUpdateRuntimeResponse"
+          "ReferenceName": "PostContainersByIdUpdateRuntimeAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1658,7 +1697,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1666,7 +1706,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostContainersCheckUpdatesResponse"
+          "ReferenceName": "PostContainersCheckUpdatesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1696,7 +1736,8 @@
           "Description": "The target environment ID the container lives in (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -1721,7 +1762,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PutContainersByIdFilesContentResponse"
+          "ReferenceName": "PutContainersByIdFilesContentAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1731,7 +1772,20 @@
   ],
   "Models": [
     {
-      "Name": "DeleteContainersByIdFilesDeleteResponse",
+      "Name": "DeleteContainersByIdAnswer",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "DeleteContainersByIdFilesDeleteAnswer",
       "Fields": [
         {
           "Name": "Path",
@@ -1752,7 +1806,7 @@
       ]
     },
     {
-      "Name": "DeleteContainersByIdResponse",
+      "Name": "DeleteContainersPendingUpdatesAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -1765,20 +1819,238 @@
       ]
     },
     {
-      "Name": "DeleteContainersPendingUpdatesResponse",
+      "Name": "GetContainersAnswer",
       "Fields": [
         {
-          "Name": "Success",
-          "JsonName": "success",
+          "Name": "Command",
+          "JsonName": "command",
           "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Created",
+          "JsonName": "created",
+          "Description": "when the container was made, in seconds since 1970",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Health",
+          "JsonName": "health",
+          "Description": "healthy, unhealthy or starting; empty for a container with no health check",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "ContainerHealth"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Description": "the container's whole id, sixty-four characters",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Image",
+          "JsonName": "image",
+          "Description": "the image as the container was started with it: a name and tag, or a digest",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ImageId",
+          "JsonName": "imageId",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Mounts",
+          "JsonName": "mounts",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetContainersAnswerMounts"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Networks",
+          "JsonName": "networks",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetContainersAnswerNetworks"
+            }
+          }
+        },
+        {
+          "Name": "Ports",
+          "JsonName": "ports",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetContainersAnswerPorts"
+            }
+          }
+        },
+        {
+          "Name": "RestartCount",
+          "JsonName": "restartCount",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "State",
+          "JsonName": "state",
+          "Description": "running, exited, restarting, paused, created or dead",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "ContainerState"
+          }
+        },
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Description": "Docker's own words for the state: Up 2 hours (healthy), Exited (3) 11 seconds ago",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SystemContainer",
+          "JsonName": "systemContainer",
+          "Description": "dockhand or hawser for a container that is Dockhand itself or one of its agents, told by its image's name; nothing for any other",
+          "Type": {
+            "Type": "String"
+          }
         }
       ]
     },
     {
-      "Name": "GetContainersByIdComposeResponse",
+      "Name": "GetContainersAnswerMounts",
+      "Fields": [
+        {
+          "Name": "Destination",
+          "JsonName": "destination",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Mode",
+          "JsonName": "mode",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Description": "the volume's name; empty for a bind",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Rw",
+          "JsonName": "rw",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Source",
+          "JsonName": "source",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Description": "bind or volume",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersAnswerNetworks",
+      "Fields": [
+        {
+          "Name": "IpAddress",
+          "JsonName": "ipAddress",
+          "Description": "the container's address on the network; empty while it is not running",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersAnswerPorts",
+      "Fields": [
+        {
+          "Name": "IP",
+          "JsonName": "IP",
+          "Description": "the address on the host the port is published on",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "PrivatePort",
+          "JsonName": "PrivatePort",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "PublicPort",
+          "JsonName": "PublicPort",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "Type",
+          "Description": "tcp or udp",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersByIdComposeAnswer",
       "Fields": [
         {
           "Name": "Compose",
@@ -1811,28 +2083,7 @@
       ]
     },
     {
-      "Name": "GetContainersByIdFilesContentResponse",
-      "Fields": [
-        {
-          "Name": "Content",
-          "JsonName": "content",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Path",
-          "JsonName": "path",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "GetContainersByIdFilesResponse",
+      "Name": "GetContainersByIdFilesAnswer",
       "Fields": [
         {
           "Name": "Entries",
@@ -1841,7 +2092,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetContainersByIdFilesResponseEntries"
+              "ReferenceName": "GetContainersByIdFilesAnswerEntries"
             }
           }
         },
@@ -1855,7 +2106,7 @@
       ]
     },
     {
-      "Name": "GetContainersByIdFilesResponseEntries",
+      "Name": "GetContainersByIdFilesAnswerEntries",
       "Fields": [
         {
           "Name": "Group",
@@ -1921,13 +2172,35 @@
           "JsonName": "type",
           "Description": "file, directory or symlink",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "FileType"
           }
         }
       ]
     },
     {
-      "Name": "GetContainersByIdLogsResponse",
+      "Name": "GetContainersByIdFilesContentAnswer",
+      "Fields": [
+        {
+          "Name": "Content",
+          "JsonName": "content",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetContainersByIdLogsAnswer",
       "Fields": [
         {
           "Name": "Logs",
@@ -1940,7 +2213,7 @@
       ]
     },
     {
-      "Name": "GetContainersByIdShellsResponse",
+      "Name": "GetContainersByIdShellsAnswer",
       "Fields": [
         {
           "Name": "AllShells",
@@ -1949,7 +2222,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetContainersByIdShellsResponseAllShells"
+              "ReferenceName": "GetContainersByIdShellsAnswerAllShells"
             }
           },
           "Required": true
@@ -1975,7 +2248,7 @@
       ]
     },
     {
-      "Name": "GetContainersByIdShellsResponseAllShells",
+      "Name": "GetContainersByIdShellsAnswerAllShells",
       "Fields": [
         {
           "Name": "Available",
@@ -2004,7 +2277,7 @@
       ]
     },
     {
-      "Name": "GetContainersByIdStatsResponse",
+      "Name": "GetContainersByIdStatsAnswer",
       "Fields": [
         {
           "Name": "BlockRead",
@@ -2090,14 +2363,14 @@
           "Name": "Timestamp",
           "JsonName": "timestamp",
           "Type": {
-            "Type": "Integer"
+            "Type": "UnixMillis"
           },
           "Required": true
         }
       ]
     },
     {
-      "Name": "GetContainersByIdTopResponse",
+      "Name": "GetContainersByIdTopAnswer",
       "Fields": [
         {
           "Name": "Processes",
@@ -2135,7 +2408,7 @@
       ]
     },
     {
-      "Name": "GetContainersByIdVersionNotesResponse",
+      "Name": "GetContainersByIdVersionNotesAnswer",
       "Fields": [
         {
           "Name": "ChangelogUrl",
@@ -2151,7 +2424,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetContainersByIdVersionNotesResponseNotes"
+              "ReferenceName": "GetContainersByIdVersionNotesAnswerNotes"
             }
           },
           "Required": true
@@ -2173,7 +2446,7 @@
       ]
     },
     {
-      "Name": "GetContainersByIdVersionNotesResponseNotes",
+      "Name": "GetContainersByIdVersionNotesAnswerNotes",
       "Fields": [
         {
           "Name": "Body",
@@ -2200,7 +2473,7 @@
           "Name": "PublishedAt",
           "JsonName": "publishedAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -2222,13 +2495,14 @@
       ]
     },
     {
-      "Name": "GetContainersCheckUpdatesResponse",
+      "Name": "GetContainersCheckUpdatesAnswer",
       "Fields": [
         {
           "Name": "EnvironmentId",
           "JsonName": "environmentId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           },
           "Required": true
         },
@@ -2239,7 +2513,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetContainersCheckUpdatesResponsePendingUpdates"
+              "ReferenceName": "GetContainersCheckUpdatesAnswerPendingUpdates"
             }
           },
           "Required": true
@@ -2247,13 +2521,13 @@
       ]
     },
     {
-      "Name": "GetContainersCheckUpdatesResponsePendingUpdates",
+      "Name": "GetContainersCheckUpdatesAnswerPendingUpdates",
       "Fields": [
         {
           "Name": "CheckedAt",
           "JsonName": "checkedAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -2283,13 +2557,14 @@
       ]
     },
     {
-      "Name": "GetContainersPendingUpdatesResponse",
+      "Name": "GetContainersPendingUpdatesAnswer",
       "Fields": [
         {
           "Name": "EnvironmentId",
           "JsonName": "environmentId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           },
           "Required": true
         },
@@ -2300,7 +2575,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetContainersPendingUpdatesResponsePendingUpdates"
+              "ReferenceName": "GetContainersPendingUpdatesAnswerPendingUpdates"
             }
           },
           "Required": true
@@ -2308,13 +2583,13 @@
       ]
     },
     {
-      "Name": "GetContainersPendingUpdatesResponsePendingUpdates",
+      "Name": "GetContainersPendingUpdatesAnswerPendingUpdates",
       "Fields": [
         {
           "Name": "CheckedAt",
           "JsonName": "checkedAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           },
           "Required": true
         },
@@ -2356,13 +2631,13 @@
           "Description": "a newer version tag of the image, when Dockhand is set to look for them and found one",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetContainersPendingUpdatesResponsePendingUpdatesNewerVersion"
+            "ReferenceName": "GetContainersPendingUpdatesAnswerPendingUpdatesNewerVersion"
           }
         }
       ]
     },
     {
-      "Name": "GetContainersPendingUpdatesResponsePendingUpdatesNewerVersion",
+      "Name": "GetContainersPendingUpdatesAnswerPendingUpdatesNewerVersion",
       "Description": "a newer version tag of the image, when Dockhand is set to look for them and found one",
       "Fields": [
         {
@@ -2402,236 +2677,7 @@
       ]
     },
     {
-      "Name": "GetContainersResponse",
-      "Fields": [
-        {
-          "Name": "Command",
-          "JsonName": "command",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Created",
-          "JsonName": "created",
-          "Description": "when the container was made, in seconds since 1970",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Health",
-          "JsonName": "health",
-          "Description": "healthy, unhealthy or starting; empty for a container with no health check",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Id",
-          "JsonName": "id",
-          "Description": "the container's whole id, sixty-four characters",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Image",
-          "JsonName": "image",
-          "Description": "the image as the container was started with it: a name and tag, or a digest",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "ImageId",
-          "JsonName": "imageId",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Labels",
-          "JsonName": "labels",
-          "Type": {
-            "Type": "Dictionary",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Mounts",
-          "JsonName": "mounts",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "Reference",
-              "ReferenceName": "GetContainersResponseMounts"
-            }
-          }
-        },
-        {
-          "Name": "Name",
-          "JsonName": "name",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Networks",
-          "JsonName": "networks",
-          "Type": {
-            "Type": "Dictionary",
-            "NestedItem": {
-              "Type": "Reference",
-              "ReferenceName": "GetContainersResponseNetworks"
-            }
-          }
-        },
-        {
-          "Name": "Ports",
-          "JsonName": "ports",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "Reference",
-              "ReferenceName": "GetContainersResponsePorts"
-            }
-          }
-        },
-        {
-          "Name": "RestartCount",
-          "JsonName": "restartCount",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "State",
-          "JsonName": "state",
-          "Description": "running, exited, restarting, paused, created or dead",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Status",
-          "JsonName": "status",
-          "Description": "Docker's own words for the state: Up 2 hours (healthy), Exited (3) 11 seconds ago",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "SystemContainer",
-          "JsonName": "systemContainer",
-          "Description": "dockhand or hawser for a container that is Dockhand itself or one of its agents, told by its image's name; nothing for any other",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetContainersResponseMounts",
-      "Fields": [
-        {
-          "Name": "Destination",
-          "JsonName": "destination",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Mode",
-          "JsonName": "mode",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Name",
-          "JsonName": "name",
-          "Description": "the volume's name; empty for a bind",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Rw",
-          "JsonName": "rw",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "Source",
-          "JsonName": "source",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Type",
-          "JsonName": "type",
-          "Description": "bind or volume",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetContainersResponseNetworks",
-      "Fields": [
-        {
-          "Name": "IpAddress",
-          "JsonName": "ipAddress",
-          "Description": "the container's address on the network; empty while it is not running",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetContainersResponsePorts",
-      "Fields": [
-        {
-          "Name": "IP",
-          "JsonName": "IP",
-          "Description": "the address on the host the port is published on",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "PrivatePort",
-          "JsonName": "PrivatePort",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "PublicPort",
-          "JsonName": "PublicPort",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Type",
-          "JsonName": "Type",
-          "Description": "tcp or udp",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetContainersSizesResponse",
+      "Name": "GetContainersSizesAnswer",
       "Fields": [
         {
           "Name": "SizeRootFs",
@@ -2652,7 +2698,7 @@
       ]
     },
     {
-      "Name": "GetContainersStatsResponse",
+      "Name": "GetContainersStatsAnswer",
       "Fields": [
         {
           "Name": "BlockRead",
@@ -2747,23 +2793,35 @@
       ]
     },
     {
-      "Name": "PostContainersBatchUpdateRequest",
+      "Name": "PostContainersAnswer",
       "Fields": [
         {
-          "Name": "ContainerIds",
-          "JsonName": "containerIds",
+          "Name": "Id",
+          "JsonName": "id",
           "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ImagePulled",
+          "JsonName": "imagePulled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
           },
           "Required": true
         }
       ]
     },
     {
-      "Name": "PostContainersBatchUpdateResponse",
+      "Name": "PostContainersBatchUpdateAnswer",
       "Fields": [
         {
           "Name": "Results",
@@ -2772,7 +2830,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "PostContainersBatchUpdateResponseResults"
+              "ReferenceName": "PostContainersBatchUpdateAnswerResults"
             }
           },
           "Required": true
@@ -2790,14 +2848,14 @@
           "JsonName": "summary",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "PostContainersBatchUpdateResponseSummary"
+            "ReferenceName": "PostContainersBatchUpdateAnswerSummary"
           },
           "Required": true
         }
       ]
     },
     {
-      "Name": "PostContainersBatchUpdateResponseResults",
+      "Name": "PostContainersBatchUpdateAnswerResults",
       "Fields": [
         {
           "Name": "ContainerId",
@@ -2833,7 +2891,7 @@
       ]
     },
     {
-      "Name": "PostContainersBatchUpdateResponseSummary",
+      "Name": "PostContainersBatchUpdateAnswerSummary",
       "Fields": [
         {
           "Name": "Failed",
@@ -2856,6 +2914,22 @@
           "JsonName": "total",
           "Type": {
             "Type": "Integer"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersBatchUpdateRequest",
+      "Fields": [
+        {
+          "Name": "ContainerIds",
+          "JsonName": "containerIds",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
           },
           "Required": true
         }
@@ -2885,6 +2959,54 @@
       ]
     },
     {
+      "Name": "PostContainersByIdExecAnswer",
+      "Fields": [
+        {
+          "Name": "ConnectionInfo",
+          "JsonName": "connectionInfo",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostContainersByIdExecAnswerConnectionInfo"
+          }
+        },
+        {
+          "Name": "ExecId",
+          "JsonName": "execId",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdExecAnswerConnectionInfo",
+      "Fields": [
+        {
+          "Name": "Host",
+          "JsonName": "host",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Port",
+          "JsonName": "port",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
       "Name": "PostContainersByIdExecRequest",
       "Fields": [
         {
@@ -2904,46 +3026,27 @@
       ]
     },
     {
-      "Name": "PostContainersByIdExecResponse",
+      "Name": "PostContainersByIdExecRunAnswer",
       "Fields": [
         {
-          "Name": "ConnectionInfo",
-          "JsonName": "connectionInfo",
+          "Name": "ExitCode",
+          "JsonName": "exitCode",
           "Type": {
-            "Type": "Reference",
-            "ReferenceName": "PostContainersByIdExecResponseConnectionInfo"
-          }
+            "Type": "Integer"
+          },
+          "Required": true
         },
         {
-          "Name": "ExecId",
-          "JsonName": "execId",
+          "Name": "Stderr",
+          "JsonName": "stderr",
           "Type": {
             "Type": "String"
           },
           "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostContainersByIdExecResponseConnectionInfo",
-      "Fields": [
-        {
-          "Name": "Host",
-          "JsonName": "host",
-          "Type": {
-            "Type": "String"
-          }
         },
         {
-          "Name": "Port",
-          "JsonName": "port",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Type",
-          "JsonName": "type",
+          "Name": "Stdout",
+          "JsonName": "stdout",
           "Type": {
             "Type": "String"
           },
@@ -2982,29 +3085,37 @@
       ]
     },
     {
-      "Name": "PostContainersByIdExecRunResponse",
+      "Name": "PostContainersByIdFilesChmodAnswer",
       "Fields": [
         {
-          "Name": "ExitCode",
-          "JsonName": "exitCode",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Stderr",
-          "JsonName": "stderr",
+          "Name": "Mode",
+          "JsonName": "mode",
           "Type": {
             "Type": "String"
           },
           "Required": true
         },
         {
-          "Name": "Stdout",
-          "JsonName": "stdout",
+          "Name": "Path",
+          "JsonName": "path",
           "Type": {
             "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Recursive",
+          "JsonName": "recursive",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
           },
           "Required": true
         }
@@ -3039,11 +3150,11 @@
       ]
     },
     {
-      "Name": "PostContainersByIdFilesChmodResponse",
+      "Name": "PostContainersByIdFilesChownAnswer",
       "Fields": [
         {
-          "Name": "Mode",
-          "JsonName": "mode",
+          "Name": "Owner",
+          "JsonName": "owner",
           "Type": {
             "Type": "String"
           },
@@ -3104,15 +3215,14 @@
       ]
     },
     {
-      "Name": "PostContainersByIdFilesChownResponse",
+      "Name": "PostContainersByIdFilesCreateAnswer",
       "Fields": [
         {
           "Name": "Owner",
           "JsonName": "owner",
           "Type": {
             "Type": "String"
-          },
-          "Required": true
+          }
         },
         {
           "Name": "Path",
@@ -3123,18 +3233,18 @@
           "Required": true
         },
         {
-          "Name": "Recursive",
-          "JsonName": "recursive",
+          "Name": "Success",
+          "JsonName": "success",
           "Type": {
             "Type": "Boolean"
           },
           "Required": true
         },
         {
-          "Name": "Success",
-          "JsonName": "success",
+          "Name": "Type",
+          "JsonName": "type",
           "Type": {
-            "Type": "Boolean"
+            "Type": "String"
           },
           "Required": true
         }
@@ -3169,18 +3279,19 @@
       ]
     },
     {
-      "Name": "PostContainersByIdFilesCreateResponse",
+      "Name": "PostContainersByIdFilesRenameAnswer",
       "Fields": [
         {
-          "Name": "Owner",
-          "JsonName": "owner",
+          "Name": "NewPath",
+          "JsonName": "newPath",
           "Type": {
             "Type": "String"
-          }
+          },
+          "Required": true
         },
         {
-          "Name": "Path",
-          "JsonName": "path",
+          "Name": "OldPath",
+          "JsonName": "oldPath",
           "Type": {
             "Type": "String"
           },
@@ -3191,14 +3302,6 @@
           "JsonName": "success",
           "Type": {
             "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Type",
-          "JsonName": "type",
-          "Type": {
-            "Type": "String"
           },
           "Required": true
         }
@@ -3226,36 +3329,7 @@
       ]
     },
     {
-      "Name": "PostContainersByIdFilesRenameResponse",
-      "Fields": [
-        {
-          "Name": "NewPath",
-          "JsonName": "newPath",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "OldPath",
-          "JsonName": "oldPath",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostContainersByIdFilesUploadResponse",
+      "Name": "PostContainersByIdFilesUploadAnswer",
       "Fields": [
         {
           "Name": "Errors",
@@ -3289,7 +3363,20 @@
       ]
     },
     {
-      "Name": "PostContainersByIdPauseResponse",
+      "Name": "PostContainersByIdPauseAnswer",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostContainersByIdRenameAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -3315,7 +3402,7 @@
       ]
     },
     {
-      "Name": "PostContainersByIdRenameResponse",
+      "Name": "PostContainersByIdRestartAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -3328,7 +3415,7 @@
       ]
     },
     {
-      "Name": "PostContainersByIdRestartResponse",
+      "Name": "PostContainersByIdStartAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -3341,7 +3428,7 @@
       ]
     },
     {
-      "Name": "PostContainersByIdStartResponse",
+      "Name": "PostContainersByIdStopAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -3354,7 +3441,7 @@
       ]
     },
     {
-      "Name": "PostContainersByIdStopResponse",
+      "Name": "PostContainersByIdUnpauseAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -3367,8 +3454,16 @@
       ]
     },
     {
-      "Name": "PostContainersByIdUnpauseResponse",
+      "Name": "PostContainersByIdUpdateAnswer",
       "Fields": [
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
         {
           "Name": "Success",
           "JsonName": "success",
@@ -3545,16 +3640,8 @@
       ]
     },
     {
-      "Name": "PostContainersByIdUpdateResponse",
+      "Name": "PostContainersByIdUpdateRuntimeAnswer",
       "Fields": [
-        {
-          "Name": "Id",
-          "JsonName": "id",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
         {
           "Name": "Success",
           "JsonName": "success",
@@ -3562,6 +3649,16 @@
             "Type": "Boolean"
           },
           "Required": true
+        },
+        {
+          "Name": "Warnings",
+          "JsonName": "warnings",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
         }
       ]
     },
@@ -3736,30 +3833,7 @@
       ]
     },
     {
-      "Name": "PostContainersByIdUpdateRuntimeResponse",
-      "Fields": [
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Warnings",
-          "JsonName": "warnings",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostContainersCheckUpdatesResponse",
+      "Name": "PostContainersCheckUpdatesAnswer",
       "Fields": [
         {
           "Name": "Results",
@@ -3768,7 +3842,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "PostContainersCheckUpdatesResponseResults"
+              "ReferenceName": "PostContainersCheckUpdatesAnswerResults"
             }
           }
         },
@@ -3790,7 +3864,7 @@
       ]
     },
     {
-      "Name": "PostContainersCheckUpdatesResponseResults",
+      "Name": "PostContainersCheckUpdatesAnswerResults",
       "Fields": [
         {
           "Name": "ContainerId",
@@ -3857,7 +3931,7 @@
           "Description": "a newer version tag of the image, when Dockhand is set to look for them and found one",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "PostContainersCheckUpdatesResponseResultsNewerVersion"
+            "ReferenceName": "PostContainersCheckUpdatesAnswerResultsNewerVersion"
           }
         },
         {
@@ -3879,7 +3953,7 @@
       ]
     },
     {
-      "Name": "PostContainersCheckUpdatesResponseResultsNewerVersion",
+      "Name": "PostContainersCheckUpdatesAnswerResultsNewerVersion",
       "Description": "a newer version tag of the image, when Dockhand is set to look for them and found one",
       "Fields": [
         {
@@ -4079,22 +4153,15 @@
       ]
     },
     {
-      "Name": "PostContainersResponse",
+      "Name": "PutContainersByIdFilesContentAnswer",
       "Fields": [
         {
-          "Name": "Id",
-          "JsonName": "id",
+          "Name": "Path",
+          "JsonName": "path",
           "Type": {
             "Type": "String"
           },
           "Required": true
-        },
-        {
-          "Name": "ImagePulled",
-          "JsonName": "imagePulled",
-          "Type": {
-            "Type": "Boolean"
-          }
         },
         {
           "Name": "Success",
@@ -4114,27 +4181,6 @@
           "JsonName": "content",
           "Type": {
             "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PutContainersByIdFilesContentResponse",
-      "Fields": [
-        {
-          "Name": "Path",
-          "JsonName": "path",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
           },
           "Required": true
         }

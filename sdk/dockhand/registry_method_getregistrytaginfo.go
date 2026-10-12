@@ -4,22 +4,44 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetRegistryTagInfoOperationResponse is the result of GetRegistryTagInfo.
-type GetRegistryTagInfoOperationResponse struct {
+// GetRegistryTagInfoResponse is the result of GetRegistryTagInfo.
+//
+// Answer is the GetRegistryTagInfoAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetRegistryTagInfoResponse struct {
 	HttpResponse *http.Response
-	Model        *GetRegistryTagInfoResponse
+	Answer       *GetRegistryTagInfoAnswer
+	*GetRegistryTagInfoAnswer
 }
 
-// GetRegistryTagInfoOperationOptions holds the query and header parameters of GetRegistryTagInfo.
-type GetRegistryTagInfoOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetRegistryTagInfoResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetRegistryTagInfoAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetRegistryTagInfoResponse) Record() (GetRegistryTagInfoAnswer, error) {
+	if r.Answer == nil {
+		return GetRegistryTagInfoAnswer{}, errors.New("GetRegistryTagInfo answered no GetRegistryTagInfoAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetRegistryTagInfoOptions holds the query and header parameters of GetRegistryTagInfo.
+type GetRegistryTagInfoOptions struct {
 	// Registry ID; omitted or Docker Hub registries return a graceful "not supported" result instead of a manifest fetch (from GET /api/registries)
-	Registry *int
+	Registry RegistryID
 
 	// Image repository/name
 	Image string
@@ -29,16 +51,16 @@ type GetRegistryTagInfoOperationOptions struct {
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetRegistryTagInfoOperationOptions) ToHeaders() *client.Headers {
+func (o GetRegistryTagInfoOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetRegistryTagInfoOperationOptions) ToQuery() *client.QueryParams {
+func (o GetRegistryTagInfoOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Registry != nil {
-		out.Append("registry", strconv.Itoa(*o.Registry))
+	if o.Registry != 0 {
+		out.Append("registry", strconv.Itoa(int(o.Registry)))
 	}
 	if o.Image != "" {
 		out.Append("image", o.Image)
@@ -50,7 +72,8 @@ func (o GetRegistryTagInfoOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetRegistryTagInfo calls GET /api/registry/tag-info. Resolve the compressed size and creation date of a single registry tag from its manifest (lazy per-tag fetch for the registry browser).
-func (c Client) GetRegistryTagInfo(ctx context.Context, options GetRegistryTagInfoOperationOptions) (result GetRegistryTagInfoOperationResponse, err error) {
+func (c Client) GetRegistryTagInfo(ctx context.Context, options GetRegistryTagInfoOptions) (result GetRegistryTagInfoResponse, err error) {
+	result.GetRegistryTagInfoAnswer = &GetRegistryTagInfoAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -74,11 +97,12 @@ func (c Client) GetRegistryTagInfo(ctx context.Context, options GetRegistryTagIn
 		return
 	}
 
-	var model GetRegistryTagInfoResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetRegistryTagInfoAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetRegistryTagInfoAnswer = result.Answer
 
 	return
 }

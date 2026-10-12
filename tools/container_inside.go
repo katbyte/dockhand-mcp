@@ -44,13 +44,13 @@ type containerUse struct {
 }
 
 // statsOf is what each running container of an environment is using, as the call is made: Dockhand samples every one, which takes a second or two.
-func (r *registry) statsOf(ctx context.Context, env environment) ([]dockhand.GetContainersStatsResponse, error) {
-	measured, err := r.dock.GetContainersStats(ctx, dockhand.GetContainersStatsOperationOptions{Env: &env.ID})
+func (r *registry) statsOf(ctx context.Context, env environment) ([]dockhand.GetContainersStatsAnswer, error) {
+	measured, err := r.dock.GetContainersStats(ctx, dockhand.GetContainersStatsOptions{Env: env.ID})
 	if err != nil {
 		return nil, refusal(err)
 	}
 
-	return measured.Model, nil
+	return measured.Answer, nil
 }
 
 // inside is the one container a call looks into, which must be running: Dockhand looks inside a container by running a command in it.
@@ -59,7 +59,7 @@ func (r *registry) inside(ctx context.Context, in containerArg, what string) (lo
 	if err != nil {
 		return located{}, err
 	}
-	if !running(at.Container.State) {
+	if !running(string(at.Container.State)) {
 		return at, fmt.Errorf("%s on %s is %s, and %s only of a container that is running: Dockhand looks inside one by running a command in it", at.Container.Name, at.Env.Name, at.Container.State, what)
 	}
 
@@ -173,7 +173,7 @@ func registerContainerInsideTools(r *registry) {
 
 		out := containerSizesOut{Containers: []containerSize{}}
 		for _, answer := range ask(ctx, envs, func(ctx context.Context, env environment) ([]containerSize, error) {
-			sizes, failed := r.dock.GetContainersSizes(ctx, dockhand.GetContainersSizesOperationOptions{Env: &env.ID})
+			sizes, failed := r.dock.GetContainersSizes(ctx, dockhand.GetContainersSizesOptions{Env: env.ID})
 			if failed != nil {
 				return nil, refusal(failed)
 			}
@@ -184,8 +184,8 @@ func registerContainerInsideTools(r *registry) {
 			}
 			measured := make([]containerSize, 0, len(listed))
 			for i := range listed {
-				if size, has := sizes.Model[listed[i].Id]; has {
-					measured = append(measured, containerSize{Env: env.Name, Name: listed[i].Name, State: listed[i].State, WrittenMB: megabytes(size.SizeRw), TotalMB: megabytes(size.SizeRootFs)})
+				if size, has := sizes.Answer[listed[i].Id]; has {
+					measured = append(measured, containerSize{Env: env.Name, Name: listed[i].Name, State: string(listed[i].State), WrittenMB: megabytes(size.SizeRw), TotalMB: megabytes(size.SizeRootFs)})
 				}
 			}
 
@@ -239,12 +239,12 @@ func registerContainerInsideTools(r *registry) {
 		}
 		out := containerTopOut{Env: at.Env.Name, Container: at.Container.Name, Columns: []string{}, Processes: []map[string]string{}}
 
-		top, err := r.dock.GetContainersByIdTop(ctx, at.Container.Id, dockhand.GetContainersByIdTopOperationOptions{Env: &at.Env.ID})
+		top, err := r.dock.GetContainersByIdTop(ctx, at.Container.Id, dockhand.GetContainersByIdTopOptions{Env: at.Env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("the processes of %s could not be listed: %w", out.Container, refusal(err))
 		}
-		out.Columns = append(out.Columns, top.Model.Titles...)
-		for _, fields := range top.Model.Processes {
+		out.Columns = append(out.Columns, top.Answer.Titles...)
+		for _, fields := range top.Answer.Processes {
 			process := map[string]string{}
 			for i, value := range fields {
 				if i >= len(out.Columns) {
@@ -302,14 +302,14 @@ func registerContainerInsideTools(r *registry) {
 		dir := path.Clean("/" + strings.TrimSpace(in.Path))
 		out := containerFilesOut{Env: at.Env.Name, Container: at.Container.Name, Path: dir, Entries: []fileEntry{}}
 
-		listed, err := r.dock.GetContainersByIdFiles(ctx, at.Container.Id, dockhand.GetContainersByIdFilesOperationOptions{Env: &at.Env.ID, Path: dir})
+		listed, err := r.dock.GetContainersByIdFiles(ctx, at.Container.Id, dockhand.GetContainersByIdFilesOptions{Env: at.Env.ID, Path: dir})
 		if err != nil {
 			// a directory that is not there is answered as ls failing to run, in words about ls
 			return nil, out, fmt.Errorf("%s in %s could not be listed, which is what a path that is not there or is no directory answers: %w", dir, out.Container, refusal(err))
 		}
-		for i := range listed.Model.Entries {
-			e := &listed.Model.Entries[i]
-			out.Entries = append(out.Entries, fileEntry{Name: e.Name, Type: e.Type, Size: e.Size, Mode: e.Permissions, Owner: e.Owner + ":" + e.Group, Modified: e.Modified, Target: e.LinkTarget})
+		for i := range listed.Answer.Entries {
+			e := &listed.Answer.Entries[i]
+			out.Entries = append(out.Entries, fileEntry{Name: e.Name, Type: string(e.Type), Size: e.Size, Mode: e.Permissions, Owner: e.Owner + ":" + e.Group, Modified: e.Modified, Target: e.LinkTarget})
 		}
 		slices.SortStableFunc(out.Entries, func(a, b fileEntry) int {
 			return cmp.Or(cmp.Compare(b2i(a.Type != "directory"), b2i(b.Type != "directory")), cmp.Compare(a.Name, b.Name))
@@ -357,7 +357,7 @@ func registerContainerInsideTools(r *registry) {
 		file := path.Clean("/" + strings.TrimSpace(in.Path))
 		out := containerReadOut{Env: at.Env.Name, Container: at.Container.Name, Path: file}
 
-		read, err := r.dock.GetContainersByIdFilesContent(ctx, at.Container.Id, dockhand.GetContainersByIdFilesContentOperationOptions{Env: &at.Env.ID, Path: file})
+		read, err := r.dock.GetContainersByIdFilesContent(ctx, at.Container.Id, dockhand.GetContainersByIdFilesContentOptions{Env: at.Env.ID, Path: file})
 		switch status := client.StatusCode(err); {
 		case status == http.StatusNotFound:
 			return nil, out, fmt.Errorf("%s has no file %s: container_files lists what it has", out.Container, file)
@@ -370,7 +370,7 @@ func registerContainerInsideTools(r *registry) {
 		default:
 		}
 
-		text := read.Model.Content
+		text := read.Answer.Content
 		// Dockhand hands a file over as text whatever it is: what was not text shows as bytes that are none, or as the mark of ones that could not be
 		// read
 		if strings.ContainsRune(text, 0) || strings.ContainsRune(text, utf8.RuneError) {

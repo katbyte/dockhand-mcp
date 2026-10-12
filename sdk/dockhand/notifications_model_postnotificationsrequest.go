@@ -8,5 +8,5 @@ type PostNotificationsRequest struct {
 	Enabled    *bool                           `json:"enabled,omitempty"`
 	EventTypes []string                        `json:"eventTypes,omitzero"`
 	Name       string                          `json:"name"`
-	Type       string                          `json:"type"`
+	Type       NotificationType                `json:"type"`
 }

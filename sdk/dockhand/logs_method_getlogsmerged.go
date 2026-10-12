@@ -4,22 +4,56 @@ package dockhand
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetLogsMergedOperationResponse is the result of GetLogsMerged.
+// GetLogsMergedResponse is the result of GetLogsMerged.
 //
-// The operation answers text/event-stream, left unread in HttpResponse.Body, which
-// the caller must close.
-type GetLogsMergedOperationResponse struct {
+// The operation answers text/event-stream, left open in HttpResponse.Body: Reader hands it
+// over for the caller to read event by event and close; it has no end to copy to.
+type GetLogsMergedResponse struct {
 	HttpResponse *http.Response
 }
 
-// GetLogsMergedOperationOptions holds the query and header parameters of GetLogsMerged.
-type GetLogsMergedOperationOptions struct {
+// Reader is the file's body, for the caller to read and close, and the content
+// type the server named it; an empty body and "" when the operation gave no
+// answer, so a deferred Close is always safe. The body stays readable after
+// the result goes out of scope, and has no size or time limit of the client's:
+// the caller's context is the one bound on a slow read.
+func (r GetLogsMergedResponse) Reader() (io.ReadCloser, string) {
+	if r.HttpResponse == nil || r.HttpResponse.Body == nil {
+		return http.NoBody, ""
+	}
+
+	return r.HttpResponse.Body, r.HttpResponse.Header.Get("Content-Type")
+}
+
+// ContentLength is the file's length as the server named it, or -1 when it
+// did not, to refuse one too big before reading any of it.
+func (r GetLogsMergedResponse) ContentLength() int64 {
+	if r.HttpResponse == nil {
+		return -1
+	}
+
+	return r.HttpResponse.ContentLength
+}
+
+// Filename is the name the server gave the file (Content-Disposition), or ""
+// when it gave none, for a caller saving it under the server's name.
+func (r GetLogsMergedResponse) Filename() string {
+	if r.HttpResponse == nil {
+		return ""
+	}
+
+	return client.Filename(r.HttpResponse.Header)
+}
+
+// GetLogsMergedOptions holds the query and header parameters of GetLogsMerged.
+type GetLogsMergedOptions struct {
 	// Comma-separated container IDs to merge logs from
 	Containers string
 
@@ -33,17 +67,17 @@ type GetLogsMergedOperationOptions struct {
 	Until string
 
 	// Environment the containers belong to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetLogsMergedOperationOptions) ToHeaders() *client.Headers {
+func (o GetLogsMergedOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetLogsMergedOperationOptions) ToQuery() *client.QueryParams {
+func (o GetLogsMergedOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Containers != "" {
 		out.Append("containers", o.Containers)
@@ -57,14 +91,14 @@ func (o GetLogsMergedOperationOptions) ToQuery() *client.QueryParams {
 	if o.Until != "" {
 		out.Append("until", o.Until)
 	}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetLogsMerged calls GET /api/logs/merged. Stream merged, color-tagged logs from multiple containers over Server-Sent Events.
-func (c Client) GetLogsMerged(ctx context.Context, options GetLogsMergedOperationOptions) (result GetLogsMergedOperationResponse, err error) {
+func (c Client) GetLogsMerged(ctx context.Context, options GetLogsMergedOptions) (result GetLogsMergedResponse, err error) {
 	opts := client.RequestOptions{
 		Accept: "text/event-stream",
 		ExpectedStatusCodes: []int{

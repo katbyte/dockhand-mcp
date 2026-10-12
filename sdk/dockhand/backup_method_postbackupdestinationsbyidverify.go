@@ -10,13 +10,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostBackupDestinationsByIdVerifyOperationResponse is the result of PostBackupDestinationsByIdVerify.
-type PostBackupDestinationsByIdVerifyOperationResponse struct {
+// PostBackupDestinationsByIdVerifyResponse is the result of PostBackupDestinationsByIdVerify.
+type PostBackupDestinationsByIdVerifyResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostBackupDestinationsByIdVerify calls POST /api/backup/destinations/{id}/verify. Verify the integrity of a destination's backups by reading a data subset, streaming progress as a Server-Sent Events job.
-func (c Client) PostBackupDestinationsByIdVerify(ctx context.Context, id int, input PostBackupDestinationsByIdVerifyRequest) (result PostBackupDestinationsByIdVerifyOperationResponse, err error) {
+func (c Client) PostBackupDestinationsByIdVerify(ctx context.Context, id int, input PostBackupDestinationsByIdVerifyRequest) (result PostBackupDestinationsByIdVerifyResponse, err error) {
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{

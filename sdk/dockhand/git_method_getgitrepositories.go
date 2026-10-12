@@ -9,14 +9,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetGitRepositoriesOperationResponse is the result of GetGitRepositories.
-type GetGitRepositoriesOperationResponse struct {
+// GetGitRepositoriesResponse is the result of GetGitRepositories.
+type GetGitRepositoriesResponse struct {
 	HttpResponse *http.Response
-	Model        []GetGitRepositoriesResponse
+	Answer       []GetGitRepositoriesAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetGitRepositoriesResponse) Answered() bool { return r.Answer != nil }
+
 // GetGitRepositories calls GET /api/git/repositories. List all git repositories (repositories are global, not scoped to an environment).
-func (c Client) GetGitRepositories(ctx context.Context) (result GetGitRepositoriesOperationResponse, err error) {
+func (c Client) GetGitRepositories(ctx context.Context) (result GetGitRepositoriesResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,7 +43,7 @@ func (c Client) GetGitRepositories(ctx context.Context) (result GetGitRepositori
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

@@ -6,24 +6,26 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostUsersByIdRolesOperationResponse is the result of PostUsersByIdRoles.
-type PostUsersByIdRolesOperationResponse struct {
+// PostUsersByIdRolesResponse is the result of PostUsersByIdRoles.
+type PostUsersByIdRolesResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostUsersByIdRoles calls POST /api/users/{id}/roles. Assign a role to a user, optionally scoped to an environment (enterprise, admin only).
-func (c Client) PostUsersByIdRoles(ctx context.Context, id int, input PostUsersByIdRolesRequest) (result PostUsersByIdRolesOperationResponse, err error) {
+func (c Client) PostUsersByIdRoles(ctx context.Context, id UserID, input PostUsersByIdRolesRequest) (result PostUsersByIdRolesResponse, err error) {
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusCreated,
 		},
 		HTTPMethod: http.MethodPost,
-		Path:       fmt.Sprintf("/api/users/%d/roles", id),
+		Path:       fmt.Sprintf("/api/users/%s/roles", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)

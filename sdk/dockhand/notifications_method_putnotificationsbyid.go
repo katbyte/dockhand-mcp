@@ -4,27 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutNotificationsByIdOperationResponse is the result of PutNotificationsById.
-type PutNotificationsByIdOperationResponse struct {
+// PutNotificationsByIdResponse is the result of PutNotificationsById.
+//
+// Answer is the PutNotificationsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PutNotificationsByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *PutNotificationsByIdResponse
+	Answer       *PutNotificationsByIdAnswer
+	*PutNotificationsByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutNotificationsByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutNotificationsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutNotificationsByIdResponse) Record() (PutNotificationsByIdAnswer, error) {
+	if r.Answer == nil {
+		return PutNotificationsByIdAnswer{}, errors.New("PutNotificationsById answered no PutNotificationsByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PutNotificationsById calls PUT /api/notifications/{id}. Update a notification setting; a masked SMTP password ("********") keeps the stored value.
-func (c Client) PutNotificationsById(ctx context.Context, id int, input PutNotificationsByIdRequest) (result PutNotificationsByIdOperationResponse, err error) {
+func (c Client) PutNotificationsById(ctx context.Context, id NotificationID, input PutNotificationsByIdRequest) (result PutNotificationsByIdResponse, err error) {
+	result.PutNotificationsByIdAnswer = &PutNotificationsByIdAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
-		Path:       fmt.Sprintf("/api/notifications/%d", id),
+		Path:       fmt.Sprintf("/api/notifications/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -45,11 +70,12 @@ func (c Client) PutNotificationsById(ctx context.Context, id int, input PutNotif
 		return
 	}
 
-	var model PutNotificationsByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PutNotificationsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PutNotificationsByIdAnswer = result.Answer
 
 	return
 }

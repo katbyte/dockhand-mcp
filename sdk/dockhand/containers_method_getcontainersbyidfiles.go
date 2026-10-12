@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,16 +13,37 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetContainersByIdFilesOperationResponse is the result of GetContainersByIdFiles.
-type GetContainersByIdFilesOperationResponse struct {
+// GetContainersByIdFilesResponse is the result of GetContainersByIdFiles.
+//
+// Answer is the GetContainersByIdFilesAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetContainersByIdFilesResponse struct {
 	HttpResponse *http.Response
-	Model        *GetContainersByIdFilesResponse
+	Answer       *GetContainersByIdFilesAnswer
+	*GetContainersByIdFilesAnswer
 }
 
-// GetContainersByIdFilesOperationOptions holds the query and header parameters of GetContainersByIdFiles.
-type GetContainersByIdFilesOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetContainersByIdFilesResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetContainersByIdFilesAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetContainersByIdFilesResponse) Record() (GetContainersByIdFilesAnswer, error) {
+	if r.Answer == nil {
+		return GetContainersByIdFilesAnswer{}, errors.New("GetContainersByIdFiles answered no GetContainersByIdFilesAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetContainersByIdFilesOptions holds the query and header parameters of GetContainersByIdFiles.
+type GetContainersByIdFilesOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// Absolute directory path inside the container (default "/")
 	Path string
@@ -31,16 +53,16 @@ type GetContainersByIdFilesOperationOptions struct {
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetContainersByIdFilesOperationOptions) ToHeaders() *client.Headers {
+func (o GetContainersByIdFilesOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetContainersByIdFilesOperationOptions) ToQuery() *client.QueryParams {
+func (o GetContainersByIdFilesOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	if o.Path != "" {
 		out.Append("path", o.Path)
@@ -52,7 +74,8 @@ func (o GetContainersByIdFilesOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetContainersByIdFiles calls GET /api/containers/{id}/files. List the contents of a directory inside a container's filesystem.
-func (c Client) GetContainersByIdFiles(ctx context.Context, id string, options GetContainersByIdFilesOperationOptions) (result GetContainersByIdFilesOperationResponse, err error) {
+func (c Client) GetContainersByIdFiles(ctx context.Context, id string, options GetContainersByIdFilesOptions) (result GetContainersByIdFilesResponse, err error) {
+	result.GetContainersByIdFilesAnswer = &GetContainersByIdFilesAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -76,11 +99,12 @@ func (c Client) GetContainersByIdFiles(ctx context.Context, id string, options G
 		return
 	}
 
-	var model GetContainersByIdFilesResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetContainersByIdFilesAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetContainersByIdFilesAnswer = result.Answer
 
 	return
 }

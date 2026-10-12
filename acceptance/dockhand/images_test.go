@@ -22,16 +22,16 @@ const (
 )
 
 // imageOf is the image a host lists under a name, or nil when it has none.
-func imageOf(t *testing.T, env int, name string) *dockhand.GetImagesResponse {
+func imageOf(t *testing.T, env int, name string) *dockhand.GetImagesAnswer {
 	t.Helper()
 
-	listed, err := dock(t).GetImages(t.Context(), dockhand.GetImagesOperationOptions{Env: &env})
+	listed, err := dock(t).GetImages(t.Context(), dockhand.GetImagesOptions{Env: dockhand.EnvironmentID(env)})
 	if err != nil {
 		t.Fatalf("listing the images of environment %d: %v", env, err)
 	}
-	for i := range listed.Model {
-		if slices.Contains(listed.Model[i].RepoTags, name) {
-			return &listed.Model[i]
+	for i := range listed.Answer {
+		if slices.Contains(listed.Answer[i].RepoTags, name) {
+			return &listed.Answer[i]
 		}
 	}
 
@@ -46,7 +46,7 @@ func is(value any, want bool) bool {
 }
 
 // ended waits for a job to end and gives it as it then stands.
-func ended(t *testing.T, id string) *dockhand.GetJobsByIdResponse {
+func ended(t *testing.T, id string) *dockhand.GetJobsByIdAnswer {
 	t.Helper()
 
 	// five minutes: a scan fetches its scanner's whole list of known flaws on the way, which alone has taken two
@@ -55,8 +55,8 @@ func ended(t *testing.T, id string) *dockhand.GetJobsByIdResponse {
 		if err != nil {
 			t.Fatalf("asking after job %s: %v", id, err)
 		}
-		if job.Model.Status != "running" {
-			return job.Model
+		if job.Answer.Status != "running" {
+			return job.Answer
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
@@ -84,44 +84,44 @@ func TestImagePulledBothWays(t *testing.T) {
 	without(t, testenv.Alpha, smallImage)
 
 	// asked as any call is, for JSON alone: Dockhand pulls and then answers
-	waited, err := c.PostImagesPull(t.Context(), dockhand.PostImagesPullRequest{Image: smallImage}, dockhand.PostImagesPullOperationOptions{Env: &env})
-	if err != nil || waited.Model.Status != "complete" || waited.Model.JobId != "" || waited.Model.Error != "" {
-		t.Fatalf("a pull waited for = %+v, %v", waited.Model, err)
+	waited, err := c.PostImagesPull(t.Context(), dockhand.PostImagesPullRequest{Image: smallImage}, dockhand.PostImagesPullOptions{Env: env})
+	if err != nil || waited.Answer.Status != "complete" || waited.Answer.JobId != "" || waited.Answer.Error != "" {
+		t.Fatalf("a pull waited for = %+v, %v", waited.Answer, err)
 	}
-	img := imageOf(t, env, smallImage)
+	img := imageOf(t, int(env), smallImage)
 	if img == nil || !strings.HasPrefix(img.Id, "sha256:") || img.Size <= 0 || img.Created <= 0 || img.Containers != 0 || len(img.RepoDigests) == 0 || !slices.Equal(img.RepoTags, img.Tags) {
 		t.Fatalf("the image as listed once pulled = %+v", img)
 	}
 
 	// asked as a job: the id at once, and the job says how it goes and how it went
-	started, err := c.PostImagesPull(t.Context(), dockhand.PostImagesPullRequest{Image: smallImage}, dockhand.PostImagesPullOperationOptions{Accept: dockhand.AcceptJob, Env: &env})
-	if err != nil || started.Model.JobId == "" || started.Model.Status != "" {
-		t.Fatalf("a pull asked as a job = %+v, %v", started.Model, err)
+	started, err := c.PostImagesPull(t.Context(), dockhand.PostImagesPullRequest{Image: smallImage}, dockhand.PostImagesPullOptions{Accept: dockhand.AcceptJob, Env: env})
+	if err != nil || started.Answer.JobId == "" || started.Answer.Status != "" {
+		t.Fatalf("a pull asked as a job = %+v, %v", started.Answer, err)
 	}
-	job := ended(t, started.Model.JobId)
-	if job.Id != started.Model.JobId || job.Status != "done" || job.Result["status"] != "complete" || len(job.Lines) < 2 || job.Lines[len(job.Lines)-1].Event != "result" || job.Lines[0].Event != "progress" || job.Lines[0].Data["status"] == nil {
+	job := ended(t, started.Answer.JobId)
+	if job.Id != started.Answer.JobId || job.Status != "done" || job.Result["status"] != "complete" || len(job.Lines) < 2 || job.Lines[len(job.Lines)-1].Event != "result" || job.Lines[0].Event != "progress" || job.Lines[0].Data["status"] == nil {
 		t.Errorf("the job of a pull, once ended = %+v", job)
 	}
 
 	// an image there is none of: a 200 that says error, waited for, and a job that ends in one
-	failed, err := c.PostImagesPull(t.Context(), dockhand.PostImagesPullRequest{Image: noSuchImage}, dockhand.PostImagesPullOperationOptions{Env: &env})
-	if err != nil || failed.Model.Status != "error" || !strings.Contains(failed.Model.Error, "Failed to pull image") {
-		t.Errorf("a pull of nothing, waited for = %+v, %v", failed.Model, err)
+	failed, err := c.PostImagesPull(t.Context(), dockhand.PostImagesPullRequest{Image: noSuchImage}, dockhand.PostImagesPullOptions{Env: env})
+	if err != nil || failed.Answer.Status != "error" || !strings.Contains(failed.Answer.Error, "Failed to pull image") {
+		t.Errorf("a pull of nothing, waited for = %+v, %v", failed.Answer, err)
 	}
-	started, err = c.PostImagesPull(t.Context(), dockhand.PostImagesPullRequest{Image: noSuchImage}, dockhand.PostImagesPullOperationOptions{Accept: dockhand.AcceptJob, Env: &env})
-	if err != nil || started.Model.JobId == "" {
-		t.Fatalf("a pull of nothing asked as a job = %+v, %v", started.Model, err)
+	started, err = c.PostImagesPull(t.Context(), dockhand.PostImagesPullRequest{Image: noSuchImage}, dockhand.PostImagesPullOptions{Accept: dockhand.AcceptJob, Env: env})
+	if err != nil || started.Answer.JobId == "" {
+		t.Fatalf("a pull of nothing asked as a job = %+v, %v", started.Answer, err)
 	}
-	if job = ended(t, started.Model.JobId); job.Status != "error" || !is(job.Result["success"], false) || !strings.Contains(asText(job.Result["error"]), "Failed to pull image") {
+	if job = ended(t, started.Answer.JobId); job.Status != "error" || !is(job.Result["success"], false) || !strings.Contains(asText(job.Result["error"]), "Failed to pull image") {
 		t.Errorf("the job of a pull of nothing = %+v", job)
 	}
 
 	// a host there is none of, and no host at all, are a 200 that says error as well
-	if lost, err := c.PostImagesPull(t.Context(), dockhand.PostImagesPullRequest{Image: smallImage}, dockhand.PostImagesPullOperationOptions{Env: new(99999)}); err != nil || lost.Model.Status != "error" || !strings.Contains(lost.Model.Error, "Environment 99999 not found") {
-		t.Errorf("a pull to an environment there is none of = %+v, %v", lost.Model, err)
+	if lost, err := c.PostImagesPull(t.Context(), dockhand.PostImagesPullRequest{Image: smallImage}, dockhand.PostImagesPullOptions{Env: 99999}); err != nil || lost.Answer.Status != "error" || !strings.Contains(lost.Answer.Error, "Environment 99999 not found") {
+		t.Errorf("a pull to an environment there is none of = %+v, %v", lost.Answer, err)
 	}
-	if lost, err := c.PostImagesPull(t.Context(), dockhand.PostImagesPullRequest{Image: smallImage}, dockhand.PostImagesPullOperationOptions{}); err != nil || lost.Model.Status != "error" || !strings.Contains(lost.Model.Error, "No environment specified") {
-		t.Errorf("a pull to no environment = %+v, %v", lost.Model, err)
+	if lost, err := c.PostImagesPull(t.Context(), dockhand.PostImagesPullRequest{Image: smallImage}, dockhand.PostImagesPullOptions{}); err != nil || lost.Answer.Status != "error" || !strings.Contains(lost.Answer.Error, "No environment specified") {
+		t.Errorf("a pull to no environment = %+v, %v", lost.Answer, err)
 	}
 }
 
@@ -141,23 +141,23 @@ func TestJobsAskedAfterAndStopped(t *testing.T) {
 	env := world.Env(testenv.Alpha)
 	without(t, testenv.Alpha, anotherImage)
 
-	started, err := c.PostImagesPull(t.Context(), dockhand.PostImagesPullRequest{Image: anotherImage}, dockhand.PostImagesPullOperationOptions{Accept: dockhand.AcceptJob, Env: &env})
-	if err != nil || started.Model.JobId == "" {
-		t.Fatalf("a pull asked as a job = %+v, %v", started.Model, err)
+	started, err := c.PostImagesPull(t.Context(), dockhand.PostImagesPullRequest{Image: anotherImage}, dockhand.PostImagesPullOptions{Accept: dockhand.AcceptJob, Env: env})
+	if err != nil || started.Answer.JobId == "" {
+		t.Fatalf("a pull asked as a job = %+v, %v", started.Answer, err)
 	}
 	// asked to stop while it runs: the request is taken, whatever Docker then does with a pull it has begun
-	stopped, err := c.DeleteJobsById(t.Context(), started.Model.JobId)
-	if err != nil || !yes(stopped.Model.Cancelled) {
-		t.Errorf("a running job asked to stop = %+v, %v", stopped.Model, err)
+	stopped, err := c.DeleteJobsById(t.Context(), started.Answer.JobId)
+	if err != nil || !stopped.Answer.Cancelled {
+		t.Errorf("a running job asked to stop = %+v, %v", stopped.Answer, err)
 	}
-	job := ended(t, started.Model.JobId)
+	job := ended(t, started.Answer.JobId)
 	if job.Status != "done" && job.Status != "error" {
 		t.Errorf("the job asked to stop ended as %q", job.Status)
 	}
 
 	// asked to stop once it has ended: there is nothing to stop, and that is the answer rather than a refusal
-	if again, err := c.DeleteJobsById(t.Context(), started.Model.JobId); err != nil || yes(again.Model.Cancelled) {
-		t.Errorf("a job that has ended, asked to stop = %+v, %v", again.Model, err)
+	if again, err := c.DeleteJobsById(t.Context(), started.Answer.JobId); err != nil || again.Answer.Cancelled {
+		t.Errorf("a job that has ended, asked to stop = %+v, %v", again.Answer, err)
 	}
 
 	if _, err := c.GetJobsById(t.Context(), "00000000-0000-0000-0000-000000000000"); !client.IsNotFound(err) || !strings.Contains(err.Error(), "Job not found") {
@@ -179,53 +179,53 @@ func TestImageDescribedTaggedAndRemoved(t *testing.T) {
 	if _, err := world.Docker(t.Context(), testenv.Alpha, "pull", "-q", smallImage); err != nil {
 		t.Fatal(err)
 	}
-	img := imageOf(t, env, smallImage)
+	img := imageOf(t, int(env), smallImage)
 	if img == nil {
 		t.Fatalf("the host was given %s and Dockhand does not list it", smallImage)
 	}
 
-	history, err := c.GetImagesByIdHistory(t.Context(), img.Id, dockhand.GetImagesByIdHistoryOperationOptions{Env: &env})
-	if err != nil || len(history.Model) == 0 || !slices.Contains(history.Model[0].Tags, smallImage) || history.Model[0].CreatedBy == "" || history.Model[0].Created <= 0 || history.Model[0].Size <= 0 {
-		t.Errorf("its history = %+v, %v", history.Model, err)
+	history, err := c.GetImagesByIdHistory(t.Context(), img.Id, dockhand.GetImagesByIdHistoryOptions{Env: env})
+	if err != nil || len(history.Answer) == 0 || !slices.Contains(history.Answer[0].Tags, smallImage) || history.Answer[0].CreatedBy == "" || history.Answer[0].Created <= 0 || history.Answer[0].Size <= 0 {
+		t.Errorf("its history = %+v, %v", history.Answer, err)
 	}
-	if _, err := c.GetImagesByIdHistory(t.Context(), smallImage, dockhand.GetImagesByIdHistoryOperationOptions{Env: &env}); client.StatusCode(err) != http.StatusBadRequest || !strings.Contains(err.Error(), "Invalid image ID") {
+	if _, err := c.GetImagesByIdHistory(t.Context(), smallImage, dockhand.GetImagesByIdHistoryOptions{Env: env}); client.StatusCode(err) != http.StatusBadRequest || !strings.Contains(err.Error(), "Invalid image ID") {
 		t.Errorf("its history asked by its name = %v", err)
 	}
 
-	tagged, err := c.PostImagesByIdTag(t.Context(), img.Id, dockhand.PostImagesByIdTagRequest{Repo: "it/spare", Tag: "one"}, dockhand.PostImagesByIdTagOperationOptions{Env: &env})
-	if err != nil || !yes(tagged.Model.Success) {
-		t.Fatalf("a second name = %+v, %v", tagged.Model, err)
+	tagged, err := c.PostImagesByIdTag(t.Context(), img.Id, dockhand.PostImagesByIdTagRequest{Repo: "it/spare", Tag: "one"}, dockhand.PostImagesByIdTagOptions{Env: env})
+	if err != nil || !tagged.Answer.Success {
+		t.Fatalf("a second name = %+v, %v", tagged.Answer, err)
 	}
-	if now := imageOf(t, env, spare); now == nil || now.Id != img.Id || !slices.Contains(now.RepoTags, smallImage) {
+	if now := imageOf(t, int(env), spare); now == nil || now.Id != img.Id || !slices.Contains(now.RepoTags, smallImage) {
 		t.Errorf("the image under its second name = %+v", now)
 	}
-	if _, err := c.PostImagesByIdTag(t.Context(), "sha256:0000", dockhand.PostImagesByIdTagRequest{Repo: "it/spare", Tag: "two"}, dockhand.PostImagesByIdTagOperationOptions{Env: &env}); client.StatusCode(err) != http.StatusInternalServerError {
+	if _, err := c.PostImagesByIdTag(t.Context(), "sha256:0000", dockhand.PostImagesByIdTagRequest{Repo: "it/spare", Tag: "two"}, dockhand.PostImagesByIdTagOptions{Env: env}); client.StatusCode(err) != http.StatusInternalServerError {
 		t.Errorf("a name for an image there is none of = %v", err)
 	}
 
 	// under two names it is not removed unless forced, and then it goes whole
-	if _, err := c.DeleteImagesById(t.Context(), img.Id, dockhand.DeleteImagesByIdOperationOptions{Env: &env}); client.StatusCode(err) != http.StatusConflict || !strings.Contains(err.Error(), "must be forced") {
+	if _, err := c.DeleteImagesById(t.Context(), img.Id, dockhand.DeleteImagesByIdOptions{Env: env}); client.StatusCode(err) != http.StatusConflict || !strings.Contains(err.Error(), "must be forced") {
 		t.Errorf("removing an image under two names, not forced = %v", err)
 	}
-	if _, err := c.DeleteImagesById(t.Context(), spare, dockhand.DeleteImagesByIdOperationOptions{Env: &env}); client.StatusCode(err) != http.StatusBadRequest {
+	if _, err := c.DeleteImagesById(t.Context(), spare, dockhand.DeleteImagesByIdOptions{Env: env}); client.StatusCode(err) != http.StatusBadRequest {
 		t.Errorf("removing one of its names = %v", err)
 	}
-	removed, err := c.DeleteImagesById(t.Context(), img.Id, dockhand.DeleteImagesByIdOperationOptions{Env: &env, Force: new(true)})
-	if err != nil || !yes(removed.Model.Success) {
-		t.Fatalf("removing it, forced = %+v, %v", removed.Model, err)
+	removed, err := c.DeleteImagesById(t.Context(), img.Id, dockhand.DeleteImagesByIdOptions{Env: env, Force: new(true)})
+	if err != nil || !removed.Answer.Success {
+		t.Fatalf("removing it, forced = %+v, %v", removed.Answer, err)
 	}
-	if imageOf(t, env, smallImage) != nil || imageOf(t, env, spare) != nil {
+	if imageOf(t, int(env), smallImage) != nil || imageOf(t, int(env), spare) != nil {
 		t.Error("the image is still listed under one of its names after it was removed")
 	}
 
 	// one a running container was made from is refused, forced or not
 	name := started(t, testenv.Alpha, "user")
-	fixture := imageOf(t, env, world.Image)
+	fixture := imageOf(t, int(env), world.Image)
 	if fixture == nil || fixture.Containers < 1 {
 		t.Fatalf("the image %s runs = %+v", name, fixture)
 	}
 	for _, force := range []bool{false, true} {
-		if _, err := c.DeleteImagesById(t.Context(), fixture.Id, dockhand.DeleteImagesByIdOperationOptions{Env: &env, Force: &force}); client.StatusCode(err) != http.StatusConflict || !strings.Contains(err.Error(), "running container") {
+		if _, err := c.DeleteImagesById(t.Context(), fixture.Id, dockhand.DeleteImagesByIdOptions{Env: env, Force: &force}); client.StatusCode(err) != http.StatusConflict || !strings.Contains(err.Error(), "running container") {
 			t.Errorf("removing an image a running container uses, force %v = %v", force, err)
 		}
 	}
@@ -273,31 +273,31 @@ func TestPruning(t *testing.T) {
 
 	containerID := lay()
 	// left as it is, an image prune takes only what has no name
-	nameless, err := c.PostPruneImages(t.Context(), dockhand.PostPruneImagesOperationOptions{Env: &env})
-	if err != nil || !yes(nameless.Model.Success) || nameless.Model.Result == nil || nameless.Model.JobId != "" || imageOf(t, env, smallImage) == nil {
-		t.Fatalf("a prune of nameless images = %+v, %v", nameless.Model, err)
+	nameless, err := c.PostPruneImages(t.Context(), dockhand.PostPruneImagesOptions{Env: env})
+	if err != nil || !nameless.Answer.Success || nameless.Answer.Result == nil || nameless.Answer.JobId != "" || imageOf(t, int(env), smallImage) == nil {
+		t.Fatalf("a prune of nameless images = %+v, %v", nameless.Answer, err)
 	}
 
-	containers, err := c.PostPruneContainers(t.Context(), dockhand.PostPruneContainersOperationOptions{Env: &env})
-	if err != nil || !yes(containers.Model.Success) || containers.Model.Result == nil || !slices.Contains(containers.Model.Result.ContainersDeleted, containerID) {
-		t.Errorf("a prune of stopped containers = %+v, %v, want %s among them", containers.Model.Result, err, containerID)
+	containers, err := c.PostPruneContainers(t.Context(), dockhand.PostPruneContainersOptions{Env: env})
+	if err != nil || !containers.Answer.Success || containers.Answer.Result == nil || !slices.Contains(containers.Answer.Result.ContainersDeleted, containerID) {
+		t.Errorf("a prune of stopped containers = %+v, %v, want %s among them", containers.Answer.Result, err, containerID)
 	}
-	volumes, err := c.PostPruneVolumes(t.Context(), dockhand.PostPruneVolumesOperationOptions{Env: &env})
-	if err != nil || !yes(volumes.Model.Success) || volumes.Model.Result == nil || !slices.Contains(volumes.Model.Result.VolumesDeleted, volume) {
-		t.Errorf("a prune of unused volumes = %+v, %v, want %s among them", volumes.Model.Result, err, volume)
+	volumes, err := c.PostPruneVolumes(t.Context(), dockhand.PostPruneVolumesOptions{Env: env})
+	if err != nil || !volumes.Answer.Success || volumes.Answer.Result == nil || !slices.Contains(volumes.Answer.Result.VolumesDeleted, volume) {
+		t.Errorf("a prune of unused volumes = %+v, %v, want %s among them", volumes.Answer.Result, err, volume)
 	}
-	networks, err := c.PostPruneNetworks(t.Context(), dockhand.PostPruneNetworksOperationOptions{Env: &env})
-	if err != nil || !yes(networks.Model.Success) || networks.Model.Result == nil || !slices.Contains(networks.Model.Result.NetworksDeleted, network) {
-		t.Errorf("a prune of unused networks = %+v, %v, want %s among them", networks.Model.Result, err, network)
+	networks, err := c.PostPruneNetworks(t.Context(), dockhand.PostPruneNetworksOptions{Env: env})
+	if err != nil || !networks.Answer.Success || networks.Answer.Result == nil || !slices.Contains(networks.Answer.Result.NetworksDeleted, network) {
+		t.Errorf("a prune of unused networks = %+v, %v, want %s among them", networks.Answer.Result, err, network)
 	}
 	// every unused image, named or not, waited for
-	images, err := c.PostPruneImages(t.Context(), dockhand.PostPruneImagesOperationOptions{Env: &env, Dangling: new(false)})
-	if err != nil || !yes(images.Model.Success) || images.Model.Result == nil || images.Model.Result.SpaceReclaimed <= 0 || !slices.ContainsFunc(images.Model.Result.ImagesDeleted, func(d dockhand.PostPruneImagesResponseResultImagesDeleted) bool { return d.Untagged == smallImage }) || !slices.ContainsFunc(images.Model.Result.ImagesDeleted, func(d dockhand.PostPruneImagesResponseResultImagesDeleted) bool {
+	images, err := c.PostPruneImages(t.Context(), dockhand.PostPruneImagesOptions{Env: env, Dangling: new(false)})
+	if err != nil || !images.Answer.Success || images.Answer.Result == nil || images.Answer.Result.SpaceReclaimed <= 0 || !slices.ContainsFunc(images.Answer.Result.ImagesDeleted, func(d dockhand.PostPruneImagesAnswerResultImagesDeleted) bool { return d.Untagged == smallImage }) || !slices.ContainsFunc(images.Answer.Result.ImagesDeleted, func(d dockhand.PostPruneImagesAnswerResultImagesDeleted) bool {
 		return strings.HasPrefix(d.Deleted, "sha256:")
 	}) {
-		t.Errorf("a prune of every unused image = %+v, %v", images.Model.Result, err)
+		t.Errorf("a prune of every unused image = %+v, %v", images.Answer.Result, err)
 	}
-	if imageOf(t, env, smallImage) != nil || imageOf(t, env, world.Image) == nil {
+	if imageOf(t, int(env), smallImage) != nil || imageOf(t, int(env), world.Image) == nil {
 		t.Error("after the prune the unused image is still listed, or the one in use is not")
 	}
 
@@ -305,36 +305,36 @@ func TestPruning(t *testing.T) {
 	if _, err := world.Docker(ctx, host, "pull", "-q", anotherImage); err != nil {
 		t.Fatal(err)
 	}
-	started, err := c.PostPruneImages(t.Context(), dockhand.PostPruneImagesOperationOptions{Accept: dockhand.AcceptJob, Env: &env, Dangling: new(false)})
-	if err != nil || started.Model.JobId == "" || started.Model.Result != nil {
-		t.Fatalf("a prune asked as a job = %+v, %v", started.Model, err)
+	started, err := c.PostPruneImages(t.Context(), dockhand.PostPruneImagesOptions{Accept: dockhand.AcceptJob, Env: env, Dangling: new(false)})
+	if err != nil || started.Answer.JobId == "" || started.Answer.Result != nil {
+		t.Fatalf("a prune asked as a job = %+v, %v", started.Answer, err)
 	}
-	job := ended(t, started.Model.JobId)
+	job := ended(t, started.Answer.JobId)
 	report, isReport := job.Result["result"].(map[string]any)
-	if job.Status != "done" || !is(job.Result["success"], true) || !isReport || report["ImagesDeleted"] == nil || imageOf(t, env, anotherImage) != nil {
+	if job.Status != "done" || !is(job.Result["success"], true) || !isReport || report["ImagesDeleted"] == nil || imageOf(t, int(env), anotherImage) != nil {
 		t.Errorf("the job of a prune = %+v", job)
 	}
 
 	// all four at once: one report of each kind
 	containerID = lay()
-	all, err := c.PostPruneAll(t.Context(), dockhand.PostPruneAllOperationOptions{Env: &env})
-	if err != nil || !yes(all.Model.Success) || all.Model.Result == nil {
-		t.Fatalf("a prune of everything = %+v, %v", all.Model, err)
+	all, err := c.PostPruneAll(t.Context(), dockhand.PostPruneAllOptions{Env: env})
+	if err != nil || !all.Answer.Success || all.Answer.Result == nil {
+		t.Fatalf("a prune of everything = %+v, %v", all.Answer, err)
 	}
-	got := all.Model.Result
-	if got.Containers == nil || !slices.Contains(got.Containers.ContainersDeleted, containerID) || got.Volumes == nil || !slices.Contains(got.Volumes.VolumesDeleted, volume) || got.Networks == nil || !slices.Contains(got.Networks.NetworksDeleted, network) || got.Images == nil || !slices.ContainsFunc(got.Images.ImagesDeleted, func(d dockhand.PostPruneAllResponseResultImagesImagesDeleted) bool { return d.Untagged == smallImage }) {
+	got := all.Answer.Result
+	if got.Containers == nil || !slices.Contains(got.Containers.ContainersDeleted, containerID) || got.Volumes == nil || !slices.Contains(got.Volumes.VolumesDeleted, volume) || got.Networks == nil || !slices.Contains(got.Networks.NetworksDeleted, network) || got.Images == nil || !slices.ContainsFunc(got.Images.ImagesDeleted, func(d dockhand.PostPruneAllAnswerResultImagesImagesDeleted) bool { return d.Untagged == smallImage }) {
 		t.Errorf("what a prune of everything took = containers %+v, volumes %+v, networks %+v, images %+v", got.Containers, got.Volumes, got.Networks, got.Images)
 	}
-	if imageOf(t, env, world.Image) == nil {
+	if imageOf(t, int(env), world.Image) == nil {
 		t.Error("a prune of everything took the image a running container uses")
 	}
 
 	// an environment there is none of: refused for everything at once, and for images alone a 200 that says it failed
 	nowhere := 99999
-	if _, err := c.PostPruneAll(t.Context(), dockhand.PostPruneAllOperationOptions{Env: &nowhere}); client.StatusCode(err) != http.StatusInternalServerError || !strings.Contains(err.Error(), "not found") {
+	if _, err := c.PostPruneAll(t.Context(), dockhand.PostPruneAllOptions{Env: dockhand.EnvironmentID(nowhere)}); client.StatusCode(err) != http.StatusInternalServerError || !strings.Contains(err.Error(), "not found") {
 		t.Errorf("a prune of an environment there is none of = %v", err)
 	}
-	if lost, err := c.PostPruneImages(t.Context(), dockhand.PostPruneImagesOperationOptions{Env: &nowhere}); err != nil || yes(lost.Model.Success) || lost.Model.Error == "" {
-		t.Errorf("a prune of the images of an environment there is none of = %+v, %v", lost.Model, err)
+	if lost, err := c.PostPruneImages(t.Context(), dockhand.PostPruneImagesOptions{Env: dockhand.EnvironmentID(nowhere)}); err != nil || lost.Answer.Success || lost.Answer.Error == "" {
+		t.Errorf("a prune of the images of an environment there is none of = %+v, %v", lost.Answer, err)
 	}
 }

@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,35 +13,57 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostContainersByIdPauseOperationResponse is the result of PostContainersByIdPause.
-type PostContainersByIdPauseOperationResponse struct {
+// PostContainersByIdPauseResponse is the result of PostContainersByIdPause.
+//
+// Answer is the PostContainersByIdPauseAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostContainersByIdPauseResponse struct {
 	HttpResponse *http.Response
-	Model        *PostContainersByIdPauseResponse
+	Answer       *PostContainersByIdPauseAnswer
+	*PostContainersByIdPauseAnswer
 }
 
-// PostContainersByIdPauseOperationOptions holds the query and header parameters of PostContainersByIdPause.
-type PostContainersByIdPauseOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostContainersByIdPauseResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostContainersByIdPauseAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostContainersByIdPauseResponse) Record() (PostContainersByIdPauseAnswer, error) {
+	if r.Answer == nil {
+		return PostContainersByIdPauseAnswer{}, errors.New("PostContainersByIdPause answered no PostContainersByIdPauseAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostContainersByIdPauseOptions holds the query and header parameters of PostContainersByIdPause.
+type PostContainersByIdPauseOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostContainersByIdPauseOperationOptions) ToHeaders() *client.Headers {
+func (o PostContainersByIdPauseOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostContainersByIdPauseOperationOptions) ToQuery() *client.QueryParams {
+func (o PostContainersByIdPauseOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostContainersByIdPause calls POST /api/containers/{id}/pause. Pause all processes in a running container (requires the container 'stop' permission).
-func (c Client) PostContainersByIdPause(ctx context.Context, id string, options PostContainersByIdPauseOperationOptions) (result PostContainersByIdPauseOperationResponse, err error) {
+func (c Client) PostContainersByIdPause(ctx context.Context, id string, options PostContainersByIdPauseOptions) (result PostContainersByIdPauseResponse, err error) {
+	result.PostContainersByIdPauseAnswer = &PostContainersByIdPauseAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -64,11 +87,12 @@ func (c Client) PostContainersByIdPause(ctx context.Context, id string, options 
 		return
 	}
 
-	var model PostContainersByIdPauseResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostContainersByIdPauseAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostContainersByIdPauseAnswer = result.Answer
 
 	return
 }

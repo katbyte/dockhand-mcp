@@ -76,7 +76,7 @@ func envNamed(envs []environment, id int) string {
 	if id == 0 {
 		return ""
 	}
-	if at := slices.IndexFunc(envs, func(e environment) bool { return e.ID == id }); at >= 0 {
+	if at := slices.IndexFunc(envs, func(e environment) bool { return int(e.ID) == id }); at >= 0 {
 		return envs[at].Name
 	}
 
@@ -84,8 +84,8 @@ func envNamed(envs []environment, id int) string {
 }
 
 // scheduleRunOf is a run as the tools answer with it.
-func scheduleRunOf(e *dockhand.GetSchedulesExecutionsResponseExecutions, envs []environment) scheduleRun {
-	return scheduleRun{Run: e.Id, Type: typeShown(e.ScheduleType), ID: e.ScheduleId, Name: e.EntityName, Env: envNamed(envs, e.EnvironmentId), Status: e.Status, By: e.TriggeredBy, At: cmp.Or(e.TriggeredAt, e.StartedAt), Seconds: math.Round(float64(e.Duration)/100) / 10, Error: strings.TrimSpace(e.ErrorMessage), Details: e.Details}
+func scheduleRunOf(e *dockhand.GetSchedulesExecutionsAnswerExecutions, envs []environment) scheduleRun {
+	return scheduleRun{Run: e.Id, Type: typeShown(e.ScheduleType), ID: e.ScheduleId, Name: e.EntityName, Env: envNamed(envs, int(e.EnvironmentId)), Status: string(e.Status), By: e.TriggeredBy, At: when(cmp.Or(e.TriggeredAt, e.StartedAt)), Seconds: math.Round(float64(e.Duration)/100) / 10, Error: strings.TrimSpace(e.ErrorMessage), Details: e.Details}
 }
 
 // scheduleRow is one thing Dockhand does by itself.
@@ -103,7 +103,7 @@ type scheduleRow struct {
 }
 
 // schedules is everything Dockhand does by itself, as it lists them, with the environments to name each by.
-func (r *registry) schedules(ctx context.Context) ([]dockhand.GetSchedulesResponseSchedules, []environment, error) {
+func (r *registry) schedules(ctx context.Context) ([]dockhand.GetSchedulesAnswerSchedules, []environment, error) {
 	envs, err := r.environments(ctx)
 	if err != nil {
 		return nil, nil, err
@@ -113,7 +113,7 @@ func (r *registry) schedules(ctx context.Context) ([]dockhand.GetSchedulesRespon
 		return nil, nil, fmt.Errorf("the schedules could not be listed: %w", refusal(err))
 	}
 
-	return listed.Model.Schedules, envs, nil
+	return listed.Answer.Schedules, envs, nil
 }
 
 // scheduleArg names one schedule, as schedule_list gives them.
@@ -137,7 +137,7 @@ func (a scheduleArg) checked() (string, error) {
 
 // scheduled is the one schedule an argument names, as Dockhand lists it now, or nil when it lists none: an environment's check for newer images is
 // only listed while it is switched on.
-func (r *registry) scheduled(ctx context.Context, a scheduleArg) (kind string, found *dockhand.GetSchedulesResponseSchedules, envs []environment, err error) {
+func (r *registry) scheduled(ctx context.Context, a scheduleArg) (kind string, found *dockhand.GetSchedulesAnswerSchedules, envs []environment, err error) {
 	if kind, err = a.checked(); err != nil {
 		return "", nil, nil, err
 	}
@@ -145,7 +145,7 @@ func (r *registry) scheduled(ctx context.Context, a scheduleArg) (kind string, f
 	if err != nil {
 		return kind, nil, nil, err
 	}
-	if at := slices.IndexFunc(listed, func(s dockhand.GetSchedulesResponseSchedules) bool { return s.Type == kind && s.Id == a.ID }); at >= 0 {
+	if at := slices.IndexFunc(listed, func(s dockhand.GetSchedulesAnswerSchedules) bool { return string(s.Type) == kind && s.Id == a.ID }); at >= 0 {
 		found = &listed[at]
 	}
 
@@ -153,16 +153,16 @@ func (r *registry) scheduled(ctx context.Context, a scheduleArg) (kind string, f
 }
 
 // latestRun is the newest run of a schedule, or nil when it has none.
-func (r *registry) latestRun(ctx context.Context, kind string, id int) (*dockhand.GetSchedulesExecutionsResponseExecutions, error) {
-	runs, err := r.dock.GetSchedulesExecutions(ctx, dockhand.GetSchedulesExecutionsOperationOptions{ScheduleType: kind, ScheduleId: &id, Limit: new(1)})
+func (r *registry) latestRun(ctx context.Context, kind string, id int) (*dockhand.GetSchedulesExecutionsAnswerExecutions, error) {
+	runs, err := r.dock.GetSchedulesExecutions(ctx, dockhand.GetSchedulesExecutionsOptions{ScheduleType: kind, ScheduleId: &id, Limit: new(1)})
 	if err != nil {
 		return nil, refusal(err)
 	}
-	if len(runs.Model.Executions) == 0 {
+	if len(runs.Answer.Executions) == 0 {
 		return nil, nil //nolint:nilnil // a schedule that has never run has no latest run, and that is no error
 	}
 
-	return &runs.Model.Executions[0], nil
+	return &runs.Answer.Executions[0], nil
 }
 
 func registerScheduleTools(r *registry) {
@@ -195,7 +195,7 @@ func registerScheduleTools(r *registry) {
 			if failed != nil {
 				return nil, scheduleListOut{}, failed
 			}
-			only = env.ID
+			only = int(env.ID)
 		}
 		listed, envs, err := r.schedules(ctx)
 		if err != nil {
@@ -205,12 +205,12 @@ func registerScheduleTools(r *registry) {
 		out := scheduleListOut{Schedules: []scheduleRow{}}
 		for i := range listed {
 			s := &listed[i]
-			if (kind != "" && s.Type != kind) || (only != 0 && s.EnvironmentId != only) || (in.HideSystem && yes(s.IsSystem)) {
+			if (kind != "" && string(s.Type) != kind) || (only != 0 && int(s.EnvironmentId) != only) || (in.HideSystem && s.IsSystem) {
 				continue
 			}
-			row := scheduleRow{Type: typeShown(s.Type), ID: s.Id, Name: s.Name, Does: s.Description, Env: envNamed(envs, s.EnvironmentId), Enabled: yes(s.Enabled), Cron: s.CronExpression, NextRun: s.NextRun, System: yes(s.IsSystem)}
+			row := scheduleRow{Type: typeShown(string(s.Type)), ID: s.Id, Name: s.Name, Does: s.Description, Env: envNamed(envs, int(s.EnvironmentId)), Enabled: s.Enabled, Cron: s.CronExpression, NextRun: when(s.NextRun), System: s.IsSystem}
 			if s.LastExecution != nil {
-				last := scheduleRunOf(new(dockhand.GetSchedulesExecutionsResponseExecutions(*s.LastExecution)), envs)
+				last := scheduleRunOf(new(dockhand.GetSchedulesExecutionsAnswerExecutions(*s.LastExecution)), envs)
 				row.LastRun = &last
 			}
 			out.Schedules = append(out.Schedules, row)
@@ -269,8 +269,8 @@ func registerScheduleTools(r *registry) {
 			if failed != nil {
 				return nil, scheduleHistoryOut{}, fmt.Errorf("run %d could not be read: %w", in.Run, refusal(failed))
 			}
-			out := scheduleHistoryOut{Runs: []scheduleRun{scheduleRunOf(new(dockhand.GetSchedulesExecutionsResponseExecutions(*read.Model)), envs)}, Total: 1}
-			log := strings.TrimSpace(read.Model.Logs)
+			out := scheduleHistoryOut{Runs: []scheduleRun{scheduleRunOf(new(dockhand.GetSchedulesExecutionsAnswerExecutions(*read.Answer)), envs)}, Total: 1}
+			log := strings.TrimSpace(read.Answer.Logs)
 			if !in.RevealSecrets {
 				log, out.Hidden = maskText(log)
 			}
@@ -320,7 +320,7 @@ func registerScheduleTools(r *registry) {
 			return nil, scheduleHistoryOut{}, fmt.Errorf("limit is %d and offset %d: limit is how many runs to give at most, from 1 to %d or left out for %d, and offset how many of the latest to pass over", in.Limit, in.Offset, maxRuns, defaultRuns)
 		}
 		limit := cmp.Or(in.Limit, defaultRuns)
-		options := dockhand.GetSchedulesExecutionsOperationOptions{ScheduleType: kind, Statuses: strings.Join(statuses, ","), TriggeredBy: by, FromDate: since, ToDate: until, Limit: &limit}
+		options := dockhand.GetSchedulesExecutionsOptions{ScheduleType: kind, Statuses: strings.Join(statuses, ","), TriggeredBy: by, FromDate: since, ToDate: until, Limit: &limit}
 		if in.ID != 0 {
 			options.ScheduleId = &in.ID
 		}
@@ -336,16 +336,16 @@ func registerScheduleTools(r *registry) {
 			if failed != nil {
 				return nil, scheduleHistoryOut{}, failed
 			}
-			options.EnvironmentId = &env.ID
+			options.EnvironmentId = env.ID
 		}
 
 		listed, err := r.dock.GetSchedulesExecutions(ctx, options)
 		if err != nil {
 			return nil, scheduleHistoryOut{}, fmt.Errorf("the runs could not be listed: %w", refusal(err))
 		}
-		out := scheduleHistoryOut{Runs: make([]scheduleRun, 0, len(listed.Model.Executions)), Total: listed.Model.Total}
-		for i := range listed.Model.Executions {
-			out.Runs = append(out.Runs, scheduleRunOf(&listed.Model.Executions[i], envs))
+		out := scheduleHistoryOut{Runs: make([]scheduleRun, 0, len(listed.Answer.Executions)), Total: listed.Answer.Total}
+		for i := range listed.Answer.Executions {
+			out.Runs = append(out.Runs, scheduleRunOf(&listed.Answer.Executions[i], envs))
 		}
 		switch {
 		case out.Total > in.Offset+len(out.Runs):
@@ -486,9 +486,9 @@ func registerScheduleTools(r *registry) {
 		word := map[bool]string{true: "on", false: "off"}[in.Enabled]
 		what := fmt.Sprintf("the %s numbered %d", typeShown(kind), in.ID)
 		if found != nil {
-			out.Name, out.Enabled, out.NextRun = found.Name, yes(found.Enabled), found.NextRun
+			out.Name, out.Enabled, out.NextRun = found.Name, found.Enabled, when(found.NextRun)
 			what = fmt.Sprintf("%q (%s %d)", found.Name, typeShown(kind), in.ID)
-			if yes(found.Enabled) == in.Enabled {
+			if found.Enabled == in.Enabled {
 				out.Note = "nothing to do: it is switched " + word + " already"
 
 				return nil, out, nil
@@ -501,27 +501,27 @@ func registerScheduleTools(r *registry) {
 		}
 
 		// Dockhand has no call that sets it one way: the one it has turns it over, which is why how it stands was read first
-		var now *bool
+		var now bool
 		if system {
 			toggled, failed := r.dock.PostSchedulesSystemByIdToggle(ctx, in.ID)
 			if failed != nil {
 				return nil, out, fmt.Errorf("%s was not switched %s: %w", what, word, refusal(failed))
 			}
-			now = toggled.Model.Enabled
+			now = toggled.Answer.Enabled
 		} else {
 			toggled, failed := r.dock.PostSchedulesByTypeByIdToggle(ctx, kind, in.ID)
 			if failed != nil {
 				return nil, out, fmt.Errorf("%s was not switched %s: %w", what, word, refusal(failed))
 			}
-			now = toggled.Model.Enabled
+			now = toggled.Answer.Enabled
 		}
-		if yes(now) != in.Enabled {
-			return nil, out, fmt.Errorf("%s was turned over and now stands switched %s, which is not what was asked: something else switched it at the same moment, and schedule_list says how it stands", what, map[bool]string{true: "on", false: "off"}[yes(now)])
+		if now != in.Enabled {
+			return nil, out, fmt.Errorf("%s was turned over and now stands switched %s, which is not what was asked: something else switched it at the same moment, and schedule_list says how it stands", what, map[bool]string{true: "on", false: "off"}[now])
 		}
 		out.Changes = append(out.Changes, "switched "+what+" "+word)
 		out.Enabled, out.NextRun = in.Enabled, ""
 		if _, back, _, failed := r.scheduled(ctx, in.scheduleArg); failed == nil && back != nil {
-			out.Name, out.Enabled, out.NextRun = back.Name, yes(back.Enabled), back.NextRun
+			out.Name, out.Enabled, out.NextRun = back.Name, back.Enabled, when(back.NextRun)
 		}
 
 		return nil, out, nil
@@ -568,14 +568,14 @@ func registerScheduleTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("%q was not removed: %w", found.Name, refusal(err))
 		}
-		if !yes(gone.Model.Success) {
+		if !gone.Answer.Success {
 			return nil, out, fmt.Errorf("the removal of %q was answered without its being said to have succeeded: schedule_list says whether it is still there", found.Name)
 		}
 		_, left, _, err := r.scheduled(ctx, in.scheduleArg)
 		switch {
 		case err != nil:
 			out.Note = "it was removed, and the schedules could not be listed afterwards: " + err.Error()
-		case left != nil && yes(left.Enabled):
+		case left != nil && left.Enabled:
 			return nil, out, fmt.Errorf("the removal of %q was answered as done, and it is still listed and switched on", found.Name)
 		case left != nil:
 			out.Removed = true
@@ -614,7 +614,7 @@ func registerScheduleTools(r *registry) {
 		if err != nil {
 			return nil, historyDeleteOut{}, fmt.Errorf("run %d could not be read, so nothing was removed: %w", in.Run, refusal(err))
 		}
-		run := scheduleRunOf(new(dockhand.GetSchedulesExecutionsResponseExecutions(*read.Model)), envs)
+		run := scheduleRunOf(new(dockhand.GetSchedulesExecutionsAnswerExecutions(*read.Answer)), envs)
 		out := historyDeleteOut{Run: &run}
 		if !in.Confirm {
 			out.Note = "nothing was removed: call again with confirm to remove the record of this run and what it logged"

@@ -4,32 +4,54 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetGitWebhookByIdOperationResponse is the result of GetGitWebhookById.
-type GetGitWebhookByIdOperationResponse struct {
+// GetGitWebhookByIdResponse is the result of GetGitWebhookById.
+//
+// Answer is the GetGitWebhookByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetGitWebhookByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *GetGitWebhookByIdResponse
+	Answer       *GetGitWebhookByIdAnswer
+	*GetGitWebhookByIdAnswer
 }
 
-// GetGitWebhookByIdOperationOptions holds the query and header parameters of GetGitWebhookById.
-type GetGitWebhookByIdOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetGitWebhookByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetGitWebhookByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetGitWebhookByIdResponse) Record() (GetGitWebhookByIdAnswer, error) {
+	if r.Answer == nil {
+		return GetGitWebhookByIdAnswer{}, errors.New("GetGitWebhookById answered no GetGitWebhookByIdAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetGitWebhookByIdOptions holds the query and header parameters of GetGitWebhookById.
+type GetGitWebhookByIdOptions struct {
 	// Webhook secret; required only if the repository has a webhook secret configured
 	Secret string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetGitWebhookByIdOperationOptions) ToHeaders() *client.Headers {
+func (o GetGitWebhookByIdOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetGitWebhookByIdOperationOptions) ToQuery() *client.QueryParams {
+func (o GetGitWebhookByIdOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Secret != "" {
 		out.Append("secret", o.Secret)
@@ -38,13 +60,23 @@ func (o GetGitWebhookByIdOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetGitWebhookById calls GET /api/git/webhook/{id}. GET webhook trigger for a git repository, with the secret passed as the `secret` query parameter.
-func (c Client) GetGitWebhookById(ctx context.Context, id int, options GetGitWebhookByIdOperationOptions) (result GetGitWebhookByIdOperationResponse, err error) {
+func (c Client) GetGitWebhookById(ctx context.Context, id int, options ...GetGitWebhookByIdOptions) (result GetGitWebhookByIdResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetGitWebhookById takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetGitWebhookByIdOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetGitWebhookByIdAnswer = &GetGitWebhookByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/git/webhook/%d", id),
 	}
 
@@ -62,11 +94,12 @@ func (c Client) GetGitWebhookById(ctx context.Context, id int, options GetGitWeb
 		return
 	}
 
-	var model GetGitWebhookByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetGitWebhookByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetGitWebhookByIdAnswer = result.Answer
 
 	return
 }

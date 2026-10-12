@@ -14,7 +14,7 @@ func TestOperationPutRolesById(t *testing.T) {
 	t.Parallel()
 
 	c, s := newOperationServer(t, 200, "", "")
-	result, err := c.PutRolesById(t.Context(), 7, PutRolesByIdRequest{})
+	result, err := c.PutRolesById(t.Context(), RoleID(7), PutRolesByIdRequest{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -26,13 +26,16 @@ func TestOperationPutRolesById(t *testing.T) {
 	if !json.Valid([]byte(body)) {
 		t.Errorf("body = %q, want JSON", body)
 	}
+	if body != "{}" {
+		t.Errorf("an empty record sent %q, want %q: a field never set went out", body, "{}")
+	}
 	if result.HttpResponse == nil || result.HttpResponse.StatusCode != 200 {
 		t.Fatalf("HttpResponse = %+v", result.HttpResponse)
 	}
 
 	// a status the operation does not document is an error, with the response
 	c, _ = newOperationServer(t, 418, "text/plain", "no")
-	result, err = c.PutRolesById(t.Context(), 7, PutRolesByIdRequest{})
+	result, err = c.PutRolesById(t.Context(), RoleID(7), PutRolesByIdRequest{})
 	if client.StatusCode(err) != 418 || result.HttpResponse == nil {
 		t.Errorf("an undocumented status = %v, %+v", err, result.HttpResponse)
 	}

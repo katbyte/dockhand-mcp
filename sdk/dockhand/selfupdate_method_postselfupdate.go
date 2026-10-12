@@ -9,13 +9,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostSelfUpdateOperationResponse is the result of PostSelfUpdate.
-type PostSelfUpdateOperationResponse struct {
+// PostSelfUpdateResponse is the result of PostSelfUpdate.
+type PostSelfUpdateResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostSelfUpdate calls POST /api/self-update. Pull a new Dockhand image and hand off to an updater sidecar that replaces this running container.
-func (c Client) PostSelfUpdate(ctx context.Context, input PostSelfUpdateRequest) (result PostSelfUpdateOperationResponse, err error) {
+func (c Client) PostSelfUpdate(ctx context.Context, input PostSelfUpdateRequest) (result PostSelfUpdateResponse, err error) {
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{

@@ -13,14 +13,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetBackupSnapshotsByIdBrowseOperationResponse is the result of GetBackupSnapshotsByIdBrowse.
-type GetBackupSnapshotsByIdBrowseOperationResponse struct {
+// GetBackupSnapshotsByIdBrowseResponse is the result of GetBackupSnapshotsByIdBrowse.
+type GetBackupSnapshotsByIdBrowseResponse struct {
 	HttpResponse *http.Response
-	Model        json.RawMessage
+	Answer       json.RawMessage
 }
 
-// GetBackupSnapshotsByIdBrowseOperationOptions holds the query and header parameters of GetBackupSnapshotsByIdBrowse.
-type GetBackupSnapshotsByIdBrowseOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetBackupSnapshotsByIdBrowseResponse) Answered() bool { return r.Answer != nil }
+
+// GetBackupSnapshotsByIdBrowseOptions holds the query and header parameters of GetBackupSnapshotsByIdBrowse.
+type GetBackupSnapshotsByIdBrowseOptions struct {
 	// Destination the snapshot lives in
 	DestinationId *int
 
@@ -28,17 +32,17 @@ type GetBackupSnapshotsByIdBrowseOperationOptions struct {
 	Path string
 
 	// Environment context for access checks
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetBackupSnapshotsByIdBrowseOperationOptions) ToHeaders() *client.Headers {
+func (o GetBackupSnapshotsByIdBrowseOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetBackupSnapshotsByIdBrowseOperationOptions) ToQuery() *client.QueryParams {
+func (o GetBackupSnapshotsByIdBrowseOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.DestinationId != nil {
 		out.Append("destinationId", strconv.Itoa(*o.DestinationId))
@@ -46,20 +50,29 @@ func (o GetBackupSnapshotsByIdBrowseOperationOptions) ToQuery() *client.QueryPar
 	if o.Path != "" {
 		out.Append("path", o.Path)
 	}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetBackupSnapshotsByIdBrowse calls GET /api/backup/snapshots/{id}/browse. List directory entries at a path inside a snapshot (job-polled).
-func (c Client) GetBackupSnapshotsByIdBrowse(ctx context.Context, id string, options GetBackupSnapshotsByIdBrowseOperationOptions) (result GetBackupSnapshotsByIdBrowseOperationResponse, err error) {
+func (c Client) GetBackupSnapshotsByIdBrowse(ctx context.Context, id string, options ...GetBackupSnapshotsByIdBrowseOptions) (result GetBackupSnapshotsByIdBrowseResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetBackupSnapshotsByIdBrowse takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetBackupSnapshotsByIdBrowseOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/backup/snapshots/%s/browse", url.PathEscape(id)),
 	}
 
@@ -77,7 +90,7 @@ func (c Client) GetBackupSnapshotsByIdBrowse(ctx context.Context, id string, opt
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

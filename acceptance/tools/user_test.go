@@ -184,7 +184,7 @@ func TestJourneyTheLoginReadSetAndSwitched(t *testing.T) {
 			t.Fatal(failed)
 		}
 
-		return session.Model.AuthEnabled != nil && *session.Model.AuthEnabled
+		return session.Answer.AuthEnabled
 	}
 	// whatever happens the stage is left as it began: a login that is on is switched off by the user this journey made, who signs in to do it, and
 	// one that is off is switched on by nobody, as Dockhand lets it be
@@ -200,9 +200,9 @@ func TestJourneyTheLoginReadSetAndSwitched(t *testing.T) {
 		default:
 		}
 		if listed, err := world.Dock.GetUsers(ctx); err == nil {
-			for i := range listed.Model {
-				if listed.Model[i].Username == journeyDoorkeeper {
-					_, _ = world.Dock.DeleteUsersById(ctx, listed.Model[i].Id, dockhand.DeleteUsersByIdOperationOptions{})
+			for i := range listed.Answer {
+				if listed.Answer[i].Username == journeyDoorkeeper {
+					_, _ = world.Dock.DeleteUsersById(ctx, listed.Answer[i].Id, dockhand.DeleteUsersByIdOptions{})
 				}
 			}
 		}
@@ -313,7 +313,7 @@ func TestJourneyTheLoginReadSetAndSwitched(t *testing.T) {
 		t.Fatalf("the user the journey made does not sign in: %v", err)
 	}
 	if back, err := keeper.PutAuthSettings(t.Context(), dockhand.PutAuthSettingsRequest{AuthEnabled: new(false)}); err != nil || loginIs() {
-		t.Fatalf("switching the login off again as that user = %+v, %v", back.Model, err)
+		t.Fatalf("switching the login off again as that user = %+v, %v", back.Answer, err)
 	}
 	if again := call(t, "login_get", nil); !acctest.IsBool(again["enabled"], false) {
 		t.Errorf("the login once it is off again = %v", again)

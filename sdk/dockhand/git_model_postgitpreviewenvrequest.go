@@ -4,10 +4,10 @@ package dockhand
 
 // PostGitPreviewEnvRequest is an object the document declares inline.
 type PostGitPreviewEnvRequest struct {
-	Branch       string `json:"branch,omitempty"`
-	ComposePath  string `json:"composePath"`
-	CredentialId int    `json:"credentialId,omitempty"`
-	EnvFilePath  string `json:"envFilePath,omitempty"`
-	RepositoryId int    `json:"repositoryId,omitempty"`
-	Url          string `json:"url,omitempty"`
+	Branch       string          `json:"branch,omitempty"`
+	ComposePath  string          `json:"composePath"`
+	CredentialId GitCredentialID `json:"credentialId,omitempty"`
+	EnvFilePath  string          `json:"envFilePath,omitempty"`
+	RepositoryId GitRepositoryID `json:"repositoryId,omitempty"`
+	Url          string          `json:"url,omitempty"`
 }

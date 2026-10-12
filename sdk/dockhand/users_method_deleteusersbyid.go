@@ -4,33 +4,56 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteUsersByIdOperationResponse is the result of DeleteUsersById.
-type DeleteUsersByIdOperationResponse struct {
+// DeleteUsersByIdResponse is the result of DeleteUsersById.
+//
+// Answer is the DeleteUsersByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteUsersByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteUsersByIdResponse
+	Answer       *DeleteUsersByIdAnswer
+	*DeleteUsersByIdAnswer
 }
 
-// DeleteUsersByIdOperationOptions holds the query and header parameters of DeleteUsersById.
-type DeleteUsersByIdOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteUsersByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteUsersByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteUsersByIdResponse) Record() (DeleteUsersByIdAnswer, error) {
+	if r.Answer == nil {
+		return DeleteUsersByIdAnswer{}, errors.New("DeleteUsersById answered no DeleteUsersByIdAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// DeleteUsersByIdOptions holds the query and header parameters of DeleteUsersById.
+type DeleteUsersByIdOptions struct {
 	// Set to true to confirm deleting the last admin (which disables authentication)
 	ConfirmDisableAuth *bool
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o DeleteUsersByIdOperationOptions) ToHeaders() *client.Headers {
+func (o DeleteUsersByIdOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o DeleteUsersByIdOperationOptions) ToQuery() *client.QueryParams {
+func (o DeleteUsersByIdOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.ConfirmDisableAuth != nil {
 		out.Append("confirmDisableAuth", strconv.FormatBool(*o.ConfirmDisableAuth))
@@ -39,14 +62,24 @@ func (o DeleteUsersByIdOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // DeleteUsersById calls DELETE /api/users/{id}. Delete a user by id; deleting the last admin while auth is enabled disables authentication and requires confirmDisableAuth.
-func (c Client) DeleteUsersById(ctx context.Context, id int, options DeleteUsersByIdOperationOptions) (result DeleteUsersByIdOperationResponse, err error) {
+func (c Client) DeleteUsersById(ctx context.Context, id UserID, options ...DeleteUsersByIdOptions) (result DeleteUsersByIdResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("DeleteUsersById takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option DeleteUsersByIdOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.DeleteUsersByIdAnswer = &DeleteUsersByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
-		OptionsObject: options,
-		Path:          fmt.Sprintf("/api/users/%d", id),
+		OptionsObject: option,
+		Path:          fmt.Sprintf("/api/users/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -63,11 +96,12 @@ func (c Client) DeleteUsersById(ctx context.Context, id int, options DeleteUsers
 		return
 	}
 
-	var model DeleteUsersByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteUsersByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteUsersByIdAnswer = result.Answer
 
 	return
 }

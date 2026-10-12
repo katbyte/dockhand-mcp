@@ -73,12 +73,12 @@ func TestImageExportedAndLoaded(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _, _ = world.Docker(after, testenv.Alpha, "rmi", carried) })
-	image := imageOf(t, alpha, carried)
+	image := imageOf(t, int(alpha), carried)
 	if image == nil {
 		t.Fatalf("the host does not list the image tagged a moment ago as %s", carried)
 	}
 	export := func(env int, id, tag string, compress bool) ([]byte, http.Header, error) {
-		got, err := c.GetImagesByIdExport(ctx, id, dockhand.GetImagesByIdExportOperationOptions{Env: &env, Tag: tag, Compress: new(compress)})
+		got, err := c.GetImagesByIdExport(ctx, id, dockhand.GetImagesByIdExportOptions{Env: dockhand.EnvironmentID(env), Tag: tag, Compress: new(compress)})
 		if got.HttpResponse == nil || got.HttpResponse.Body == nil {
 			return nil, nil, err
 		}
@@ -98,48 +98,48 @@ func TestImageExportedAndLoaded(t *testing.T) {
 	}
 
 	// under a name asked for, the archive records that name alone and is called after it
-	plain, header, err := export(alpha, image.Id, carried, false)
+	plain, header, err := export(int(alpha), image.Id, carried, false)
 	if err != nil || header.Get("Content-Type") != "application/x-tar" || !strings.Contains(header.Get("Content-Disposition"), "it-export_carried_one.tar") || !slices.Equal(recorded(plain), []string{carried}) {
 		t.Fatalf("an image exported under one of its names = %d bytes, %v, %v, recording %v", len(plain), header, err, recorded(plain))
 	}
 	// gzipped when asked, and the same archive
-	zipped, header, err := export(alpha, image.Id, carried, true)
+	zipped, header, err := export(int(alpha), image.Id, carried, true)
 	if err != nil || header.Get("Content-Type") != "application/gzip" || !strings.Contains(header.Get("Content-Disposition"), ".tar.gz") || !slices.Equal(recorded(unzipped(t, zipped)), []string{carried}) {
 		t.Errorf("an image exported gzipped = %d bytes, %v, %v", len(zipped), header, err)
 	}
 	// from behind the agent, whole
-	if through, _, err := export(beta, imageOf(t, beta, world.Image).Id, world.Image, false); err != nil || !slices.Equal(recorded(through), []string{world.Image}) {
+	if through, _, err := export(int(beta), imageOf(t, int(beta), world.Image).Id, world.Image, false); err != nil || !slices.Equal(recorded(through), []string{world.Image}) {
 		t.Errorf("an image exported from behind the agent = %d bytes, %v", len(through), err)
 	}
 	// an image is exported by its id, and a name is no id; one there is none of is Docker's own refusal, as a 500
-	if _, _, err := export(alpha, carried, "", false); client.StatusCode(err) != http.StatusBadRequest || !strings.Contains(err.Error(), "Invalid image ID") {
+	if _, _, err := export(int(alpha), carried, "", false); client.StatusCode(err) != http.StatusBadRequest || !strings.Contains(err.Error(), "Invalid image ID") {
 		t.Errorf("an image exported by a name = %v, want a 400", err)
 	}
-	if _, _, err := export(alpha, "sha256:"+strings.Repeat("0", 64), "", false); client.StatusCode(err) != http.StatusInternalServerError || !strings.Contains(err.Error(), "No such image") {
+	if _, _, err := export(int(alpha), "sha256:"+strings.Repeat("0", 64), "", false); client.StatusCode(err) != http.StatusInternalServerError || !strings.Contains(err.Error(), "No such image") {
 		t.Errorf("an image there is none of, exported = %v, want a 500", err)
 	}
 
 	// loaded: the name it records is the host's again once it was taken away, from a plain archive and from a gzipped one
-	load := func(env int, archive []byte) (*dockhand.PostImagesLoadResponse, error) {
-		loaded, err := c.PostImagesLoad(ctx, bytes.NewReader(archive), "application/x-tar", dockhand.PostImagesLoadOperationOptions{Env: &env})
+	load := func(env int, archive []byte) (*dockhand.PostImagesLoadAnswer, error) {
+		loaded, err := c.PostImagesLoad(ctx, bytes.NewReader(archive), "application/x-tar", dockhand.PostImagesLoadOptions{Env: dockhand.EnvironmentID(env)})
 
-		return loaded.Model, err
+		return loaded.Answer, err
 	}
 	for what, archive := range map[string][]byte{"a plain archive": plain, "a gzipped archive": zipped} {
 		if _, err := world.Docker(ctx, testenv.Alpha, "rmi", carried); err != nil {
 			t.Fatal(err)
 		}
-		loaded, err := load(alpha, archive)
-		if err != nil || !yes(loaded.Success) || loaded.Loaded != "Loaded image: "+carried || imageOf(t, alpha, carried) == nil {
+		loaded, err := load(int(alpha), archive)
+		if err != nil || !loaded.Success || loaded.Loaded != "Loaded image: "+carried || imageOf(t, int(alpha), carried) == nil {
 			t.Errorf("%s loaded = %+v, %v", what, loaded, err)
 		}
 	}
 	// a host behind an agent is refused
-	if _, err := load(beta, plain); client.StatusCode(err) != http.StatusInternalServerError || !strings.Contains(err.Error(), "not supported on Hawser connections") {
+	if _, err := load(int(beta), plain); client.StatusCode(err) != http.StatusInternalServerError || !strings.Contains(err.Error(), "not supported on Hawser connections") {
 		t.Errorf("an archive loaded onto a host behind an agent = %v, want it refused", err)
 	}
 	// what is no archive is not loaded: Dockhand answers a 500 in Docker's words, or hangs up before it answers anything
-	if loaded, err := load(alpha, []byte(strings.Repeat("this is no archive\n", 300))); err == nil {
+	if loaded, err := load(int(alpha), []byte(strings.Repeat("this is no archive\n", 300))); err == nil {
 		t.Errorf("what is no archive, loaded = %+v, want it refused", loaded)
 	}
 }
@@ -163,7 +163,7 @@ func TestVolumeExported(t *testing.T) {
 	}
 	clean := func() {
 		for _, name := range []string{volume, phantom} {
-			_, _ = c.PostVolumesByNameBrowseRelease(after, name, dockhand.PostVolumesByNameBrowseReleaseOperationOptions{Env: &env})
+			_, _ = c.PostVolumesByNameBrowseRelease(after, name, dockhand.PostVolumesByNameBrowseReleaseOptions{Env: env})
 			_, _ = world.Docker(after, host, "volume", "rm", "-f", name)
 		}
 	}
@@ -173,7 +173,7 @@ func TestVolumeExported(t *testing.T) {
 		t.Fatal(err)
 	}
 	export := func(name, within, format string) ([]byte, http.Header, error) {
-		got, err := c.GetVolumesByNameExport(ctx, name, dockhand.GetVolumesByNameExportOperationOptions{Env: &env, Path: within, Format: format})
+		got, err := c.GetVolumesByNameExport(ctx, name, dockhand.GetVolumesByNameExportOptions{Env: env, Path: within, Format: format})
 		if got.HttpResponse == nil || got.HttpResponse.Body == nil {
 			return nil, nil, err
 		}
@@ -214,8 +214,8 @@ func TestVolumeExported(t *testing.T) {
 		t.Error("no helper container was left by the exports, where each leaves one")
 	}
 	// released, they are taken away, which the answer does not wait for
-	if released, err := c.PostVolumesByNameBrowseRelease(ctx, volume, dockhand.PostVolumesByNameBrowseReleaseOperationOptions{Env: &env}); err != nil || !yes(released.Model.Success) {
-		t.Errorf("the helpers released = %+v, %v", released.Model, err)
+	if released, err := c.PostVolumesByNameBrowseRelease(ctx, volume, dockhand.PostVolumesByNameBrowseReleaseOptions{Env: env}); err != nil || !released.Answer.Success {
+		t.Errorf("the helpers released = %+v, %v", released.Answer, err)
 	}
 	for waited := 0; helpers(volume) != 0; waited++ {
 		if waited == 30 {

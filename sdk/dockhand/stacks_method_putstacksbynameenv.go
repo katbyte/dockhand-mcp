@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,42 +13,73 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutStacksByNameEnvOperationResponse is the result of PutStacksByNameEnv.
-type PutStacksByNameEnvOperationResponse struct {
+// PutStacksByNameEnvResponse is the result of PutStacksByNameEnv.
+//
+// Answer is the PutStacksByNameEnvAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PutStacksByNameEnvResponse struct {
 	HttpResponse *http.Response
-	Model        *PutStacksByNameEnvResponse
+	Answer       *PutStacksByNameEnvAnswer
+	*PutStacksByNameEnvAnswer
 }
 
-// PutStacksByNameEnvOperationOptions holds the query and header parameters of PutStacksByNameEnv.
-type PutStacksByNameEnvOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutStacksByNameEnvResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutStacksByNameEnvAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutStacksByNameEnvResponse) Record() (PutStacksByNameEnvAnswer, error) {
+	if r.Answer == nil {
+		return PutStacksByNameEnvAnswer{}, errors.New("PutStacksByNameEnv answered no PutStacksByNameEnvAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PutStacksByNameEnvOptions holds the query and header parameters of PutStacksByNameEnv.
+type PutStacksByNameEnvOptions struct {
 	// Environment id the stack belongs to
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PutStacksByNameEnvOperationOptions) ToHeaders() *client.Headers {
+func (o PutStacksByNameEnvOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PutStacksByNameEnvOperationOptions) ToQuery() *client.QueryParams {
+func (o PutStacksByNameEnvOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PutStacksByNameEnv calls PUT /api/stacks/{name}/env. Save a stack's env vars to the DB.
-func (c Client) PutStacksByNameEnv(ctx context.Context, name string, input PutStacksByNameEnvRequest, options PutStacksByNameEnvOperationOptions) (result PutStacksByNameEnvOperationResponse, err error) {
+func (c Client) PutStacksByNameEnv(ctx context.Context, name string, input PutStacksByNameEnvRequest, options ...PutStacksByNameEnvOptions) (result PutStacksByNameEnvResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PutStacksByNameEnv takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PutStacksByNameEnvOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PutStacksByNameEnvAnswer = &PutStacksByNameEnvAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPut,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/env", url.PathEscape(name)),
 	}
 
@@ -69,11 +101,12 @@ func (c Client) PutStacksByNameEnv(ctx context.Context, name string, input PutSt
 		return
 	}
 
-	var model PutStacksByNameEnvResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PutStacksByNameEnvAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PutStacksByNameEnvAnswer = result.Answer
 
 	return
 }

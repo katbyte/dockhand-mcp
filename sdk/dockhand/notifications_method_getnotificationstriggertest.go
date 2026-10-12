@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetNotificationsTriggerTestOperationResponse is the result of GetNotificationsTriggerTest.
-type GetNotificationsTriggerTestOperationResponse struct {
+// GetNotificationsTriggerTestResponse is the result of GetNotificationsTriggerTest.
+//
+// Answer is the GetNotificationsTriggerTestAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetNotificationsTriggerTestResponse struct {
 	HttpResponse *http.Response
-	Model        *GetNotificationsTriggerTestResponse
+	Answer       *GetNotificationsTriggerTestAnswer
+	*GetNotificationsTriggerTestAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetNotificationsTriggerTestResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetNotificationsTriggerTestAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetNotificationsTriggerTestResponse) Record() (GetNotificationsTriggerTestAnswer, error) {
+	if r.Answer == nil {
+		return GetNotificationsTriggerTestAnswer{}, errors.New("GetNotificationsTriggerTest answered no GetNotificationsTriggerTestAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetNotificationsTriggerTest calls GET /api/notifications/trigger-test. List all available notification event types, grouped into categories.
-func (c Client) GetNotificationsTriggerTest(ctx context.Context) (result GetNotificationsTriggerTestOperationResponse, err error) {
+func (c Client) GetNotificationsTriggerTest(ctx context.Context) (result GetNotificationsTriggerTestResponse, err error) {
+	result.GetNotificationsTriggerTestAnswer = &GetNotificationsTriggerTestAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) GetNotificationsTriggerTest(ctx context.Context) (result GetNoti
 		return
 	}
 
-	var model GetNotificationsTriggerTestResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetNotificationsTriggerTestAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetNotificationsTriggerTestAnswer = result.Answer
 
 	return
 }

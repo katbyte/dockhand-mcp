@@ -4,41 +4,64 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetPreferencesFavoritesOperationResponse is the result of GetPreferencesFavorites.
-type GetPreferencesFavoritesOperationResponse struct {
+// GetPreferencesFavoritesResponse is the result of GetPreferencesFavorites.
+//
+// Answer is the GetPreferencesFavoritesAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetPreferencesFavoritesResponse struct {
 	HttpResponse *http.Response
-	Model        *GetPreferencesFavoritesResponse
+	Answer       *GetPreferencesFavoritesAnswer
+	*GetPreferencesFavoritesAnswer
 }
 
-// GetPreferencesFavoritesOperationOptions holds the query and header parameters of GetPreferencesFavorites.
-type GetPreferencesFavoritesOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetPreferencesFavoritesResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetPreferencesFavoritesAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetPreferencesFavoritesResponse) Record() (GetPreferencesFavoritesAnswer, error) {
+	if r.Answer == nil {
+		return GetPreferencesFavoritesAnswer{}, errors.New("GetPreferencesFavorites answered no GetPreferencesFavoritesAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetPreferencesFavoritesOptions holds the query and header parameters of GetPreferencesFavorites.
+type GetPreferencesFavoritesOptions struct {
 	// Environment ID (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetPreferencesFavoritesOperationOptions) ToHeaders() *client.Headers {
+func (o GetPreferencesFavoritesOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetPreferencesFavoritesOperationOptions) ToQuery() *client.QueryParams {
+func (o GetPreferencesFavoritesOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetPreferencesFavorites calls GET /api/preferences/favorites. Get the saved log favorites (container names) for an environment.
-func (c Client) GetPreferencesFavorites(ctx context.Context, options GetPreferencesFavoritesOperationOptions) (result GetPreferencesFavoritesOperationResponse, err error) {
+func (c Client) GetPreferencesFavorites(ctx context.Context, options GetPreferencesFavoritesOptions) (result GetPreferencesFavoritesResponse, err error) {
+	result.GetPreferencesFavoritesAnswer = &GetPreferencesFavoritesAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -62,11 +85,12 @@ func (c Client) GetPreferencesFavorites(ctx context.Context, options GetPreferen
 		return
 	}
 
-	var model GetPreferencesFavoritesResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetPreferencesFavoritesAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetPreferencesFavoritesAnswer = result.Answer
 
 	return
 }

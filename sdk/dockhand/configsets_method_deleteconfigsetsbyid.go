@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteConfigSetsByIdOperationResponse is the result of DeleteConfigSetsById.
-type DeleteConfigSetsByIdOperationResponse struct {
+// DeleteConfigSetsByIdResponse is the result of DeleteConfigSetsById.
+//
+// Answer is the DeleteConfigSetsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteConfigSetsByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteConfigSetsByIdResponse
+	Answer       *DeleteConfigSetsByIdAnswer
+	*DeleteConfigSetsByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteConfigSetsByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteConfigSetsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteConfigSetsByIdResponse) Record() (DeleteConfigSetsByIdAnswer, error) {
+	if r.Answer == nil {
+		return DeleteConfigSetsByIdAnswer{}, errors.New("DeleteConfigSetsById answered no DeleteConfigSetsByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // DeleteConfigSetsById calls DELETE /api/config-sets/{id}. Delete a config set by ID.
-func (c Client) DeleteConfigSetsById(ctx context.Context, id int) (result DeleteConfigSetsByIdOperationResponse, err error) {
+func (c Client) DeleteConfigSetsById(ctx context.Context, id ConfigSetID) (result DeleteConfigSetsByIdResponse, err error) {
+	result.DeleteConfigSetsByIdAnswer = &DeleteConfigSetsByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
-		Path:       fmt.Sprintf("/api/config-sets/%d", id),
+		Path:       fmt.Sprintf("/api/config-sets/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) DeleteConfigSetsById(ctx context.Context, id int) (result Delete
 		return
 	}
 
-	var model DeleteConfigSetsByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteConfigSetsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteConfigSetsByIdAnswer = result.Answer
 
 	return
 }

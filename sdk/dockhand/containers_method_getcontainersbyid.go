@@ -13,35 +13,39 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetContainersByIdOperationResponse is the result of GetContainersById.
-type GetContainersByIdOperationResponse struct {
+// GetContainersByIdResponse is the result of GetContainersById.
+type GetContainersByIdResponse struct {
 	HttpResponse *http.Response
-	Model        json.RawMessage
+	Answer       json.RawMessage
 }
 
-// GetContainersByIdOperationOptions holds the query and header parameters of GetContainersById.
-type GetContainersByIdOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetContainersByIdResponse) Answered() bool { return r.Answer != nil }
+
+// GetContainersByIdOptions holds the query and header parameters of GetContainersById.
+type GetContainersByIdOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetContainersByIdOperationOptions) ToHeaders() *client.Headers {
+func (o GetContainersByIdOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetContainersByIdOperationOptions) ToQuery() *client.QueryParams {
+func (o GetContainersByIdOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetContainersById calls GET /api/containers/{id}. Return the full Docker inspect payload for a single container.
-func (c Client) GetContainersById(ctx context.Context, id string, options GetContainersByIdOperationOptions) (result GetContainersByIdOperationResponse, err error) {
+func (c Client) GetContainersById(ctx context.Context, id string, options GetContainersByIdOptions) (result GetContainersByIdResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -65,7 +69,7 @@ func (c Client) GetContainersById(ctx context.Context, id string, options GetCon
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

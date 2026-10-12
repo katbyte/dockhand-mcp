@@ -9,14 +9,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetDependenciesOperationResponse is the result of GetDependencies.
-type GetDependenciesOperationResponse struct {
+// GetDependenciesResponse is the result of GetDependencies.
+type GetDependenciesResponse struct {
 	HttpResponse *http.Response
-	Model        []GetDependenciesResponse
+	Answer       []GetDependenciesAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetDependenciesResponse) Answered() bool { return r.Answer != nil }
+
 // GetDependencies calls GET /api/dependencies. Return the combined list of npm dependencies and external tool images (grype, trivy), sorted by name, excluding Dockhand itself.
-func (c Client) GetDependencies(ctx context.Context) (result GetDependenciesOperationResponse, err error) {
+func (c Client) GetDependencies(ctx context.Context) (result GetDependenciesResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,7 +43,7 @@ func (c Client) GetDependencies(ctx context.Context) (result GetDependenciesOper
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

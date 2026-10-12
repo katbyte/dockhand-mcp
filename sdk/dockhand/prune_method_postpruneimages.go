@@ -4,32 +4,55 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostPruneImagesOperationResponse is the result of PostPruneImages.
-type PostPruneImagesOperationResponse struct {
+// PostPruneImagesResponse is the result of PostPruneImages.
+//
+// Answer is the PostPruneImagesAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostPruneImagesResponse struct {
 	HttpResponse *http.Response
-	Model        *PostPruneImagesResponse
+	Answer       *PostPruneImagesAnswer
+	*PostPruneImagesAnswer
 }
 
-// PostPruneImagesOperationOptions holds the query and header parameters of PostPruneImages.
-type PostPruneImagesOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostPruneImagesResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostPruneImagesAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostPruneImagesResponse) Record() (PostPruneImagesAnswer, error) {
+	if r.Answer == nil {
+		return PostPruneImagesAnswer{}, errors.New("PostPruneImages answered no PostPruneImagesAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostPruneImagesOptions holds the query and header parameters of PostPruneImages.
+type PostPruneImagesOptions struct {
 	// When not "false", prune only dangling images; set "dangling=false" to prune all unused images (defaults to dangling-only)
 	Dangling *bool
 
 	// Target environment id; scopes both the prune operation and the permission check (defaults to the local environment) (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once
 	Accept string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostPruneImagesOperationOptions) ToHeaders() *client.Headers {
+func (o PostPruneImagesOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	if o.Accept != "" {
 		out.Append("Accept", o.Accept)
@@ -38,25 +61,35 @@ func (o PostPruneImagesOperationOptions) ToHeaders() *client.Headers {
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostPruneImagesOperationOptions) ToQuery() *client.QueryParams {
+func (o PostPruneImagesOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Dangling != nil {
 		out.Append("dangling", strconv.FormatBool(*o.Dangling))
 	}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostPruneImages calls POST /api/prune/images. Prune unused Docker images, streaming progress as a Server-Sent Events job.
-func (c Client) PostPruneImages(ctx context.Context, options PostPruneImagesOperationOptions) (result PostPruneImagesOperationResponse, err error) {
+func (c Client) PostPruneImages(ctx context.Context, options ...PostPruneImagesOptions) (result PostPruneImagesResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostPruneImages takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostPruneImagesOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostPruneImagesAnswer = &PostPruneImagesAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/prune/images",
 	}
 
@@ -74,11 +107,12 @@ func (c Client) PostPruneImages(ctx context.Context, options PostPruneImagesOper
 		return
 	}
 
-	var model PostPruneImagesResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostPruneImagesAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostPruneImagesAnswer = result.Answer
 
 	return
 }

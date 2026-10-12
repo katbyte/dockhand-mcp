@@ -4,7 +4,7 @@ package dockhand
 
 // PostNotificationsTriggerTestRequest is an object the document declares inline.
 type PostNotificationsTriggerTestRequest struct {
-	EnvironmentId int                                         `json:"environmentId,omitempty"`
+	EnvironmentId EnvironmentID                               `json:"environmentId,omitempty"`
 	EventType     string                                      `json:"eventType"`
 	Payload       *PostNotificationsTriggerTestRequestPayload `json:"payload,omitempty"`
 }

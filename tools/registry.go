@@ -59,23 +59,23 @@ type registryRow struct {
 	Default        bool   `json:"default,omitempty"  jsonschema:"the registry Dockhand offers first, where one is chosen"`
 }
 
-func registryRowOf(k *dockhand.GetRegistriesResponse) registryRow {
-	return registryRow{ID: k.Id, Name: k.Name, URL: k.Url, Username: k.Username, HasCredentials: yes(k.HasCredentials), Default: yes(k.IsDefault)}
+func registryRowOf(k *dockhand.GetRegistriesAnswer) registryRow {
+	return registryRow{ID: int(k.Id), Name: k.Name, URL: k.Url, Username: k.Username, HasCredentials: k.HasCredentials, Default: k.IsDefault}
 }
 
 // kept is every registry the Dockhand keeps.
-func (r *registry) kept(ctx context.Context) ([]dockhand.GetRegistriesResponse, error) {
+func (r *registry) kept(ctx context.Context) ([]dockhand.GetRegistriesAnswer, error) {
 	listed, err := r.dock.GetRegistries(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("the registries could not be listed: %w", refusal(err))
 	}
 
-	return listed.Model, nil
+	return listed.Answer, nil
 }
 
 // oneRegistry is the single registry a call names, by its name whatever its case or by its number. A name that is no registry's is refused with the
 // ones there are.
-func (r *registry) oneRegistry(ctx context.Context, a registryArg) (*dockhand.GetRegistriesResponse, error) {
+func (r *registry) oneRegistry(ctx context.Context, a registryArg) (*dockhand.GetRegistriesAnswer, error) {
 	named, err := a.named()
 	if err != nil {
 		return nil, err
@@ -89,7 +89,7 @@ func (r *registry) oneRegistry(ctx context.Context, a registryArg) (*dockhand.Ge
 	}
 	names := make([]string, 0, len(listed))
 	for i := range listed {
-		if strings.EqualFold(listed[i].Name, named) || strconv.Itoa(listed[i].Id) == named {
+		if strings.EqualFold(listed[i].Name, named) || strconv.Itoa(int(listed[i].Id)) == named {
 			return &listed[i], nil
 		}
 		names = append(names, listed[i].Name)
@@ -150,7 +150,7 @@ func (r *registry) tryRegistry(ctx context.Context, request dockhand.PostRegistr
 		return registryTried{}, false, refusal(err)
 	}
 
-	return registryTried{Reachable: yes(answer.Model.Connectivity), Authenticated: answer.Model.Authenticated, Message: answer.Model.Message}, yes(answer.Model.Success), nil
+	return registryTried{Reachable: answer.Answer.Connectivity, Authenticated: answer.Answer.Authenticated, Message: answer.Answer.Message}, answer.Answer.Success, nil
 }
 
 // addressed is a registry's address as a caller gives one, which says how it is spoken to: Dockhand takes one with no scheme for one that speaks TLS
@@ -278,7 +278,7 @@ func registerRegistryTools(r *registry) {
 		if err != nil {
 			return nil, registryChangeOut{}, err
 		}
-		if slices.ContainsFunc(listed, func(k dockhand.GetRegistriesResponse) bool { return strings.EqualFold(k.Name, name) }) {
+		if slices.ContainsFunc(listed, func(k dockhand.GetRegistriesAnswer) bool { return strings.EqualFold(k.Name, name) }) {
 			return nil, registryChangeOut{}, fmt.Errorf("a registry is already named %q: registry_list gives it, and another name is needed for another", name)
 		}
 
@@ -319,10 +319,10 @@ func registerRegistryTools(r *registry) {
 		if in.Default {
 			out.Changes = append(out.Changes, "made it the default registry")
 		}
-		if back, err := r.dock.GetRegistriesById(ctx, made.Model.Id); err != nil {
+		if back, err := r.dock.GetRegistriesById(ctx, made.Answer.Id); err != nil {
 			out.Note = "it was saved, and could not be read back: " + err.Error()
 		} else {
-			row := registryRowOf(new(dockhand.GetRegistriesResponse(*back.Model)))
+			row := registryRowOf(new(dockhand.GetRegistriesAnswer(*back.Answer)))
 			out.Registry = &row
 		}
 		if !ok {
@@ -381,7 +381,7 @@ func registerRegistryTools(r *registry) {
 			if failed != nil {
 				return nil, out, failed
 			}
-			if slices.ContainsFunc(listed, func(k dockhand.GetRegistriesResponse) bool {
+			if slices.ContainsFunc(listed, func(k dockhand.GetRegistriesAnswer) bool {
 				return k.Id != saved.Id && strings.EqualFold(k.Name, name)
 			}) {
 				return nil, out, fmt.Errorf("another registry is named %q, so %s is not renamed to it", name, saved.Name)
@@ -401,12 +401,12 @@ func registerRegistryTools(r *registry) {
 			request.Password, reached = in.Password, true
 			out.Changes = append(out.Changes, done("changed", "would change")+" the password it signs in with to the one given")
 		}
-		forget := in.ForgetCredentials && (yes(saved.HasCredentials) || saved.Username != "")
+		forget := in.ForgetCredentials && (saved.HasCredentials || saved.Username != "")
 		if forget {
 			reached = true
 			out.Changes = append(out.Changes, done("forgot", "would forget")+" the user name and password kept for it")
 		}
-		if in.Default && !yes(saved.IsDefault) {
+		if in.Default && !saved.IsDefault {
 			request.IsDefault = new(true)
 			out.Changes = append(out.Changes, done("made", "would make")+" it the default registry")
 		}
@@ -424,15 +424,15 @@ func registerRegistryTools(r *registry) {
 
 		// forgetting is a call of its own, since the one that changes a registry leaves out what is empty; it carries the new name and address with
 		// it
-		var back *dockhand.PutRegistriesByIdResponse
+		var back *dockhand.PutRegistriesByIdAnswer
 		if forget {
-			forgot, failed := r.dock.ForgetRegistryCredentials(ctx, saved.Id, request.Name, request.Url)
+			forgot, failed := r.dock.ForgetRegistryCredentials(ctx, int(saved.Id), request.Name, request.Url)
 			if failed != nil {
 				out.Changes = []string{}
 
 				return nil, out, fmt.Errorf("%s was not changed: %w", saved.Name, refusal(failed))
 			}
-			back = forgot.Model
+			back = forgot.Answer
 		}
 		if !forget || request.IsDefault != nil {
 			changed, failed := r.dock.PutRegistriesById(ctx, saved.Id, request)
@@ -443,9 +443,9 @@ func registerRegistryTools(r *registry) {
 
 				return nil, out, fmt.Errorf("%s was not changed: %w", saved.Name, refusal(failed))
 			}
-			back = changed.Model
+			back = changed.Answer
 		}
-		row = registryRowOf(new(dockhand.GetRegistriesResponse(*back)))
+		row = registryRowOf(new(dockhand.GetRegistriesAnswer(*back)))
 		out.Registry = &row
 
 		if reached {
@@ -486,12 +486,12 @@ func registerRegistryTools(r *registry) {
 		out := registryDeleteOut{Registry: saved.Name}
 		if !in.Confirm {
 			what := fmt.Sprintf("Dockhand's record of %s at %s", saved.Name, saved.Url)
-			if yes(saved.HasCredentials) {
+			if saved.HasCredentials {
 				what += ", and the user name and password kept for it"
 			}
 			out.WouldGo = []string{what}
 			out.Note = "nothing was removed: call again with confirm to remove it. Nothing in the registry itself is touched either way"
-			if yes(saved.IsDefault) {
+			if saved.IsDefault {
 				out.Note = note(out.Note, "it is the default registry, and Dockhand has none once it is removed, until registry_edit makes another the default")
 			}
 
@@ -502,7 +502,7 @@ func registerRegistryTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("%s was not removed: %w", saved.Name, refusal(err))
 		}
-		if !yes(gone.Model.Success) {
+		if !gone.Answer.Success {
 			return nil, out, fmt.Errorf("the removal of %s was answered without its being said to have succeeded: registry_list says whether it is still there", saved.Name)
 		}
 		left, err := r.kept(ctx)
@@ -511,11 +511,11 @@ func registerRegistryTools(r *registry) {
 
 			return nil, out, nil //nolint:nilerr // the removal went through: that it could not be read back is said in the answer
 		}
-		if slices.ContainsFunc(left, func(k dockhand.GetRegistriesResponse) bool { return k.Id == saved.Id }) {
+		if slices.ContainsFunc(left, func(k dockhand.GetRegistriesAnswer) bool { return k.Id == saved.Id }) {
 			return nil, out, fmt.Errorf("the removal of %s was answered as done, and it is still listed", saved.Name)
 		}
 		out.Removed = true
-		if yes(saved.IsDefault) {
+		if saved.IsDefault {
 			out.Note = "it was the default registry, and Dockhand has none now: registry_edit makes another the default"
 		}
 
@@ -555,7 +555,7 @@ func registerRegistryTools(r *registry) {
 			return nil, registryImagesOut{}, err
 		}
 		out := registryImagesOut{Registry: dockerHub, Images: []registryImage{}}
-		var saved *dockhand.GetRegistriesResponse
+		var saved *dockhand.GetRegistriesAnswer
 		if named != "" {
 			if saved, err = r.oneRegistry(ctx, in.registryArg); err != nil {
 				return nil, registryImagesOut{}, err
@@ -568,19 +568,19 @@ func registerRegistryTools(r *registry) {
 
 		// a search, of Docker Hub or of a registry kept
 		if search != "" {
-			options := dockhand.GetRegistrySearchOperationOptions{Term: search, Limit: &limit}
+			options := dockhand.GetRegistrySearchOptions{Term: search, Limit: &limit}
 			if saved != nil {
-				options.Registry = &saved.Id
+				options.Registry = saved.Id
 			}
 			found, failed := r.dock.GetRegistrySearch(ctx, options)
 			if failed != nil {
 				return nil, out, fmt.Errorf("%s could not be searched: %w", out.Registry, registryRefusal(failed, out.Registry))
 			}
-			for i := range found.Model {
+			for i := range found.Answer {
 				if len(out.Images) == limit {
 					break
 				}
-				out.Images = append(out.Images, registryImage{Name: found.Model[i].Name, Description: found.Model[i].Description, Stars: found.Model[i].StarCount, Official: yes(found.Model[i].IsOfficial)})
+				out.Images = append(out.Images, registryImage{Name: found.Answer[i].Name, Description: found.Answer[i].Description, Stars: found.Answer[i].StarCount, Official: found.Answer[i].IsOfficial})
 			}
 			if out.Total = len(out.Images); out.Total == 0 {
 				out.Note = fmt.Sprintf("nothing in %s has %q in its name", out.Registry, search)
@@ -590,23 +590,23 @@ func registerRegistryTools(r *registry) {
 		}
 
 		// everything a registry kept holds, a page of it at a time
-		listed, err := r.dock.GetRegistryCatalog(ctx, dockhand.GetRegistryCatalogOperationOptions{Registry: &saved.Id, Last: strings.TrimSpace(in.After)})
+		listed, err := r.dock.GetRegistryCatalog(ctx, dockhand.GetRegistryCatalogOptions{Registry: saved.Id, Last: strings.TrimSpace(in.After)})
 		if client.StatusCode(err) == http.StatusUnauthorized {
 			return nil, out, fmt.Errorf("what %s holds could not be listed: %w", out.Registry, registryRefusal(err, out.Registry))
 		}
 		if err != nil {
 			return nil, out, fmt.Errorf("what %s holds could not be listed, which a registry that keeps no list of it answers too: %w", out.Registry, refusal(err))
 		}
-		for i := range listed.Model.Repositories {
+		for i := range listed.Answer.Repositories {
 			if len(out.Images) == limit {
 				out.Next = out.Images[limit-1].Name
 
 				break
 			}
-			out.Images = append(out.Images, registryImage{Name: listed.Model.Repositories[i].Name, Description: listed.Model.Repositories[i].Description})
+			out.Images = append(out.Images, registryImage{Name: listed.Answer.Repositories[i].Name, Description: listed.Answer.Repositories[i].Description})
 		}
-		if out.Next == "" && yes(listed.Model.Pagination.HasMore) {
-			out.Next = listed.Model.Pagination.NextLast
+		if out.Next == "" && listed.Answer.Pagination.HasMore {
+			out.Next = listed.Answer.Pagination.NextLast
 		}
 		switch out.Total = len(out.Images); {
 		case out.Next != "":
@@ -658,16 +658,16 @@ func registerRegistryTools(r *registry) {
 			return nil, registryTagsOut{}, err
 		}
 		out := registryTagsOut{Registry: dockerHub, Image: image, Tags: []registryTag{}}
-		options := dockhand.GetRegistryTagsOperationOptions{Image: image, PageSize: &limit}
+		options := dockhand.GetRegistryTagsOptions{Image: image, PageSize: &limit}
 		if in.Page > 1 {
 			options.Page = &in.Page
 		}
-		var saved *dockhand.GetRegistriesResponse
+		var saved *dockhand.GetRegistriesAnswer
 		if named != "" {
 			if saved, err = r.oneRegistry(ctx, in.registryArg); err != nil {
 				return nil, registryTagsOut{}, err
 			}
-			out.Registry, options.Registry = saved.Name, &saved.Id
+			out.Registry, options.Registry = saved.Name, saved.Id
 		}
 
 		listed, err := r.dock.GetRegistryTags(ctx, options)
@@ -677,13 +677,13 @@ func registerRegistryTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("the tags of %s in %s could not be listed: %w", image, out.Registry, registryRefusal(err, out.Registry))
 		}
-		out.Total, out.More = listed.Model.Total, yes(listed.Model.HasNext)
-		for i := range listed.Model.Tags {
+		out.Total, out.More = listed.Answer.Total, listed.Answer.HasNext
+		for i := range listed.Answer.Tags {
 			if len(out.Tags) == limit {
 				break
 			}
-			t := &listed.Model.Tags[i]
-			out.Tags = append(out.Tags, registryTag{Tag: t.Name, SizeMB: megabytes(t.Size), Updated: t.LastUpdated, Digest: t.Digest})
+			t := &listed.Answer.Tags[i]
+			out.Tags = append(out.Tags, registryTag{Tag: t.Name, SizeMB: megabytes(t.Size), Updated: when(t.LastUpdated), Digest: t.Digest})
 		}
 		switch {
 		case out.Total == 0:
@@ -703,13 +703,13 @@ func registerRegistryTools(r *registry) {
 
 					break
 				}
-				info, failed := r.dock.GetRegistryTagInfo(ctx, dockhand.GetRegistryTagInfoOperationOptions{Registry: &saved.Id, Image: image, Tag: out.Tags[i].Tag})
+				info, failed := r.dock.GetRegistryTagInfo(ctx, dockhand.GetRegistryTagInfoOptions{Registry: saved.Id, Image: image, Tag: out.Tags[i].Tag})
 				if failed != nil {
 					out.Note = note(out.Note, "the sizes could not all be read: "+refusal(failed).Error())
 
 					break
 				}
-				out.Tags[i].SizeMB, out.Tags[i].Updated = math.Round(info.Model.Size/1e5)/10, cmp.Or(out.Tags[i].Updated, info.Model.LastUpdated)
+				out.Tags[i].SizeMB, out.Tags[i].Updated = math.Round(info.Answer.Size/1e5)/10, cmp.Or(out.Tags[i].Updated, when(info.Answer.LastUpdated))
 			}
 		}
 
@@ -751,13 +751,13 @@ func registerRegistryTools(r *registry) {
 
 		// the tags there are, before and after: which is how the others that go with it are told
 		tags := func() ([]string, error) {
-			listed, failed := r.dock.GetRegistryTags(ctx, dockhand.GetRegistryTagsOperationOptions{Registry: &saved.Id, Image: image})
+			listed, failed := r.dock.GetRegistryTags(ctx, dockhand.GetRegistryTagsOptions{Registry: saved.Id, Image: image})
 			if failed != nil {
 				return nil, registryRefusal(failed, saved.Name)
 			}
-			names := make([]string, 0, len(listed.Model.Tags))
-			for i := range listed.Model.Tags {
-				names = append(names, listed.Model.Tags[i].Name)
+			names := make([]string, 0, len(listed.Answer.Tags))
+			for i := range listed.Answer.Tags {
+				names = append(names, listed.Answer.Tags[i].Name)
 			}
 
 			return names, nil
@@ -779,7 +779,7 @@ func registerRegistryTools(r *registry) {
 			return nil, out, nil
 		}
 
-		if _, err := r.dock.DeleteRegistryImage(ctx, dockhand.DeleteRegistryImageOperationOptions{Registry: &saved.Id, Image: image, Tag: tag}); err != nil {
+		if _, err := r.dock.DeleteRegistryImage(ctx, dockhand.DeleteRegistryImageOptions{Registry: saved.Id, Image: image, Tag: tag}); err != nil {
 			if client.StatusCode(err) == http.StatusMethodNotAllowed {
 				return nil, out, fmt.Errorf("%s does not allow deleting: a registry has to be set to (REGISTRY_STORAGE_DELETE_ENABLED), and this one is not", saved.Name)
 			}
@@ -875,11 +875,11 @@ func registerRegistryTools(r *registry) {
 			return nil, out, nil
 		}
 
-		started, err := r.dock.PostImagesPush(ctx, dockhand.PostImagesPushRequest{ImageId: at.Image.Id, RegistryId: saved.Id, NewTag: under}, dockhand.PostImagesPushOperationOptions{Accept: dockhand.AcceptJob, Env: &at.Env.ID})
+		started, err := r.dock.PostImagesPush(ctx, dockhand.PostImagesPushRequest{ImageId: at.Image.Id, RegistryId: saved.Id, NewTag: under}, dockhand.PostImagesPushOptions{Accept: dockhand.AcceptJob, Env: at.Env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("%s was not pushed to %s: %w", out.Image, saved.Name, refusal(err))
 		}
-		outcome, state, err := settle(ctx, r, started.Model.JobId, started.Model, patience)
+		outcome, state, err := settle(ctx, r, started.Answer.JobId, started.Answer, patience)
 		out.jobState = state
 		switch {
 		case err != nil:
@@ -901,11 +901,11 @@ func registerRegistryTools(r *registry) {
 
 			return nil, out, nil
 		}
-		listed, err := r.dock.GetRegistryTags(ctx, dockhand.GetRegistryTagsOperationOptions{Registry: &saved.Id, Image: repository(under)})
+		listed, err := r.dock.GetRegistryTags(ctx, dockhand.GetRegistryTagsOptions{Registry: saved.Id, Image: repository(under)})
 		switch {
 		case err != nil:
 			out.Note = note("it was pushed, and the registry could not be read back: "+refusal(err).Error(), out.Note)
-		case !slices.ContainsFunc(listed.Model.Tags, func(t dockhand.GetRegistryTagsResponseTags) bool { return repository(under)+":"+t.Name == under }):
+		case !slices.ContainsFunc(listed.Answer.Tags, func(t dockhand.GetRegistryTagsAnswerTags) bool { return repository(under)+":"+t.Name == under }):
 			return nil, out, fmt.Errorf("the push of %s was answered as done, and %s does not list the tag: registry_tags says what it has", out.PushedAs, saved.Name)
 		default:
 			out.Pushed = true

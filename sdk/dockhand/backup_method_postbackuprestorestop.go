@@ -9,13 +9,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostBackupRestoreStopOperationResponse is the result of PostBackupRestoreStop.
-type PostBackupRestoreStopOperationResponse struct {
+// PostBackupRestoreStopResponse is the result of PostBackupRestoreStop.
+type PostBackupRestoreStopResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostBackupRestoreStop calls POST /api/backup/restore/stop. Cancel a running restore — kills the restore helper for a given snapshotId, or all restore helpers when snapshotId is omitted.
-func (c Client) PostBackupRestoreStop(ctx context.Context, input PostBackupRestoreStopRequest) (result PostBackupRestoreStopOperationResponse, err error) {
+func (c Client) PostBackupRestoreStop(ctx context.Context, input PostBackupRestoreStopRequest) (result PostBackupRestoreStopResponse, err error) {
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{

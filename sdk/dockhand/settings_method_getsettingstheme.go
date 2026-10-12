@@ -10,14 +10,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetSettingsThemeOperationResponse is the result of GetSettingsTheme.
-type GetSettingsThemeOperationResponse struct {
+// GetSettingsThemeResponse is the result of GetSettingsTheme.
+type GetSettingsThemeResponse struct {
 	HttpResponse *http.Response
-	Model        json.RawMessage
+	Answer       json.RawMessage
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetSettingsThemeResponse) Answered() bool { return r.Answer != nil }
+
 // GetSettingsTheme calls GET /api/settings/theme. Public theme + editor display settings (used by the login page before auth).
-func (c Client) GetSettingsTheme(ctx context.Context) (result GetSettingsThemeOperationResponse, err error) {
+func (c Client) GetSettingsTheme(ctx context.Context) (result GetSettingsThemeResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -40,7 +44,7 @@ func (c Client) GetSettingsTheme(ctx context.Context) (result GetSettingsThemeOp
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

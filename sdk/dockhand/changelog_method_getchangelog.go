@@ -9,14 +9,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetChangelogOperationResponse is the result of GetChangelog.
-type GetChangelogOperationResponse struct {
+// GetChangelogResponse is the result of GetChangelog.
+type GetChangelogResponse struct {
 	HttpResponse *http.Response
-	Model        []GetChangelogResponse
+	Answer       []GetChangelogAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetChangelogResponse) Answered() bool { return r.Answer != nil }
+
 // GetChangelog calls GET /api/changelog. Return the bundled Dockhand changelog data.
-func (c Client) GetChangelog(ctx context.Context) (result GetChangelogOperationResponse, err error) {
+func (c Client) GetChangelog(ctx context.Context) (result GetChangelogResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,7 +43,7 @@ func (c Client) GetChangelog(ctx context.Context) (result GetChangelogOperationR
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

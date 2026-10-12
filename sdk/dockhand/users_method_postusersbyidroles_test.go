@@ -14,7 +14,7 @@ func TestOperationPostUsersByIdRoles(t *testing.T) {
 	t.Parallel()
 
 	c, s := newOperationServer(t, 201, "", "")
-	result, err := c.PostUsersByIdRoles(t.Context(), 7, PostUsersByIdRolesRequest{})
+	result, err := c.PostUsersByIdRoles(t.Context(), UserID(7), PostUsersByIdRolesRequest{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -26,13 +26,16 @@ func TestOperationPostUsersByIdRoles(t *testing.T) {
 	if !json.Valid([]byte(body)) {
 		t.Errorf("body = %q, want JSON", body)
 	}
+	if body != "{\"roleId\":0}" {
+		t.Errorf("an empty record sent %q, want %q: a field never set went out", body, "{\"roleId\":0}")
+	}
 	if result.HttpResponse == nil || result.HttpResponse.StatusCode != 201 {
 		t.Fatalf("HttpResponse = %+v", result.HttpResponse)
 	}
 
 	// a status the operation does not document is an error, with the response
 	c, _ = newOperationServer(t, 418, "text/plain", "no")
-	result, err = c.PostUsersByIdRoles(t.Context(), 7, PostUsersByIdRolesRequest{})
+	result, err = c.PostUsersByIdRoles(t.Context(), UserID(7), PostUsersByIdRolesRequest{})
 	if client.StatusCode(err) != 418 || result.HttpResponse == nil {
 		t.Errorf("an undocumented status = %v, %+v", err, result.HttpResponse)
 	}

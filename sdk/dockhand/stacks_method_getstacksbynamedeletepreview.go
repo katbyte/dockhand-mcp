@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,41 +13,72 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetStacksByNameDeletePreviewOperationResponse is the result of GetStacksByNameDeletePreview.
-type GetStacksByNameDeletePreviewOperationResponse struct {
+// GetStacksByNameDeletePreviewResponse is the result of GetStacksByNameDeletePreview.
+//
+// Answer is the GetStacksByNameDeletePreviewAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetStacksByNameDeletePreviewResponse struct {
 	HttpResponse *http.Response
-	Model        *GetStacksByNameDeletePreviewResponse
+	Answer       *GetStacksByNameDeletePreviewAnswer
+	*GetStacksByNameDeletePreviewAnswer
 }
 
-// GetStacksByNameDeletePreviewOperationOptions holds the query and header parameters of GetStacksByNameDeletePreview.
-type GetStacksByNameDeletePreviewOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetStacksByNameDeletePreviewResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetStacksByNameDeletePreviewAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetStacksByNameDeletePreviewResponse) Record() (GetStacksByNameDeletePreviewAnswer, error) {
+	if r.Answer == nil {
+		return GetStacksByNameDeletePreviewAnswer{}, errors.New("GetStacksByNameDeletePreview answered no GetStacksByNameDeletePreviewAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetStacksByNameDeletePreviewOptions holds the query and header parameters of GetStacksByNameDeletePreview.
+type GetStacksByNameDeletePreviewOptions struct {
 	// Environment ID the stack belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetStacksByNameDeletePreviewOperationOptions) ToHeaders() *client.Headers {
+func (o GetStacksByNameDeletePreviewOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetStacksByNameDeletePreviewOperationOptions) ToQuery() *client.QueryParams {
+func (o GetStacksByNameDeletePreviewOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetStacksByNameDeletePreview calls GET /api/stacks/{name}/delete-preview. Preview the on-disk directories and named volumes a delete-with-files would remove for a stack.
-func (c Client) GetStacksByNameDeletePreview(ctx context.Context, name string, options GetStacksByNameDeletePreviewOperationOptions) (result GetStacksByNameDeletePreviewOperationResponse, err error) {
+func (c Client) GetStacksByNameDeletePreview(ctx context.Context, name string, options ...GetStacksByNameDeletePreviewOptions) (result GetStacksByNameDeletePreviewResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetStacksByNameDeletePreview takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetStacksByNameDeletePreviewOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetStacksByNameDeletePreviewAnswer = &GetStacksByNameDeletePreviewAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/delete-preview", url.PathEscape(name)),
 	}
 
@@ -64,11 +96,12 @@ func (c Client) GetStacksByNameDeletePreview(ctx context.Context, name string, o
 		return
 	}
 
-	var model GetStacksByNameDeletePreviewResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetStacksByNameDeletePreviewAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetStacksByNameDeletePreviewAnswer = result.Answer
 
 	return
 }

@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostGitCredentialsOperationResponse is the result of PostGitCredentials.
-type PostGitCredentialsOperationResponse struct {
+// PostGitCredentialsResponse is the result of PostGitCredentials.
+//
+// Answer is the PostGitCredentialsAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostGitCredentialsResponse struct {
 	HttpResponse *http.Response
-	Model        *PostGitCredentialsResponse
+	Answer       *PostGitCredentialsAnswer
+	*PostGitCredentialsAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostGitCredentialsResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostGitCredentialsAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostGitCredentialsResponse) Record() (PostGitCredentialsAnswer, error) {
+	if r.Answer == nil {
+		return PostGitCredentialsAnswer{}, errors.New("PostGitCredentials answered no PostGitCredentialsAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostGitCredentials calls POST /api/git/credentials. Create a new git credential (none/password/ssh auth) and return it with secrets stripped.
-func (c Client) PostGitCredentials(ctx context.Context, input PostGitCredentialsRequest) (result PostGitCredentialsOperationResponse, err error) {
+func (c Client) PostGitCredentials(ctx context.Context, input PostGitCredentialsRequest) (result PostGitCredentialsResponse, err error) {
+	result.PostGitCredentialsAnswer = &PostGitCredentialsAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostGitCredentials(ctx context.Context, input PostGitCredentials
 		return
 	}
 
-	var model PostGitCredentialsResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostGitCredentialsAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostGitCredentialsAnswer = result.Answer
 
 	return
 }

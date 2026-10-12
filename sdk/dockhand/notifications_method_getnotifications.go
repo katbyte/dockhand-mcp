@@ -9,14 +9,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetNotificationsOperationResponse is the result of GetNotifications.
-type GetNotificationsOperationResponse struct {
+// GetNotificationsResponse is the result of GetNotifications.
+type GetNotificationsResponse struct {
 	HttpResponse *http.Response
-	Model        []GetNotificationsResponse
+	Answer       []GetNotificationsAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetNotificationsResponse) Answered() bool { return r.Answer != nil }
+
 // GetNotifications calls GET /api/notifications. List all notification settings (SMTP and Apprise) with SMTP passwords masked.
-func (c Client) GetNotifications(ctx context.Context) (result GetNotificationsOperationResponse, err error) {
+func (c Client) GetNotifications(ctx context.Context) (result GetNotificationsResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,7 +43,7 @@ func (c Client) GetNotifications(ctx context.Context) (result GetNotificationsOp
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

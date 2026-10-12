@@ -6,24 +6,26 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostUsersByIdMfaOperationResponse is the result of PostUsersByIdMfa.
-type PostUsersByIdMfaOperationResponse struct {
+// PostUsersByIdMfaResponse is the result of PostUsersByIdMfa.
+type PostUsersByIdMfaResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostUsersByIdMfa calls POST /api/users/{id}/mfa. Set up or verify MFA for a user (action=setup regenerates a secret; action=verify confirms a code).
-func (c Client) PostUsersByIdMfa(ctx context.Context, id int, input PostUsersByIdMfaRequest) (result PostUsersByIdMfaOperationResponse, err error) {
+func (c Client) PostUsersByIdMfa(ctx context.Context, id UserID, input PostUsersByIdMfaRequest) (result PostUsersByIdMfaResponse, err error) {
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
-		Path:       fmt.Sprintf("/api/users/%d/mfa", id),
+		Path:       fmt.Sprintf("/api/users/%s/mfa", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)

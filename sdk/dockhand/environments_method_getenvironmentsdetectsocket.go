@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetEnvironmentsDetectSocketOperationResponse is the result of GetEnvironmentsDetectSocket.
-type GetEnvironmentsDetectSocketOperationResponse struct {
+// GetEnvironmentsDetectSocketResponse is the result of GetEnvironmentsDetectSocket.
+//
+// Answer is the GetEnvironmentsDetectSocketAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetEnvironmentsDetectSocketResponse struct {
 	HttpResponse *http.Response
-	Model        *GetEnvironmentsDetectSocketResponse
+	Answer       *GetEnvironmentsDetectSocketAnswer
+	*GetEnvironmentsDetectSocketAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetEnvironmentsDetectSocketResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetEnvironmentsDetectSocketAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetEnvironmentsDetectSocketResponse) Record() (GetEnvironmentsDetectSocketAnswer, error) {
+	if r.Answer == nil {
+		return GetEnvironmentsDetectSocketAnswer{}, errors.New("GetEnvironmentsDetectSocket answered no GetEnvironmentsDetectSocketAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetEnvironmentsDetectSocket calls GET /api/environments/detect-socket. Detect common Docker/Podman socket paths that exist on the Dockhand host.
-func (c Client) GetEnvironmentsDetectSocket(ctx context.Context) (result GetEnvironmentsDetectSocketOperationResponse, err error) {
+func (c Client) GetEnvironmentsDetectSocket(ctx context.Context) (result GetEnvironmentsDetectSocketResponse, err error) {
+	result.GetEnvironmentsDetectSocketAnswer = &GetEnvironmentsDetectSocketAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) GetEnvironmentsDetectSocket(ctx context.Context) (result GetEnvi
 		return
 	}
 
-	var model GetEnvironmentsDetectSocketResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetEnvironmentsDetectSocketAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetEnvironmentsDetectSocketAnswer = result.Answer
 
 	return
 }

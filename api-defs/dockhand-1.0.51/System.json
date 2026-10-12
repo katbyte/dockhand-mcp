@@ -15,7 +15,8 @@
           "In": "Query",
           "Description": "ID of the environment to collect Docker info for (Docker fields are null when omitted or unreachable) (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -23,7 +24,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetSystemResponse"
+          "ReferenceName": "GetSystemAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -44,7 +45,8 @@
           "Description": "ID of the environment to query disk usage for (from GET /api/environments)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -52,7 +54,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetSystemDiskResponse"
+          "ReferenceName": "GetSystemDiskAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -80,7 +82,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetSystemFilesResponse"
+          "ReferenceName": "GetSystemFilesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -109,7 +111,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetSystemFilesContentResponse"
+          "ReferenceName": "GetSystemFilesContentAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -133,7 +135,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostSystemFilesResponse"
+          "ReferenceName": "PostSystemFilesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -143,7 +145,65 @@
   ],
   "Models": [
     {
-      "Name": "GetSystemDiskResponse",
+      "Name": "GetSystemAnswer",
+      "Fields": [
+        {
+          "Name": "Database",
+          "JsonName": "database",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Docker",
+          "JsonName": "docker",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Host",
+          "JsonName": "host",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "Runtime",
+          "JsonName": "runtime",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Stats",
+          "JsonName": "stats",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetSystemDiskAnswer",
       "Fields": [
         {
           "Name": "DiskUsage",
@@ -151,13 +211,13 @@
           "Description": "Docker's own account of what its disk holds, in Docker's spelling; null when Dockhand could not get it from the host in time",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetSystemDiskResponseDiskUsage"
+            "ReferenceName": "GetSystemDiskAnswerDiskUsage"
           }
         }
       ]
     },
     {
-      "Name": "GetSystemDiskResponseDiskUsage",
+      "Name": "GetSystemDiskAnswerDiskUsage",
       "Description": "Docker's own account of what its disk holds, in Docker's spelling; null when Dockhand could not get it from the host in time",
       "Fields": [
         {
@@ -167,7 +227,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetSystemDiskResponseDiskUsageBuildCache"
+              "ReferenceName": "GetSystemDiskAnswerDiskUsageBuildCache"
             }
           }
         },
@@ -178,7 +238,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetSystemDiskResponseDiskUsageContainers"
+              "ReferenceName": "GetSystemDiskAnswerDiskUsageContainers"
             }
           }
         },
@@ -189,7 +249,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetSystemDiskResponseDiskUsageImages"
+              "ReferenceName": "GetSystemDiskAnswerDiskUsageImages"
             }
           }
         },
@@ -208,14 +268,14 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetSystemDiskResponseDiskUsageVolumes"
+              "ReferenceName": "GetSystemDiskAnswerDiskUsageVolumes"
             }
           }
         }
       ]
     },
     {
-      "Name": "GetSystemDiskResponseDiskUsageBuildCache",
+      "Name": "GetSystemDiskAnswerDiskUsageBuildCache",
       "Fields": [
         {
           "Name": "Description",
@@ -270,7 +330,7 @@
       ]
     },
     {
-      "Name": "GetSystemDiskResponseDiskUsageContainers",
+      "Name": "GetSystemDiskAnswerDiskUsageContainers",
       "Fields": [
         {
           "Name": "Id",
@@ -329,7 +389,7 @@
       ]
     },
     {
-      "Name": "GetSystemDiskResponseDiskUsageImages",
+      "Name": "GetSystemDiskAnswerDiskUsageImages",
       "Fields": [
         {
           "Name": "Containers",
@@ -383,7 +443,7 @@
       ]
     },
     {
-      "Name": "GetSystemDiskResponseDiskUsageVolumes",
+      "Name": "GetSystemDiskAnswerDiskUsageVolumes",
       "Fields": [
         {
           "Name": "Name",
@@ -397,13 +457,13 @@
           "JsonName": "UsageData",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetSystemDiskResponseDiskUsageVolumesUsageData"
+            "ReferenceName": "GetSystemDiskAnswerDiskUsageVolumesUsageData"
           }
         }
       ]
     },
     {
-      "Name": "GetSystemDiskResponseDiskUsageVolumesUsageData",
+      "Name": "GetSystemDiskAnswerDiskUsageVolumesUsageData",
       "Fields": [
         {
           "Name": "RefCount",
@@ -424,44 +484,7 @@
       ]
     },
     {
-      "Name": "GetSystemFilesContentResponse",
-      "Fields": [
-        {
-          "Name": "Content",
-          "JsonName": "content",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Mtime",
-          "JsonName": "mtime",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Path",
-          "JsonName": "path",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Size",
-          "JsonName": "size",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "GetSystemFilesResponse",
+      "Name": "GetSystemFilesAnswer",
       "Fields": [
         {
           "Name": "Entries",
@@ -470,7 +493,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetSystemFilesResponseEntries"
+              "ReferenceName": "GetSystemFilesAnswerEntries"
             }
           },
           "Required": true
@@ -493,7 +516,7 @@
       ]
     },
     {
-      "Name": "GetSystemFilesResponseEntries",
+      "Name": "GetSystemFilesAnswerEntries",
       "Fields": [
         {
           "Name": "Mode",
@@ -507,7 +530,7 @@
           "Name": "Mtime",
           "JsonName": "mtime",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           },
           "Required": true
         },
@@ -539,73 +562,32 @@
           "Name": "Type",
           "JsonName": "type",
           "Type": {
+            "Type": "Reference",
+            "ReferenceName": "FileType"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetSystemFilesContentAnswer",
+      "Fields": [
+        {
+          "Name": "Content",
+          "JsonName": "content",
+          "Type": {
             "Type": "String"
           },
           "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "GetSystemResponse",
-      "Fields": [
+        },
         {
-          "Name": "Database",
-          "JsonName": "database",
+          "Name": "Mtime",
+          "JsonName": "mtime",
           "Type": {
-            "Type": "Dictionary",
-            "NestedItem": {
-              "Type": "Any"
-            }
+            "Type": "DateTime"
           },
           "Required": true
         },
-        {
-          "Name": "Docker",
-          "JsonName": "docker",
-          "Type": {
-            "Type": "Dictionary",
-            "NestedItem": {
-              "Type": "Any"
-            }
-          }
-        },
-        {
-          "Name": "Host",
-          "JsonName": "host",
-          "Type": {
-            "Type": "Dictionary",
-            "NestedItem": {
-              "Type": "Any"
-            }
-          }
-        },
-        {
-          "Name": "Runtime",
-          "JsonName": "runtime",
-          "Type": {
-            "Type": "Dictionary",
-            "NestedItem": {
-              "Type": "Any"
-            }
-          },
-          "Required": true
-        },
-        {
-          "Name": "Stats",
-          "JsonName": "stats",
-          "Type": {
-            "Type": "Dictionary",
-            "NestedItem": {
-              "Type": "Any"
-            }
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostSystemFilesRequest",
-      "Fields": [
         {
           "Name": "Path",
           "JsonName": "path",
@@ -613,11 +595,19 @@
             "Type": "String"
           },
           "Required": true
+        },
+        {
+          "Name": "Size",
+          "JsonName": "size",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
         }
       ]
     },
     {
-      "Name": "PostSystemFilesResponse",
+      "Name": "PostSystemFilesAnswer",
       "Fields": [
         {
           "Name": "Path",
@@ -632,6 +622,19 @@
           "JsonName": "success",
           "Type": {
             "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostSystemFilesRequest",
+      "Fields": [
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
           },
           "Required": true
         }

@@ -4,8 +4,8 @@ package dockhand
 
 // PostRegistriesTestRequest is an object the document declares inline.
 type PostRegistriesTestRequest struct {
-	Password   string `json:"password,omitempty"`
-	RegistryId int    `json:"registryId,omitempty"`
-	Url        string `json:"url,omitempty"`
-	Username   string `json:"username,omitempty"`
+	Password   string     `json:"password,omitempty"`
+	RegistryId RegistryID `json:"registryId,omitempty"`
+	Url        string     `json:"url,omitempty"`
+	Username   string     `json:"username,omitempty"`
 }

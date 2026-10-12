@@ -11,41 +11,45 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetBackupStackDirListingOperationResponse is the result of GetBackupStackDirListing.
-type GetBackupStackDirListingOperationResponse struct {
+// GetBackupStackDirListingResponse is the result of GetBackupStackDirListing.
+type GetBackupStackDirListingResponse struct {
 	HttpResponse *http.Response
-	Model        json.RawMessage
+	Answer       json.RawMessage
 }
 
-// GetBackupStackDirListingOperationOptions holds the query and header parameters of GetBackupStackDirListing.
-type GetBackupStackDirListingOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetBackupStackDirListingResponse) Answered() bool { return r.Answer != nil }
+
+// GetBackupStackDirListingOptions holds the query and header parameters of GetBackupStackDirListing.
+type GetBackupStackDirListingOptions struct {
 	// Target stack name
 	Target string
 
 	// Environment ID the stack belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetBackupStackDirListingOperationOptions) ToHeaders() *client.Headers {
+func (o GetBackupStackDirListingOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetBackupStackDirListingOperationOptions) ToQuery() *client.QueryParams {
+func (o GetBackupStackDirListingOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Target != "" {
 		out.Append("target", o.Target)
 	}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetBackupStackDirListing calls GET /api/backup/stack-dir-listing. Probe the target host and list the actual contents of a stack's directory, for the backup create/edit dialog's file picker.
-func (c Client) GetBackupStackDirListing(ctx context.Context, options GetBackupStackDirListingOperationOptions) (result GetBackupStackDirListingOperationResponse, err error) {
+func (c Client) GetBackupStackDirListing(ctx context.Context, options GetBackupStackDirListingOptions) (result GetBackupStackDirListingResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -69,7 +73,7 @@ func (c Client) GetBackupStackDirListing(ctx context.Context, options GetBackupS
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

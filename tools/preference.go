@@ -60,8 +60,8 @@ type preferences struct {
 }
 
 // remembered reads everything the web interface remembers, with the environments and the tags there are for the names of the two orders.
-func (r *registry) remembered(ctx context.Context) (*preferences, []environment, []dockhand.GetTagsResponseTags, error) {
-	fail := func(what string, err error) (*preferences, []environment, []dockhand.GetTagsResponseTags, error) {
+func (r *registry) remembered(ctx context.Context) (*preferences, []environment, []dockhand.GetTagsAnswerTags, error) {
+	fail := func(what string, err error) (*preferences, []environment, []dockhand.GetTagsAnswerTags, error) {
 		return nil, nil, nil, fmt.Errorf("%s could not be read: %w", what, refusal(err))
 	}
 	envs, err := r.environments(ctx)
@@ -78,33 +78,33 @@ func (r *registry) remembered(ctx context.Context) (*preferences, []environment,
 	if err != nil {
 		return fail("the order of environments", err)
 	}
-	for _, id := range envOrder.Model.Order {
-		i := slices.IndexFunc(envs, func(e environment) bool { return e.ID == id })
+	for _, id := range envOrder.Answer.Order {
+		i := slices.IndexFunc(envs, func(e environment) bool { return int(e.ID) == id })
 		out.EnvironmentOrder = append(out.EnvironmentOrder, nameOr(i, id, func(i int) string { return envs[i].Name }))
 	}
 	tagOrder, err := r.dock.GetPreferencesTagOrder(ctx)
 	if err != nil {
 		return fail("the order of tags", err)
 	}
-	for _, id := range tagOrder.Model.Order {
-		i := slices.IndexFunc(tags, func(t dockhand.GetTagsResponseTags) bool { return t.Id == id })
+	for _, id := range tagOrder.Answer.Order {
+		i := slices.IndexFunc(tags, func(t dockhand.GetTagsAnswerTags) bool { return int(t.Id) == id })
 		out.TagOrder = append(out.TagOrder, nameOr(i, id, func(i int) string { return tags[i].Name }))
 	}
 	sidebar, err := r.dock.GetPreferencesSidebar(ctx)
 	if err != nil {
 		return fail("the sidebar", err)
 	}
-	if kept := sidebar.Model.Preferences; kept != nil {
+	if kept := sidebar.Answer.Preferences; kept != nil {
 		out.SidebarOrder, out.SidebarHidden = append(out.SidebarOrder, kept.Order...), append(out.SidebarHidden, kept.Hidden...)
 	}
 	grids, err := r.dock.GetPreferencesGrid(ctx)
 	if err != nil {
 		return fail("the columns of the grids", err)
 	}
-	for id, grid := range grids.Model.Preferences {
+	for id, grid := range grids.Answer.Preferences {
 		columns := make([]gridColumn, 0, len(grid.Columns))
 		for _, c := range grid.Columns {
-			columns = append(columns, gridColumn{ID: c.Id, Visible: yes(c.Visible)})
+			columns = append(columns, gridColumn{ID: c.Id, Visible: c.Visible})
 		}
 		if out.Grids == nil {
 			out.Grids = map[string][]gridColumn{}
@@ -115,25 +115,25 @@ func (r *registry) remembered(ctx context.Context) (*preferences, []environment,
 	if err != nil {
 		return fail("whether Dockhand's own jobs are hidden", err)
 	}
-	out.HideSystemJobs = yes(jobs.Model.HideSystemJobs)
+	out.HideSystemJobs = jobs.Answer.HideSystemJobs
 	dashboard, err := r.dock.GetDashboardPreferences(ctx)
 	if err != nil {
 		return fail("the dashboard", err)
 	}
-	out.DashboardLocked, out.DashboardView = yes(dashboard.Model.Locked), dashboard.Model.ViewMode
-	for _, tile := range dashboard.Model.GridLayout {
+	out.DashboardLocked, out.DashboardView = dashboard.Answer.Locked, dashboard.Answer.ViewMode
+	for _, tile := range dashboard.Answer.GridLayout {
 		id := numberOf(tile["id"])
-		i := slices.IndexFunc(envs, func(e environment) bool { return e.ID == id })
+		i := slices.IndexFunc(envs, func(e environment) bool { return int(e.ID) == id })
 		out.DashboardTiles = append(out.DashboardTiles, dashboardTile{Env: nameOr(i, id, func(i int) string { return envs[i].Name }), X: numberOf(tile["x"]), Y: numberOf(tile["y"]), W: numberOf(tile["w"]), H: numberOf(tile["h"])})
 	}
 	pages, err := r.dock.GetSettingsNavigation(ctx)
 	if err != nil {
 		return fail("the pages", err)
 	}
-	if now := pages.Model.Effective; now != nil {
+	if now := pages.Answer.Effective; now != nil {
 		out.LandingPage, out.EnvClickPage = now.LandingPage, now.EnvClickPage
 	}
-	if chosen := pages.Model.Global; chosen != nil {
+	if chosen := pages.Answer.Global; chosen != nil {
 		out.LandingChosen, out.EnvClickChosen = chosen.LandingPage, chosen.EnvClickPage
 	}
 
@@ -160,12 +160,12 @@ type favoriteEntry struct {
 // favoritesOf is everything kept for an environment's log view, in order. Dockhand keeps containers and groups in the one list and answers it whole
 // whichever is asked for.
 func (r *registry) favoritesOf(ctx context.Context, env environment) ([]favoriteEntry, error) {
-	kept, err := r.dock.GetPreferencesFavorites(ctx, dockhand.GetPreferencesFavoritesOperationOptions{Env: &env.ID})
+	kept, err := r.dock.GetPreferencesFavorites(ctx, dockhand.GetPreferencesFavoritesOptions{Env: env.ID})
 	if err != nil {
 		return nil, refusal(err)
 	}
-	entries := make([]favoriteEntry, 0, len(kept.Model.Favorites))
-	for _, one := range kept.Model.Favorites {
+	entries := make([]favoriteEntry, 0, len(kept.Answer.Favorites))
+	for _, one := range kept.Answer.Favorites {
 		switch one := one.(type) {
 		case string:
 			entries = append(entries, favoriteEntry{Container: one})
@@ -319,12 +319,14 @@ func registerPreferenceTools(r *registry) {
 			return ids, names, nil
 		}
 		envNamed := func(wanted string) (int, string, bool) {
-			i := slices.IndexFunc(envs, func(e environment) bool { return strconv.Itoa(e.ID) == wanted || strings.EqualFold(e.Name, wanted) })
+			i := slices.IndexFunc(envs, func(e environment) bool {
+				return strconv.Itoa(int(e.ID)) == wanted || strings.EqualFold(e.Name, wanted)
+			})
 			if i < 0 {
 				return 0, "", false
 			}
 
-			return envs[i].ID, envs[i].Name, true
+			return int(envs[i].ID), envs[i].Name, true
 		}
 		envIDs, envNames, err := ordered(in.EnvironmentOrder, "environment", envNamed)
 		if err != nil {
@@ -354,7 +356,7 @@ func registerPreferenceTools(r *registry) {
 				return 0, "", false
 			}
 
-			return tag.Id, tag.Name, true
+			return int(tag.Id), tag.Name, true
 		})
 		if err != nil {
 			return nil, out, err
@@ -399,7 +401,7 @@ func registerPreferenceTools(r *registry) {
 		if grid != "" && !slices.Equal(columns, now.Grids[grid]) {
 			sent := make([]dockhand.PostPreferencesGridRequestColumns, 0, len(columns))
 			for _, c := range columns {
-				sent = append(sent, dockhand.PostPreferencesGridRequestColumns{Id: c.ID, Visible: &c.Visible})
+				sent = append(sent, dockhand.PostPreferencesGridRequestColumns{Id: c.ID, Visible: c.Visible})
 			}
 			step(fmt.Sprintf("set the %s of the grid %s", several(len(sent), "column"), grid), fmt.Sprintf("would set the %s of the grid %s", several(len(sent), "column"), grid), func() error {
 				_, failed := r.dock.PostPreferencesGrid(ctx, dockhand.PostPreferencesGridRequest{GridId: grid, Columns: sent})
@@ -408,9 +410,9 @@ func registerPreferenceTools(r *registry) {
 			})
 		}
 		if _, saved := now.Grids[reset]; reset == everyGrid && len(now.Grids) > 0 || saved {
-			options, what := dockhand.DeletePreferencesGridOperationOptions{GridId: reset}, "the grid "+reset+" shown as it comes again"
+			options, what := dockhand.DeletePreferencesGridOptions{GridId: reset}, "the grid "+reset+" shown as it comes again"
 			if reset == everyGrid {
-				options, what = dockhand.DeletePreferencesGridOperationOptions{}, "every grid shown as it comes again"
+				options, what = dockhand.DeletePreferencesGridOptions{}, "every grid shown as it comes again"
 			}
 			step("had "+what, "would have "+what, func() error {
 				_, failed := r.dock.DeletePreferencesGrid(ctx, options)
@@ -464,7 +466,7 @@ func registerPreferenceTools(r *registry) {
 		if len(opened) > 0 {
 			step("made "+strings.Join(opened, " and ")+", for everyone who chose none", "would make "+strings.Join(opened, " and ")+", for everyone who chose none", func() error {
 				if pages.LandingPage != "" || pages.EnvClickPage != "" {
-					if _, failed := r.dock.PutSettingsNavigation(ctx, pages, dockhand.PutSettingsNavigationOperationOptions{Scope: "global"}); failed != nil {
+					if _, failed := r.dock.PutSettingsNavigation(ctx, pages, dockhand.PutSettingsNavigationOptions{Scope: "global"}); failed != nil {
 						return failed
 					}
 				}
@@ -571,7 +573,7 @@ func registerPreferenceTools(r *registry) {
 			return nil, out, fmt.Errorf("the containers of %s could not be listed, so nothing was changed: %w", env.Name, err)
 		}
 		known := func(name string) bool {
-			return slices.ContainsFunc(there, func(c dockhand.GetContainersResponse) bool { return c.Name == name }) || slices.ContainsFunc(kept, func(e favoriteEntry) bool { return e.Container == name || slices.Contains(e.Containers, name) })
+			return slices.ContainsFunc(there, func(c dockhand.GetContainersAnswer) bool { return c.Name == name }) || slices.ContainsFunc(kept, func(e favoriteEntry) bool { return e.Container == name || slices.Contains(e.Containers, name) })
 		}
 
 		wanted := make([]favoriteEntry, 0, len(in.Favorites))
@@ -635,7 +637,7 @@ func registerPreferenceTools(r *registry) {
 			return nil, out, nil
 		}
 
-		if _, failed := r.dock.SetLogFavorites(ctx, env.ID, list); failed != nil {
+		if _, failed := r.dock.SetLogFavorites(ctx, int(env.ID), list); failed != nil {
 			return nil, out, fmt.Errorf("the favourites of %s were not set: %w", env.Name, refusal(failed))
 		}
 		out.Changes = append(out.Changes, "kept "+what)

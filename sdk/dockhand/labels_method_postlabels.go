@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostLabelsOperationResponse is the result of PostLabels.
-type PostLabelsOperationResponse struct {
+// PostLabelsResponse is the result of PostLabels.
+//
+// Answer is the PostLabelsAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostLabelsResponse struct {
 	HttpResponse *http.Response
-	Model        *PostLabelsResponse
+	Answer       *PostLabelsAnswer
+	*PostLabelsAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostLabelsResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostLabelsAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostLabelsResponse) Record() (PostLabelsAnswer, error) {
+	if r.Answer == nil {
+		return PostLabelsAnswer{}, errors.New("PostLabels answered no PostLabelsAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostLabels calls POST /api/labels. Perform a bulk label operation on environments — rename, delete, add to environments, or set a custom color — selected via the action field.
-func (c Client) PostLabels(ctx context.Context, input PostLabelsRequest) (result PostLabelsOperationResponse, err error) {
+func (c Client) PostLabels(ctx context.Context, input PostLabelsRequest) (result PostLabelsResponse, err error) {
+	result.PostLabelsAnswer = &PostLabelsAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostLabels(ctx context.Context, input PostLabelsRequest) (result
 		return
 	}
 
-	var model PostLabelsResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostLabelsAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostLabelsAnswer = result.Answer
 
 	return
 }

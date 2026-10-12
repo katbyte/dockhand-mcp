@@ -4,8 +4,8 @@ package dockhand
 
 // PostRolesRequest is an object the document declares inline.
 type PostRolesRequest struct {
-	Description    string         `json:"description,omitempty"`
-	EnvironmentIds []int          `json:"environmentIds,omitzero"`
-	Name           string         `json:"name"`
-	Permissions    map[string]any `json:"permissions"`
+	Description    string          `json:"description,omitempty"`
+	EnvironmentIds []EnvironmentID `json:"environmentIds,omitzero"`
+	Name           string          `json:"name"`
+	Permissions    map[string]any  `json:"permissions"`
 }

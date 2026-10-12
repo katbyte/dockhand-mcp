@@ -13,9 +13,9 @@ func TestOperationDeleteBackupSnapshotsById(t *testing.T) {
 	t.Parallel()
 
 	c, s := newOperationServer(t, 200, "", "")
-	result, err := c.DeleteBackupSnapshotsById(t.Context(), "p/id", DeleteBackupSnapshotsByIdOperationOptions{
+	result, err := c.DeleteBackupSnapshotsById(t.Context(), "p/id", DeleteBackupSnapshotsByIdOptions{
 		DestinationId: new(7),
-		Env:           new(7),
+		Env:           EnvironmentID(7),
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -31,9 +31,9 @@ func TestOperationDeleteBackupSnapshotsById(t *testing.T) {
 
 	// a status the operation does not document is an error, with the response
 	c, _ = newOperationServer(t, 418, "text/plain", "no")
-	result, err = c.DeleteBackupSnapshotsById(t.Context(), "p/id", DeleteBackupSnapshotsByIdOperationOptions{
+	result, err = c.DeleteBackupSnapshotsById(t.Context(), "p/id", DeleteBackupSnapshotsByIdOptions{
 		DestinationId: new(7),
-		Env:           new(7),
+		Env:           EnvironmentID(7),
 	})
 	if client.StatusCode(err) != 418 || result.HttpResponse == nil {
 		t.Errorf("an undocumented status = %v, %+v", err, result.HttpResponse)

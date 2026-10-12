@@ -173,7 +173,7 @@ func infoCmd() *cobra.Command {
 				return fmt.Errorf("the Dockhand at %s could not be asked: %w", dock.Client.BaseURL, err)
 			}
 			login := "off"
-			if session.Model.AuthEnabled != nil && *session.Model.AuthEnabled {
+			if session.Answer.AuthEnabled {
 				login = "on"
 			}
 
@@ -183,13 +183,13 @@ func infoCmd() *cobra.Command {
 			}
 
 			release := "a version it would not give"
-			if changelog, err := dock.GetChangelog(cmd.Context()); err == nil && len(changelog.Model) > 0 {
-				release = changelog.Model[0].Version
+			if changelog, err := dock.GetChangelog(cmd.Context()); err == nil && len(changelog.Answer) > 0 {
+				release = changelog.Answer[0].Version
 			}
 
-			_, _ = fmt.Fprintf(out, "Dockhand %s at %s, login %s, %d environments\n", release, dock.Client.BaseURL, login, len(environments.Model))
-			for i := range environments.Model {
-				e := &environments.Model[i]
+			_, _ = fmt.Fprintf(out, "Dockhand %s at %s, login %s, %d environments\n", release, dock.Client.BaseURL, login, len(environments.Answer))
+			for i := range environments.Answer {
+				e := &environments.Answer[i]
 				_, _ = fmt.Fprintf(out, "  %s (%d): %s\n", e.Name, e.Id, e.ConnectionType)
 			}
 

@@ -4,18 +4,19 @@ package dockhand
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetAuthOidcCallbackOperationResponse is the result of GetAuthOidcCallback.
-type GetAuthOidcCallbackOperationResponse struct {
+// GetAuthOidcCallbackResponse is the result of GetAuthOidcCallback.
+type GetAuthOidcCallbackResponse struct {
 	HttpResponse *http.Response
 }
 
-// GetAuthOidcCallbackOperationOptions holds the query and header parameters of GetAuthOidcCallback.
-type GetAuthOidcCallbackOperationOptions struct {
+// GetAuthOidcCallbackOptions holds the query and header parameters of GetAuthOidcCallback.
+type GetAuthOidcCallbackOptions struct {
 	// Authorization code returned by the IdP
 	Code string
 
@@ -30,13 +31,13 @@ type GetAuthOidcCallbackOperationOptions struct {
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetAuthOidcCallbackOperationOptions) ToHeaders() *client.Headers {
+func (o GetAuthOidcCallbackOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetAuthOidcCallbackOperationOptions) ToQuery() *client.QueryParams {
+func (o GetAuthOidcCallbackOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Code != "" {
 		out.Append("code", o.Code)
@@ -54,13 +55,22 @@ func (o GetAuthOidcCallbackOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetAuthOidcCallback calls GET /api/auth/oidc/callback. Handle the OIDC redirect callback from the IdP — always responds with a 302 redirect (to the original destination on success, or to /login with an error query param on failure).
-func (c Client) GetAuthOidcCallback(ctx context.Context, options GetAuthOidcCallbackOperationOptions) (result GetAuthOidcCallbackOperationResponse, err error) {
+func (c Client) GetAuthOidcCallback(ctx context.Context, options ...GetAuthOidcCallbackOptions) (result GetAuthOidcCallbackResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetAuthOidcCallback takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetAuthOidcCallbackOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusFound,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/auth/oidc/callback",
 	}
 

@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,41 +13,72 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetStacksByNameEnvOperationResponse is the result of GetStacksByNameEnv.
-type GetStacksByNameEnvOperationResponse struct {
+// GetStacksByNameEnvResponse is the result of GetStacksByNameEnv.
+//
+// Answer is the GetStacksByNameEnvAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetStacksByNameEnvResponse struct {
 	HttpResponse *http.Response
-	Model        *GetStacksByNameEnvResponse
+	Answer       *GetStacksByNameEnvAnswer
+	*GetStacksByNameEnvAnswer
 }
 
-// GetStacksByNameEnvOperationOptions holds the query and header parameters of GetStacksByNameEnv.
-type GetStacksByNameEnvOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetStacksByNameEnvResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetStacksByNameEnvAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetStacksByNameEnvResponse) Record() (GetStacksByNameEnvAnswer, error) {
+	if r.Answer == nil {
+		return GetStacksByNameEnvAnswer{}, errors.New("GetStacksByNameEnv answered no GetStacksByNameEnvAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetStacksByNameEnvOptions holds the query and header parameters of GetStacksByNameEnv.
+type GetStacksByNameEnvOptions struct {
 	// Environment id the stack belongs to
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetStacksByNameEnvOperationOptions) ToHeaders() *client.Headers {
+func (o GetStacksByNameEnvOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetStacksByNameEnvOperationOptions) ToQuery() *client.QueryParams {
+func (o GetStacksByNameEnvOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetStacksByNameEnv calls GET /api/stacks/{name}/env. Get a stack's env vars plus injected provider keys.
-func (c Client) GetStacksByNameEnv(ctx context.Context, name string, options GetStacksByNameEnvOperationOptions) (result GetStacksByNameEnvOperationResponse, err error) {
+func (c Client) GetStacksByNameEnv(ctx context.Context, name string, options ...GetStacksByNameEnvOptions) (result GetStacksByNameEnvResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetStacksByNameEnv takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetStacksByNameEnvOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetStacksByNameEnvAnswer = &GetStacksByNameEnvAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/env", url.PathEscape(name)),
 	}
 
@@ -64,11 +96,12 @@ func (c Client) GetStacksByNameEnv(ctx context.Context, name string, options Get
 		return
 	}
 
-	var model GetStacksByNameEnvResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetStacksByNameEnvAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetStacksByNameEnvAnswer = result.Answer
 
 	return
 }

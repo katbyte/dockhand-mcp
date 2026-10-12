@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,42 +13,73 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostStacksByNameValidateOperationResponse is the result of PostStacksByNameValidate.
-type PostStacksByNameValidateOperationResponse struct {
+// PostStacksByNameValidateResponse is the result of PostStacksByNameValidate.
+//
+// Answer is the PostStacksByNameValidateAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostStacksByNameValidateResponse struct {
 	HttpResponse *http.Response
-	Model        *PostStacksByNameValidateResponse
+	Answer       *PostStacksByNameValidateAnswer
+	*PostStacksByNameValidateAnswer
 }
 
-// PostStacksByNameValidateOperationOptions holds the query and header parameters of PostStacksByNameValidate.
-type PostStacksByNameValidateOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostStacksByNameValidateResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostStacksByNameValidateAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostStacksByNameValidateResponse) Record() (PostStacksByNameValidateAnswer, error) {
+	if r.Answer == nil {
+		return PostStacksByNameValidateAnswer{}, errors.New("PostStacksByNameValidate answered no PostStacksByNameValidateAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostStacksByNameValidateOptions holds the query and header parameters of PostStacksByNameValidate.
+type PostStacksByNameValidateOptions struct {
 	// Environment ID for the context-aware checks (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostStacksByNameValidateOperationOptions) ToHeaders() *client.Headers {
+func (o PostStacksByNameValidateOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostStacksByNameValidateOperationOptions) ToQuery() *client.QueryParams {
+func (o PostStacksByNameValidateOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostStacksByNameValidate calls POST /api/stacks/{name}/validate. Run the Compose Validate preflight linter on a compose file and return findings with severities and line numbers (requires the 'view' permission).
-func (c Client) PostStacksByNameValidate(ctx context.Context, name string, input PostStacksByNameValidateRequest, options PostStacksByNameValidateOperationOptions) (result PostStacksByNameValidateOperationResponse, err error) {
+func (c Client) PostStacksByNameValidate(ctx context.Context, name string, input PostStacksByNameValidateRequest, options ...PostStacksByNameValidateOptions) (result PostStacksByNameValidateResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostStacksByNameValidate takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostStacksByNameValidateOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostStacksByNameValidateAnswer = &PostStacksByNameValidateAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/validate", url.PathEscape(name)),
 	}
 
@@ -69,11 +101,12 @@ func (c Client) PostStacksByNameValidate(ctx context.Context, name string, input
 		return
 	}
 
-	var model PostStacksByNameValidateResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostStacksByNameValidateAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostStacksByNameValidateAnswer = result.Answer
 
 	return
 }

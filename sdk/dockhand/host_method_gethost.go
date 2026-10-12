@@ -4,47 +4,80 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetHostOperationResponse is the result of GetHost.
-type GetHostOperationResponse struct {
+// GetHostResponse is the result of GetHost.
+//
+// Answer is the GetHostAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetHostResponse struct {
 	HttpResponse *http.Response
-	Model        *GetHostResponse
+	Answer       *GetHostAnswer
+	*GetHostAnswer
 }
 
-// GetHostOperationOptions holds the query and header parameters of GetHost.
-type GetHostOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetHostResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetHostAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetHostResponse) Record() (GetHostAnswer, error) {
+	if r.Answer == nil {
+		return GetHostAnswer{}, errors.New("GetHost answered no GetHostAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetHostOptions holds the query and header parameters of GetHost.
+type GetHostOptions struct {
 	// ID of the environment to describe (basic local info is returned when omitted) (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetHostOperationOptions) ToHeaders() *client.Headers {
+func (o GetHostOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetHostOperationOptions) ToQuery() *client.QueryParams {
+func (o GetHostOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetHost calls GET /api/host. Return host info (hostname, IP, CPU, memory, uptime, Docker counts) for the daemon behind an environment.
-func (c Client) GetHost(ctx context.Context, options GetHostOperationOptions) (result GetHostOperationResponse, err error) {
+func (c Client) GetHost(ctx context.Context, options ...GetHostOptions) (result GetHostResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetHost takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetHostOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetHostAnswer = &GetHostAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/host",
 	}
 
@@ -62,11 +95,12 @@ func (c Client) GetHost(ctx context.Context, options GetHostOperationOptions) (r
 		return
 	}
 
-	var model GetHostResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetHostAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetHostAnswer = result.Answer
 
 	return
 }

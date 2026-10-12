@@ -4,8 +4,8 @@ package dockhand
 
 // PostEnvironmentsByIdDiskWarningRequest is an object the document declares inline.
 type PostEnvironmentsByIdDiskWarningRequest struct {
-	Enabled     *bool  `json:"enabled,omitempty"`
-	Mode        string `json:"mode,omitempty"`
-	Threshold   int    `json:"threshold,omitempty"`
-	ThresholdGb int    `json:"thresholdGb,omitempty"`
+	Enabled     *bool           `json:"enabled,omitempty"`
+	Mode        DiskWarningMode `json:"mode,omitempty"`
+	Threshold   int             `json:"threshold,omitempty"`
+	ThresholdGb int             `json:"thresholdGb,omitempty"`
 }

@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,32 +13,53 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetVolumesByNameBrowseOperationResponse is the result of GetVolumesByNameBrowse.
-type GetVolumesByNameBrowseOperationResponse struct {
+// GetVolumesByNameBrowseResponse is the result of GetVolumesByNameBrowse.
+//
+// Answer is the GetVolumesByNameBrowseAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetVolumesByNameBrowseResponse struct {
 	HttpResponse *http.Response
-	Model        *GetVolumesByNameBrowseResponse
+	Answer       *GetVolumesByNameBrowseAnswer
+	*GetVolumesByNameBrowseAnswer
 }
 
-// GetVolumesByNameBrowseOperationOptions holds the query and header parameters of GetVolumesByNameBrowse.
-type GetVolumesByNameBrowseOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetVolumesByNameBrowseResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetVolumesByNameBrowseAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetVolumesByNameBrowseResponse) Record() (GetVolumesByNameBrowseAnswer, error) {
+	if r.Answer == nil {
+		return GetVolumesByNameBrowseAnswer{}, errors.New("GetVolumesByNameBrowse answered no GetVolumesByNameBrowseAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetVolumesByNameBrowseOptions holds the query and header parameters of GetVolumesByNameBrowse.
+type GetVolumesByNameBrowseOptions struct {
 	// Environment ID the volume belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// Directory path inside the volume to list (defaults to "/")
 	Path string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetVolumesByNameBrowseOperationOptions) ToHeaders() *client.Headers {
+func (o GetVolumesByNameBrowseOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetVolumesByNameBrowseOperationOptions) ToQuery() *client.QueryParams {
+func (o GetVolumesByNameBrowseOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	if o.Path != "" {
 		out.Append("path", o.Path)
@@ -46,13 +68,23 @@ func (o GetVolumesByNameBrowseOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetVolumesByNameBrowse calls GET /api/volumes/{name}/browse. Browse a directory inside a Docker volume via a cached helper container; the volume is mounted read-only when in use by other containers.
-func (c Client) GetVolumesByNameBrowse(ctx context.Context, name string, options GetVolumesByNameBrowseOperationOptions) (result GetVolumesByNameBrowseOperationResponse, err error) {
+func (c Client) GetVolumesByNameBrowse(ctx context.Context, name string, options ...GetVolumesByNameBrowseOptions) (result GetVolumesByNameBrowseResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetVolumesByNameBrowse takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetVolumesByNameBrowseOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetVolumesByNameBrowseAnswer = &GetVolumesByNameBrowseAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/volumes/%s/browse", url.PathEscape(name)),
 	}
 
@@ -70,11 +102,12 @@ func (c Client) GetVolumesByNameBrowse(ctx context.Context, name string, options
 		return
 	}
 
-	var model GetVolumesByNameBrowseResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetVolumesByNameBrowseAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetVolumesByNameBrowseAnswer = result.Answer
 
 	return
 }

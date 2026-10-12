@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetSettingsNavigationOperationResponse is the result of GetSettingsNavigation.
-type GetSettingsNavigationOperationResponse struct {
+// GetSettingsNavigationResponse is the result of GetSettingsNavigation.
+//
+// Answer is the GetSettingsNavigationAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetSettingsNavigationResponse struct {
 	HttpResponse *http.Response
-	Model        *GetSettingsNavigationResponse
+	Answer       *GetSettingsNavigationAnswer
+	*GetSettingsNavigationAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetSettingsNavigationResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetSettingsNavigationAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetSettingsNavigationResponse) Record() (GetSettingsNavigationAnswer, error) {
+	if r.Answer == nil {
+		return GetSettingsNavigationAnswer{}, errors.New("GetSettingsNavigation answered no GetSettingsNavigationAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetSettingsNavigation calls GET /api/settings/navigation. Get the effective navigation preferences (landing page, env-click target) plus the raw global and per-user values.
-func (c Client) GetSettingsNavigation(ctx context.Context) (result GetSettingsNavigationOperationResponse, err error) {
+func (c Client) GetSettingsNavigation(ctx context.Context) (result GetSettingsNavigationResponse, err error) {
+	result.GetSettingsNavigationAnswer = &GetSettingsNavigationAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) GetSettingsNavigation(ctx context.Context) (result GetSettingsNa
 		return
 	}
 
-	var model GetSettingsNavigationResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetSettingsNavigationAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetSettingsNavigationAnswer = result.Answer
 
 	return
 }

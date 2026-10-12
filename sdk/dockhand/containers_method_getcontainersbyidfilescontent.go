@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,32 +13,53 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetContainersByIdFilesContentOperationResponse is the result of GetContainersByIdFilesContent.
-type GetContainersByIdFilesContentOperationResponse struct {
+// GetContainersByIdFilesContentResponse is the result of GetContainersByIdFilesContent.
+//
+// Answer is the GetContainersByIdFilesContentAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetContainersByIdFilesContentResponse struct {
 	HttpResponse *http.Response
-	Model        *GetContainersByIdFilesContentResponse
+	Answer       *GetContainersByIdFilesContentAnswer
+	*GetContainersByIdFilesContentAnswer
 }
 
-// GetContainersByIdFilesContentOperationOptions holds the query and header parameters of GetContainersByIdFilesContent.
-type GetContainersByIdFilesContentOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetContainersByIdFilesContentResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetContainersByIdFilesContentAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetContainersByIdFilesContentResponse) Record() (GetContainersByIdFilesContentAnswer, error) {
+	if r.Answer == nil {
+		return GetContainersByIdFilesContentAnswer{}, errors.New("GetContainersByIdFilesContent answered no GetContainersByIdFilesContentAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetContainersByIdFilesContentOptions holds the query and header parameters of GetContainersByIdFilesContent.
+type GetContainersByIdFilesContentOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// Absolute file path inside the container
 	Path string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetContainersByIdFilesContentOperationOptions) ToHeaders() *client.Headers {
+func (o GetContainersByIdFilesContentOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetContainersByIdFilesContentOperationOptions) ToQuery() *client.QueryParams {
+func (o GetContainersByIdFilesContentOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	if o.Path != "" {
 		out.Append("path", o.Path)
@@ -46,7 +68,8 @@ func (o GetContainersByIdFilesContentOperationOptions) ToQuery() *client.QueryPa
 }
 
 // GetContainersByIdFilesContent calls GET /api/containers/{id}/files/content. Read the content of a single file inside a container (max 1 MB).
-func (c Client) GetContainersByIdFilesContent(ctx context.Context, id string, options GetContainersByIdFilesContentOperationOptions) (result GetContainersByIdFilesContentOperationResponse, err error) {
+func (c Client) GetContainersByIdFilesContent(ctx context.Context, id string, options GetContainersByIdFilesContentOptions) (result GetContainersByIdFilesContentResponse, err error) {
+	result.GetContainersByIdFilesContentAnswer = &GetContainersByIdFilesContentAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -70,11 +93,12 @@ func (c Client) GetContainersByIdFilesContent(ctx context.Context, id string, op
 		return
 	}
 
-	var model GetContainersByIdFilesContentResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetContainersByIdFilesContentAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetContainersByIdFilesContentAnswer = result.Answer
 
 	return
 }

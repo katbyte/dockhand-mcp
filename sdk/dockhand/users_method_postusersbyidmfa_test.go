@@ -14,7 +14,7 @@ func TestOperationPostUsersByIdMfa(t *testing.T) {
 	t.Parallel()
 
 	c, s := newOperationServer(t, 200, "", "")
-	result, err := c.PostUsersByIdMfa(t.Context(), 7, PostUsersByIdMfaRequest{})
+	result, err := c.PostUsersByIdMfa(t.Context(), UserID(7), PostUsersByIdMfaRequest{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -26,13 +26,16 @@ func TestOperationPostUsersByIdMfa(t *testing.T) {
 	if !json.Valid([]byte(body)) {
 		t.Errorf("body = %q, want JSON", body)
 	}
+	if body != "{\"action\":\"\"}" {
+		t.Errorf("an empty record sent %q, want %q: a field never set went out", body, "{\"action\":\"\"}")
+	}
 	if result.HttpResponse == nil || result.HttpResponse.StatusCode != 200 {
 		t.Fatalf("HttpResponse = %+v", result.HttpResponse)
 	}
 
 	// a status the operation does not document is an error, with the response
 	c, _ = newOperationServer(t, 418, "text/plain", "no")
-	result, err = c.PostUsersByIdMfa(t.Context(), 7, PostUsersByIdMfaRequest{})
+	result, err = c.PostUsersByIdMfa(t.Context(), UserID(7), PostUsersByIdMfaRequest{})
 	if client.StatusCode(err) != 418 || result.HttpResponse == nil {
 		t.Errorf("an undocumented status = %v, %+v", err, result.HttpResponse)
 	}

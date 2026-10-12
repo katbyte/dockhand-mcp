@@ -4,6 +4,8 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strconv"
@@ -11,29 +13,50 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostImagesLoadOperationResponse is the result of PostImagesLoad.
-type PostImagesLoadOperationResponse struct {
+// PostImagesLoadResponse is the result of PostImagesLoad.
+//
+// Answer is the PostImagesLoadAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostImagesLoadResponse struct {
 	HttpResponse *http.Response
-	Model        *PostImagesLoadResponse
+	Answer       *PostImagesLoadAnswer
+	*PostImagesLoadAnswer
 }
 
-// PostImagesLoadOperationOptions holds the query and header parameters of PostImagesLoad.
-type PostImagesLoadOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostImagesLoadResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostImagesLoadAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostImagesLoadResponse) Record() (PostImagesLoadAnswer, error) {
+	if r.Answer == nil {
+		return PostImagesLoadAnswer{}, errors.New("PostImagesLoad answered no PostImagesLoadAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostImagesLoadOptions holds the query and header parameters of PostImagesLoad.
+type PostImagesLoadOptions struct {
 	// Target environment id
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostImagesLoadOperationOptions) ToHeaders() *client.Headers {
+func (o PostImagesLoadOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostImagesLoadOperationOptions) ToQuery() *client.QueryParams {
+func (o PostImagesLoadOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
@@ -41,14 +64,24 @@ func (o PostImagesLoadOperationOptions) ToQuery() *client.QueryParams {
 // PostImagesLoad calls POST /api/images/load. Load a Docker image from an uploaded tar (docker load) for air-gapped hosts.
 //
 // input is sent as contentType, or as application/x-tar when that is empty.
-func (c Client) PostImagesLoad(ctx context.Context, input io.Reader, contentType string, options PostImagesLoadOperationOptions) (result PostImagesLoadOperationResponse, err error) {
+func (c Client) PostImagesLoad(ctx context.Context, input io.Reader, contentType string, options ...PostImagesLoadOptions) (result PostImagesLoadResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostImagesLoad takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostImagesLoadOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostImagesLoadAnswer = &PostImagesLoadAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/x-tar",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/images/load",
 	}
 
@@ -70,11 +103,12 @@ func (c Client) PostImagesLoad(ctx context.Context, input io.Reader, contentType
 		return
 	}
 
-	var model PostImagesLoadResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostImagesLoadAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostImagesLoadAnswer = result.Answer
 
 	return
 }

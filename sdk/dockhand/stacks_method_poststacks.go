@@ -4,29 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostStacksOperationResponse is the result of PostStacks.
-type PostStacksOperationResponse struct {
+// PostStacksResponse is the result of PostStacks.
+//
+// Answer is the PostStacksAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostStacksResponse struct {
 	HttpResponse *http.Response
-	Model        *PostStacksResponse
+	Answer       *PostStacksAnswer
+	*PostStacksAnswer
 }
 
-// PostStacksOperationOptions holds the query and header parameters of PostStacks.
-type PostStacksOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostStacksResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostStacksAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostStacksResponse) Record() (PostStacksAnswer, error) {
+	if r.Answer == nil {
+		return PostStacksAnswer{}, errors.New("PostStacks answered no PostStacksAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostStacksOptions holds the query and header parameters of PostStacks.
+type PostStacksOptions struct {
 	// Target environment id (takes precedence over envId/environmentId in the body)
-	Env *int
+	Env EnvironmentID
 
 	// what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once
 	Accept string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostStacksOperationOptions) ToHeaders() *client.Headers {
+func (o PostStacksOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	if o.Accept != "" {
 		out.Append("Accept", o.Accept)
@@ -35,23 +58,33 @@ func (o PostStacksOperationOptions) ToHeaders() *client.Headers {
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostStacksOperationOptions) ToQuery() *client.QueryParams {
+func (o PostStacksOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostStacks calls POST /api/stacks. Create and (optionally) deploy a compose stack.
-func (c Client) PostStacks(ctx context.Context, input PostStacksRequest, options PostStacksOperationOptions) (result PostStacksOperationResponse, err error) {
+func (c Client) PostStacks(ctx context.Context, input PostStacksRequest, options ...PostStacksOptions) (result PostStacksResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostStacks takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostStacksOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostStacksAnswer = &PostStacksAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/stacks",
 	}
 
@@ -73,11 +106,12 @@ func (c Client) PostStacks(ctx context.Context, input PostStacksRequest, options
 		return
 	}
 
-	var model PostStacksResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostStacksAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostStacksAnswer = result.Answer
 
 	return
 }

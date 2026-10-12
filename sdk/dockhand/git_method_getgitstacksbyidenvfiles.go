@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetGitStacksByIdEnvFilesOperationResponse is the result of GetGitStacksByIdEnvFiles.
-type GetGitStacksByIdEnvFilesOperationResponse struct {
+// GetGitStacksByIdEnvFilesResponse is the result of GetGitStacksByIdEnvFiles.
+//
+// Answer is the GetGitStacksByIdEnvFilesAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetGitStacksByIdEnvFilesResponse struct {
 	HttpResponse *http.Response
-	Model        *GetGitStacksByIdEnvFilesResponse
+	Answer       *GetGitStacksByIdEnvFilesAnswer
+	*GetGitStacksByIdEnvFilesAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetGitStacksByIdEnvFilesResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetGitStacksByIdEnvFilesAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetGitStacksByIdEnvFilesResponse) Record() (GetGitStacksByIdEnvFilesAnswer, error) {
+	if r.Answer == nil {
+		return GetGitStacksByIdEnvFilesAnswer{}, errors.New("GetGitStacksByIdEnvFiles answered no GetGitStacksByIdEnvFilesAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetGitStacksByIdEnvFiles calls GET /api/git/stacks/{id}/env-files. List the .env files present in a git stack's cloned repository.
-func (c Client) GetGitStacksByIdEnvFiles(ctx context.Context, id int) (result GetGitStacksByIdEnvFilesOperationResponse, err error) {
+func (c Client) GetGitStacksByIdEnvFiles(ctx context.Context, id GitStackID) (result GetGitStacksByIdEnvFilesResponse, err error) {
+	result.GetGitStacksByIdEnvFilesAnswer = &GetGitStacksByIdEnvFilesAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
-		Path:       fmt.Sprintf("/api/git/stacks/%d/env-files", id),
+		Path:       fmt.Sprintf("/api/git/stacks/%s/env-files", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) GetGitStacksByIdEnvFiles(ctx context.Context, id int) (result Ge
 		return
 	}
 
-	var model GetGitStacksByIdEnvFilesResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetGitStacksByIdEnvFilesAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetGitStacksByIdEnvFilesAnswer = result.Answer
 
 	return
 }

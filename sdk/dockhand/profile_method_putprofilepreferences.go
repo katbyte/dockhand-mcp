@@ -9,13 +9,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutProfilePreferencesOperationResponse is the result of PutProfilePreferences.
-type PutProfilePreferencesOperationResponse struct {
+// PutProfilePreferencesResponse is the result of PutProfilePreferences.
+type PutProfilePreferencesResponse struct {
 	HttpResponse *http.Response
 }
 
 // PutProfilePreferences calls PUT /api/profile/preferences. Update the current user's UI preferences (each field is optional).
-func (c Client) PutProfilePreferences(ctx context.Context, input PutProfilePreferencesRequest) (result PutProfilePreferencesOperationResponse, err error) {
+func (c Client) PutProfilePreferences(ctx context.Context, input PutProfilePreferencesRequest) (result PutProfilePreferencesResponse, err error) {
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{

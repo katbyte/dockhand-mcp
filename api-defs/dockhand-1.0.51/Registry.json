@@ -16,7 +16,8 @@
           "Description": "ID of the configured registry (from GET /api/registries)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "RegistryID"
           }
         },
         {
@@ -44,7 +45,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteRegistryImageResponse"
+          "ReferenceName": "DeleteRegistryImageAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -65,7 +66,8 @@
           "Description": "ID of the configured registry to query (from GET /api/registries)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "RegistryID"
           }
         },
         {
@@ -82,7 +84,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetRegistryCatalogResponse"
+          "ReferenceName": "GetRegistryCatalogAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -121,7 +123,8 @@
           "In": "Query",
           "Description": "ID of the configured registry to search; omit to search Docker Hub (from GET /api/registries)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "RegistryID"
           }
         }
       ],
@@ -131,7 +134,7 @@
           "Type": "List",
           "NestedItem": {
             "Type": "Reference",
-            "ReferenceName": "GetRegistrySearchResponse"
+            "ReferenceName": "GetRegistrySearchAnswer"
           }
         }
       },
@@ -152,7 +155,8 @@
           "In": "Query",
           "Description": "Registry ID; omitted or Docker Hub registries return a graceful \"not supported\" result instead of a manifest fetch (from GET /api/registries)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "RegistryID"
           }
         },
         {
@@ -180,7 +184,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetRegistryTagInfoResponse"
+          "ReferenceName": "GetRegistryTagInfoAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -200,7 +204,8 @@
           "In": "Query",
           "Description": "ID of the configured registry; omit to query Docker Hub (from GET /api/registries)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "RegistryID"
           }
         },
         {
@@ -236,7 +241,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetRegistryTagsResponse"
+          "ReferenceName": "GetRegistryTagsAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -246,7 +251,7 @@
   ],
   "Models": [
     {
-      "Name": "DeleteRegistryImageResponse",
+      "Name": "DeleteRegistryImageAnswer",
       "Fields": [
         {
           "Name": "Message",
@@ -266,14 +271,14 @@
       ]
     },
     {
-      "Name": "GetRegistryCatalogResponse",
+      "Name": "GetRegistryCatalogAnswer",
       "Fields": [
         {
           "Name": "Pagination",
           "JsonName": "pagination",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetRegistryCatalogResponsePagination"
+            "ReferenceName": "GetRegistryCatalogAnswerPagination"
           },
           "Required": true
         },
@@ -284,7 +289,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetRegistryCatalogResponseRepositories"
+              "ReferenceName": "GetRegistryCatalogAnswerRepositories"
             }
           },
           "Required": true
@@ -292,7 +297,7 @@
       ]
     },
     {
-      "Name": "GetRegistryCatalogResponsePagination",
+      "Name": "GetRegistryCatalogAnswerPagination",
       "Fields": [
         {
           "Name": "HasMore",
@@ -320,7 +325,7 @@
       ]
     },
     {
-      "Name": "GetRegistryCatalogResponseRepositories",
+      "Name": "GetRegistryCatalogAnswerRepositories",
       "Fields": [
         {
           "Name": "Description",
@@ -361,7 +366,7 @@
       ]
     },
     {
-      "Name": "GetRegistrySearchResponse",
+      "Name": "GetRegistrySearchAnswer",
       "Fields": [
         {
           "Name": "Description",
@@ -402,13 +407,13 @@
       ]
     },
     {
-      "Name": "GetRegistryTagInfoResponse",
+      "Name": "GetRegistryTagInfoAnswer",
       "Fields": [
         {
           "Name": "LastUpdated",
           "JsonName": "lastUpdated",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -428,7 +433,7 @@
       ]
     },
     {
-      "Name": "GetRegistryTagsResponse",
+      "Name": "GetRegistryTagsAnswer",
       "Fields": [
         {
           "Name": "HasNext",
@@ -469,7 +474,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetRegistryTagsResponseTags"
+              "ReferenceName": "GetRegistryTagsAnswerTags"
             }
           },
           "Required": true
@@ -485,7 +490,7 @@
       ]
     },
     {
-      "Name": "GetRegistryTagsResponseTags",
+      "Name": "GetRegistryTagsAnswerTags",
       "Fields": [
         {
           "Name": "Digest",
@@ -498,7 +503,7 @@
           "Name": "LastUpdated",
           "JsonName": "lastUpdated",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {

@@ -9,13 +9,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostBackupRestoreOperationResponse is the result of PostBackupRestore.
-type PostBackupRestoreOperationResponse struct {
+// PostBackupRestoreResponse is the result of PostBackupRestore.
+type PostBackupRestoreResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostBackupRestore calls POST /api/backup/restore. Restore a backup snapshot in-place or to a new location, streaming progress as a Server-Sent Events job.
-func (c Client) PostBackupRestore(ctx context.Context, input PostBackupRestoreRequest) (result PostBackupRestoreOperationResponse, err error) {
+func (c Client) PostBackupRestore(ctx context.Context, input PostBackupRestoreRequest) (result PostBackupRestoreResponse, err error) {
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{

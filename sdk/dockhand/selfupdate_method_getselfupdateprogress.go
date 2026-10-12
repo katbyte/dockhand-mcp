@@ -4,31 +4,53 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetSelfUpdateProgressOperationResponse is the result of GetSelfUpdateProgress.
-type GetSelfUpdateProgressOperationResponse struct {
+// GetSelfUpdateProgressResponse is the result of GetSelfUpdateProgress.
+//
+// Answer is the GetSelfUpdateProgressAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetSelfUpdateProgressResponse struct {
 	HttpResponse *http.Response
-	Model        *GetSelfUpdateProgressResponse
+	Answer       *GetSelfUpdateProgressAnswer
+	*GetSelfUpdateProgressAnswer
 }
 
-// GetSelfUpdateProgressOperationOptions holds the query and header parameters of GetSelfUpdateProgress.
-type GetSelfUpdateProgressOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetSelfUpdateProgressResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetSelfUpdateProgressAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetSelfUpdateProgressResponse) Record() (GetSelfUpdateProgressAnswer, error) {
+	if r.Answer == nil {
+		return GetSelfUpdateProgressAnswer{}, errors.New("GetSelfUpdateProgress answered no GetSelfUpdateProgressAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetSelfUpdateProgressOptions holds the query and header parameters of GetSelfUpdateProgress.
+type GetSelfUpdateProgressOptions struct {
 	// Updater container id (from POST /api/self-update)
 	Id string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetSelfUpdateProgressOperationOptions) ToHeaders() *client.Headers {
+func (o GetSelfUpdateProgressOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetSelfUpdateProgressOperationOptions) ToQuery() *client.QueryParams {
+func (o GetSelfUpdateProgressOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Id != "" {
 		out.Append("id", o.Id)
@@ -37,7 +59,8 @@ func (o GetSelfUpdateProgressOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetSelfUpdateProgress calls GET /api/self-update/progress. Poll the self-update sidecar container's logs and exit state for progress tracking.
-func (c Client) GetSelfUpdateProgress(ctx context.Context, options GetSelfUpdateProgressOperationOptions) (result GetSelfUpdateProgressOperationResponse, err error) {
+func (c Client) GetSelfUpdateProgress(ctx context.Context, options GetSelfUpdateProgressOptions) (result GetSelfUpdateProgressResponse, err error) {
+	result.GetSelfUpdateProgressAnswer = &GetSelfUpdateProgressAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -61,11 +84,12 @@ func (c Client) GetSelfUpdateProgress(ctx context.Context, options GetSelfUpdate
 		return
 	}
 
-	var model GetSelfUpdateProgressResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetSelfUpdateProgressAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetSelfUpdateProgressAnswer = result.Answer
 
 	return
 }

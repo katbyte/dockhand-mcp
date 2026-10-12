@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,42 +13,73 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostStacksByNameRelocateOperationResponse is the result of PostStacksByNameRelocate.
-type PostStacksByNameRelocateOperationResponse struct {
+// PostStacksByNameRelocateResponse is the result of PostStacksByNameRelocate.
+//
+// Answer is the PostStacksByNameRelocateAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostStacksByNameRelocateResponse struct {
 	HttpResponse *http.Response
-	Model        *PostStacksByNameRelocateResponse
+	Answer       *PostStacksByNameRelocateAnswer
+	*PostStacksByNameRelocateAnswer
 }
 
-// PostStacksByNameRelocateOperationOptions holds the query and header parameters of PostStacksByNameRelocate.
-type PostStacksByNameRelocateOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostStacksByNameRelocateResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostStacksByNameRelocateAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostStacksByNameRelocateResponse) Record() (PostStacksByNameRelocateAnswer, error) {
+	if r.Answer == nil {
+		return PostStacksByNameRelocateAnswer{}, errors.New("PostStacksByNameRelocate answered no PostStacksByNameRelocateAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostStacksByNameRelocateOptions holds the query and header parameters of PostStacksByNameRelocate.
+type PostStacksByNameRelocateOptions struct {
 	// Environment ID the stack belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostStacksByNameRelocateOperationOptions) ToHeaders() *client.Headers {
+func (o PostStacksByNameRelocateOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostStacksByNameRelocateOperationOptions) ToQuery() *client.QueryParams {
+func (o PostStacksByNameRelocateOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostStacksByNameRelocate calls POST /api/stacks/{name}/relocate. Move all stack files from the old directory to a new location, update the stored compose/env paths, and return the refreshed compose/env content.
-func (c Client) PostStacksByNameRelocate(ctx context.Context, name string, input PostStacksByNameRelocateRequest, options PostStacksByNameRelocateOperationOptions) (result PostStacksByNameRelocateOperationResponse, err error) {
+func (c Client) PostStacksByNameRelocate(ctx context.Context, name string, input PostStacksByNameRelocateRequest, options ...PostStacksByNameRelocateOptions) (result PostStacksByNameRelocateResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostStacksByNameRelocate takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostStacksByNameRelocateOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostStacksByNameRelocateAnswer = &PostStacksByNameRelocateAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/relocate", url.PathEscape(name)),
 	}
 
@@ -69,11 +101,12 @@ func (c Client) PostStacksByNameRelocate(ctx context.Context, name string, input
 		return
 	}
 
-	var model PostStacksByNameRelocateResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostStacksByNameRelocateAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostStacksByNameRelocateAnswer = result.Answer
 
 	return
 }

@@ -10,13 +10,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostBackupConfigsByIdRunOperationResponse is the result of PostBackupConfigsByIdRun.
-type PostBackupConfigsByIdRunOperationResponse struct {
+// PostBackupConfigsByIdRunResponse is the result of PostBackupConfigsByIdRun.
+type PostBackupConfigsByIdRunResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostBackupConfigsByIdRun calls POST /api/backup/configs/{id}/run. Trigger a manual backup run for a configuration, streaming progress as a Server-Sent Events job.
-func (c Client) PostBackupConfigsByIdRun(ctx context.Context, id int) (result PostBackupConfigsByIdRunOperationResponse, err error) {
+func (c Client) PostBackupConfigsByIdRun(ctx context.Context, id int) (result PostBackupConfigsByIdRunResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,

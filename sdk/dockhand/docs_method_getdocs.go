@@ -10,14 +10,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetDocsOperationResponse is the result of GetDocs.
-type GetDocsOperationResponse struct {
+// GetDocsResponse is the result of GetDocs.
+type GetDocsResponse struct {
 	HttpResponse *http.Response
-	Model        json.RawMessage
+	Answer       json.RawMessage
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetDocsResponse) Answered() bool { return r.Answer != nil }
+
 // GetDocs calls GET /api/docs. The full OpenAPI 3.0 specification for the Dockhand REST API (unauthenticated).
-func (c Client) GetDocs(ctx context.Context) (result GetDocsOperationResponse, err error) {
+func (c Client) GetDocs(ctx context.Context) (result GetDocsResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -41,7 +45,7 @@ func (c Client) GetDocs(ctx context.Context) (result GetDocsOperationResponse, e
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

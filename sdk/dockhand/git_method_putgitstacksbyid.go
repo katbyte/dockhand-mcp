@@ -4,27 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutGitStacksByIdOperationResponse is the result of PutGitStacksById.
-type PutGitStacksByIdOperationResponse struct {
+// PutGitStacksByIdResponse is the result of PutGitStacksById.
+//
+// Answer is the PutGitStacksByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PutGitStacksByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *PutGitStacksByIdResponse
+	Answer       *PutGitStacksByIdAnswer
+	*PutGitStacksByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutGitStacksByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutGitStacksByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutGitStacksByIdResponse) Record() (PutGitStacksByIdAnswer, error) {
+	if r.Answer == nil {
+		return PutGitStacksByIdAnswer{}, errors.New("PutGitStacksById answered no PutGitStacksByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PutGitStacksById calls PUT /api/git/stacks/{id}. Update a git stack (rename, schedule, webhook, secret-provider binding).
-func (c Client) PutGitStacksById(ctx context.Context, id int, input PutGitStacksByIdRequest) (result PutGitStacksByIdOperationResponse, err error) {
+func (c Client) PutGitStacksById(ctx context.Context, id GitStackID, input PutGitStacksByIdRequest) (result PutGitStacksByIdResponse, err error) {
+	result.PutGitStacksByIdAnswer = &PutGitStacksByIdAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
-		Path:       fmt.Sprintf("/api/git/stacks/%d", id),
+		Path:       fmt.Sprintf("/api/git/stacks/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -45,11 +70,12 @@ func (c Client) PutGitStacksById(ctx context.Context, id int, input PutGitStacks
 		return
 	}
 
-	var model PutGitStacksByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PutGitStacksByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PutGitStacksByIdAnswer = result.Answer
 
 	return
 }

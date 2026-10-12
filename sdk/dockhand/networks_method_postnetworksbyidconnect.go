@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,42 +13,73 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostNetworksByIdConnectOperationResponse is the result of PostNetworksByIdConnect.
-type PostNetworksByIdConnectOperationResponse struct {
+// PostNetworksByIdConnectResponse is the result of PostNetworksByIdConnect.
+//
+// Answer is the PostNetworksByIdConnectAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostNetworksByIdConnectResponse struct {
 	HttpResponse *http.Response
-	Model        *PostNetworksByIdConnectResponse
+	Answer       *PostNetworksByIdConnectAnswer
+	*PostNetworksByIdConnectAnswer
 }
 
-// PostNetworksByIdConnectOperationOptions holds the query and header parameters of PostNetworksByIdConnect.
-type PostNetworksByIdConnectOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostNetworksByIdConnectResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostNetworksByIdConnectAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostNetworksByIdConnectResponse) Record() (PostNetworksByIdConnectAnswer, error) {
+	if r.Answer == nil {
+		return PostNetworksByIdConnectAnswer{}, errors.New("PostNetworksByIdConnect answered no PostNetworksByIdConnectAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostNetworksByIdConnectOptions holds the query and header parameters of PostNetworksByIdConnect.
+type PostNetworksByIdConnectOptions struct {
 	// Environment the network belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostNetworksByIdConnectOperationOptions) ToHeaders() *client.Headers {
+func (o PostNetworksByIdConnectOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostNetworksByIdConnectOperationOptions) ToQuery() *client.QueryParams {
+func (o PostNetworksByIdConnectOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostNetworksByIdConnect calls POST /api/networks/{id}/connect. Connect a container to a Docker network.
-func (c Client) PostNetworksByIdConnect(ctx context.Context, id string, input PostNetworksByIdConnectRequest, options PostNetworksByIdConnectOperationOptions) (result PostNetworksByIdConnectOperationResponse, err error) {
+func (c Client) PostNetworksByIdConnect(ctx context.Context, id string, input PostNetworksByIdConnectRequest, options ...PostNetworksByIdConnectOptions) (result PostNetworksByIdConnectResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostNetworksByIdConnect takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostNetworksByIdConnectOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostNetworksByIdConnectAnswer = &PostNetworksByIdConnectAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/networks/%s/connect", url.PathEscape(id)),
 	}
 
@@ -69,11 +101,12 @@ func (c Client) PostNetworksByIdConnect(ctx context.Context, id string, input Po
 		return
 	}
 
-	var model PostNetworksByIdConnectResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostNetworksByIdConnectAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostNetworksByIdConnectAnswer = result.Answer
 
 	return
 }

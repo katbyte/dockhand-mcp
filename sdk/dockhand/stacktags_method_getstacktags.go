@@ -4,47 +4,61 @@ package dockhand
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetStackTagsOperationResponse is the result of GetStackTags.
-type GetStackTagsOperationResponse struct {
+// GetStackTagsResponse is the result of GetStackTags.
+type GetStackTagsResponse struct {
 	HttpResponse *http.Response
-	Model        map[string][]int
+	Answer       map[string][]int
 }
 
-// GetStackTagsOperationOptions holds the query and header parameters of GetStackTags.
-type GetStackTagsOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetStackTagsResponse) Answered() bool { return r.Answer != nil }
+
+// GetStackTagsOptions holds the query and header parameters of GetStackTags.
+type GetStackTagsOptions struct {
 	// Environment id
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetStackTagsOperationOptions) ToHeaders() *client.Headers {
+func (o GetStackTagsOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetStackTagsOperationOptions) ToQuery() *client.QueryParams {
+func (o GetStackTagsOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetStackTags calls GET /api/stack-tags. List all stack tag assignments for an environment as a name -> tagIds map.
-func (c Client) GetStackTags(ctx context.Context, options GetStackTagsOperationOptions) (result GetStackTagsOperationResponse, err error) {
+func (c Client) GetStackTags(ctx context.Context, options ...GetStackTagsOptions) (result GetStackTagsResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetStackTags takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetStackTagsOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/stack-tags",
 	}
 
@@ -62,7 +76,7 @@ func (c Client) GetStackTags(ctx context.Context, options GetStackTagsOperationO
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

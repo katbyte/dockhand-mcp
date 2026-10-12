@@ -4,47 +4,61 @@ package dockhand
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetStacksSourcesOperationResponse is the result of GetStacksSources.
-type GetStacksSourcesOperationResponse struct {
+// GetStacksSourcesResponse is the result of GetStacksSources.
+type GetStacksSourcesResponse struct {
 	HttpResponse *http.Response
-	Model        map[string]GetStacksSourcesResponse
+	Answer       map[string]GetStacksSourcesAnswer
 }
 
-// GetStacksSourcesOperationOptions holds the query and header parameters of GetStacksSources.
-type GetStacksSourcesOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetStacksSourcesResponse) Answered() bool { return r.Answer != nil }
+
+// GetStacksSourcesOptions holds the query and header parameters of GetStacksSources.
+type GetStacksSourcesOptions struct {
 	// Filter to a single environment id
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetStacksSourcesOperationOptions) ToHeaders() *client.Headers {
+func (o GetStacksSourcesOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetStacksSourcesOperationOptions) ToQuery() *client.QueryParams {
+func (o GetStacksSourcesOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetStacksSources calls GET /api/stacks/sources. List stack source records (their stored compose/env paths and source type, plus an env-var count).
-func (c Client) GetStacksSources(ctx context.Context, options GetStacksSourcesOperationOptions) (result GetStacksSourcesOperationResponse, err error) {
+func (c Client) GetStacksSources(ctx context.Context, options ...GetStacksSourcesOptions) (result GetStacksSourcesResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetStacksSources takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetStacksSourcesOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/stacks/sources",
 	}
 
@@ -62,7 +76,7 @@ func (c Client) GetStacksSources(ctx context.Context, options GetStacksSourcesOp
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

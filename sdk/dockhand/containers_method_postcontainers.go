@@ -4,48 +4,81 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostContainersOperationResponse is the result of PostContainers.
-type PostContainersOperationResponse struct {
+// PostContainersResponse is the result of PostContainers.
+//
+// Answer is the PostContainersAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostContainersResponse struct {
 	HttpResponse *http.Response
-	Model        *PostContainersResponse
+	Answer       *PostContainersAnswer
+	*PostContainersAnswer
 }
 
-// PostContainersOperationOptions holds the query and header parameters of PostContainers.
-type PostContainersOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostContainersResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostContainersAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostContainersResponse) Record() (PostContainersAnswer, error) {
+	if r.Answer == nil {
+		return PostContainersAnswer{}, errors.New("PostContainers answered no PostContainersAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostContainersOptions holds the query and header parameters of PostContainers.
+type PostContainersOptions struct {
 	// Environment id (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostContainersOperationOptions) ToHeaders() *client.Headers {
+func (o PostContainersOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostContainersOperationOptions) ToQuery() *client.QueryParams {
+func (o PostContainersOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostContainers calls POST /api/containers. Create a new container in an environment (auto-pulls the image first if it isn't present locally), optionally starting it right away.
-func (c Client) PostContainers(ctx context.Context, input PostContainersRequest, options PostContainersOperationOptions) (result PostContainersOperationResponse, err error) {
+func (c Client) PostContainers(ctx context.Context, input PostContainersRequest, options ...PostContainersOptions) (result PostContainersResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostContainers takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostContainersOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostContainersAnswer = &PostContainersAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/containers",
 	}
 
@@ -67,11 +100,12 @@ func (c Client) PostContainers(ctx context.Context, input PostContainersRequest,
 		return
 	}
 
-	var model PostContainersResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostContainersAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostContainersAnswer = result.Answer
 
 	return
 }

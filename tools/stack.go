@@ -34,11 +34,11 @@ type stackRow struct {
 }
 
 // stackRowOf is a stack of an environment as the tools give one.
-func stackRowOf(env string, s *dockhand.GetStacksResponse) stackRow {
-	row := stackRow{Env: env, Stack: s.Name, Status: s.Status, Services: make([]stackService, 0, len(s.ContainerDetails))}
+func stackRowOf(env string, s *dockhand.GetStacksAnswer) stackRow {
+	row := stackRow{Env: env, Stack: s.Name, Status: string(s.Status), Services: make([]stackService, 0, len(s.ContainerDetails))}
 	for i := range s.ContainerDetails {
 		c := &s.ContainerDetails[i]
-		service := stackService{Service: c.Service, Container: c.Name, Image: c.Image, State: c.State, Status: c.Status, Health: c.Health, Restarts: c.RestartCount, Problem: problemOf(c.State, c.Health, c.Status, c.RestartCount)}
+		service := stackService{Service: c.Service, Container: c.Name, Image: c.Image, State: string(c.State), Status: c.Status, Health: string(c.Health), Restarts: c.RestartCount, Problem: problemOf(string(c.State), string(c.Health), c.Status, c.RestartCount)}
 		for _, p := range c.Ports {
 			// a port published on every address is listed once for each
 			if p.Display != "" && !slices.Contains(service.Ports, p.Display) {
@@ -59,13 +59,13 @@ func stackRowOf(env string, s *dockhand.GetStacksResponse) stackRow {
 }
 
 // stacksOf is every compose stack on an environment.
-func (r *registry) stacksOf(ctx context.Context, env environment) ([]dockhand.GetStacksResponse, error) {
-	listed, err := r.dock.GetStacks(ctx, dockhand.GetStacksOperationOptions{Env: &env.ID})
+func (r *registry) stacksOf(ctx context.Context, env environment) ([]dockhand.GetStacksAnswer, error) {
+	listed, err := r.dock.GetStacks(ctx, dockhand.GetStacksOptions{Env: env.ID})
 	if err != nil {
 		return nil, refusal(err)
 	}
 
-	return listed.Model, nil
+	return listed.Answer, nil
 }
 
 func registerStackTools(r *registry) {

@@ -110,22 +110,22 @@ func agentOf(agent map[string]any, into *reached) {
 
 // try has Dockhand try a connection that is not saved.
 func (r *registry) try(ctx context.Context, c *connectionArgs) (reached, error) {
-	answer, err := r.dock.PostEnvironmentsTest(ctx, dockhand.PostEnvironmentsTestRequest{ConnectionType: c.Connection, SocketPath: c.SocketPath, Host: c.Host, Port: c.Port, Protocol: c.Protocol, HawserToken: c.AgentToken})
+	answer, err := r.dock.PostEnvironmentsTest(ctx, dockhand.PostEnvironmentsTestRequest{ConnectionType: dockhand.ConnectionType(c.Connection), SocketPath: c.SocketPath, Host: c.Host, Port: c.Port, Protocol: dockhand.EnvironmentProtocol(c.Protocol), HawserToken: c.AgentToken})
 	if err != nil {
 		return reached{}, refusal(err)
 	}
 
-	out := reached{Reachable: yes(answer.Model.Success), Error: answer.Model.Error}
-	if info := answer.Model.Info; info != nil {
+	out := reached{Reachable: answer.Answer.Success, Error: answer.Answer.Error}
+	if info := answer.Answer.Info; info != nil {
 		out.DockerVersion, out.DockerHost, out.Containers, out.Images = info.ServerVersion, info.Name, info.Containers, info.Images
 	}
-	agentOf(answer.Model.Hawser, &out)
+	agentOf(answer.Answer.Hawser, &out)
 
 	// a socket that is not there is most often one at another path, and Dockhand can say which it has
 	if c.Connection == connectionSocket && !out.Reachable {
 		if found, failed := r.dock.GetEnvironmentsDetectSocket(ctx); failed == nil {
-			for _, socket := range found.Model.Sockets {
-				if yes(socket.Exists) {
+			for _, socket := range found.Answer.Sockets {
+				if socket.Exists {
 					out.SocketsFound = append(out.SocketsFound, socket.Path)
 				}
 			}
@@ -224,11 +224,11 @@ func registerEnvironmentWriteTools(r *registry) {
 		}
 
 		out := envTestOut{Env: env.Name}
-		out.Reachable, out.Error = yes(answer.Model.Success), answer.Model.Error
-		if info := answer.Model.Info; info != nil {
+		out.Reachable, out.Error = answer.Answer.Success, answer.Answer.Error
+		if info := answer.Answer.Info; info != nil {
 			out.DockerVersion, out.DockerHost, out.Containers, out.Images = info.ServerVersion, info.Name, info.Containers, info.Images
 		}
-		agentOf(answer.Model.Hawser, &out.reached)
+		agentOf(answer.Answer.Hawser, &out.reached)
 
 		return nil, out, nil
 	})
@@ -286,16 +286,16 @@ func registerEnvironmentWriteTools(r *registry) {
 			return nil, out, nil
 		}
 
-		made, err := r.dock.PostEnvironments(ctx, dockhand.PostEnvironmentsRequest{Name: name, ConnectionType: connection.Connection, SocketPath: connection.SocketPath, Host: connection.Host, Port: connection.Port, Protocol: connection.Protocol, HawserToken: connection.AgentToken, Labels: in.Labels})
+		made, err := r.dock.PostEnvironments(ctx, dockhand.PostEnvironmentsRequest{Name: name, ConnectionType: dockhand.ConnectionType(connection.Connection), SocketPath: connection.SocketPath, Host: connection.Host, Port: connection.Port, Protocol: dockhand.EnvironmentProtocol(connection.Protocol), HawserToken: connection.AgentToken, Labels: in.Labels})
 		if err != nil {
 			return nil, out, fmt.Errorf("%s was not added: %w", name, refusal(err))
 		}
 		out.Changes = append(out.Changes, "added "+what)
 
-		if back, err := r.dock.GetEnvironmentsById(ctx, made.Model.Id); err != nil {
+		if back, err := r.dock.GetEnvironmentsById(ctx, made.Answer.Id); err != nil {
 			out.Note = "it was added, and could not be read back: " + err.Error()
 		} else {
-			row := environmentRowOf(&dockhand.GetEnvironmentsResponse{Id: back.Model.Id, Name: back.Model.Name, ConnectionType: back.Model.ConnectionType, Host: back.Model.Host, Port: back.Model.Port})
+			row := environmentRowOf(&dockhand.GetEnvironmentsAnswer{Id: back.Answer.Id, Name: back.Answer.Name, ConnectionType: back.Answer.ConnectionType, Host: back.Answer.Host, Port: back.Answer.Port})
 			row.Online = &found.Reachable
 			out.Environment = &row
 		}
@@ -344,7 +344,7 @@ func registerEnvironmentWriteTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("%s was not removed: %w", env.Name, refusal(err))
 		}
-		if !yes(gone.Model.Success) {
+		if !gone.Answer.Success {
 			return nil, out, fmt.Errorf("the removal of %s was answered without its being said to have succeeded: env_list says whether it is still there", env.Name)
 		}
 

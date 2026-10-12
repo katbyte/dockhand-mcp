@@ -4,31 +4,54 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeletePreferencesGridOperationResponse is the result of DeletePreferencesGrid.
-type DeletePreferencesGridOperationResponse struct {
+// DeletePreferencesGridResponse is the result of DeletePreferencesGrid.
+//
+// Answer is the DeletePreferencesGridAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeletePreferencesGridResponse struct {
 	HttpResponse *http.Response
-	Model        *DeletePreferencesGridResponse
+	Answer       *DeletePreferencesGridAnswer
+	*DeletePreferencesGridAnswer
 }
 
-// DeletePreferencesGridOperationOptions holds the query and header parameters of DeletePreferencesGrid.
-type DeletePreferencesGridOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeletePreferencesGridResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeletePreferencesGridAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeletePreferencesGridResponse) Record() (DeletePreferencesGridAnswer, error) {
+	if r.Answer == nil {
+		return DeletePreferencesGridAnswer{}, errors.New("DeletePreferencesGrid answered no DeletePreferencesGridAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// DeletePreferencesGridOptions holds the query and header parameters of DeletePreferencesGrid.
+type DeletePreferencesGridOptions struct {
 	// Grid ID to reset; omit to reset every grid
 	GridId string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o DeletePreferencesGridOperationOptions) ToHeaders() *client.Headers {
+func (o DeletePreferencesGridOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o DeletePreferencesGridOperationOptions) ToQuery() *client.QueryParams {
+func (o DeletePreferencesGridOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.GridId != "" {
 		out.Append("gridId", o.GridId)
@@ -37,13 +60,23 @@ func (o DeletePreferencesGridOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // DeletePreferencesGrid calls DELETE /api/preferences/grid. Reset grid preferences — a single grid when gridId is given, otherwise all grids.
-func (c Client) DeletePreferencesGrid(ctx context.Context, options DeletePreferencesGridOperationOptions) (result DeletePreferencesGridOperationResponse, err error) {
+func (c Client) DeletePreferencesGrid(ctx context.Context, options ...DeletePreferencesGridOptions) (result DeletePreferencesGridResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("DeletePreferencesGrid takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option DeletePreferencesGridOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.DeletePreferencesGridAnswer = &DeletePreferencesGridAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/preferences/grid",
 	}
 
@@ -61,11 +94,12 @@ func (c Client) DeletePreferencesGrid(ctx context.Context, options DeletePrefere
 		return
 	}
 
-	var model DeletePreferencesGridResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeletePreferencesGridAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeletePreferencesGridAnswer = result.Answer
 
 	return
 }

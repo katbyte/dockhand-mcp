@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,35 +13,57 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostContainersByIdFilesRenameOperationResponse is the result of PostContainersByIdFilesRename.
-type PostContainersByIdFilesRenameOperationResponse struct {
+// PostContainersByIdFilesRenameResponse is the result of PostContainersByIdFilesRename.
+//
+// Answer is the PostContainersByIdFilesRenameAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostContainersByIdFilesRenameResponse struct {
 	HttpResponse *http.Response
-	Model        *PostContainersByIdFilesRenameResponse
+	Answer       *PostContainersByIdFilesRenameAnswer
+	*PostContainersByIdFilesRenameAnswer
 }
 
-// PostContainersByIdFilesRenameOperationOptions holds the query and header parameters of PostContainersByIdFilesRename.
-type PostContainersByIdFilesRenameOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostContainersByIdFilesRenameResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostContainersByIdFilesRenameAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostContainersByIdFilesRenameResponse) Record() (PostContainersByIdFilesRenameAnswer, error) {
+	if r.Answer == nil {
+		return PostContainersByIdFilesRenameAnswer{}, errors.New("PostContainersByIdFilesRename answered no PostContainersByIdFilesRenameAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostContainersByIdFilesRenameOptions holds the query and header parameters of PostContainersByIdFilesRename.
+type PostContainersByIdFilesRenameOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostContainersByIdFilesRenameOperationOptions) ToHeaders() *client.Headers {
+func (o PostContainersByIdFilesRenameOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostContainersByIdFilesRenameOperationOptions) ToQuery() *client.QueryParams {
+func (o PostContainersByIdFilesRenameOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostContainersByIdFilesRename calls POST /api/containers/{id}/files/rename. Rename or move a file or directory inside a container (requires the 'exec' permission).
-func (c Client) PostContainersByIdFilesRename(ctx context.Context, id string, input PostContainersByIdFilesRenameRequest, options PostContainersByIdFilesRenameOperationOptions) (result PostContainersByIdFilesRenameOperationResponse, err error) {
+func (c Client) PostContainersByIdFilesRename(ctx context.Context, id string, input PostContainersByIdFilesRenameRequest, options PostContainersByIdFilesRenameOptions) (result PostContainersByIdFilesRenameResponse, err error) {
+	result.PostContainersByIdFilesRenameAnswer = &PostContainersByIdFilesRenameAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -69,11 +92,12 @@ func (c Client) PostContainersByIdFilesRename(ctx context.Context, id string, in
 		return
 	}
 
-	var model PostContainersByIdFilesRenameResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostContainersByIdFilesRenameAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostContainersByIdFilesRenameAnswer = result.Answer
 
 	return
 }

@@ -13,7 +13,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "NotificationID"
           }
         }
       ],
@@ -21,7 +22,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteNotificationsByIdResponse"
+          "ReferenceName": "DeleteNotificationsByIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -40,7 +41,7 @@
           "Type": "List",
           "NestedItem": {
             "Type": "Reference",
-            "ReferenceName": "GetNotificationsResponse"
+            "ReferenceName": "GetNotificationsAnswer"
           }
         }
       },
@@ -59,7 +60,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "NotificationID"
           }
         }
       ],
@@ -67,7 +69,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetNotificationsByIdResponse"
+          "ReferenceName": "GetNotificationsByIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -84,7 +86,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetNotificationsTriggerTestResponse"
+          "ReferenceName": "GetNotificationsTriggerTestAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -108,7 +110,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostNotificationsResponse"
+          "ReferenceName": "PostNotificationsAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -126,7 +128,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "NotificationID"
           }
         }
       ],
@@ -134,7 +137,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostNotificationsByIdTestResponse"
+          "ReferenceName": "PostNotificationsByIdTestAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -158,7 +161,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostNotificationsTestResponse"
+          "ReferenceName": "PostNotificationsTestAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -182,7 +185,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostNotificationsTriggerTestResponse"
+          "ReferenceName": "PostNotificationsTriggerTestAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -200,7 +203,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "NotificationID"
           }
         }
       ],
@@ -215,7 +219,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PutNotificationsByIdResponse"
+          "ReferenceName": "PutNotificationsByIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -225,7 +229,7 @@
   ],
   "Models": [
     {
-      "Name": "DeleteNotificationsByIdResponse",
+      "Name": "DeleteNotificationsByIdAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -238,21 +242,21 @@
       ]
     },
     {
-      "Name": "GetNotificationsByIdResponse",
+      "Name": "GetNotificationsAnswer",
       "Fields": [
         {
           "Name": "Config",
           "JsonName": "config",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetNotificationsByIdResponseConfig"
+            "ReferenceName": "GetNotificationsAnswerConfig"
           }
         },
         {
           "Name": "CreatedAt",
           "JsonName": "createdAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -277,7 +281,8 @@
           "Name": "Id",
           "JsonName": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "NotificationID"
           },
           "Required": true
         },
@@ -293,7 +298,8 @@
           "Name": "Type",
           "JsonName": "type",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "NotificationType"
           },
           "Required": true
         },
@@ -301,13 +307,13 @@
           "Name": "UpdatedAt",
           "JsonName": "updatedAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         }
       ]
     },
     {
-      "Name": "GetNotificationsByIdResponseConfig",
+      "Name": "GetNotificationsAnswerConfig",
       "Fields": [
         {
           "Name": "FromEmail",
@@ -383,21 +389,21 @@
       ]
     },
     {
-      "Name": "GetNotificationsResponse",
+      "Name": "GetNotificationsByIdAnswer",
       "Fields": [
         {
           "Name": "Config",
           "JsonName": "config",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetNotificationsResponseConfig"
+            "ReferenceName": "GetNotificationsByIdAnswerConfig"
           }
         },
         {
           "Name": "CreatedAt",
           "JsonName": "createdAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -422,7 +428,8 @@
           "Name": "Id",
           "JsonName": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "NotificationID"
           },
           "Required": true
         },
@@ -438,7 +445,8 @@
           "Name": "Type",
           "JsonName": "type",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "NotificationType"
           },
           "Required": true
         },
@@ -446,13 +454,13 @@
           "Name": "UpdatedAt",
           "JsonName": "updatedAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         }
       ]
     },
     {
-      "Name": "GetNotificationsResponseConfig",
+      "Name": "GetNotificationsByIdAnswerConfig",
       "Fields": [
         {
           "Name": "FromEmail",
@@ -528,14 +536,14 @@
       ]
     },
     {
-      "Name": "GetNotificationsTriggerTestResponse",
+      "Name": "GetNotificationsTriggerTestAnswer",
       "Fields": [
         {
           "Name": "Categories",
           "JsonName": "categories",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetNotificationsTriggerTestResponseCategories"
+            "ReferenceName": "GetNotificationsTriggerTestAnswerCategories"
           }
         },
         {
@@ -545,14 +553,14 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetNotificationsTriggerTestResponseEventTypes"
+              "ReferenceName": "GetNotificationsTriggerTestAnswerEventTypes"
             }
           }
         }
       ]
     },
     {
-      "Name": "GetNotificationsTriggerTestResponseCategories",
+      "Name": "GetNotificationsTriggerTestAnswerCategories",
       "Fields": [
         {
           "Name": "AutoUpdate",
@@ -617,7 +625,7 @@
       ]
     },
     {
-      "Name": "GetNotificationsTriggerTestResponseEventTypes",
+      "Name": "GetNotificationsTriggerTestAnswerEventTypes",
       "Fields": [
         {
           "Name": "Description",
@@ -654,13 +662,161 @@
           "JsonName": "scope",
           "Description": "environment for what happens on a host, which a channel is told of through its link to that environment, or system",
           "Type": {
+            "Type": "Reference",
+            "ReferenceName": "EventScope"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostNotificationsAnswer",
+      "Fields": [
+        {
+          "Name": "Config",
+          "JsonName": "config",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostNotificationsAnswerConfig"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "EventTypes",
+          "JsonName": "eventTypes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "NotificationID"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "NotificationType"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostNotificationsAnswerConfig",
+      "Fields": [
+        {
+          "Name": "FromEmail",
+          "JsonName": "from_email",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "FromName",
+          "JsonName": "from_name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Host",
+          "JsonName": "host",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Password",
+          "JsonName": "password",
+          "Description": "for mail: eight asterisks where a password is kept, never the password",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Port",
+          "JsonName": "port",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Secure",
+          "JsonName": "secure",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ToEmails",
+          "JsonName": "to_emails",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Urls",
+          "JsonName": "urls",
+          "Description": "for a channel that is not mail: the addresses it sends to, in full, with whatever token or login each carries",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
             "Type": "String"
           }
         }
       ]
     },
     {
-      "Name": "PostNotificationsByIdTestResponse",
+      "Name": "PostNotificationsByIdTestAnswer",
       "Fields": [
         {
           "Name": "Error",
@@ -726,7 +882,8 @@
           "Name": "Type",
           "JsonName": "type",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "NotificationType"
           },
           "Required": true
         }
@@ -807,147 +964,29 @@
       ]
     },
     {
-      "Name": "PostNotificationsResponse",
+      "Name": "PostNotificationsTestAnswer",
       "Fields": [
         {
-          "Name": "Config",
-          "JsonName": "config",
-          "Type": {
-            "Type": "Reference",
-            "ReferenceName": "PostNotificationsResponseConfig"
-          }
-        },
-        {
-          "Name": "CreatedAt",
-          "JsonName": "createdAt",
+          "Name": "Error",
+          "JsonName": "error",
           "Type": {
             "Type": "String"
           }
         },
         {
-          "Name": "Enabled",
-          "JsonName": "enabled",
+          "Name": "Message",
+          "JsonName": "message",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
           "Type": {
             "Type": "Boolean"
           },
           "Required": true
-        },
-        {
-          "Name": "EventTypes",
-          "JsonName": "eventTypes",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Id",
-          "JsonName": "id",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Name",
-          "JsonName": "name",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Type",
-          "JsonName": "type",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "UpdatedAt",
-          "JsonName": "updatedAt",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostNotificationsResponseConfig",
-      "Fields": [
-        {
-          "Name": "FromEmail",
-          "JsonName": "from_email",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "FromName",
-          "JsonName": "from_name",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Host",
-          "JsonName": "host",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Password",
-          "JsonName": "password",
-          "Description": "for mail: eight asterisks where a password is kept, never the password",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Port",
-          "JsonName": "port",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Secure",
-          "JsonName": "secure",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "ToEmails",
-          "JsonName": "to_emails",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Urls",
-          "JsonName": "urls",
-          "Description": "for a channel that is not mail: the addresses it sends to, in full, with whatever token or login each carries",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Username",
-          "JsonName": "username",
-          "Type": {
-            "Type": "String"
-          }
         }
       ]
     },
@@ -973,7 +1012,8 @@
           "Name": "Type",
           "JsonName": "type",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "NotificationType"
           },
           "Required": true
         }
@@ -1054,20 +1094,29 @@
       ]
     },
     {
-      "Name": "PostNotificationsTestResponse",
+      "Name": "PostNotificationsTriggerTestAnswer",
       "Fields": [
         {
-          "Name": "Error",
-          "JsonName": "error",
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
           "Type": {
-            "Type": "String"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
-          "Name": "Message",
-          "JsonName": "message",
+          "Name": "EventType",
+          "JsonName": "eventType",
           "Type": {
             "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Sent",
+          "JsonName": "sent",
+          "Type": {
+            "Type": "Integer"
           }
         },
         {
@@ -1087,7 +1136,8 @@
           "Name": "EnvironmentId",
           "JsonName": "environmentId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -1137,37 +1187,149 @@
       ]
     },
     {
-      "Name": "PostNotificationsTriggerTestResponse",
+      "Name": "PutNotificationsByIdAnswer",
       "Fields": [
         {
-          "Name": "EnvironmentId",
-          "JsonName": "environmentId",
+          "Name": "Config",
+          "JsonName": "config",
           "Type": {
-            "Type": "Integer"
+            "Type": "Reference",
+            "ReferenceName": "PutNotificationsByIdAnswerConfig"
           }
         },
         {
-          "Name": "EventType",
-          "JsonName": "eventType",
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "EventTypes",
+          "JsonName": "eventTypes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "NotificationID"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
           "Type": {
             "Type": "String"
           },
           "Required": true
         },
         {
-          "Name": "Sent",
-          "JsonName": "sent",
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "NotificationType"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutNotificationsByIdAnswerConfig",
+      "Fields": [
+        {
+          "Name": "FromEmail",
+          "JsonName": "from_email",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "FromName",
+          "JsonName": "from_name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Host",
+          "JsonName": "host",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Password",
+          "JsonName": "password",
+          "Description": "for mail: eight asterisks where a password is kept, never the password",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Port",
+          "JsonName": "port",
           "Type": {
             "Type": "Integer"
           }
         },
         {
-          "Name": "Success",
-          "JsonName": "success",
+          "Name": "Secure",
+          "JsonName": "secure",
           "Type": {
             "Type": "Boolean"
-          },
-          "Required": true
+          }
+        },
+        {
+          "Name": "ToEmails",
+          "JsonName": "to_emails",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Urls",
+          "JsonName": "urls",
+          "Description": "for a channel that is not mail: the addresses it sends to, in full, with whatever token or login each carries",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          }
         }
       ]
     },
@@ -1281,149 +1443,34 @@
           }
         }
       ]
-    },
+    }
+  ],
+  "Constants": [
     {
-      "Name": "PutNotificationsByIdResponse",
-      "Fields": [
+      "Name": "EventScope",
+      "SchemaName": "EventScope",
+      "Values": [
         {
-          "Name": "Config",
-          "JsonName": "config",
-          "Type": {
-            "Type": "Reference",
-            "ReferenceName": "PutNotificationsByIdResponseConfig"
-          }
+          "Name": "EventScopeEnvironment",
+          "Value": "environment"
         },
         {
-          "Name": "CreatedAt",
-          "JsonName": "createdAt",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Enabled",
-          "JsonName": "enabled",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "EventTypes",
-          "JsonName": "eventTypes",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Id",
-          "JsonName": "id",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Name",
-          "JsonName": "name",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Type",
-          "JsonName": "type",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "UpdatedAt",
-          "JsonName": "updatedAt",
-          "Type": {
-            "Type": "String"
-          }
+          "Name": "EventScopeSystem",
+          "Value": "system"
         }
       ]
     },
     {
-      "Name": "PutNotificationsByIdResponseConfig",
-      "Fields": [
+      "Name": "NotificationType",
+      "SchemaName": "NotificationType",
+      "Values": [
         {
-          "Name": "FromEmail",
-          "JsonName": "from_email",
-          "Type": {
-            "Type": "String"
-          }
+          "Name": "NotificationTypeSmtp",
+          "Value": "smtp"
         },
         {
-          "Name": "FromName",
-          "JsonName": "from_name",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Host",
-          "JsonName": "host",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Password",
-          "JsonName": "password",
-          "Description": "for mail: eight asterisks where a password is kept, never the password",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Port",
-          "JsonName": "port",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Secure",
-          "JsonName": "secure",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "ToEmails",
-          "JsonName": "to_emails",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Urls",
-          "JsonName": "urls",
-          "Description": "for a channel that is not mail: the addresses it sends to, in full, with whatever token or login each carries",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Username",
-          "JsonName": "username",
-          "Type": {
-            "Type": "String"
-          }
+          "Name": "NotificationTypeApprise",
+          "Value": "apprise"
         }
       ]
     }

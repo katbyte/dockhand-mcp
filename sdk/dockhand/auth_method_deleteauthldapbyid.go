@@ -4,20 +4,43 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteAuthLdapByIdOperationResponse is the result of DeleteAuthLdapById.
-type DeleteAuthLdapByIdOperationResponse struct {
+// DeleteAuthLdapByIdResponse is the result of DeleteAuthLdapById.
+//
+// Answer is the DeleteAuthLdapByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteAuthLdapByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteAuthLdapByIdResponse
+	Answer       *DeleteAuthLdapByIdAnswer
+	*DeleteAuthLdapByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteAuthLdapByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteAuthLdapByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteAuthLdapByIdResponse) Record() (DeleteAuthLdapByIdAnswer, error) {
+	if r.Answer == nil {
+		return DeleteAuthLdapByIdAnswer{}, errors.New("DeleteAuthLdapById answered no DeleteAuthLdapByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // DeleteAuthLdapById calls DELETE /api/auth/ldap/{id}. Delete an LDAP provider configuration by id (enterprise only).
-func (c Client) DeleteAuthLdapById(ctx context.Context, id int) (result DeleteAuthLdapByIdOperationResponse, err error) {
+func (c Client) DeleteAuthLdapById(ctx context.Context, id int) (result DeleteAuthLdapByIdResponse, err error) {
+	result.DeleteAuthLdapByIdAnswer = &DeleteAuthLdapByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -40,11 +63,12 @@ func (c Client) DeleteAuthLdapById(ctx context.Context, id int) (result DeleteAu
 		return
 	}
 
-	var model DeleteAuthLdapByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteAuthLdapByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteAuthLdapByIdAnswer = result.Answer
 
 	return
 }

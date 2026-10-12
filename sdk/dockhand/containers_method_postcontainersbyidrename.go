@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,35 +13,57 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostContainersByIdRenameOperationResponse is the result of PostContainersByIdRename.
-type PostContainersByIdRenameOperationResponse struct {
+// PostContainersByIdRenameResponse is the result of PostContainersByIdRename.
+//
+// Answer is the PostContainersByIdRenameAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostContainersByIdRenameResponse struct {
 	HttpResponse *http.Response
-	Model        *PostContainersByIdRenameResponse
+	Answer       *PostContainersByIdRenameAnswer
+	*PostContainersByIdRenameAnswer
 }
 
-// PostContainersByIdRenameOperationOptions holds the query and header parameters of PostContainersByIdRename.
-type PostContainersByIdRenameOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostContainersByIdRenameResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostContainersByIdRenameAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostContainersByIdRenameResponse) Record() (PostContainersByIdRenameAnswer, error) {
+	if r.Answer == nil {
+		return PostContainersByIdRenameAnswer{}, errors.New("PostContainersByIdRename answered no PostContainersByIdRenameAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostContainersByIdRenameOptions holds the query and header parameters of PostContainersByIdRename.
+type PostContainersByIdRenameOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostContainersByIdRenameOperationOptions) ToHeaders() *client.Headers {
+func (o PostContainersByIdRenameOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostContainersByIdRenameOperationOptions) ToQuery() *client.QueryParams {
+func (o PostContainersByIdRenameOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostContainersByIdRename calls POST /api/containers/{id}/rename. Rename a container and update any associated auto-update schedule (requires the 'create' permission).
-func (c Client) PostContainersByIdRename(ctx context.Context, id string, input PostContainersByIdRenameRequest, options PostContainersByIdRenameOperationOptions) (result PostContainersByIdRenameOperationResponse, err error) {
+func (c Client) PostContainersByIdRename(ctx context.Context, id string, input PostContainersByIdRenameRequest, options PostContainersByIdRenameOptions) (result PostContainersByIdRenameResponse, err error) {
+	result.PostContainersByIdRenameAnswer = &PostContainersByIdRenameAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -69,11 +92,12 @@ func (c Client) PostContainersByIdRename(ctx context.Context, id string, input P
 		return
 	}
 
-	var model PostContainersByIdRenameResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostContainersByIdRenameAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostContainersByIdRenameAnswer = result.Answer
 
 	return
 }

@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetConfigSetsByIdOperationResponse is the result of GetConfigSetsById.
-type GetConfigSetsByIdOperationResponse struct {
+// GetConfigSetsByIdResponse is the result of GetConfigSetsById.
+//
+// Answer is the GetConfigSetsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetConfigSetsByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *GetConfigSetsByIdResponse
+	Answer       *GetConfigSetsByIdAnswer
+	*GetConfigSetsByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetConfigSetsByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetConfigSetsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetConfigSetsByIdResponse) Record() (GetConfigSetsByIdAnswer, error) {
+	if r.Answer == nil {
+		return GetConfigSetsByIdAnswer{}, errors.New("GetConfigSetsById answered no GetConfigSetsByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetConfigSetsById calls GET /api/config-sets/{id}. Fetch a single config set by its numeric ID.
-func (c Client) GetConfigSetsById(ctx context.Context, id int) (result GetConfigSetsByIdOperationResponse, err error) {
+func (c Client) GetConfigSetsById(ctx context.Context, id ConfigSetID) (result GetConfigSetsByIdResponse, err error) {
+	result.GetConfigSetsByIdAnswer = &GetConfigSetsByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
-		Path:       fmt.Sprintf("/api/config-sets/%d", id),
+		Path:       fmt.Sprintf("/api/config-sets/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) GetConfigSetsById(ctx context.Context, id int) (result GetConfig
 		return
 	}
 
-	var model GetConfigSetsByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetConfigSetsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetConfigSetsByIdAnswer = result.Answer
 
 	return
 }

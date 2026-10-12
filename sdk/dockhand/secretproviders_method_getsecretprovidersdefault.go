@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetSecretProvidersDefaultOperationResponse is the result of GetSecretProvidersDefault.
-type GetSecretProvidersDefaultOperationResponse struct {
+// GetSecretProvidersDefaultResponse is the result of GetSecretProvidersDefault.
+//
+// Answer is the GetSecretProvidersDefaultAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetSecretProvidersDefaultResponse struct {
 	HttpResponse *http.Response
-	Model        *GetSecretProvidersDefaultResponse
+	Answer       *GetSecretProvidersDefaultAnswer
+	*GetSecretProvidersDefaultAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetSecretProvidersDefaultResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetSecretProvidersDefaultAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetSecretProvidersDefaultResponse) Record() (GetSecretProvidersDefaultAnswer, error) {
+	if r.Answer == nil {
+		return GetSecretProvidersDefaultAnswer{}, errors.New("GetSecretProvidersDefault answered no GetSecretProvidersDefaultAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetSecretProvidersDefault calls GET /api/secret-providers/default. Get the global default secret provider preselected for new stacks.
-func (c Client) GetSecretProvidersDefault(ctx context.Context) (result GetSecretProvidersDefaultOperationResponse, err error) {
+func (c Client) GetSecretProvidersDefault(ctx context.Context) (result GetSecretProvidersDefaultResponse, err error) {
+	result.GetSecretProvidersDefaultAnswer = &GetSecretProvidersDefaultAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) GetSecretProvidersDefault(ctx context.Context) (result GetSecret
 		return
 	}
 
-	var model GetSecretProvidersDefaultResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetSecretProvidersDefaultAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetSecretProvidersDefaultAnswer = result.Answer
 
 	return
 }

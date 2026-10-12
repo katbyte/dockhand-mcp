@@ -58,7 +58,7 @@ func forgotten(t *testing.T, host, stack string, volumes ...string) {
 	clean := func(ctx context.Context) {
 		env := world.Env(host)
 		// removing a stack Dockhand does not have is no failure of this
-		_, _ = world.Dock.DeleteStacksByName(ctx, stack, dockhand.DeleteStacksByNameOperationOptions{Env: &env, Force: new(true), Volumes: new(true)})
+		_, _ = world.Dock.DeleteStacksByName(ctx, stack, dockhand.DeleteStacksByNameOptions{Env: env, Force: new(true), Volumes: new(true)})
 		if ids, err := world.Docker(ctx, host, "ps", "-aq", "--filter", "label=com.docker.compose.project="+stack); err == nil && strings.TrimSpace(ids) != "" {
 			_, _ = world.Docker(ctx, host, append([]string{"rm", "-f", "-v"}, strings.Fields(ids)...)...)
 		}

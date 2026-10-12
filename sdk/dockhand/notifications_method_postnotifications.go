@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostNotificationsOperationResponse is the result of PostNotifications.
-type PostNotificationsOperationResponse struct {
+// PostNotificationsResponse is the result of PostNotifications.
+//
+// Answer is the PostNotificationsAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostNotificationsResponse struct {
 	HttpResponse *http.Response
-	Model        *PostNotificationsResponse
+	Answer       *PostNotificationsAnswer
+	*PostNotificationsAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostNotificationsResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostNotificationsAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostNotificationsResponse) Record() (PostNotificationsAnswer, error) {
+	if r.Answer == nil {
+		return PostNotificationsAnswer{}, errors.New("PostNotifications answered no PostNotificationsAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostNotifications calls POST /api/notifications. Create a notification setting (SMTP or Apprise); the response masks any SMTP password.
-func (c Client) PostNotifications(ctx context.Context, input PostNotificationsRequest) (result PostNotificationsOperationResponse, err error) {
+func (c Client) PostNotifications(ctx context.Context, input PostNotificationsRequest) (result PostNotificationsResponse, err error) {
+	result.PostNotificationsAnswer = &PostNotificationsAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostNotifications(ctx context.Context, input PostNotificationsRe
 		return
 	}
 
-	var model PostNotificationsResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostNotificationsAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostNotificationsAnswer = result.Answer
 
 	return
 }

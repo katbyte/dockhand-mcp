@@ -29,7 +29,8 @@ func runCmd(t *testing.T, args ...string) (stdout, logged string, err error) {
 func documented(t *testing.T) {
 	t.Helper()
 
-	for _, listed := range config().Services {
+	for i, services := 0, config().Services; i < len(services); i++ {
+		listed := &services[i]
 		if _, err := listed.In(repoRoot).Resolve(); err != nil {
 			t.Fatalf("%v: the API document is fetched, not kept in the repository; run api-defs/get.sh, or make test, which runs it first", err)
 		}
@@ -62,7 +63,8 @@ func TestImportGenerateReproduces(t *testing.T) {
 	documented(t)
 
 	root := t.TempDir()
-	for _, listed := range config().Services {
+	for i, services := 0, config().Services; i < len(services); i++ {
+		listed := &services[i]
 		svc, err := listed.In(repoRoot).Resolve()
 		if err != nil {
 			t.Fatal(err)
@@ -89,7 +91,8 @@ func TestImportGenerateReproduces(t *testing.T) {
 	}
 
 	var definitions string
-	for _, listed := range config().Services {
+	for i, services := 0, config().Services; i < len(services); i++ {
+		listed := &services[i]
 		svc, err := listed.In(repoRoot).Resolve()
 		if err != nil {
 			t.Fatal(err)

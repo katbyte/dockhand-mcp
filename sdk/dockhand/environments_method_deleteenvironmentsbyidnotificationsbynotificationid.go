@@ -4,26 +4,53 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteEnvironmentsByIdNotificationsByNotificationIdOperationResponse is the result of DeleteEnvironmentsByIdNotificationsByNotificationId.
-type DeleteEnvironmentsByIdNotificationsByNotificationIdOperationResponse struct {
+// DeleteEnvironmentsByIdNotificationsByNotificationIdResponse is the result of DeleteEnvironmentsByIdNotificationsByNotificationId.
+//
+// Answer is the DeleteEnvironmentsByIdNotificationsByNotificationIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteEnvironmentsByIdNotificationsByNotificationIdResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteEnvironmentsByIdNotificationsByNotificationIdResponse
+	Answer       *DeleteEnvironmentsByIdNotificationsByNotificationIdAnswer
+	*DeleteEnvironmentsByIdNotificationsByNotificationIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteEnvironmentsByIdNotificationsByNotificationIdResponse) Answered() bool {
+	return r.Answer != nil
+}
+
+// Record is the DeleteEnvironmentsByIdNotificationsByNotificationIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteEnvironmentsByIdNotificationsByNotificationIdResponse) Record() (DeleteEnvironmentsByIdNotificationsByNotificationIdAnswer, error) {
+	if r.Answer == nil {
+		return DeleteEnvironmentsByIdNotificationsByNotificationIdAnswer{}, errors.New("DeleteEnvironmentsByIdNotificationsByNotificationId answered no DeleteEnvironmentsByIdNotificationsByNotificationIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // DeleteEnvironmentsByIdNotificationsByNotificationId calls DELETE /api/environments/{id}/notifications/{notificationId}. Remove a notification-channel link from an environment.
-func (c Client) DeleteEnvironmentsByIdNotificationsByNotificationId(ctx context.Context, id int, notificationId int) (result DeleteEnvironmentsByIdNotificationsByNotificationIdOperationResponse, err error) {
+func (c Client) DeleteEnvironmentsByIdNotificationsByNotificationId(ctx context.Context, id EnvironmentID, notificationId NotificationID) (result DeleteEnvironmentsByIdNotificationsByNotificationIdResponse, err error) {
+	result.DeleteEnvironmentsByIdNotificationsByNotificationIdAnswer = &DeleteEnvironmentsByIdNotificationsByNotificationIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
-		Path:       fmt.Sprintf("/api/environments/%d/notifications/%d", id, notificationId),
+		Path:       fmt.Sprintf("/api/environments/%s/notifications/%s", url.PathEscape(strconv.Itoa(int(id))), url.PathEscape(strconv.Itoa(int(notificationId)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +67,12 @@ func (c Client) DeleteEnvironmentsByIdNotificationsByNotificationId(ctx context.
 		return
 	}
 
-	var model DeleteEnvironmentsByIdNotificationsByNotificationIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteEnvironmentsByIdNotificationsByNotificationIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteEnvironmentsByIdNotificationsByNotificationIdAnswer = result.Answer
 
 	return
 }

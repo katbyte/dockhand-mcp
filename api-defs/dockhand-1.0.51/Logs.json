@@ -52,7 +52,8 @@
           "In": "Query",
           "Description": "Environment the containers belong to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],

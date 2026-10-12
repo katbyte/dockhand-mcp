@@ -4,47 +4,80 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetActivityStatsOperationResponse is the result of GetActivityStats.
-type GetActivityStatsOperationResponse struct {
+// GetActivityStatsResponse is the result of GetActivityStats.
+//
+// Answer is the GetActivityStatsAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetActivityStatsResponse struct {
 	HttpResponse *http.Response
-	Model        *GetActivityStatsResponse
+	Answer       *GetActivityStatsAnswer
+	*GetActivityStatsAnswer
 }
 
-// GetActivityStatsOperationOptions holds the query and header parameters of GetActivityStats.
-type GetActivityStatsOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetActivityStatsResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetActivityStatsAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetActivityStatsResponse) Record() (GetActivityStatsAnswer, error) {
+	if r.Answer == nil {
+		return GetActivityStatsAnswer{}, errors.New("GetActivityStats answered no GetActivityStatsAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetActivityStatsOptions holds the query and header parameters of GetActivityStats.
+type GetActivityStatsOptions struct {
 	// Filter to a single environment (from GET /api/environments)
-	EnvironmentId *int
+	EnvironmentId EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetActivityStatsOperationOptions) ToHeaders() *client.Headers {
+func (o GetActivityStatsOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetActivityStatsOperationOptions) ToQuery() *client.QueryParams {
+func (o GetActivityStatsOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.EnvironmentId != nil {
-		out.Append("environment_id", strconv.Itoa(*o.EnvironmentId))
+	if o.EnvironmentId != 0 {
+		out.Append("environment_id", strconv.Itoa(int(o.EnvironmentId)))
 	}
 	return &out
 }
 
 // GetActivityStats calls GET /api/activity/stats. Get aggregate container activity statistics (totals and counts by action).
-func (c Client) GetActivityStats(ctx context.Context, options GetActivityStatsOperationOptions) (result GetActivityStatsOperationResponse, err error) {
+func (c Client) GetActivityStats(ctx context.Context, options ...GetActivityStatsOptions) (result GetActivityStatsResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetActivityStats takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetActivityStatsOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetActivityStatsAnswer = &GetActivityStatsAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/activity/stats",
 	}
 
@@ -62,11 +95,12 @@ func (c Client) GetActivityStats(ctx context.Context, options GetActivityStatsOp
 		return
 	}
 
-	var model GetActivityStatsResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetActivityStatsAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetActivityStatsAnswer = result.Answer
 
 	return
 }

@@ -9,14 +9,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetAuthOidcOperationResponse is the result of GetAuthOidc.
-type GetAuthOidcOperationResponse struct {
+// GetAuthOidcResponse is the result of GetAuthOidc.
+type GetAuthOidcResponse struct {
 	HttpResponse *http.Response
-	Model        []GetAuthOidcResponse
+	Answer       []GetAuthOidcAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetAuthOidcResponse) Answered() bool { return r.Answer != nil }
+
 // GetAuthOidc calls GET /api/auth/oidc. List all configured OIDC providers (client secrets are masked).
-func (c Client) GetAuthOidc(ctx context.Context) (result GetAuthOidcOperationResponse, err error) {
+func (c Client) GetAuthOidc(ctx context.Context) (result GetAuthOidcResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,7 +43,7 @@ func (c Client) GetAuthOidc(ctx context.Context) (result GetAuthOidcOperationRes
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

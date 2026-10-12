@@ -4,27 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostEnvironmentsByIdTimezoneOperationResponse is the result of PostEnvironmentsByIdTimezone.
-type PostEnvironmentsByIdTimezoneOperationResponse struct {
+// PostEnvironmentsByIdTimezoneResponse is the result of PostEnvironmentsByIdTimezone.
+//
+// Answer is the PostEnvironmentsByIdTimezoneAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostEnvironmentsByIdTimezoneResponse struct {
 	HttpResponse *http.Response
-	Model        *PostEnvironmentsByIdTimezoneResponse
+	Answer       *PostEnvironmentsByIdTimezoneAnswer
+	*PostEnvironmentsByIdTimezoneAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostEnvironmentsByIdTimezoneResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostEnvironmentsByIdTimezoneAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostEnvironmentsByIdTimezoneResponse) Record() (PostEnvironmentsByIdTimezoneAnswer, error) {
+	if r.Answer == nil {
+		return PostEnvironmentsByIdTimezoneAnswer{}, errors.New("PostEnvironmentsByIdTimezone answered no PostEnvironmentsByIdTimezoneAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostEnvironmentsByIdTimezone calls POST /api/environments/{id}/timezone. Set the IANA timezone for an environment and refresh its schedules to use it.
-func (c Client) PostEnvironmentsByIdTimezone(ctx context.Context, id int, input PostEnvironmentsByIdTimezoneRequest) (result PostEnvironmentsByIdTimezoneOperationResponse, err error) {
+func (c Client) PostEnvironmentsByIdTimezone(ctx context.Context, id EnvironmentID, input PostEnvironmentsByIdTimezoneRequest) (result PostEnvironmentsByIdTimezoneResponse, err error) {
+	result.PostEnvironmentsByIdTimezoneAnswer = &PostEnvironmentsByIdTimezoneAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
-		Path:       fmt.Sprintf("/api/environments/%d/timezone", id),
+		Path:       fmt.Sprintf("/api/environments/%s/timezone", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -45,11 +70,12 @@ func (c Client) PostEnvironmentsByIdTimezone(ctx context.Context, id int, input 
 		return
 	}
 
-	var model PostEnvironmentsByIdTimezoneResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostEnvironmentsByIdTimezoneAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostEnvironmentsByIdTimezoneAnswer = result.Answer
 
 	return
 }

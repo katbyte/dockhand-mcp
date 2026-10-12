@@ -9,13 +9,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostBackupConfigsOperationResponse is the result of PostBackupConfigs.
-type PostBackupConfigsOperationResponse struct {
+// PostBackupConfigsResponse is the result of PostBackupConfigs.
+type PostBackupConfigsResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostBackupConfigs calls POST /api/backup/configs. Create a backup configuration for a container or stack, optionally scheduled, and register its cron schedule when enabled.
-func (c Client) PostBackupConfigs(ctx context.Context, input PostBackupConfigsRequest) (result PostBackupConfigsOperationResponse, err error) {
+func (c Client) PostBackupConfigs(ctx context.Context, input PostBackupConfigsRequest) (result PostBackupConfigsResponse, err error) {
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{

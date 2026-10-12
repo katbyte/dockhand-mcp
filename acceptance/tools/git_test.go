@@ -36,24 +36,24 @@ func TestJourneyAStackDeployedFromGit(t *testing.T) {
 	ctx := context.WithoutCancel(t.Context())
 	file := "services:\n  app:\n    image: " + world.Image + "\n    command: [\"sleep\", \"100000\"]\n    stop_grace_period: 1s\n    environment:\n      MODE: ${MODE:-none}\n      EXTRA: ${EXTRA:-none}\n      HUSH: ${HUSH:-none}\n"
 	clean := func() {
-		if stacks, err := world.Dock.GetGitStacks(ctx, dockhand.GetGitStacksOperationOptions{}); err == nil {
-			for i := range stacks.Model {
-				if strings.HasPrefix(stacks.Model[i].StackName, prefix) {
-					_, _ = world.Dock.DeleteGitStacksById(ctx, stacks.Model[i].Id)
+		if stacks, err := world.Dock.GetGitStacks(ctx, dockhand.GetGitStacksOptions{}); err == nil {
+			for i := range stacks.Answer {
+				if strings.HasPrefix(stacks.Answer[i].StackName, prefix) {
+					_, _ = world.Dock.DeleteGitStacksById(ctx, stacks.Answer[i].Id)
 				}
 			}
 		}
 		if repositories, err := world.Dock.GetGitRepositories(ctx); err == nil {
-			for i := range repositories.Model {
-				if strings.HasPrefix(repositories.Model[i].Name, prefix) {
-					_, _ = world.Dock.DeleteGitRepositoriesById(ctx, repositories.Model[i].Id)
+			for i := range repositories.Answer {
+				if strings.HasPrefix(repositories.Answer[i].Name, prefix) {
+					_, _ = world.Dock.DeleteGitRepositoriesById(ctx, repositories.Answer[i].Id)
 				}
 			}
 		}
 		if credentials, err := world.Dock.GetGitCredentials(ctx); err == nil {
-			for i := range credentials.Model {
-				if strings.HasPrefix(credentials.Model[i].Name, prefix) {
-					_, _ = world.Dock.DeleteGitCredentialsById(ctx, credentials.Model[i].Id)
+			for i := range credentials.Answer {
+				if strings.HasPrefix(credentials.Answer[i].Name, prefix) {
+					_, _ = world.Dock.DeleteGitCredentialsById(ctx, credentials.Answer[i].Id)
 				}
 			}
 		}

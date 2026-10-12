@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,35 +13,57 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostContainersByIdStartOperationResponse is the result of PostContainersByIdStart.
-type PostContainersByIdStartOperationResponse struct {
+// PostContainersByIdStartResponse is the result of PostContainersByIdStart.
+//
+// Answer is the PostContainersByIdStartAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostContainersByIdStartResponse struct {
 	HttpResponse *http.Response
-	Model        *PostContainersByIdStartResponse
+	Answer       *PostContainersByIdStartAnswer
+	*PostContainersByIdStartAnswer
 }
 
-// PostContainersByIdStartOperationOptions holds the query and header parameters of PostContainersByIdStart.
-type PostContainersByIdStartOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostContainersByIdStartResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostContainersByIdStartAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostContainersByIdStartResponse) Record() (PostContainersByIdStartAnswer, error) {
+	if r.Answer == nil {
+		return PostContainersByIdStartAnswer{}, errors.New("PostContainersByIdStart answered no PostContainersByIdStartAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostContainersByIdStartOptions holds the query and header parameters of PostContainersByIdStart.
+type PostContainersByIdStartOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostContainersByIdStartOperationOptions) ToHeaders() *client.Headers {
+func (o PostContainersByIdStartOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostContainersByIdStartOperationOptions) ToQuery() *client.QueryParams {
+func (o PostContainersByIdStartOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostContainersByIdStart calls POST /api/containers/{id}/start. Start a stopped container.
-func (c Client) PostContainersByIdStart(ctx context.Context, id string, options PostContainersByIdStartOperationOptions) (result PostContainersByIdStartOperationResponse, err error) {
+func (c Client) PostContainersByIdStart(ctx context.Context, id string, options PostContainersByIdStartOptions) (result PostContainersByIdStartResponse, err error) {
+	result.PostContainersByIdStartAnswer = &PostContainersByIdStartAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -64,11 +87,12 @@ func (c Client) PostContainersByIdStart(ctx context.Context, id string, options 
 		return
 	}
 
-	var model PostContainersByIdStartResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostContainersByIdStartAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostContainersByIdStartAnswer = result.Answer
 
 	return
 }

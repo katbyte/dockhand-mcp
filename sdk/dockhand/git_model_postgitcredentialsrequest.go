@@ -4,10 +4,10 @@ package dockhand
 
 // PostGitCredentialsRequest is an object the document declares inline.
 type PostGitCredentialsRequest struct {
-	AuthType      string `json:"authType,omitempty"`
-	Name          string `json:"name"`
-	Password      string `json:"password,omitempty"`
-	SshPassphrase string `json:"sshPassphrase,omitempty"`
-	SshPrivateKey string `json:"sshPrivateKey,omitempty"`
-	Username      string `json:"username,omitempty"`
+	AuthType      GitAuthType `json:"authType,omitempty"`
+	Name          string      `json:"name"`
+	Password      string      `json:"password,omitempty"`
+	SshPassphrase string      `json:"sshPassphrase,omitempty"`
+	SshPrivateKey string      `json:"sshPrivateKey,omitempty"`
+	Username      string      `json:"username,omitempty"`
 }

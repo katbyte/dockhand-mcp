@@ -10,32 +10,36 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetContainersStatsOperationResponse is the result of GetContainersStats.
-type GetContainersStatsOperationResponse struct {
+// GetContainersStatsResponse is the result of GetContainersStats.
+type GetContainersStatsResponse struct {
 	HttpResponse *http.Response
-	Model        []GetContainersStatsResponse
+	Answer       []GetContainersStatsAnswer
 }
 
-// GetContainersStatsOperationOptions holds the query and header parameters of GetContainersStats.
-type GetContainersStatsOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetContainersStatsResponse) Answered() bool { return r.Answer != nil }
+
+// GetContainersStatsOptions holds the query and header parameters of GetContainersStats.
+type GetContainersStatsOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// Return raw Docker stats for the single container with this name instead of the aggregate list
 	Debug string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetContainersStatsOperationOptions) ToHeaders() *client.Headers {
+func (o GetContainersStatsOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetContainersStatsOperationOptions) ToQuery() *client.QueryParams {
+func (o GetContainersStatsOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	if o.Debug != "" {
 		out.Append("debug", o.Debug)
@@ -44,7 +48,7 @@ func (o GetContainersStatsOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetContainersStats calls GET /api/containers/stats. Return a CPU/memory/network/block-IO stats snapshot for every running container in an environment (requires the 'view' permission).
-func (c Client) GetContainersStats(ctx context.Context, options GetContainersStatsOperationOptions) (result GetContainersStatsOperationResponse, err error) {
+func (c Client) GetContainersStats(ctx context.Context, options GetContainersStatsOptions) (result GetContainersStatsResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -68,7 +72,7 @@ func (c Client) GetContainersStats(ctx context.Context, options GetContainersSta
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

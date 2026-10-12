@@ -3,7 +3,7 @@
 package dockhand
 
 import (
-	"io"
+	"bytes"
 	"net/http"
 	"strings"
 	"testing"
@@ -15,8 +15,8 @@ func TestOperationGetImagesByIdExport(t *testing.T) {
 	t.Parallel()
 
 	c, s := newOperationServer(t, 200, "application/x-tar", "file bytes")
-	result, err := c.GetImagesByIdExport(t.Context(), "p/id", GetImagesByIdExportOperationOptions{
-		Env:      new(7),
+	result, err := c.GetImagesByIdExport(t.Context(), "p/id", GetImagesByIdExportOptions{
+		Env:      EnvironmentID(7),
 		Tag:      "v-Tag",
 		Compress: new(true),
 	})
@@ -35,20 +35,64 @@ func TestOperationGetImagesByIdExport(t *testing.T) {
 	if result.HttpResponse == nil || result.HttpResponse.StatusCode != 200 {
 		t.Fatalf("HttpResponse = %+v", result.HttpResponse)
 	}
-	streamed, _ := io.ReadAll(result.HttpResponse.Body)
-	_ = result.HttpResponse.Body.Close()
-	if string(streamed) != "file bytes" {
-		t.Errorf("streamed body = %q", streamed)
+	if _, contentType := result.Reader(); contentType == "" || result.ContentLength() != 10 || result.Filename() != "answer.bin" {
+		t.Errorf("Reader = %q, length %d, filename %q", contentType, result.ContentLength(), result.Filename())
+	}
+	if data, err := result.Bytes(9); err == nil || string(data) != "" {
+		t.Errorf("Bytes over the size = %q, %v", data, err)
+	}
+	c, _ = newOperationServer(t, 200, "application/x-tar", "file bytes")
+	result, err = c.GetImagesByIdExport(t.Context(), "p/id", GetImagesByIdExportOptions{
+		Env:      EnvironmentID(7),
+		Tag:      "v-Tag",
+		Compress: new(true),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if data, err := result.Bytes(10); err != nil || string(data) != "file bytes" {
+		t.Errorf("Bytes = %q, %v", data, err)
+	}
+	c, _ = newOperationServer(t, 200, "application/x-tar", "file bytes")
+	result, err = c.GetImagesByIdExport(t.Context(), "p/id", GetImagesByIdExportOptions{
+		Env:      EnvironmentID(7),
+		Tag:      "v-Tag",
+		Compress: new(true),
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var streamed bytes.Buffer
+	if _, err := result.WriteTo(&streamed); err != nil || streamed.String() != "file bytes" {
+		t.Errorf("WriteTo = %v, %q", err, streamed.String())
+	}
+	if _, err := result.WriteTo(&streamed); err == nil {
+		t.Error("WriteTo on a spent body succeeded")
+	}
+	if _, err := (GetImagesByIdExportResponse{}).WriteTo(&streamed); err == nil {
+		t.Error("WriteTo with no answer succeeded")
+	}
+	if body, contentType := (GetImagesByIdExportResponse{}).Reader(); body == nil || contentType != "" || body.Close() != nil {
+		t.Error("Reader with no answer is not safely empty")
 	}
 
 	// a status the operation does not document is an error, with the response
 	c, _ = newOperationServer(t, 418, "text/plain", "no")
-	result, err = c.GetImagesByIdExport(t.Context(), "p/id", GetImagesByIdExportOperationOptions{
-		Env:      new(7),
+	result, err = c.GetImagesByIdExport(t.Context(), "p/id", GetImagesByIdExportOptions{
+		Env:      EnvironmentID(7),
 		Tag:      "v-Tag",
 		Compress: new(true),
 	})
 	if client.StatusCode(err) != 418 || result.HttpResponse == nil {
 		t.Errorf("an undocumented status = %v, %+v", err, result.HttpResponse)
+	}
+
+	// the options may be left out, and two are refused before any request
+	c, s = newOperationServer(t, 200, "application/x-tar", "file bytes")
+	if _, err = c.GetImagesByIdExport(t.Context(), "p/id"); err != nil {
+		t.Errorf("without options = %v", err)
+	}
+	if _, err = c.GetImagesByIdExport(t.Context(), "p/id", GetImagesByIdExportOptions{}, GetImagesByIdExportOptions{}); err == nil || len(s.requests) != 1 {
+		t.Errorf("two options structs = %v, %d requests", err, len(s.requests))
 	}
 }

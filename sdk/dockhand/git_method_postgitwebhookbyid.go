@@ -4,20 +4,43 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostGitWebhookByIdOperationResponse is the result of PostGitWebhookById.
-type PostGitWebhookByIdOperationResponse struct {
+// PostGitWebhookByIdResponse is the result of PostGitWebhookById.
+//
+// Answer is the PostGitWebhookByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostGitWebhookByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *PostGitWebhookByIdResponse
+	Answer       *PostGitWebhookByIdAnswer
+	*PostGitWebhookByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostGitWebhookByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostGitWebhookByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostGitWebhookByIdResponse) Record() (PostGitWebhookByIdAnswer, error) {
+	if r.Answer == nil {
+		return PostGitWebhookByIdAnswer{}, errors.New("PostGitWebhookById answered no PostGitWebhookByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostGitWebhookById calls POST /api/git/webhook/{id}. Webhook trigger (GitHub/GitLab) that deploys from a git repository when its signature/token verifies.
-func (c Client) PostGitWebhookById(ctx context.Context, id int, input PostGitWebhookByIdRequest) (result PostGitWebhookByIdOperationResponse, err error) {
+func (c Client) PostGitWebhookById(ctx context.Context, id int, input PostGitWebhookByIdRequest) (result PostGitWebhookByIdResponse, err error) {
+	result.PostGitWebhookByIdAnswer = &PostGitWebhookByIdAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -45,11 +68,12 @@ func (c Client) PostGitWebhookById(ctx context.Context, id int, input PostGitWeb
 		return
 	}
 
-	var model PostGitWebhookByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostGitWebhookByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostGitWebhookByIdAnswer = result.Answer
 
 	return
 }

@@ -24,7 +24,8 @@
           "In": "Query",
           "Description": "Environment id (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -59,7 +60,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteStacksByNameResponse"
+          "ReferenceName": "DeleteStacksByNameAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -92,7 +93,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteStacksByNameDeploysByRunIdResponse"
+          "ReferenceName": "DeleteStacksByNameDeploysByRunIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -121,7 +122,8 @@
           "In": "Query",
           "Description": "Environment id the stack belongs to",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -129,7 +131,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteStacksByNameIconResponse"
+          "ReferenceName": "DeleteStacksByNameIconAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -149,7 +151,8 @@
           "In": "Query",
           "Description": "Environment id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -159,7 +162,7 @@
           "Type": "List",
           "NestedItem": {
             "Type": "Reference",
-            "ReferenceName": "GetStacksResponse"
+            "ReferenceName": "GetStacksAnswer"
           }
         }
       },
@@ -180,7 +183,8 @@
           "In": "Query",
           "Description": "Environment ID used to select the local or environment-scoped stacks root",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -188,7 +192,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetStacksBasePathResponse"
+          "ReferenceName": "GetStacksBasePathAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -217,7 +221,8 @@
           "In": "Query",
           "Description": "Environment id the stack belongs to",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -225,7 +230,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetStacksByNameComposeResponse"
+          "ReferenceName": "GetStacksByNameComposeAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -254,7 +259,8 @@
           "In": "Query",
           "Description": "Environment ID the stack belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -262,7 +268,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetStacksByNameDeletePreviewResponse"
+          "ReferenceName": "GetStacksByNameDeletePreviewAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -291,7 +297,8 @@
           "In": "Query",
           "Description": "Environment id the stack belongs to (from GET /api/environments). Omit, or pass the literal string \"null\", for the local/default environment (deploys triggered without an explicit env, the normal shape on a single-environment install).",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -299,7 +306,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetStacksByNameDeploysResponse"
+          "ReferenceName": "GetStacksByNameDeploysAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -332,7 +339,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetStacksByNameDeploysByRunIdResponse"
+          "ReferenceName": "GetStacksByNameDeploysByRunIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -393,7 +400,8 @@
           "In": "Query",
           "Description": "Environment id the stack belongs to",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -401,7 +409,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetStacksByNameEnvResponse"
+          "ReferenceName": "GetStacksByNameEnvAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -430,7 +438,8 @@
           "In": "Query",
           "Description": "Environment ID the stack belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -438,7 +447,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetStacksByNameEnvRawResponse"
+          "ReferenceName": "GetStacksByNameEnvRawAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -467,7 +476,8 @@
           "In": "Query",
           "Description": "Environment id the stack belongs to",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -503,7 +513,8 @@
           "In": "Query",
           "Description": "Environment id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -511,7 +522,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetStacksByNameTagsResponse"
+          "ReferenceName": "GetStacksByNameTagsAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -541,7 +552,8 @@
           "In": "Query",
           "Description": "Environment ID (scopes the path under the environment name) (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -558,7 +570,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetStacksDefaultPathResponse"
+          "ReferenceName": "GetStacksDefaultPathAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -588,7 +600,8 @@
           "In": "Query",
           "Description": "Environment ID the stack belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -596,7 +609,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetStacksPathHintsResponse"
+          "ReferenceName": "GetStacksPathHintsAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -616,7 +629,8 @@
           "In": "Query",
           "Description": "Filter to a single environment id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -626,7 +640,7 @@
           "Type": "Dictionary",
           "NestedItem": {
             "Type": "Reference",
-            "ReferenceName": "GetStacksSourcesResponse"
+            "ReferenceName": "GetStacksSourcesAnswer"
           }
         }
       },
@@ -647,7 +661,8 @@
           "In": "Query",
           "Description": "Target environment id (takes precedence over envId/environmentId in the body)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -671,7 +686,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostStacksResponse"
+          "ReferenceName": "PostStacksAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -695,7 +710,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostStacksAdoptResponse"
+          "ReferenceName": "PostStacksAdoptAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -724,7 +739,8 @@
           "In": "Query",
           "Description": "Environment ID the stack belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -739,7 +755,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostStacksByNameCheckPathChangeResponse"
+          "ReferenceName": "PostStacksByNameCheckPathChangeAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -768,7 +784,8 @@
           "In": "Query",
           "Description": "Environment ID the stack belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -792,7 +809,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostStacksByNameDeployResponse"
+          "ReferenceName": "PostStacksByNameDeployAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -821,7 +838,8 @@
           "In": "Query",
           "Description": "Environment id (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -845,7 +863,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostStacksByNameDownResponse"
+          "ReferenceName": "PostStacksByNameDownAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -874,7 +892,8 @@
           "In": "Query",
           "Description": "Environment ID the stack belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -889,7 +908,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostStacksByNameEnvValidateResponse"
+          "ReferenceName": "PostStacksByNameEnvValidateAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -918,7 +937,8 @@
           "In": "Query",
           "Description": "Environment id the stack belongs to",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -933,7 +953,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostStacksByNameIconResponse"
+          "ReferenceName": "PostStacksByNameIconAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -962,7 +982,8 @@
           "In": "Query",
           "Description": "Environment ID the stack belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -977,7 +998,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostStacksByNameRelocateResponse"
+          "ReferenceName": "PostStacksByNameRelocateAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1006,7 +1027,8 @@
           "In": "Query",
           "Description": "Environment ID the stack belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -1032,7 +1054,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostStacksByNameRestartResponse"
+          "ReferenceName": "PostStacksByNameRestartAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1061,7 +1083,8 @@
           "In": "Query",
           "Description": "Environment id (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -1078,7 +1101,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostStacksByNameStartResponse"
+          "ReferenceName": "PostStacksByNameStartAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1107,7 +1130,8 @@
           "In": "Query",
           "Description": "Environment id (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -1124,7 +1148,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostStacksByNameStopResponse"
+          "ReferenceName": "PostStacksByNameStopAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1153,7 +1177,8 @@
           "In": "Query",
           "Description": "Environment ID for the context-aware checks (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1168,7 +1193,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostStacksByNameValidateResponse"
+          "ReferenceName": "PostStacksByNameValidateAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1192,7 +1217,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostStacksScanResponse"
+          "ReferenceName": "PostStacksScanAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1216,7 +1241,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostStacksValidatePathResponse"
+          "ReferenceName": "PostStacksValidatePathAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1245,7 +1270,8 @@
           "In": "Query",
           "Description": "Environment id the stack belongs to",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -1269,7 +1295,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PutStacksByNameComposeResponse"
+          "ReferenceName": "PutStacksByNameComposeAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1298,7 +1324,8 @@
           "In": "Query",
           "Description": "Environment id the stack belongs to",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1313,7 +1340,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PutStacksByNameEnvResponse"
+          "ReferenceName": "PutStacksByNameEnvAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1342,7 +1369,8 @@
           "In": "Query",
           "Description": "Environment ID the stack belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1357,7 +1385,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PutStacksByNameEnvRawResponse"
+          "ReferenceName": "PutStacksByNameEnvRawAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1386,7 +1414,8 @@
           "In": "Query",
           "Description": "Environment id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -1401,7 +1430,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PutStacksByNameTagsResponse"
+          "ReferenceName": "PutStacksByNameTagsAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -1411,7 +1440,7 @@
   ],
   "Models": [
     {
-      "Name": "DeleteStacksByNameDeploysByRunIdResponse",
+      "Name": "DeleteStacksByNameAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -1424,7 +1453,7 @@
       ]
     },
     {
-      "Name": "DeleteStacksByNameIconResponse",
+      "Name": "DeleteStacksByNameDeploysByRunIdAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -1437,7 +1466,7 @@
       ]
     },
     {
-      "Name": "DeleteStacksByNameResponse",
+      "Name": "DeleteStacksByNameIconAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -1450,7 +1479,252 @@
       ]
     },
     {
-      "Name": "GetStacksBasePathResponse",
+      "Name": "GetStacksAnswer",
+      "Fields": [
+        {
+          "Name": "ContainerDetails",
+          "JsonName": "containerDetails",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetStacksAnswerContainerDetails"
+            }
+          }
+        },
+        {
+          "Name": "Containers",
+          "JsonName": "containers",
+          "Description": "the whole ids of the stack's containers",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Icon",
+          "JsonName": "icon",
+          "Description": "the icon the stack was given; absent for one given none",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NewerVersionCount",
+          "JsonName": "newerVersionCount",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Description": "running, partial (some of its containers are not running) or stopped",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "StackStatus"
+          }
+        },
+        {
+          "Name": "UpdateCount",
+          "JsonName": "updateCount",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "UpdatesAvailable",
+          "JsonName": "updatesAvailable",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetStacksAnswerContainerDetails",
+      "Fields": [
+        {
+          "Name": "Created",
+          "JsonName": "created",
+          "Description": "when the container was made, in seconds since 1970",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Health",
+          "JsonName": "health",
+          "Description": "healthy, unhealthy or starting; empty for a container with no health check",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "ContainerHealth"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Image",
+          "JsonName": "image",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Labels",
+          "JsonName": "labels",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Networks",
+          "JsonName": "networks",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetStacksAnswerContainerDetailsNetworks"
+            }
+          }
+        },
+        {
+          "Name": "Ports",
+          "JsonName": "ports",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetStacksAnswerContainerDetailsPorts"
+            }
+          }
+        },
+        {
+          "Name": "RestartCount",
+          "JsonName": "restartCount",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Service",
+          "JsonName": "service",
+          "Description": "the compose service the container is",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "State",
+          "JsonName": "state",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "ContainerState"
+          }
+        },
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdateAvailable",
+          "JsonName": "updateAvailable",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "VolumeCount",
+          "JsonName": "volumeCount",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetStacksAnswerContainerDetailsNetworks",
+      "Fields": [
+        {
+          "Name": "IpAddress",
+          "JsonName": "ipAddress",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetStacksAnswerContainerDetailsPorts",
+      "Fields": [
+        {
+          "Name": "Display",
+          "JsonName": "display",
+          "Description": "the port as a person writes it: 8080:80/tcp",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "PrivatePort",
+          "JsonName": "privatePort",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "PublicPort",
+          "JsonName": "publicPort",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Description": "tcp or udp",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetStacksBasePathAnswer",
       "Fields": [
         {
           "Name": "BasePath",
@@ -1463,7 +1737,7 @@
       ]
     },
     {
-      "Name": "GetStacksByNameComposeResponse",
+      "Name": "GetStacksByNameComposeAnswer",
       "Fields": [
         {
           "Name": "ComposePath",
@@ -1507,7 +1781,7 @@
       ]
     },
     {
-      "Name": "GetStacksByNameDeletePreviewResponse",
+      "Name": "GetStacksByNameDeletePreviewAnswer",
       "Fields": [
         {
           "Name": "CanDeleteFiles",
@@ -1539,7 +1813,8 @@
           "Name": "SourceType",
           "JsonName": "sourceType",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "StackSourceType"
           }
         },
         {
@@ -1560,233 +1835,7 @@
       ]
     },
     {
-      "Name": "GetStacksByNameDeploysByRunIdResponse",
-      "Fields": [
-        {
-          "Name": "CompletedAt",
-          "JsonName": "completedAt",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Details",
-          "JsonName": "details",
-          "Type": {
-            "Type": "Reference",
-            "ReferenceName": "GetStacksByNameDeploysByRunIdResponseDetails"
-          }
-        },
-        {
-          "Name": "Duration",
-          "JsonName": "duration",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "EnvironmentId",
-          "JsonName": "environmentId",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "ErrorMessage",
-          "JsonName": "errorMessage",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Id",
-          "JsonName": "id",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        },
-        {
-          "Name": "StartedAt",
-          "JsonName": "startedAt",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Status",
-          "JsonName": "status",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "TriggeredAt",
-          "JsonName": "triggeredAt",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "TriggeredBy",
-          "JsonName": "triggeredBy",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "GetStacksByNameDeploysByRunIdResponseDetails",
-      "Fields": [
-        {
-          "Name": "ComposeHash",
-          "JsonName": "composeHash",
-          "Description": "a digest of the compose file the deploy ran with: two deploys with the same one ran the same file",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "EnvHash",
-          "JsonName": "envHash",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "ExitCode",
-          "JsonName": "exitCode",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "LogFile",
-          "JsonName": "logFile",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Options",
-          "JsonName": "options",
-          "Type": {
-            "Type": "Reference",
-            "ReferenceName": "GetStacksByNameDeploysByRunIdResponseDetailsOptions"
-          }
-        },
-        {
-          "Name": "Summary",
-          "JsonName": "summary",
-          "Type": {
-            "Type": "Reference",
-            "ReferenceName": "GetStacksByNameDeploysByRunIdResponseDetailsSummary"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetStacksByNameDeploysByRunIdResponseDetailsOptions",
-      "Fields": [
-        {
-          "Name": "Build",
-          "JsonName": "build",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "ForceRecreate",
-          "JsonName": "forceRecreate",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "Pull",
-          "JsonName": "pull",
-          "Type": {
-            "Type": "Boolean"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetStacksByNameDeploysByRunIdResponseDetailsSummary",
-      "Fields": [
-        {
-          "Name": "BuildSteps",
-          "JsonName": "buildSteps",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "BuildStepsCached",
-          "JsonName": "buildStepsCached",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "ContainerNames",
-          "JsonName": "containerNames",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "ContainersCreated",
-          "JsonName": "containersCreated",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "ContainersRecreated",
-          "JsonName": "containersRecreated",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "ContainersStarted",
-          "JsonName": "containersStarted",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "ImagesBuilt",
-          "JsonName": "imagesBuilt",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "ImagesPulled",
-          "JsonName": "imagesPulled",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetStacksByNameDeploysResponse",
+      "Name": "GetStacksByNameDeploysAnswer",
       "Fields": [
         {
           "Name": "Runs",
@@ -1795,7 +1844,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetStacksByNameDeploysResponseRuns"
+              "ReferenceName": "GetStacksByNameDeploysAnswerRuns"
             }
           },
           "Required": true
@@ -1803,13 +1852,13 @@
       ]
     },
     {
-      "Name": "GetStacksByNameDeploysResponseRuns",
+      "Name": "GetStacksByNameDeploysAnswerRuns",
       "Fields": [
         {
           "Name": "CompletedAt",
           "JsonName": "completedAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -1817,7 +1866,7 @@
           "JsonName": "details",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetStacksByNameDeploysResponseRunsDetails"
+            "ReferenceName": "GetStacksByNameDeploysAnswerRunsDetails"
           }
         },
         {
@@ -1831,7 +1880,8 @@
           "Name": "EnvironmentId",
           "JsonName": "environmentId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -1853,14 +1903,15 @@
           "Name": "StartedAt",
           "JsonName": "startedAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
           "Name": "Status",
           "JsonName": "status",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "DeployStatus"
           },
           "Required": true
         },
@@ -1868,7 +1919,7 @@
           "Name": "TriggeredAt",
           "JsonName": "triggeredAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           },
           "Required": true
         },
@@ -1883,7 +1934,7 @@
       ]
     },
     {
-      "Name": "GetStacksByNameDeploysResponseRunsDetails",
+      "Name": "GetStacksByNameDeploysAnswerRunsDetails",
       "Fields": [
         {
           "Name": "ComposeHash",
@@ -1919,7 +1970,7 @@
           "JsonName": "options",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetStacksByNameDeploysResponseRunsDetailsOptions"
+            "ReferenceName": "GetStacksByNameDeploysAnswerRunsDetailsOptions"
           }
         },
         {
@@ -1927,13 +1978,13 @@
           "JsonName": "summary",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetStacksByNameDeploysResponseRunsDetailsSummary"
+            "ReferenceName": "GetStacksByNameDeploysAnswerRunsDetailsSummary"
           }
         }
       ]
     },
     {
-      "Name": "GetStacksByNameDeploysResponseRunsDetailsOptions",
+      "Name": "GetStacksByNameDeploysAnswerRunsDetailsOptions",
       "Fields": [
         {
           "Name": "Build",
@@ -1959,7 +2010,7 @@
       ]
     },
     {
-      "Name": "GetStacksByNameDeploysResponseRunsDetailsSummary",
+      "Name": "GetStacksByNameDeploysAnswerRunsDetailsSummary",
       "Fields": [
         {
           "Name": "BuildSteps",
@@ -2029,19 +2080,157 @@
       ]
     },
     {
-      "Name": "GetStacksByNameEnvRawResponse",
+      "Name": "GetStacksByNameDeploysByRunIdAnswer",
       "Fields": [
         {
-          "Name": "Content",
-          "JsonName": "content",
+          "Name": "CompletedAt",
+          "JsonName": "completedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "Details",
+          "JsonName": "details",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetStacksByNameDeploysByRunIdAnswerDetails"
+          }
+        },
+        {
+          "Name": "Duration",
+          "JsonName": "duration",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
+          }
+        },
+        {
+          "Name": "ErrorMessage",
+          "JsonName": "errorMessage",
           "Type": {
             "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
           },
           "Required": true
         },
         {
-          "Name": "NoEnvFile",
-          "JsonName": "noEnvFile",
+          "Name": "StartedAt",
+          "JsonName": "startedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "DeployStatus"
+          },
+          "Required": true
+        },
+        {
+          "Name": "TriggeredAt",
+          "JsonName": "triggeredAt",
+          "Type": {
+            "Type": "DateTime"
+          },
+          "Required": true
+        },
+        {
+          "Name": "TriggeredBy",
+          "JsonName": "triggeredBy",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetStacksByNameDeploysByRunIdAnswerDetails",
+      "Fields": [
+        {
+          "Name": "ComposeHash",
+          "JsonName": "composeHash",
+          "Description": "a digest of the compose file the deploy ran with: two deploys with the same one ran the same file",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EnvHash",
+          "JsonName": "envHash",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ExitCode",
+          "JsonName": "exitCode",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "LogFile",
+          "JsonName": "logFile",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Options",
+          "JsonName": "options",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetStacksByNameDeploysByRunIdAnswerDetailsOptions"
+          }
+        },
+        {
+          "Name": "Summary",
+          "JsonName": "summary",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetStacksByNameDeploysByRunIdAnswerDetailsSummary"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetStacksByNameDeploysByRunIdAnswerDetailsOptions",
+      "Fields": [
+        {
+          "Name": "Build",
+          "JsonName": "build",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ForceRecreate",
+          "JsonName": "forceRecreate",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Pull",
+          "JsonName": "pull",
           "Type": {
             "Type": "Boolean"
           }
@@ -2049,7 +2238,77 @@
       ]
     },
     {
-      "Name": "GetStacksByNameEnvResponse",
+      "Name": "GetStacksByNameDeploysByRunIdAnswerDetailsSummary",
+      "Fields": [
+        {
+          "Name": "BuildSteps",
+          "JsonName": "buildSteps",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "BuildStepsCached",
+          "JsonName": "buildStepsCached",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ContainerNames",
+          "JsonName": "containerNames",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "ContainersCreated",
+          "JsonName": "containersCreated",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ContainersRecreated",
+          "JsonName": "containersRecreated",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ContainersStarted",
+          "JsonName": "containersStarted",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ImagesBuilt",
+          "JsonName": "imagesBuilt",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "ImagesPulled",
+          "JsonName": "imagesPulled",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetStacksByNameEnvAnswer",
       "Fields": [
         {
           "Name": "InjectedSecretKeys",
@@ -2067,7 +2326,7 @@
           "Description": "the secret provider the stack's secrets are loaded from when it is deployed; null for a stack that has none",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetStacksByNameEnvResponseSecretProvider"
+            "ReferenceName": "GetStacksByNameEnvAnswerSecretProvider"
           }
         },
         {
@@ -2077,7 +2336,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetStacksByNameEnvResponseVariables"
+              "ReferenceName": "GetStacksByNameEnvAnswerVariables"
             }
           },
           "Required": true
@@ -2085,7 +2344,7 @@
       ]
     },
     {
-      "Name": "GetStacksByNameEnvResponseSecretProvider",
+      "Name": "GetStacksByNameEnvAnswerSecretProvider",
       "Description": "the secret provider the stack's secrets are loaded from when it is deployed; null for a stack that has none",
       "Fields": [
         {
@@ -2105,7 +2364,7 @@
       ]
     },
     {
-      "Name": "GetStacksByNameEnvResponseVariables",
+      "Name": "GetStacksByNameEnvAnswerVariables",
       "Fields": [
         {
           "Name": "IsSecret",
@@ -2134,7 +2393,27 @@
       ]
     },
     {
-      "Name": "GetStacksByNameTagsResponse",
+      "Name": "GetStacksByNameEnvRawAnswer",
+      "Fields": [
+        {
+          "Name": "Content",
+          "JsonName": "content",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "NoEnvFile",
+          "JsonName": "noEnvFile",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetStacksByNameTagsAnswer",
       "Fields": [
         {
           "Name": "TagIds",
@@ -2142,7 +2421,8 @@
           "Type": {
             "Type": "List",
             "NestedItem": {
-              "Type": "Integer"
+              "Type": "ID",
+              "ReferenceName": "TagID"
             }
           },
           "Required": true
@@ -2150,7 +2430,7 @@
       ]
     },
     {
-      "Name": "GetStacksDefaultPathResponse",
+      "Name": "GetStacksDefaultPathAnswer",
       "Fields": [
         {
           "Name": "ComposePath",
@@ -2187,7 +2467,7 @@
       ]
     },
     {
-      "Name": "GetStacksPathHintsResponse",
+      "Name": "GetStacksPathHintsAnswer",
       "Fields": [
         {
           "Name": "ConfigFiles",
@@ -2217,249 +2497,7 @@
       ]
     },
     {
-      "Name": "GetStacksResponse",
-      "Fields": [
-        {
-          "Name": "ContainerDetails",
-          "JsonName": "containerDetails",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "Reference",
-              "ReferenceName": "GetStacksResponseContainerDetails"
-            }
-          }
-        },
-        {
-          "Name": "Containers",
-          "JsonName": "containers",
-          "Description": "the whole ids of the stack's containers",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Icon",
-          "JsonName": "icon",
-          "Description": "the icon the stack was given; absent for one given none",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Name",
-          "JsonName": "name",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "NewerVersionCount",
-          "JsonName": "newerVersionCount",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Status",
-          "JsonName": "status",
-          "Description": "running, partial (some of its containers are not running) or stopped",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "UpdateCount",
-          "JsonName": "updateCount",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "UpdatesAvailable",
-          "JsonName": "updatesAvailable",
-          "Type": {
-            "Type": "Boolean"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetStacksResponseContainerDetails",
-      "Fields": [
-        {
-          "Name": "Created",
-          "JsonName": "created",
-          "Description": "when the container was made, in seconds since 1970",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Health",
-          "JsonName": "health",
-          "Description": "healthy, unhealthy or starting; empty for a container with no health check",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Id",
-          "JsonName": "id",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Image",
-          "JsonName": "image",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Labels",
-          "JsonName": "labels",
-          "Type": {
-            "Type": "Dictionary",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Name",
-          "JsonName": "name",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Networks",
-          "JsonName": "networks",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "Reference",
-              "ReferenceName": "GetStacksResponseContainerDetailsNetworks"
-            }
-          }
-        },
-        {
-          "Name": "Ports",
-          "JsonName": "ports",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "Reference",
-              "ReferenceName": "GetStacksResponseContainerDetailsPorts"
-            }
-          }
-        },
-        {
-          "Name": "RestartCount",
-          "JsonName": "restartCount",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Service",
-          "JsonName": "service",
-          "Description": "the compose service the container is",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "State",
-          "JsonName": "state",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Status",
-          "JsonName": "status",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "UpdateAvailable",
-          "JsonName": "updateAvailable",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "VolumeCount",
-          "JsonName": "volumeCount",
-          "Type": {
-            "Type": "Integer"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetStacksResponseContainerDetailsNetworks",
-      "Fields": [
-        {
-          "Name": "IpAddress",
-          "JsonName": "ipAddress",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Name",
-          "JsonName": "name",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetStacksResponseContainerDetailsPorts",
-      "Fields": [
-        {
-          "Name": "Display",
-          "JsonName": "display",
-          "Description": "the port as a person writes it: 8080:80/tcp",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "PrivatePort",
-          "JsonName": "privatePort",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "PublicPort",
-          "JsonName": "publicPort",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Type",
-          "JsonName": "type",
-          "Description": "tcp or udp",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetStacksSourcesResponse",
+      "Name": "GetStacksSourcesAnswer",
       "Fields": [
         {
           "Name": "ComposePath",
@@ -2487,7 +2525,8 @@
           "Name": "SecretProviderId",
           "JsonName": "secretProviderId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "SecretProviderID"
           }
         },
         {
@@ -2495,8 +2534,58 @@
           "JsonName": "sourceType",
           "Description": "internal for a stack Dockhand has the compose file of, wherever the file lies, git for one deployed from a repository, and external for one it keeps a record of with no file, as a stack it only found is once it is given an icon",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "StackSourceType"
           }
+        }
+      ]
+    },
+    {
+      "Name": "PostStacksAdoptAnswer",
+      "Fields": [
+        {
+          "Name": "Adopted",
+          "JsonName": "adopted",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          },
+          "Required": true
+        },
+        {
+          "Name": "Failed",
+          "JsonName": "failed",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostStacksAdoptAnswerFailed"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostStacksAdoptAnswerFailed",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
         }
       ]
     },
@@ -2507,7 +2596,8 @@
           "Name": "EnvironmentId",
           "JsonName": "environmentId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           },
           "Required": true
         },
@@ -2547,69 +2637,51 @@
       ]
     },
     {
-      "Name": "PostStacksAdoptResponse",
-      "Fields": [
-        {
-          "Name": "Adopted",
-          "JsonName": "adopted",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          },
-          "Required": true
-        },
-        {
-          "Name": "Failed",
-          "JsonName": "failed",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "Reference",
-              "ReferenceName": "PostStacksAdoptResponseFailed"
-            }
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostStacksAdoptResponseFailed",
+      "Name": "PostStacksAnswer",
       "Fields": [
         {
           "Name": "Error",
           "JsonName": "error",
+          "Description": "why not, when it was made and could not be brought up",
           "Type": {
             "Type": "String"
-          },
-          "Required": true
+          }
         },
         {
-          "Name": "Name",
-          "JsonName": "name",
+          "Name": "JobId",
+          "JsonName": "jobId",
+          "Description": "the job the stack is made and brought up as, for a caller that did not ask for JSON alone and so was not made to wait: GET /api/jobs/{id} says how it went",
           "Type": {
             "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostStacksByNameCheckPathChangeRequest",
-      "Fields": [
+          }
+        },
         {
-          "Name": "NewComposePath",
-          "JsonName": "newComposePath",
+          "Name": "Output",
+          "JsonName": "output",
+          "Description": "what compose printed bringing it up, when it was",
           "Type": {
             "Type": "String"
-          },
-          "Required": true
+          }
+        },
+        {
+          "Name": "Started",
+          "JsonName": "started",
+          "Description": "whether the stack was brought up as well as made",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
         }
       ]
     },
     {
-      "Name": "PostStacksByNameCheckPathChangeResponse",
+      "Name": "PostStacksByNameCheckPathChangeAnswer",
       "Fields": [
         {
           "Name": "CurrentComposePath",
@@ -2658,6 +2730,56 @@
       ]
     },
     {
+      "Name": "PostStacksByNameCheckPathChangeRequest",
+      "Fields": [
+        {
+          "Name": "NewComposePath",
+          "JsonName": "newComposePath",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostStacksByNameDeployAnswer",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Description": "why not, when it did not",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "JobId",
+          "JsonName": "jobId",
+          "Description": "the job the action runs as, for a caller that did not ask for JSON alone and so was not made to wait: GET /api/jobs/{id} says how it went",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Output",
+          "JsonName": "output",
+          "Description": "what was done, when it succeeded",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Description": "whether the action did what was asked; false comes with HTTP 200 all the same",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
       "Name": "PostStacksByNameDeployRequest",
       "Fields": [
         {
@@ -2684,7 +2806,7 @@
       ]
     },
     {
-      "Name": "PostStacksByNameDeployResponse",
+      "Name": "PostStacksByNameDownAnswer",
       "Fields": [
         {
           "Name": "Error",
@@ -2733,66 +2855,7 @@
       ]
     },
     {
-      "Name": "PostStacksByNameDownResponse",
-      "Fields": [
-        {
-          "Name": "Error",
-          "JsonName": "error",
-          "Description": "why not, when it did not",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "JobId",
-          "JsonName": "jobId",
-          "Description": "the job the action runs as, for a caller that did not ask for JSON alone and so was not made to wait: GET /api/jobs/{id} says how it went",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Output",
-          "JsonName": "output",
-          "Description": "what was done, when it succeeded",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Description": "whether the action did what was asked; false comes with HTTP 200 all the same",
-          "Type": {
-            "Type": "Boolean"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostStacksByNameEnvValidateRequest",
-      "Fields": [
-        {
-          "Name": "Compose",
-          "JsonName": "compose",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Variables",
-          "JsonName": "variables",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostStacksByNameEnvValidateResponse",
+      "Name": "PostStacksByNameEnvValidateAnswer",
       "Fields": [
         {
           "Name": "Defined",
@@ -2860,26 +2923,29 @@
       ]
     },
     {
-      "Name": "PostStacksByNameIconRequest",
+      "Name": "PostStacksByNameEnvValidateRequest",
       "Fields": [
         {
-          "Name": "Icon",
-          "JsonName": "icon",
+          "Name": "Compose",
+          "JsonName": "compose",
           "Type": {
             "Type": "String"
           }
         },
         {
-          "Name": "Image",
-          "JsonName": "image",
+          "Name": "Variables",
+          "JsonName": "variables",
           "Type": {
-            "Type": "String"
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
           }
         }
       ]
     },
     {
-      "Name": "PostStacksByNameIconResponse",
+      "Name": "PostStacksByNameIconAnswer",
       "Fields": [
         {
           "Name": "Icon",
@@ -2900,35 +2966,26 @@
       ]
     },
     {
-      "Name": "PostStacksByNameRelocateRequest",
+      "Name": "PostStacksByNameIconRequest",
       "Fields": [
         {
-          "Name": "NewComposePath",
-          "JsonName": "newComposePath",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "NewEnvPath",
-          "JsonName": "newEnvPath",
+          "Name": "Icon",
+          "JsonName": "icon",
           "Type": {
             "Type": "String"
           }
         },
         {
-          "Name": "OldDir",
-          "JsonName": "oldDir",
+          "Name": "Image",
+          "JsonName": "image",
           "Type": {
             "Type": "String"
-          },
-          "Required": true
+          }
         }
       ]
     },
     {
-      "Name": "PostStacksByNameRelocateResponse",
+      "Name": "PostStacksByNameRelocateAnswer",
       "Fields": [
         {
           "Name": "ComposeContent",
@@ -2945,7 +3002,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "PostStacksByNameRelocateResponseEnvVars"
+              "ReferenceName": "PostStacksByNameRelocateAnswerEnvVars"
             }
           },
           "Required": true
@@ -2990,7 +3047,7 @@
       ]
     },
     {
-      "Name": "PostStacksByNameRelocateResponseEnvVars",
+      "Name": "PostStacksByNameRelocateAnswerEnvVars",
       "Fields": [
         {
           "Name": "IsSecret",
@@ -3019,7 +3076,35 @@
       ]
     },
     {
-      "Name": "PostStacksByNameRestartResponse",
+      "Name": "PostStacksByNameRelocateRequest",
+      "Fields": [
+        {
+          "Name": "NewComposePath",
+          "JsonName": "newComposePath",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "NewEnvPath",
+          "JsonName": "newEnvPath",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "OldDir",
+          "JsonName": "oldDir",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostStacksByNameRestartAnswer",
       "Fields": [
         {
           "Name": "Error",
@@ -3056,7 +3141,7 @@
       ]
     },
     {
-      "Name": "PostStacksByNameStartResponse",
+      "Name": "PostStacksByNameStartAnswer",
       "Fields": [
         {
           "Name": "Error",
@@ -3093,7 +3178,7 @@
       ]
     },
     {
-      "Name": "PostStacksByNameStopResponse",
+      "Name": "PostStacksByNameStopAnswer",
       "Fields": [
         {
           "Name": "Error",
@@ -3126,6 +3211,129 @@
           "Type": {
             "Type": "Boolean"
           }
+        }
+      ]
+    },
+    {
+      "Name": "PostStacksByNameValidateAnswer",
+      "Fields": [
+        {
+          "Name": "Counts",
+          "JsonName": "counts",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostStacksByNameValidateAnswerCounts"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Findings",
+          "JsonName": "findings",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostStacksByNameValidateAnswerFindings"
+            }
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostStacksByNameValidateAnswerCounts",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Info",
+          "JsonName": "info",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Warn",
+          "JsonName": "warn",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostStacksByNameValidateAnswerFindings",
+      "Fields": [
+        {
+          "Name": "Fix",
+          "JsonName": "fix",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "FixDescription",
+          "JsonName": "fixDescription",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Hint",
+          "JsonName": "hint",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Line",
+          "JsonName": "line",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Message",
+          "JsonName": "message",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "RuleId",
+          "JsonName": "ruleId",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Service",
+          "JsonName": "service",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Severity",
+          "JsonName": "severity",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "CheckSeverity"
+          },
+          "Required": true
         }
       ]
     },
@@ -3203,128 +3411,6 @@
       ]
     },
     {
-      "Name": "PostStacksByNameValidateResponse",
-      "Fields": [
-        {
-          "Name": "Counts",
-          "JsonName": "counts",
-          "Type": {
-            "Type": "Reference",
-            "ReferenceName": "PostStacksByNameValidateResponseCounts"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Findings",
-          "JsonName": "findings",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "Reference",
-              "ReferenceName": "PostStacksByNameValidateResponseFindings"
-            }
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostStacksByNameValidateResponseCounts",
-      "Fields": [
-        {
-          "Name": "Error",
-          "JsonName": "error",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Info",
-          "JsonName": "info",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Warn",
-          "JsonName": "warn",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostStacksByNameValidateResponseFindings",
-      "Fields": [
-        {
-          "Name": "Fix",
-          "JsonName": "fix",
-          "Type": {
-            "Type": "Dictionary",
-            "NestedItem": {
-              "Type": "Any"
-            }
-          }
-        },
-        {
-          "Name": "FixDescription",
-          "JsonName": "fixDescription",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Hint",
-          "JsonName": "hint",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Line",
-          "JsonName": "line",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Message",
-          "JsonName": "message",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "RuleId",
-          "JsonName": "ruleId",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Service",
-          "JsonName": "service",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Severity",
-          "JsonName": "severity",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
       "Name": "PostStacksRequest",
       "Fields": [
         {
@@ -3353,7 +3439,8 @@
           "Name": "EnvId",
           "JsonName": "envId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -3380,7 +3467,8 @@
           "Name": "EnvironmentId",
           "JsonName": "environmentId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -3416,7 +3504,8 @@
           "Name": "SecretProviderId",
           "JsonName": "secretProviderId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "SecretProviderID"
           }
         },
         {
@@ -3429,63 +3518,7 @@
       ]
     },
     {
-      "Name": "PostStacksResponse",
-      "Fields": [
-        {
-          "Name": "Error",
-          "JsonName": "error",
-          "Description": "why not, when it was made and could not be brought up",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "JobId",
-          "JsonName": "jobId",
-          "Description": "the job the stack is made and brought up as, for a caller that did not ask for JSON alone and so was not made to wait: GET /api/jobs/{id} says how it went",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Output",
-          "JsonName": "output",
-          "Description": "what compose printed bringing it up, when it was",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Started",
-          "JsonName": "started",
-          "Description": "whether the stack was brought up as well as made",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostStacksScanRequest",
-      "Fields": [
-        {
-          "Name": "Path",
-          "JsonName": "path",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostStacksScanResponse",
+      "Name": "PostStacksScanAnswer",
       "Fields": [
         {
           "Name": "Adopted",
@@ -3505,7 +3538,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "PostStacksScanResponseDiscovered"
+              "ReferenceName": "PostStacksScanAnswerDiscovered"
             }
           },
           "Required": true
@@ -3517,7 +3550,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "PostStacksScanResponseErrors"
+              "ReferenceName": "PostStacksScanAnswerErrors"
             }
           },
           "Required": true
@@ -3530,7 +3563,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "PostStacksScanResponseSkipped"
+              "ReferenceName": "PostStacksScanAnswerSkipped"
             }
           },
           "Required": true
@@ -3538,7 +3571,7 @@
       ]
     },
     {
-      "Name": "PostStacksScanResponseDiscovered",
+      "Name": "PostStacksScanAnswerDiscovered",
       "Fields": [
         {
           "Name": "ComposePath",
@@ -3571,7 +3604,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "PostStacksScanResponseDiscoveredRunningOn"
+              "ReferenceName": "PostStacksScanAnswerDiscoveredRunningOn"
             }
           }
         },
@@ -3599,7 +3632,7 @@
       ]
     },
     {
-      "Name": "PostStacksScanResponseDiscoveredRunningOn",
+      "Name": "PostStacksScanAnswerDiscoveredRunningOn",
       "Fields": [
         {
           "Name": "ContainerCount",
@@ -3612,7 +3645,8 @@
           "Name": "EnvId",
           "JsonName": "envId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -3625,7 +3659,7 @@
       ]
     },
     {
-      "Name": "PostStacksScanResponseErrors",
+      "Name": "PostStacksScanAnswerErrors",
       "Fields": [
         {
           "Name": "Error",
@@ -3646,7 +3680,7 @@
       ]
     },
     {
-      "Name": "PostStacksScanResponseSkipped",
+      "Name": "PostStacksScanAnswerSkipped",
       "Fields": [
         {
           "Name": "ComposePath",
@@ -3688,20 +3722,19 @@
       ]
     },
     {
-      "Name": "PostStacksValidatePathRequest",
+      "Name": "PostStacksScanRequest",
       "Fields": [
         {
           "Name": "Path",
           "JsonName": "path",
           "Type": {
             "Type": "String"
-          },
-          "Required": true
+          }
         }
       ]
     },
     {
-      "Name": "PostStacksValidatePathResponse",
+      "Name": "PostStacksValidatePathAnswer",
       "Fields": [
         {
           "Name": "Error",
@@ -3725,6 +3758,55 @@
             "Type": "Boolean"
           },
           "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostStacksValidatePathRequest",
+      "Fields": [
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutStacksByNameComposeAnswer",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Description": "why not, when the file was saved and the stack could not be brought up again",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "JobId",
+          "JsonName": "jobId",
+          "Description": "the job the file is saved and the stack brought up again as, for a caller that did not ask for JSON alone",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Output",
+          "JsonName": "output",
+          "Description": "what compose printed, when the stack was brought up again with the file",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
         }
       ]
     },
@@ -3806,36 +3888,21 @@
           "Name": "SecretProviderId",
           "JsonName": "secretProviderId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "SecretProviderID"
           }
         }
       ]
     },
     {
-      "Name": "PutStacksByNameComposeResponse",
+      "Name": "PutStacksByNameEnvAnswer",
       "Fields": [
         {
-          "Name": "Error",
-          "JsonName": "error",
-          "Description": "why not, when the file was saved and the stack could not be brought up again",
+          "Name": "Count",
+          "JsonName": "count",
+          "Description": "how many variables were sent",
           "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "JobId",
-          "JsonName": "jobId",
-          "Description": "the job the file is saved and the stack brought up again as, for a caller that did not ask for JSON alone",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Output",
-          "JsonName": "output",
-          "Description": "what compose printed, when the stack was brought up again with the file",
-          "Type": {
-            "Type": "String"
+            "Type": "Integer"
           }
         },
         {
@@ -3848,20 +3915,7 @@
       ]
     },
     {
-      "Name": "PutStacksByNameEnvRawRequest",
-      "Fields": [
-        {
-          "Name": "Content",
-          "JsonName": "content",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PutStacksByNameEnvRawResponse",
+      "Name": "PutStacksByNameEnvRawAnswer",
       "Fields": [
         {
           "Name": "Deleted",
@@ -3882,6 +3936,19 @@
           "JsonName": "success",
           "Type": {
             "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutStacksByNameEnvRawRequest",
+      "Fields": [
+        {
+          "Name": "Content",
+          "JsonName": "content",
+          "Type": {
+            "Type": "String"
           },
           "Required": true
         }
@@ -3933,22 +4000,19 @@
       ]
     },
     {
-      "Name": "PutStacksByNameEnvResponse",
+      "Name": "PutStacksByNameTagsAnswer",
       "Fields": [
         {
-          "Name": "Count",
-          "JsonName": "count",
-          "Description": "how many variables were sent",
+          "Name": "TagIds",
+          "JsonName": "tagIds",
           "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
-          }
+            "Type": "List",
+            "NestedItem": {
+              "Type": "ID",
+              "ReferenceName": "TagID"
+            }
+          },
+          "Required": true
         }
       ]
     },
@@ -3961,26 +4025,89 @@
           "Type": {
             "Type": "List",
             "NestedItem": {
-              "Type": "Integer"
+              "Type": "ID",
+              "ReferenceName": "TagID"
             }
           },
           "Required": true
         }
       ]
+    }
+  ],
+  "Constants": [
+    {
+      "Name": "CheckSeverity",
+      "SchemaName": "CheckSeverity",
+      "Values": [
+        {
+          "Name": "CheckSeverityError",
+          "Value": "error"
+        },
+        {
+          "Name": "CheckSeverityWarn",
+          "Value": "warn"
+        },
+        {
+          "Name": "CheckSeverityInfo",
+          "Value": "info"
+        }
+      ]
     },
     {
-      "Name": "PutStacksByNameTagsResponse",
-      "Fields": [
+      "Name": "DeployStatus",
+      "SchemaName": "DeployStatus",
+      "Values": [
         {
-          "Name": "TagIds",
-          "JsonName": "tagIds",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "Integer"
-            }
-          },
-          "Required": true
+          "Name": "DeployStatusRunning",
+          "Value": "running"
+        },
+        {
+          "Name": "DeployStatusSuccess",
+          "Value": "success"
+        },
+        {
+          "Name": "DeployStatusFailed",
+          "Value": "failed"
+        }
+      ]
+    },
+    {
+      "Name": "StackSourceType",
+      "SchemaName": "StackSourceType",
+      "Values": [
+        {
+          "Name": "StackSourceTypeInternal",
+          "Value": "internal"
+        },
+        {
+          "Name": "StackSourceTypeExternal",
+          "Value": "external"
+        },
+        {
+          "Name": "StackSourceTypeGit",
+          "Value": "git"
+        }
+      ]
+    },
+    {
+      "Name": "StackStatus",
+      "SchemaName": "StackStatus",
+      "Values": [
+        {
+          "Name": "StackStatusRunning",
+          "Value": "running"
+        },
+        {
+          "Name": "StackStatusPartial",
+          "Value": "partial"
+        },
+        {
+          "Name": "StackStatusStopped",
+          "Value": "stopped"
+        },
+        {
+          "Name": "StackStatusCreated",
+          "Value": "created"
         }
       ]
     }

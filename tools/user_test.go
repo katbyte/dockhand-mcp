@@ -59,10 +59,10 @@ func TestUserList(t *testing.T) {
 
 	out := suite.Call(t, "user_list", nil)
 	rows := acctest.Rows(t, out["users"], "users")
-	if acctest.Num(t, out["total"], "total") != 2 || !acctest.IsBool(out["login"], true) || out["note"] != nil || rows[0]["username"] != "ops" || rows[0]["email"] != nil || rows[0]["display_name"] != "Ops" || rows[0]["last_login"] != "2026-10-10T12:00:00.000Z" || rows[0]["mfa"] != nil {
+	if acctest.Num(t, out["total"], "total") != 2 || !acctest.IsBool(out["login"], true) || out["note"] != nil || rows[0]["username"] != "ops" || rows[0]["email"] != nil || rows[0]["display_name"] != "Ops" || rows[0]["last_login"] != "2026-10-10T12:00:00Z" || rows[0]["mfa"] != nil {
 		t.Fatalf("the users, by name = %v", out)
 	}
-	if second := rows[1]; acctest.Num(t, second["id"], "id") != 2 || second["email"] != "second@example.com" || !acctest.IsBool(second["admin"], true) || !acctest.IsBool(second["active"], true) || second["provider"] != "local" || !acctest.IsBool(second["mfa"], true) || second["last_login"] != nil || second["created"] != "2026-10-10 11:00:00" {
+	if second := rows[1]; acctest.Num(t, second["id"], "id") != 2 || second["email"] != "second@example.com" || !acctest.IsBool(second["admin"], true) || !acctest.IsBool(second["active"], true) || second["provider"] != "local" || !acctest.IsBool(second["mfa"], true) || second["last_login"] != nil || second["created"] != "2026-10-10T11:00:00Z" {
 		t.Errorf("a user that never signed in = %v", second)
 	}
 
@@ -570,7 +570,7 @@ func TestTokenList(t *testing.T) {
 
 	out := suite.Call(t, "token_list", nil)
 	rows := acctest.Rows(t, out["tokens"], "tokens")
-	if acctest.Num(t, out["total"], "total") != 2 || out["note"] != nil || rows[0]["name"] != "later" || rows[0]["prefix"] != "bbbbbbbb" || rows[0]["last_used"] != "2026-10-10T12:00:00.000Z" || rows[0]["expires"] != "2027-01-01T00:00:00.000Z" || rows[1]["name"] != "first" || rows[1]["last_used"] != nil || rows[1]["expires"] != nil || rows[1]["created"] != "2026-10-10 10:00:00" {
+	if acctest.Num(t, out["total"], "total") != 2 || out["note"] != nil || rows[0]["name"] != "later" || rows[0]["prefix"] != "bbbbbbbb" || rows[0]["last_used"] != "2026-10-10T12:00:00Z" || rows[0]["expires"] != "2027-01-01T00:00:00Z" || rows[1]["name"] != "first" || rows[1]["last_used"] != nil || rows[1]["expires"] != nil || rows[1]["created"] != "2026-10-10T10:00:00Z" {
 		t.Fatalf("the tokens, the newest first = %v", out)
 	}
 

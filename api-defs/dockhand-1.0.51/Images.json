@@ -24,7 +24,8 @@
           "In": "Query",
           "Description": "ID of the environment the image belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -41,7 +42,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteImagesByIdResponse"
+          "ReferenceName": "DeleteImagesByIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -61,7 +62,8 @@
           "In": "Query",
           "Description": "ID of the environment whose images to list (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -71,7 +73,7 @@
           "Type": "List",
           "NestedItem": {
             "Type": "Reference",
-            "ReferenceName": "GetImagesResponse"
+            "ReferenceName": "GetImagesAnswer"
           }
         }
       },
@@ -101,7 +103,8 @@
           "In": "Query",
           "Description": "ID of the environment the image belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -155,7 +158,8 @@
           "In": "Query",
           "Description": "ID of the environment the image belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -165,7 +169,7 @@
           "Type": "List",
           "NestedItem": {
             "Type": "Reference",
-            "ReferenceName": "GetImagesByIdHistoryResponse"
+            "ReferenceName": "GetImagesByIdHistoryAnswer"
           }
         }
       },
@@ -186,7 +190,8 @@
           "In": "Query",
           "Description": "ID of the environment the image belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -205,7 +210,8 @@
           "In": "Query",
           "Description": "Restrict the lookup to a specific scanner (e.g. grype or trivy)",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "Scanner"
           }
         }
       ],
@@ -213,7 +219,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetImagesScanResponse"
+          "ReferenceName": "GetImagesScanAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -261,7 +267,8 @@
           "In": "Query",
           "Description": "the environment the image is on",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -297,7 +304,8 @@
           "In": "Query",
           "Description": "ID of the environment the image belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -312,7 +320,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostImagesByIdTagResponse"
+          "ReferenceName": "PostImagesByIdTagAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -332,7 +340,8 @@
           "In": "Query",
           "Description": "Target environment id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -346,7 +355,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostImagesLoadResponse"
+          "ReferenceName": "PostImagesLoadAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -366,7 +375,8 @@
           "In": "Query",
           "Description": "ID of the environment to pull into (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -390,7 +400,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostImagesPullResponse"
+          "ReferenceName": "PostImagesPullAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -410,7 +420,8 @@
           "In": "Query",
           "Description": "ID of the environment the source image belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -434,7 +445,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostImagesPushResponse"
+          "ReferenceName": "PostImagesPushAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -454,7 +465,8 @@
           "In": "Query",
           "Description": "ID of the environment the image belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -478,7 +490,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostImagesScanResponse"
+          "ReferenceName": "PostImagesScanAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -488,7 +500,7 @@
   ],
   "Models": [
     {
-      "Name": "DeleteImagesByIdResponse",
+      "Name": "DeleteImagesByIdAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -501,58 +513,7 @@
       ]
     },
     {
-      "Name": "GetImagesByIdHistoryResponse",
-      "Fields": [
-        {
-          "Name": "Comment",
-          "JsonName": "Comment",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Created",
-          "JsonName": "Created",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "CreatedBy",
-          "JsonName": "CreatedBy",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Id",
-          "JsonName": "Id",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Size",
-          "JsonName": "Size",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Tags",
-          "JsonName": "Tags",
-          "Description": "the names and tags that point at this layer; none for a layer beneath the top one",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetImagesResponse",
+      "Name": "GetImagesAnswer",
       "Fields": [
         {
           "Name": "Containers",
@@ -639,7 +600,58 @@
       ]
     },
     {
-      "Name": "GetImagesScanResponse",
+      "Name": "GetImagesByIdHistoryAnswer",
+      "Fields": [
+        {
+          "Name": "Comment",
+          "JsonName": "Comment",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Created",
+          "JsonName": "Created",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "CreatedBy",
+          "JsonName": "CreatedBy",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "Id",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Size",
+          "JsonName": "Size",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Tags",
+          "JsonName": "Tags",
+          "Description": "the names and tags that point at this layer; none for a layer beneath the top one",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetImagesScanAnswer",
       "Fields": [
         {
           "Name": "Found",
@@ -655,20 +667,20 @@
           "Description": "the latest scan kept of the image, by the scanner asked for or by whichever ran last; absent when none is kept",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetImagesScanResponseResult"
+            "ReferenceName": "GetImagesScanAnswerResult"
           }
         }
       ]
     },
     {
-      "Name": "GetImagesScanResponseResult",
+      "Name": "GetImagesScanAnswerResult",
       "Description": "the latest scan kept of the image, by the scanner asked for or by whichever ran last; absent when none is kept",
       "Fields": [
         {
           "Name": "CreatedAt",
           "JsonName": "createdAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -682,7 +694,8 @@
           "Name": "EnvironmentId",
           "JsonName": "environmentId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -754,7 +767,7 @@
           "Name": "ScannedAt",
           "JsonName": "scannedAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -762,7 +775,8 @@
           "JsonName": "scanner",
           "Description": "grype or trivy",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "Scanner"
           }
         },
         {
@@ -779,14 +793,14 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetImagesScanResponseResultVulnerabilities"
+              "ReferenceName": "GetImagesScanAnswerResultVulnerabilities"
             }
           }
         }
       ]
     },
     {
-      "Name": "GetImagesScanResponseResultVulnerabilities",
+      "Name": "GetImagesScanAnswerResultVulnerabilities",
       "Fields": [
         {
           "Name": "Description",
@@ -829,7 +843,8 @@
           "Name": "Scanner",
           "JsonName": "scanner",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "Scanner"
           }
         },
         {
@@ -837,7 +852,8 @@
           "JsonName": "severity",
           "Description": "critical, high, medium, low, negligible or unknown",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "Severity"
           }
         },
         {
@@ -847,6 +863,19 @@
           "Type": {
             "Type": "String"
           }
+        }
+      ]
+    },
+    {
+      "Name": "PostImagesByIdTagAnswer",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
         }
       ]
     },
@@ -871,20 +900,7 @@
       ]
     },
     {
-      "Name": "PostImagesByIdTagResponse",
-      "Fields": [
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostImagesLoadResponse",
+      "Name": "PostImagesLoadAnswer",
       "Fields": [
         {
           "Name": "Loaded",
@@ -904,27 +920,7 @@
       ]
     },
     {
-      "Name": "PostImagesPullRequest",
-      "Fields": [
-        {
-          "Name": "Image",
-          "JsonName": "image",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "ScanAfterPull",
-          "JsonName": "scanAfterPull",
-          "Type": {
-            "Type": "Boolean"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostImagesPullResponse",
+      "Name": "PostImagesPullAnswer",
       "Fields": [
         {
           "Name": "Error",
@@ -953,42 +949,27 @@
       ]
     },
     {
-      "Name": "PostImagesPushRequest",
+      "Name": "PostImagesPullRequest",
       "Fields": [
         {
-          "Name": "ImageId",
-          "JsonName": "imageId",
+          "Name": "Image",
+          "JsonName": "image",
           "Type": {
             "Type": "String"
           },
           "Required": true
         },
         {
-          "Name": "ImageName",
-          "JsonName": "imageName",
+          "Name": "ScanAfterPull",
+          "JsonName": "scanAfterPull",
           "Type": {
-            "Type": "String"
+            "Type": "Boolean"
           }
-        },
-        {
-          "Name": "NewTag",
-          "JsonName": "newTag",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "RegistryId",
-          "JsonName": "registryId",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
         }
       ]
     },
     {
-      "Name": "PostImagesPushResponse",
+      "Name": "PostImagesPushAnswer",
       "Fields": [
         {
           "Name": "Error",
@@ -1030,27 +1011,43 @@
       ]
     },
     {
-      "Name": "PostImagesScanRequest",
+      "Name": "PostImagesPushRequest",
       "Fields": [
         {
-          "Name": "ImageName",
-          "JsonName": "imageName",
+          "Name": "ImageId",
+          "JsonName": "imageId",
           "Type": {
             "Type": "String"
           },
           "Required": true
         },
         {
-          "Name": "Scanner",
-          "JsonName": "scanner",
+          "Name": "ImageName",
+          "JsonName": "imageName",
           "Type": {
             "Type": "String"
           }
+        },
+        {
+          "Name": "NewTag",
+          "JsonName": "newTag",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "RegistryId",
+          "JsonName": "registryId",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "RegistryID"
+          },
+          "Required": true
         }
       ]
     },
     {
-      "Name": "PostImagesScanResponse",
+      "Name": "PostImagesScanAnswer",
       "Fields": [
         {
           "Name": "JobId",
@@ -1080,7 +1077,7 @@
           "Description": "the first scanner's scan; absent when the environment scans with nothing",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "PostImagesScanResponseResult"
+            "ReferenceName": "PostImagesScanAnswerResult"
           }
         },
         {
@@ -1091,7 +1088,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "PostImagesScanResponseResults"
+              "ReferenceName": "PostImagesScanAnswerResults"
             }
           }
         },
@@ -1100,13 +1097,14 @@
           "JsonName": "stage",
           "Description": "complete, or error with why in message",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "ScanStage"
           }
         }
       ]
     },
     {
-      "Name": "PostImagesScanResponseResult",
+      "Name": "PostImagesScanAnswerResult",
       "Description": "the first scanner's scan; absent when the environment scans with nothing",
       "Fields": [
         {
@@ -1135,7 +1133,7 @@
           "Name": "ScannedAt",
           "JsonName": "scannedAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -1143,7 +1141,8 @@
           "JsonName": "scanner",
           "Description": "grype or trivy",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "Scanner"
           }
         },
         {
@@ -1151,7 +1150,7 @@
           "JsonName": "summary",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "PostImagesScanResponseResultSummary"
+            "ReferenceName": "PostImagesScanAnswerResultSummary"
           }
         },
         {
@@ -1161,14 +1160,14 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "PostImagesScanResponseResultVulnerabilities"
+              "ReferenceName": "PostImagesScanAnswerResultVulnerabilities"
             }
           }
         }
       ]
     },
     {
-      "Name": "PostImagesScanResponseResultSummary",
+      "Name": "PostImagesScanAnswerResultSummary",
       "Fields": [
         {
           "Name": "Critical",
@@ -1215,7 +1214,7 @@
       ]
     },
     {
-      "Name": "PostImagesScanResponseResultVulnerabilities",
+      "Name": "PostImagesScanAnswerResultVulnerabilities",
       "Fields": [
         {
           "Name": "Description",
@@ -1258,7 +1257,8 @@
           "Name": "Scanner",
           "JsonName": "scanner",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "Scanner"
           }
         },
         {
@@ -1266,7 +1266,8 @@
           "JsonName": "severity",
           "Description": "critical, high, medium, low, negligible or unknown",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "Severity"
           }
         },
         {
@@ -1280,7 +1281,7 @@
       ]
     },
     {
-      "Name": "PostImagesScanResponseResults",
+      "Name": "PostImagesScanAnswerResults",
       "Fields": [
         {
           "Name": "ImageId",
@@ -1308,7 +1309,7 @@
           "Name": "ScannedAt",
           "JsonName": "scannedAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -1316,7 +1317,8 @@
           "JsonName": "scanner",
           "Description": "grype or trivy",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "Scanner"
           }
         },
         {
@@ -1324,7 +1326,7 @@
           "JsonName": "summary",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "PostImagesScanResponseResultsSummary"
+            "ReferenceName": "PostImagesScanAnswerResultsSummary"
           }
         },
         {
@@ -1334,14 +1336,14 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "PostImagesScanResponseResultsVulnerabilities"
+              "ReferenceName": "PostImagesScanAnswerResultsVulnerabilities"
             }
           }
         }
       ]
     },
     {
-      "Name": "PostImagesScanResponseResultsSummary",
+      "Name": "PostImagesScanAnswerResultsSummary",
       "Fields": [
         {
           "Name": "Critical",
@@ -1388,7 +1390,7 @@
       ]
     },
     {
-      "Name": "PostImagesScanResponseResultsVulnerabilities",
+      "Name": "PostImagesScanAnswerResultsVulnerabilities",
       "Fields": [
         {
           "Name": "Description",
@@ -1431,7 +1433,8 @@
           "Name": "Scanner",
           "JsonName": "scanner",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "Scanner"
           }
         },
         {
@@ -1439,7 +1442,8 @@
           "JsonName": "severity",
           "Description": "critical, high, medium, low, negligible or unknown",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "Severity"
           }
         },
         {
@@ -1449,6 +1453,43 @@
           "Type": {
             "Type": "String"
           }
+        }
+      ]
+    },
+    {
+      "Name": "PostImagesScanRequest",
+      "Fields": [
+        {
+          "Name": "ImageName",
+          "JsonName": "imageName",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Scanner",
+          "JsonName": "scanner",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "Scanner"
+          }
+        }
+      ]
+    }
+  ],
+  "Constants": [
+    {
+      "Name": "ScanStage",
+      "SchemaName": "ScanStage",
+      "Values": [
+        {
+          "Name": "ScanStageComplete",
+          "Value": "complete"
+        },
+        {
+          "Name": "ScanStageError",
+          "Value": "error"
         }
       ]
     }

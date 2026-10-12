@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,35 +13,57 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostContainersByIdExecRunOperationResponse is the result of PostContainersByIdExecRun.
-type PostContainersByIdExecRunOperationResponse struct {
+// PostContainersByIdExecRunResponse is the result of PostContainersByIdExecRun.
+//
+// Answer is the PostContainersByIdExecRunAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostContainersByIdExecRunResponse struct {
 	HttpResponse *http.Response
-	Model        *PostContainersByIdExecRunResponse
+	Answer       *PostContainersByIdExecRunAnswer
+	*PostContainersByIdExecRunAnswer
 }
 
-// PostContainersByIdExecRunOperationOptions holds the query and header parameters of PostContainersByIdExecRun.
-type PostContainersByIdExecRunOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostContainersByIdExecRunResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostContainersByIdExecRunAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostContainersByIdExecRunResponse) Record() (PostContainersByIdExecRunAnswer, error) {
+	if r.Answer == nil {
+		return PostContainersByIdExecRunAnswer{}, errors.New("PostContainersByIdExecRun answered no PostContainersByIdExecRunAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostContainersByIdExecRunOptions holds the query and header parameters of PostContainersByIdExecRun.
+type PostContainersByIdExecRunOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	EnvId *int
+	EnvId EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostContainersByIdExecRunOperationOptions) ToHeaders() *client.Headers {
+func (o PostContainersByIdExecRunOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostContainersByIdExecRunOperationOptions) ToQuery() *client.QueryParams {
+func (o PostContainersByIdExecRunOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.EnvId != nil {
-		out.Append("envId", strconv.Itoa(*o.EnvId))
+	if o.EnvId != 0 {
+		out.Append("envId", strconv.Itoa(int(o.EnvId)))
 	}
 	return &out
 }
 
 // PostContainersByIdExecRun calls POST /api/containers/{id}/exec/run. Run a finite command in a container and wait for the result, returning stdout, stderr and the exit code (a non-interactive alternative to the terminal exec endpoint).
-func (c Client) PostContainersByIdExecRun(ctx context.Context, id string, input PostContainersByIdExecRunRequest, options PostContainersByIdExecRunOperationOptions) (result PostContainersByIdExecRunOperationResponse, err error) {
+func (c Client) PostContainersByIdExecRun(ctx context.Context, id string, input PostContainersByIdExecRunRequest, options PostContainersByIdExecRunOptions) (result PostContainersByIdExecRunResponse, err error) {
+	result.PostContainersByIdExecRunAnswer = &PostContainersByIdExecRunAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -69,11 +92,12 @@ func (c Client) PostContainersByIdExecRun(ctx context.Context, id string, input 
 		return
 	}
 
-	var model PostContainersByIdExecRunResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostContainersByIdExecRunAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostContainersByIdExecRunAnswer = result.Answer
 
 	return
 }

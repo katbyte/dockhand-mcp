@@ -104,7 +104,7 @@ func TestGitCredentialList(t *testing.T) {
 	if len(rows) != 3 || rows[0]["name"] != "deploy" || rows[1]["name"] != "Deploy" || rows[2]["name"] != "spare" || acctest.Num(t, out["total"], "total") != 3 {
 		t.Fatalf("the credentials, by name = %v", out)
 	}
-	if got := flat(rows[0]); got != `{"changed":"2026-10-11 05:00:00","created":"2026-10-11 05:00:00","has_password":true,"id":1,"kind":"password","name":"deploy","repositories":["Site","apps"],"username":"deployer"}` {
+	if got := flat(rows[0]); got != `{"changed":"2026-10-11T05:00:00Z","created":"2026-10-11T05:00:00Z","has_password":true,"id":1,"kind":"password","name":"deploy","repositories":["Site","apps"],"username":"deployer"}` {
 		t.Errorf("a credential repositories are fetched with = %s", got)
 	}
 	if rows[1]["kind"] != "ssh" || !acctest.BoolOf(rows[1]["has_key"]) || rows[1]["has_password"] != nil || rows[1]["repositories"] != nil || rows[2]["kind"] != "none" {
@@ -186,7 +186,7 @@ func TestGitCredentialCreate(t *testing.T) {
 	if got := flat(sent(t, dock.Last(gitCredentialMake))); got != `{"authType":"password","name":"robot","password":"made-up","username":"bot"}` {
 		t.Errorf("a credential was saved as %s", got)
 	}
-	if got := flat(out); got != `{"changes":["saved the git credential robot, which signs in with password"],"credential":{"changed":"2026-10-11 06:00:00","created":"2026-10-11 06:00:00","has_password":true,"id":9,"kind":"password","name":"robot","username":"bot"}}` {
+	if got := flat(out); got != `{"changes":["saved the git credential robot, which signs in with password"],"credential":{"changed":"2026-10-11T06:00:00Z","created":"2026-10-11T06:00:00Z","has_password":true,"id":9,"kind":"password","name":"robot","username":"bot"}}` {
 		t.Errorf("a credential that was saved = %s", got)
 	}
 
@@ -375,7 +375,7 @@ func TestGitRepositoryList(t *testing.T) {
 	if len(rows) != 3 || rows[0]["name"] != "apps" || rows[1]["name"] != "site" || rows[2]["name"] != "Site" || acctest.Num(t, out["total"], "total") != 3 {
 		t.Fatalf("the repositories, by name = %v", out)
 	}
-	if got := flat(rows[0]); got != `{"branch":"main","changed":"2026-10-11 05:10:00","created":"2026-10-11 05:10:00","credential":"deploy","id":1,"name":"apps","stacks":[{"env":"alpha","stack":"archive"},{"env":"beta","stack":"shop"}],"url":"https://git.example/team/apps.git"}` {
+	if got := flat(rows[0]); got != `{"branch":"main","changed":"2026-10-11T05:10:00Z","created":"2026-10-11T05:10:00Z","credential":"deploy","id":1,"name":"apps","stacks":[{"env":"alpha","stack":"archive"},{"env":"beta","stack":"shop"}],"url":"https://git.example/team/apps.git"}` {
 		t.Errorf("a repository git stacks are made from = %s", got)
 	}
 	if rows[1]["url"] != "https://***@git.example/team/site.git" || rows[1]["credential"] != nil || flat(acctest.Rows(t, rows[1]["stacks"], "stacks")[0]) != `{"env":"(none)","stack":"lost"}` || rows[2]["url"] != "https://bot:***@git.example/team/other.git" { //nolint:gosec // G101: a made-up address, with what was written into it hidden
@@ -572,7 +572,7 @@ func TestGitRepositoryCreate(t *testing.T) {
 	if got := flat(sent(t, dock.Last(gitRepositoryMake))); got != `{"branch":"main","credentialId":3,"name":"docs","url":"https://git.example/team/docs.git"}` {
 		t.Errorf("a repository was saved as %s", got)
 	}
-	if got := flat(out); got != `{"changes":["saved the git repository docs, the branch main of https://git.example/team/docs.git, fetched with the credential spare"],"commit":"d7da76e","repository":{"branch":"main","changed":"2026-10-11 06:10:00","created":"2026-10-11 06:10:00","credential":"spare","id":9,"name":"docs","url":"https://git.example/team/docs.git"}}` {
+	if got := flat(out); got != `{"changes":["saved the git repository docs, the branch main of https://git.example/team/docs.git, fetched with the credential spare"],"commit":"d7da76e","repository":{"branch":"main","changed":"2026-10-11T06:10:00Z","created":"2026-10-11T06:10:00Z","credential":"spare","id":9,"name":"docs","url":"https://git.example/team/docs.git"}}` {
 		t.Errorf("a repository that was saved = %s", got)
 	}
 

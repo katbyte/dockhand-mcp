@@ -10,13 +10,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostBackupDestinationsByIdTaskOperationResponse is the result of PostBackupDestinationsByIdTask.
-type PostBackupDestinationsByIdTaskOperationResponse struct {
+// PostBackupDestinationsByIdTaskResponse is the result of PostBackupDestinationsByIdTask.
+type PostBackupDestinationsByIdTaskResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostBackupDestinationsByIdTask calls POST /api/backup/destinations/{id}/task. Run a restic repository maintenance task (unlock, check, prune, stats, repair-index or repair-snapshots) against a destination.
-func (c Client) PostBackupDestinationsByIdTask(ctx context.Context, id int, input PostBackupDestinationsByIdTaskRequest) (result PostBackupDestinationsByIdTaskOperationResponse, err error) {
+func (c Client) PostBackupDestinationsByIdTask(ctx context.Context, id int, input PostBackupDestinationsByIdTaskRequest) (result PostBackupDestinationsByIdTaskResponse, err error) {
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{

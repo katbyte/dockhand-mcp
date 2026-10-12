@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,35 +13,57 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostContainersByIdFilesChmodOperationResponse is the result of PostContainersByIdFilesChmod.
-type PostContainersByIdFilesChmodOperationResponse struct {
+// PostContainersByIdFilesChmodResponse is the result of PostContainersByIdFilesChmod.
+//
+// Answer is the PostContainersByIdFilesChmodAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostContainersByIdFilesChmodResponse struct {
 	HttpResponse *http.Response
-	Model        *PostContainersByIdFilesChmodResponse
+	Answer       *PostContainersByIdFilesChmodAnswer
+	*PostContainersByIdFilesChmodAnswer
 }
 
-// PostContainersByIdFilesChmodOperationOptions holds the query and header parameters of PostContainersByIdFilesChmod.
-type PostContainersByIdFilesChmodOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostContainersByIdFilesChmodResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostContainersByIdFilesChmodAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostContainersByIdFilesChmodResponse) Record() (PostContainersByIdFilesChmodAnswer, error) {
+	if r.Answer == nil {
+		return PostContainersByIdFilesChmodAnswer{}, errors.New("PostContainersByIdFilesChmod answered no PostContainersByIdFilesChmodAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostContainersByIdFilesChmodOptions holds the query and header parameters of PostContainersByIdFilesChmod.
+type PostContainersByIdFilesChmodOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostContainersByIdFilesChmodOperationOptions) ToHeaders() *client.Headers {
+func (o PostContainersByIdFilesChmodOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostContainersByIdFilesChmodOperationOptions) ToQuery() *client.QueryParams {
+func (o PostContainersByIdFilesChmodOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostContainersByIdFilesChmod calls POST /api/containers/{id}/files/chmod. Change the mode (permissions) of a file or directory inside a container (requires the 'exec' permission).
-func (c Client) PostContainersByIdFilesChmod(ctx context.Context, id string, input PostContainersByIdFilesChmodRequest, options PostContainersByIdFilesChmodOperationOptions) (result PostContainersByIdFilesChmodOperationResponse, err error) {
+func (c Client) PostContainersByIdFilesChmod(ctx context.Context, id string, input PostContainersByIdFilesChmodRequest, options PostContainersByIdFilesChmodOptions) (result PostContainersByIdFilesChmodResponse, err error) {
+	result.PostContainersByIdFilesChmodAnswer = &PostContainersByIdFilesChmodAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -69,11 +92,12 @@ func (c Client) PostContainersByIdFilesChmod(ctx context.Context, id string, inp
 		return
 	}
 
-	var model PostContainersByIdFilesChmodResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostContainersByIdFilesChmodAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostContainersByIdFilesChmodAnswer = result.Answer
 
 	return
 }

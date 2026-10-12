@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,42 +13,73 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostStacksByNameEnvValidateOperationResponse is the result of PostStacksByNameEnvValidate.
-type PostStacksByNameEnvValidateOperationResponse struct {
+// PostStacksByNameEnvValidateResponse is the result of PostStacksByNameEnvValidate.
+//
+// Answer is the PostStacksByNameEnvValidateAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostStacksByNameEnvValidateResponse struct {
 	HttpResponse *http.Response
-	Model        *PostStacksByNameEnvValidateResponse
+	Answer       *PostStacksByNameEnvValidateAnswer
+	*PostStacksByNameEnvValidateAnswer
 }
 
-// PostStacksByNameEnvValidateOperationOptions holds the query and header parameters of PostStacksByNameEnvValidate.
-type PostStacksByNameEnvValidateOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostStacksByNameEnvValidateResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostStacksByNameEnvValidateAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostStacksByNameEnvValidateResponse) Record() (PostStacksByNameEnvValidateAnswer, error) {
+	if r.Answer == nil {
+		return PostStacksByNameEnvValidateAnswer{}, errors.New("PostStacksByNameEnvValidate answered no PostStacksByNameEnvValidateAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostStacksByNameEnvValidateOptions holds the query and header parameters of PostStacksByNameEnvValidate.
+type PostStacksByNameEnvValidateOptions struct {
 	// Environment ID the stack belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostStacksByNameEnvValidateOperationOptions) ToHeaders() *client.Headers {
+func (o PostStacksByNameEnvValidateOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostStacksByNameEnvValidateOperationOptions) ToQuery() *client.QueryParams {
+func (o PostStacksByNameEnvValidateOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostStacksByNameEnvValidate calls POST /api/stacks/{name}/env/validate. Validate a stack's defined environment variables against the variables required/optional by its compose file (compose content and the defined variable list may be supplied in the body, otherwise loaded from the saved file/DB).
-func (c Client) PostStacksByNameEnvValidate(ctx context.Context, name string, input PostStacksByNameEnvValidateRequest, options PostStacksByNameEnvValidateOperationOptions) (result PostStacksByNameEnvValidateOperationResponse, err error) {
+func (c Client) PostStacksByNameEnvValidate(ctx context.Context, name string, input PostStacksByNameEnvValidateRequest, options ...PostStacksByNameEnvValidateOptions) (result PostStacksByNameEnvValidateResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostStacksByNameEnvValidate takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostStacksByNameEnvValidateOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostStacksByNameEnvValidateAnswer = &PostStacksByNameEnvValidateAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/env/validate", url.PathEscape(name)),
 	}
 
@@ -69,11 +101,12 @@ func (c Client) PostStacksByNameEnvValidate(ctx context.Context, name string, in
 		return
 	}
 
-	var model PostStacksByNameEnvValidateResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostStacksByNameEnvValidateAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostStacksByNameEnvValidateAnswer = result.Answer
 
 	return
 }

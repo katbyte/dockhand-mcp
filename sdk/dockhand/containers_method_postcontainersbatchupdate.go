@@ -4,41 +4,64 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostContainersBatchUpdateOperationResponse is the result of PostContainersBatchUpdate.
-type PostContainersBatchUpdateOperationResponse struct {
+// PostContainersBatchUpdateResponse is the result of PostContainersBatchUpdate.
+//
+// Answer is the PostContainersBatchUpdateAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostContainersBatchUpdateResponse struct {
 	HttpResponse *http.Response
-	Model        *PostContainersBatchUpdateResponse
+	Answer       *PostContainersBatchUpdateAnswer
+	*PostContainersBatchUpdateAnswer
 }
 
-// PostContainersBatchUpdateOperationOptions holds the query and header parameters of PostContainersBatchUpdate.
-type PostContainersBatchUpdateOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostContainersBatchUpdateResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostContainersBatchUpdateAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostContainersBatchUpdateResponse) Record() (PostContainersBatchUpdateAnswer, error) {
+	if r.Answer == nil {
+		return PostContainersBatchUpdateAnswer{}, errors.New("PostContainersBatchUpdate answered no PostContainersBatchUpdateAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostContainersBatchUpdateOptions holds the query and header parameters of PostContainersBatchUpdate.
+type PostContainersBatchUpdateOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostContainersBatchUpdateOperationOptions) ToHeaders() *client.Headers {
+func (o PostContainersBatchUpdateOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostContainersBatchUpdateOperationOptions) ToQuery() *client.QueryParams {
+func (o PostContainersBatchUpdateOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostContainersBatchUpdate calls POST /api/containers/batch-update. Recreate a set of containers with their latest images, preserving all settings (requires the 'create' permission).
-func (c Client) PostContainersBatchUpdate(ctx context.Context, input PostContainersBatchUpdateRequest, options PostContainersBatchUpdateOperationOptions) (result PostContainersBatchUpdateOperationResponse, err error) {
+func (c Client) PostContainersBatchUpdate(ctx context.Context, input PostContainersBatchUpdateRequest, options PostContainersBatchUpdateOptions) (result PostContainersBatchUpdateResponse, err error) {
+	result.PostContainersBatchUpdateAnswer = &PostContainersBatchUpdateAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -67,11 +90,12 @@ func (c Client) PostContainersBatchUpdate(ctx context.Context, input PostContain
 		return
 	}
 
-	var model PostContainersBatchUpdateResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostContainersBatchUpdateAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostContainersBatchUpdateAnswer = result.Answer
 
 	return
 }

@@ -24,8 +24,8 @@ func TestTheServerIsRunAsTheStageSays(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if yes(session.Model.AuthEnabled) != (world.Stage == testenv.StageLogin) {
-		t.Fatalf("the server says its login is on: %v, in the %s stage", yes(session.Model.AuthEnabled), world.Stage)
+	if session.Answer.AuthEnabled != (world.Stage == testenv.StageLogin) {
+		t.Fatalf("the server says its login is on: %v, in the %s stage", session.Answer.AuthEnabled, world.Stage)
 	}
 
 	nobody, err := dockhand.NewWithoutLogin(world.Server)
@@ -56,8 +56,8 @@ func TestTheServerIsRunAsTheStageSays(t *testing.T) {
 	}
 
 	// what stays open with the login on: whether the server is up
-	if health, err := nobody.GetHealth(t.Context()); err != nil || health.Model.Status != "ok" {
-		t.Errorf("the health of a server with its login on, asked with nothing = %+v, %v", health.Model, err)
+	if health, err := nobody.GetHealth(t.Context()); err != nil || health.Answer.Status != "ok" {
+		t.Errorf("the health of a server with its login on, asked with nothing = %+v, %v", health.Answer, err)
 	}
 
 	// the token this run minted is listed, by its start and never whole
@@ -65,15 +65,15 @@ func TestTheServerIsRunAsTheStageSays(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	found := slices.ContainsFunc(tokens.Model, func(token dockhand.GetAuthTokensResponse) bool {
+	found := slices.ContainsFunc(tokens.Answer, func(token dockhand.GetAuthTokensAnswer) bool {
 		return token.TokenPrefix != "" && strings.HasPrefix(strings.TrimPrefix(world.Token, "dh_"), token.TokenPrefix)
 	})
 	if !found {
-		t.Errorf("the token this run minted is not among the %d listed", len(tokens.Model))
+		t.Errorf("the token this run minted is not among the %d listed", len(tokens.Answer))
 	}
 
 	// a token is not a session: asked with one, the session call still says nobody is logged in
-	if yes(session.Model.Authenticated) {
+	if session.Answer.Authenticated {
 		t.Error("the session call says a bearer token is logged in, which it did not on 1.0.51: api-defs/README.md says otherwise")
 	}
 }
@@ -87,20 +87,20 @@ func TestEnvironments(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	byName := map[string]dockhand.GetEnvironmentsResponse{}
-	for _, e := range listed.Model {
+	byName := map[string]dockhand.GetEnvironmentsAnswer{}
+	for _, e := range listed.Answer {
 		byName[e.Name] = e
 	}
 
 	alpha, beta := byName[testenv.Alpha], byName[testenv.Beta]
-	if alpha.Id != world.Env(testenv.Alpha) || alpha.ConnectionType != testenv.ConnectionSocket || alpha.SocketPath != world.Socket || yes(alpha.HasHawserToken) || alpha.CreatedAt == "" {
+	if alpha.Id != world.Env(testenv.Alpha) || alpha.ConnectionType != testenv.ConnectionSocket || alpha.SocketPath != world.Socket || alpha.HasHawserToken || alpha.CreatedAt.IsZero() {
 		t.Errorf("alpha as listed = %+v", alpha)
 	}
 	agentHost, agentPort, err := testenv.HostPort(world.Agent)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if beta.Id != world.Env(testenv.Beta) || beta.ConnectionType != testenv.ConnectionAgent || beta.Host != agentHost || beta.Port != agentPort || !yes(beta.HasHawserToken) {
+	if beta.Id != world.Env(testenv.Beta) || beta.ConnectionType != testenv.ConnectionAgent || beta.Host != agentHost || beta.Port != agentPort || !beta.HasHawserToken {
 		t.Errorf("beta as listed = %+v", beta)
 	}
 
@@ -109,8 +109,8 @@ func TestEnvironments(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if one.Model.Name != testenv.Beta || one.Model.ConnectionType != testenv.ConnectionAgent || one.Model.Host != agentHost || !yes(one.Model.HasHawserToken) {
-		t.Errorf("beta read alone = %+v", one.Model)
+	if one.Answer.Name != testenv.Beta || one.Answer.ConnectionType != testenv.ConnectionAgent || one.Answer.Host != agentHost || !one.Answer.HasHawserToken {
+		t.Errorf("beta read alone = %+v", one.Answer)
 	}
 
 	// each answers when tried, and the agent says who it is
@@ -119,14 +119,14 @@ func TestEnvironments(t *testing.T) {
 		if err != nil {
 			t.Fatalf("%s: %v", host, err)
 		}
-		if !yes(tried.Model.Success) || tried.Model.Info == nil || tried.Model.Info.ServerVersion == "" {
-			t.Errorf("%s tried = %+v, %s", host, tried.Model, tried.Model.Error)
+		if !tried.Answer.Success || tried.Answer.Info == nil || tried.Answer.Info.ServerVersion == "" {
+			t.Errorf("%s tried = %+v, %s", host, tried.Answer, tried.Answer.Error)
 		}
-		if host == testenv.Beta && tried.Model.Hawser["agentName"] != "agent-beta" {
-			t.Errorf("the agent before beta says it is %v, want agent-beta", tried.Model.Hawser["agentName"])
+		if host == testenv.Beta && tried.Answer.Hawser["agentName"] != "agent-beta" {
+			t.Errorf("the agent before beta says it is %v, want agent-beta", tried.Answer.Hawser["agentName"])
 		}
-		if host == testenv.Alpha && len(tried.Model.Hawser) != 0 {
-			t.Errorf("a socket has no agent, and alpha's says %v", tried.Model.Hawser)
+		if host == testenv.Alpha && len(tried.Answer.Hawser) != 0 {
+			t.Errorf("a socket has no agent, and alpha's says %v", tried.Answer.Hawser)
 		}
 	}
 
@@ -165,11 +165,11 @@ func TestEnvironmentConnectionsAreTriedUnsaved(t *testing.T) {
 
 			continue
 		}
-		if tc.refused == "" && (!yes(tried.Model.Success) || tried.Model.Error != "") {
-			t.Errorf("%s = %+v, want it reached", name, tried.Model)
+		if tc.refused == "" && (!tried.Answer.Success || tried.Answer.Error != "") {
+			t.Errorf("%s = %+v, want it reached", name, tried.Answer)
 		}
-		if tc.refused != "" && (yes(tried.Model.Success) || !strings.Contains(tried.Model.Error, tc.refused)) {
-			t.Errorf("%s = %+v, want it to fail saying %q", name, tried.Model, tc.refused)
+		if tc.refused != "" && (tried.Answer.Success || !strings.Contains(tried.Answer.Error, tc.refused)) {
+			t.Errorf("%s = %+v, want it to fail saying %q", name, tried.Answer, tc.refused)
 		}
 	}
 
@@ -178,8 +178,8 @@ func TestEnvironmentConnectionsAreTriedUnsaved(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(listed.Model) != len(world.Environments) {
-		t.Errorf("%d environments after trying connections, want the %d there were", len(listed.Model), len(world.Environments))
+	if len(listed.Answer) != len(world.Environments) {
+		t.Errorf("%d environments after trying connections, want the %d there were", len(listed.Answer), len(world.Environments))
 	}
 }
 
@@ -196,20 +196,20 @@ func TestEnvironmentMadeChangedAndRemoved(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	id := made.Model.Id
+	id := made.Answer.Id
 	ctx := noCancel(t)
 	t.Cleanup(func() {
 		if _, err := c.DeleteEnvironmentsById(ctx, id); err != nil && !client.IsNotFound(err) {
 			t.Errorf("removing %s: %v", name, err)
 		}
 	})
-	if id == 0 || made.Model.Name != name || made.Model.ConnectionType != testenv.ConnectionDirect || made.Model.Host != host || made.Model.Port != port || yes(made.Model.CollectMetrics) || made.Model.Labels != `["made"]` {
-		t.Errorf("made = %+v", made.Model)
+	if id == 0 || made.Answer.Name != name || made.Answer.ConnectionType != testenv.ConnectionDirect || made.Answer.Host != host || made.Answer.Port != port || made.Answer.CollectMetrics || made.Answer.Labels != `["made"]` {
+		t.Errorf("made = %+v", made.Answer)
 	}
 
 	// read back, the labels are the list they were given as: only the answer to making it has them as text
-	if fresh, err := c.GetEnvironmentsById(t.Context(), id); err != nil || !slices.Equal(fresh.Model.Labels, []string{"made"}) || yes(fresh.Model.CollectMetrics) {
-		t.Errorf("read back once made = %+v, %v", fresh.Model, err)
+	if fresh, err := c.GetEnvironmentsById(t.Context(), id); err != nil || !slices.Equal(fresh.Answer.Labels, []string{"made"}) || fresh.Answer.CollectMetrics {
+		t.Errorf("read back once made = %+v, %v", fresh.Answer, err)
 	}
 
 	// a second by the same name is refused, in the server's words
@@ -221,32 +221,32 @@ func TestEnvironmentMadeChangedAndRemoved(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !slices.Equal(changed.Model.Labels, []string{"changed", "twice"}) || !yes(changed.Model.CollectMetrics) || changed.Model.Name != name {
-		t.Errorf("changed = %+v: what was sent is changed and the name, which was not, is kept", changed.Model)
+	if !slices.Equal(changed.Answer.Labels, []string{"changed", "twice"}) || !changed.Answer.CollectMetrics || changed.Answer.Name != name {
+		t.Errorf("changed = %+v: what was sent is changed and the name, which was not, is kept", changed.Answer)
 	}
 	read, err := c.GetEnvironmentsById(t.Context(), id)
-	if err != nil || !slices.Equal(read.Model.Labels, []string{"changed", "twice"}) || !yes(read.Model.CollectMetrics) || read.Model.Host != host {
-		t.Errorf("read back = %+v, %v", read.Model, err)
+	if err != nil || !slices.Equal(read.Answer.Labels, []string{"changed", "twice"}) || !read.Answer.CollectMetrics || read.Answer.Host != host {
+		t.Errorf("read back = %+v, %v", read.Answer, err)
 	}
 
 	// its public address is kept when a change says nothing of it, and an empty one is nothing said: the generated call leaves it out, so forgetting
 	// it is a call of its own
-	if set, err := c.PutEnvironmentsById(t.Context(), id, dockhand.PutEnvironmentsByIdRequest{PublicIp: "192.0.2.10"}); err != nil || set.Model.PublicIp != "192.0.2.10" {
-		t.Errorf("a public address set = %+v, %v", set.Model, err)
+	if set, err := c.PutEnvironmentsById(t.Context(), id, dockhand.PutEnvironmentsByIdRequest{PublicIp: "192.0.2.10"}); err != nil || set.Answer.PublicIp != "192.0.2.10" {
+		t.Errorf("a public address set = %+v, %v", set.Answer, err)
 	}
-	if kept, err := c.PutEnvironmentsById(t.Context(), id, dockhand.PutEnvironmentsByIdRequest{PublicIp: ""}); err != nil || kept.Model.PublicIp != "192.0.2.10" {
-		t.Errorf("a change that says nothing of the public address = %+v, %v", kept.Model, err)
+	if kept, err := c.PutEnvironmentsById(t.Context(), id, dockhand.PutEnvironmentsByIdRequest{PublicIp: ""}); err != nil || kept.Answer.PublicIp != "192.0.2.10" {
+		t.Errorf("a change that says nothing of the public address = %+v, %v", kept.Answer, err)
 	}
-	if forgot, err := c.ForgetEnvironmentPublicIP(t.Context(), id); err != nil || forgot.Model.PublicIp != "" || forgot.Model.Name != name {
-		t.Errorf("the public address forgotten = %+v, %v", forgot.Model, err)
+	if forgot, err := c.ForgetEnvironmentPublicIP(t.Context(), int(id)); err != nil || forgot.Answer.PublicIp != "" || forgot.Answer.Name != name {
+		t.Errorf("the public address forgotten = %+v, %v", forgot.Answer, err)
 	}
 
 	// what Dockhand does for the host by itself: each read as a new host has it, saved, and read back
-	settings(t, c, id)
+	settings(t, c, int(id))
 
 	removed, err := c.DeleteEnvironmentsById(t.Context(), id)
-	if err != nil || !yes(removed.Model.Success) {
-		t.Fatalf("removing = %+v, %v", removed.Model, err)
+	if err != nil || !removed.Answer.Success {
+		t.Fatalf("removing = %+v, %v", removed.Answer, err)
 	}
 	if _, err := c.GetEnvironmentsById(t.Context(), id); !client.IsNotFound(err) {
 		t.Errorf("read after it was removed = %v", err)
@@ -258,71 +258,71 @@ func TestEnvironmentMadeChangedAndRemoved(t *testing.T) {
 func settings(t *testing.T, c *dockhand.Client, id int) {
 	t.Helper()
 
-	if zone, err := c.GetEnvironmentsByIdTimezone(t.Context(), id); err != nil || zone.Model.Timezone != "UTC" {
-		t.Errorf("a new host's timezone = %+v, %v", zone.Model, err)
+	if zone, err := c.GetEnvironmentsByIdTimezone(t.Context(), dockhand.EnvironmentID(id)); err != nil || zone.Answer.Timezone != "UTC" {
+		t.Errorf("a new host's timezone = %+v, %v", zone.Answer, err)
 	}
-	if set, err := c.PostEnvironmentsByIdTimezone(t.Context(), id, dockhand.PostEnvironmentsByIdTimezoneRequest{Timezone: "Europe/Berlin"}); err != nil || !yes(set.Model.Success) || set.Model.Timezone != "Europe/Berlin" {
-		t.Errorf("setting the timezone = %+v, %v", set.Model, err)
+	if set, err := c.PostEnvironmentsByIdTimezone(t.Context(), dockhand.EnvironmentID(id), dockhand.PostEnvironmentsByIdTimezoneRequest{Timezone: "Europe/Berlin"}); err != nil || !set.Answer.Success || set.Answer.Timezone != "Europe/Berlin" {
+		t.Errorf("setting the timezone = %+v, %v", set.Answer, err)
 	}
-	if _, err := c.PostEnvironmentsByIdTimezone(t.Context(), id, dockhand.PostEnvironmentsByIdTimezoneRequest{Timezone: "Mars/Olympus"}); client.StatusCode(err) != 400 {
+	if _, err := c.PostEnvironmentsByIdTimezone(t.Context(), dockhand.EnvironmentID(id), dockhand.PostEnvironmentsByIdTimezoneRequest{Timezone: "Mars/Olympus"}); client.StatusCode(err) != 400 {
 		t.Errorf("a timezone there is none of = %v", err)
 	}
-	if zone, err := c.GetEnvironmentsByIdTimezone(t.Context(), id); err != nil || zone.Model.Timezone != "Europe/Berlin" {
-		t.Errorf("the timezone read back = %+v, %v", zone.Model, err)
+	if zone, err := c.GetEnvironmentsByIdTimezone(t.Context(), dockhand.EnvironmentID(id)); err != nil || zone.Answer.Timezone != "Europe/Berlin" {
+		t.Errorf("the timezone read back = %+v, %v", zone.Answer, err)
 	}
 
-	if check, err := c.GetEnvironmentsByIdUpdateCheck(t.Context(), id); err != nil || check.Model.Settings == nil || yes(check.Model.Settings.Enabled) || check.Model.Settings.Cron != "0 4 * * *" || check.Model.Settings.VulnerabilityCriteria != "never" {
-		t.Errorf("a new host's update check = %+v, %v", check.Model.Settings, err)
+	if check, err := c.GetEnvironmentsByIdUpdateCheck(t.Context(), dockhand.EnvironmentID(id)); err != nil || check.Answer.Settings == nil || check.Answer.Settings.Enabled || check.Answer.Settings.Cron != "0 4 * * *" || check.Answer.Settings.VulnerabilityCriteria != "never" {
+		t.Errorf("a new host's update check = %+v, %v", check.Answer.Settings, err)
 	}
 	// saved whatever its time says: a schedule nothing can read is kept, and never runs
-	saved, err := c.PostEnvironmentsByIdUpdateCheck(t.Context(), id, dockhand.PostEnvironmentsByIdUpdateCheckRequest{Enabled: new(true), Cron: "not a time", AutoUpdate: new(true), VulnerabilityCriteria: "critical"})
-	if err != nil || !yes(saved.Model.Success) || saved.Model.Settings == nil || saved.Model.Settings.Cron != "not a time" || !yes(saved.Model.Settings.AutoUpdate) {
-		t.Errorf("saving an update check = %+v, %v", saved.Model, err)
+	saved, err := c.PostEnvironmentsByIdUpdateCheck(t.Context(), dockhand.EnvironmentID(id), dockhand.PostEnvironmentsByIdUpdateCheckRequest{Enabled: new(true), Cron: "not a time", AutoUpdate: new(true), VulnerabilityCriteria: "critical"})
+	if err != nil || !saved.Answer.Success || saved.Answer.Settings == nil || saved.Answer.Settings.Cron != "not a time" || !saved.Answer.Settings.AutoUpdate {
+		t.Errorf("saving an update check = %+v, %v", saved.Answer, err)
 	}
-	if check, err := c.GetEnvironmentsByIdUpdateCheck(t.Context(), id); err != nil || !yes(check.Model.Settings.Enabled) || check.Model.Settings.VulnerabilityCriteria != "critical" {
-		t.Errorf("the update check read back = %+v, %v", check.Model.Settings, err)
+	if check, err := c.GetEnvironmentsByIdUpdateCheck(t.Context(), dockhand.EnvironmentID(id)); err != nil || !check.Answer.Settings.Enabled || check.Answer.Settings.VulnerabilityCriteria != "critical" {
+		t.Errorf("the update check read back = %+v, %v", check.Answer.Settings, err)
 	}
 
-	if prune, err := c.GetEnvironmentsByIdImagePrune(t.Context(), id); err != nil || prune.Model.Settings == nil || yes(prune.Model.Settings.Enabled) || prune.Model.Settings.PruneMode != "dangling" {
-		t.Errorf("a new host's image prune = %+v, %v", prune.Model.Settings, err)
+	if prune, err := c.GetEnvironmentsByIdImagePrune(t.Context(), dockhand.EnvironmentID(id)); err != nil || prune.Answer.Settings == nil || prune.Answer.Settings.Enabled || prune.Answer.Settings.PruneMode != "dangling" {
+		t.Errorf("a new host's image prune = %+v, %v", prune.Answer.Settings, err)
 	}
-	if set, err := c.PostEnvironmentsByIdImagePrune(t.Context(), id, dockhand.PostEnvironmentsByIdImagePruneRequest{Enabled: new(true), CronExpression: "0 2 * * 6", PruneMode: "all"}); err != nil || !yes(set.Model.Success) || set.Model.Settings.PruneMode != "all" || set.Model.Settings.CronExpression != "0 2 * * 6" {
-		t.Errorf("saving an image prune = %+v, %v", set.Model, err)
+	if set, err := c.PostEnvironmentsByIdImagePrune(t.Context(), dockhand.EnvironmentID(id), dockhand.PostEnvironmentsByIdImagePruneRequest{Enabled: new(true), CronExpression: "0 2 * * 6", PruneMode: "all"}); err != nil || !set.Answer.Success || set.Answer.Settings.PruneMode != "all" || set.Answer.Settings.CronExpression != "0 2 * * 6" {
+		t.Errorf("saving an image prune = %+v, %v", set.Answer, err)
 	}
 	// run now, outside its schedule
-	if ran, err := c.PutEnvironmentsByIdImagePrune(t.Context(), id); err != nil || !yes(ran.Model.Success) {
-		t.Errorf("an image prune run now = %+v, %v", ran.Model, err)
+	if ran, err := c.PutEnvironmentsByIdImagePrune(t.Context(), dockhand.EnvironmentID(id)); err != nil || !ran.Answer.Success {
+		t.Errorf("an image prune run now = %+v, %v", ran.Answer, err)
 	}
 
-	if warning, err := c.GetEnvironmentsByIdDiskWarning(t.Context(), id); err != nil || !yes(warning.Model.Enabled) || warning.Model.Mode != "percentage" || warning.Model.Threshold != 80 {
-		t.Errorf("a new host's disk warning = %+v, %v", warning.Model, err)
+	if warning, err := c.GetEnvironmentsByIdDiskWarning(t.Context(), dockhand.EnvironmentID(id)); err != nil || !warning.Answer.Enabled || warning.Answer.Mode != "percentage" || warning.Answer.Threshold != 80 {
+		t.Errorf("a new host's disk warning = %+v, %v", warning.Answer, err)
 	}
-	if set, err := c.PostEnvironmentsByIdDiskWarning(t.Context(), id, dockhand.PostEnvironmentsByIdDiskWarningRequest{Enabled: new(false), Mode: "absolute", ThresholdGb: 20}); err != nil || !yes(set.Model.Success) {
-		t.Errorf("saving a disk warning = %+v, %v", set.Model, err)
+	if set, err := c.PostEnvironmentsByIdDiskWarning(t.Context(), dockhand.EnvironmentID(id), dockhand.PostEnvironmentsByIdDiskWarningRequest{Enabled: new(false), Mode: "absolute", ThresholdGb: 20}); err != nil || !set.Answer.Success {
+		t.Errorf("saving a disk warning = %+v, %v", set.Answer, err)
 	}
-	if warning, err := c.GetEnvironmentsByIdDiskWarning(t.Context(), id); err != nil || yes(warning.Model.Enabled) || warning.Model.Mode != "absolute" || warning.Model.ThresholdGb != 20 || warning.Model.Threshold != 80 {
-		t.Errorf("the disk warning read back = %+v, %v", warning.Model, err)
+	if warning, err := c.GetEnvironmentsByIdDiskWarning(t.Context(), dockhand.EnvironmentID(id)); err != nil || warning.Answer.Enabled || warning.Answer.Mode != "absolute" || warning.Answer.ThresholdGb != 20 || warning.Answer.Threshold != 80 {
+		t.Errorf("the disk warning read back = %+v, %v", warning.Answer, err)
 	}
 
 	// the folder stack files are staged in: set, and forgotten by a save that names none
-	if set, err := c.PostEnvironmentsByIdRemoteStacksDir(t.Context(), id, dockhand.PostEnvironmentsByIdRemoteStacksDirRequest{RemoteStacksDir: "/srv/stacks"}); err != nil || !yes(set.Model.Success) || set.Model.RemoteStacksDir != "/srv/stacks" {
-		t.Errorf("setting the remote stacks folder = %+v, %v", set.Model, err)
+	if set, err := c.PostEnvironmentsByIdRemoteStacksDir(t.Context(), dockhand.EnvironmentID(id), dockhand.PostEnvironmentsByIdRemoteStacksDirRequest{RemoteStacksDir: "/srv/stacks"}); err != nil || !set.Answer.Success || set.Answer.RemoteStacksDir != "/srv/stacks" {
+		t.Errorf("setting the remote stacks folder = %+v, %v", set.Answer, err)
 	}
-	if _, err := c.PostEnvironmentsByIdRemoteStacksDir(t.Context(), id, dockhand.PostEnvironmentsByIdRemoteStacksDirRequest{}); err != nil {
+	if _, err := c.PostEnvironmentsByIdRemoteStacksDir(t.Context(), dockhand.EnvironmentID(id), dockhand.PostEnvironmentsByIdRemoteStacksDirRequest{}); err != nil {
 		t.Errorf("forgetting the remote stacks folder: %v", err)
 	}
-	if dir, err := c.GetEnvironmentsByIdRemoteStacksDir(t.Context(), id); err != nil || dir.Model.RemoteStacksDir != "" {
-		t.Errorf("the remote stacks folder once forgotten = %+v, %v", dir.Model, err)
+	if dir, err := c.GetEnvironmentsByIdRemoteStacksDir(t.Context(), dockhand.EnvironmentID(id)); err != nil || dir.Answer.RemoteStacksDir != "" {
+		t.Errorf("the remote stacks folder once forgotten = %+v, %v", dir.Answer, err)
 	}
 
 	// the machine behind it, and its Docker: reached at an address with no agent, it is not said how long the machine has been up or how much memory
 	// is free
 	env := id
-	if host, err := c.GetHost(t.Context(), dockhand.GetHostOperationOptions{Env: &env}); err != nil || host.Model.Hostname == "" || host.Model.Cpus < 1 || host.Model.TotalMemory <= 0 || host.Model.Uptime != 0 || host.Model.FreeMemory != 0 || host.Model.DockerVersion == "" {
-		t.Errorf("the machine = %+v, %v", host.Model, err)
+	if host, err := c.GetHost(t.Context(), dockhand.GetHostOptions{Env: dockhand.EnvironmentID(env)}); err != nil || host.Answer.Hostname == "" || host.Answer.Cpus < 1 || host.Answer.TotalMemory <= 0 || host.Answer.Uptime != 0 || host.Answer.FreeMemory != 0 || host.Answer.DockerVersion == "" {
+		t.Errorf("the machine = %+v, %v", host.Answer, err)
 	}
-	if system, err := c.GetSystem(t.Context(), dockhand.GetSystemOperationOptions{Env: &env}); err != nil || system.Model.Docker["kernelVersion"] == "" || system.Model.Host["storageDriver"] == "" || system.Model.Stats["containers"] == nil {
-		t.Errorf("what Docker says of itself = %+v, %v", system.Model, err)
+	if system, err := c.GetSystem(t.Context(), dockhand.GetSystemOptions{Env: dockhand.EnvironmentID(env)}); err != nil || system.Answer.Docker["kernelVersion"] == "" || system.Answer.Host["storageDriver"] == "" || system.Answer.Stats["containers"] == nil {
+		t.Errorf("what Docker says of itself = %+v, %v", system.Answer, err)
 	}
 }
 
@@ -334,16 +334,16 @@ func TestTheServerDescribesItself(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(changelog.Model) == 0 || changelog.Model[0].Version == "" || changelog.Model[0].Date == "" || len(changelog.Model[0].Changes) == 0 || changelog.Model[0].Changes[0].Type == "" || changelog.Model[0].Changes[0].Text == "" {
-		t.Errorf("the newest release = %+v", changelog.Model[:min(1, len(changelog.Model))])
+	if len(changelog.Answer) == 0 || changelog.Answer[0].Version == "" || changelog.Answer[0].Date == "" || len(changelog.Answer[0].Changes) == 0 || changelog.Answer[0].Changes[0].Type == "" || changelog.Answer[0].Changes[0].Text == "" {
+		t.Errorf("the newest release = %+v", changelog.Answer[:min(1, len(changelog.Answer))])
 	}
 
 	database, err := c.GetHealthDatabase(t.Context())
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !yes(database.Model.Healthy) || database.Model.Database == "" || database.Model.SchemaVersion == "" || database.Model.Tables == nil || database.Model.Tables.Expected == 0 || database.Model.Tables.Expected != database.Model.Tables.Found {
-		t.Errorf("the database = %+v, tables %+v", database.Model, database.Model.Tables)
+	if !database.Answer.Healthy || database.Answer.Database == "" || database.Answer.SchemaVersion == "" || database.Answer.Tables == nil || database.Answer.Tables.Expected == 0 || database.Answer.Tables.Expected != database.Answer.Tables.Found {
+		t.Errorf("the database = %+v, tables %+v", database.Answer, database.Answer.Tables)
 	}
 }
 
@@ -354,13 +354,13 @@ func TestContainersAreListedByHost(t *testing.T) {
 	onAlpha, onBeta := started(t, testenv.Alpha, "one"), started(t, testenv.Beta, "two")
 	for host, want := range map[string]string{testenv.Alpha: onAlpha, testenv.Beta: onBeta} {
 		env := world.Env(host)
-		listed, err := c.GetContainers(t.Context(), dockhand.GetContainersOperationOptions{Env: &env, All: new(true)})
+		listed, err := c.GetContainers(t.Context(), dockhand.GetContainersOptions{Env: env, All: new(true)})
 		if err != nil {
 			t.Fatalf("%s: %v", host, err)
 		}
 
-		names := make([]string, 0, len(listed.Model))
-		for _, container := range listed.Model {
+		names := make([]string, 0, len(listed.Answer))
+		for _, container := range listed.Answer {
 			names = append(names, container.Name)
 			if container.Name == want && (container.Id == "" || container.Image != world.Image || container.State != "running" || !strings.HasPrefix(container.Status, "Up")) {
 				t.Errorf("%s on %s = %+v", want, host, container)
@@ -372,10 +372,10 @@ func TestContainersAreListedByHost(t *testing.T) {
 	}
 
 	// a host that is not there is said to be that, and no host at all is answered with nothing rather than refused
-	if _, err := c.GetContainers(t.Context(), dockhand.GetContainersOperationOptions{Env: new(99999)}); !client.IsNotFound(err) || !strings.Contains(err.Error(), "Environment not found") {
+	if _, err := c.GetContainers(t.Context(), dockhand.GetContainersOptions{Env: 99999}); !client.IsNotFound(err) || !strings.Contains(err.Error(), "Environment not found") {
 		t.Errorf("the containers of a host that is not there = %v", err)
 	}
-	if none, err := c.GetContainers(t.Context(), dockhand.GetContainersOperationOptions{}); err != nil || len(none.Model) != 0 {
-		t.Errorf("the containers of no host = %d, %v: 1.0.51 answered an empty list", len(none.Model), err)
+	if none, err := c.GetContainers(t.Context(), dockhand.GetContainersOptions{}); err != nil || len(none.Answer) != 0 {
+		t.Errorf("the containers of no host = %d, %v: 1.0.51 answered an empty list", len(none.Answer), err)
 	}
 }

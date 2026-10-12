@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteSecretProvidersByIdOperationResponse is the result of DeleteSecretProvidersById.
-type DeleteSecretProvidersByIdOperationResponse struct {
+// DeleteSecretProvidersByIdResponse is the result of DeleteSecretProvidersById.
+//
+// Answer is the DeleteSecretProvidersByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteSecretProvidersByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteSecretProvidersByIdResponse
+	Answer       *DeleteSecretProvidersByIdAnswer
+	*DeleteSecretProvidersByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteSecretProvidersByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteSecretProvidersByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteSecretProvidersByIdResponse) Record() (DeleteSecretProvidersByIdAnswer, error) {
+	if r.Answer == nil {
+		return DeleteSecretProvidersByIdAnswer{}, errors.New("DeleteSecretProvidersById answered no DeleteSecretProvidersByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // DeleteSecretProvidersById calls DELETE /api/secret-providers/{id}. Delete a secret provider.
-func (c Client) DeleteSecretProvidersById(ctx context.Context, id int) (result DeleteSecretProvidersByIdOperationResponse, err error) {
+func (c Client) DeleteSecretProvidersById(ctx context.Context, id SecretProviderID) (result DeleteSecretProvidersByIdResponse, err error) {
+	result.DeleteSecretProvidersByIdAnswer = &DeleteSecretProvidersByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
-		Path:       fmt.Sprintf("/api/secret-providers/%d", id),
+		Path:       fmt.Sprintf("/api/secret-providers/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) DeleteSecretProvidersById(ctx context.Context, id int) (result D
 		return
 	}
 
-	var model DeleteSecretProvidersByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteSecretProvidersByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteSecretProvidersByIdAnswer = result.Answer
 
 	return
 }

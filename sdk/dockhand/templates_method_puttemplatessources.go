@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutTemplatesSourcesOperationResponse is the result of PutTemplatesSources.
-type PutTemplatesSourcesOperationResponse struct {
+// PutTemplatesSourcesResponse is the result of PutTemplatesSources.
+//
+// Answer is the PutTemplatesSourcesAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PutTemplatesSourcesResponse struct {
 	HttpResponse *http.Response
-	Model        *PutTemplatesSourcesResponse
+	Answer       *PutTemplatesSourcesAnswer
+	*PutTemplatesSourcesAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutTemplatesSourcesResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutTemplatesSourcesAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutTemplatesSourcesResponse) Record() (PutTemplatesSourcesAnswer, error) {
+	if r.Answer == nil {
+		return PutTemplatesSourcesAnswer{}, errors.New("PutTemplatesSources answered no PutTemplatesSourcesAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PutTemplatesSources calls PUT /api/templates/sources. Update a template source — toggle enabled, or change its name/URL (only provided fields are changed).
-func (c Client) PutTemplatesSources(ctx context.Context, input PutTemplatesSourcesRequest) (result PutTemplatesSourcesOperationResponse, err error) {
+func (c Client) PutTemplatesSources(ctx context.Context, input PutTemplatesSourcesRequest) (result PutTemplatesSourcesResponse, err error) {
+	result.PutTemplatesSourcesAnswer = &PutTemplatesSourcesAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PutTemplatesSources(ctx context.Context, input PutTemplatesSourc
 		return
 	}
 
-	var model PutTemplatesSourcesResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PutTemplatesSourcesAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PutTemplatesSourcesAnswer = result.Answer
 
 	return
 }

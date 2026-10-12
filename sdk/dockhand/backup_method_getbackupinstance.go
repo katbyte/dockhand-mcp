@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetBackupInstanceOperationResponse is the result of GetBackupInstance.
-type GetBackupInstanceOperationResponse struct {
+// GetBackupInstanceResponse is the result of GetBackupInstance.
+//
+// Answer is the GetBackupInstanceAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetBackupInstanceResponse struct {
 	HttpResponse *http.Response
-	Model        *GetBackupInstanceResponse
+	Answer       *GetBackupInstanceAnswer
+	*GetBackupInstanceAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetBackupInstanceResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetBackupInstanceAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetBackupInstanceResponse) Record() (GetBackupInstanceAnswer, error) {
+	if r.Answer == nil {
+		return GetBackupInstanceAnswer{}, errors.New("GetBackupInstance answered no GetBackupInstanceAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetBackupInstance calls GET /api/backup/instance. This install's stable backup instance id, used to tell own snapshots from foreign orphans.
-func (c Client) GetBackupInstance(ctx context.Context) (result GetBackupInstanceOperationResponse, err error) {
+func (c Client) GetBackupInstance(ctx context.Context) (result GetBackupInstanceResponse, err error) {
+	result.GetBackupInstanceAnswer = &GetBackupInstanceAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) GetBackupInstance(ctx context.Context) (result GetBackupInstance
 		return
 	}
 
-	var model GetBackupInstanceResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetBackupInstanceAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetBackupInstanceAnswer = result.Answer
 
 	return
 }

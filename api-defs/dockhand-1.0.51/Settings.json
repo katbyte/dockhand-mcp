@@ -24,7 +24,8 @@
           "In": "Query",
           "Description": "Which scanner image to remove (grype or trivy); omit to remove both",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "Scanner"
           }
         },
         {
@@ -33,7 +34,8 @@
           "In": "Query",
           "Description": "Environment id whose scanner images should be removed (required) (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -41,7 +43,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteSettingsScannerResponse"
+          "ReferenceName": "DeleteSettingsScannerAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -58,7 +60,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteSettingsScannerCacheResponse"
+          "ReferenceName": "DeleteSettingsScannerCacheAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -75,7 +77,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetSettingsGeneralResponse"
+          "ReferenceName": "GetSettingsGeneralAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -92,7 +94,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetSettingsNavigationResponse"
+          "ReferenceName": "GetSettingsNavigationAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -112,7 +114,8 @@
           "In": "Query",
           "Description": "Environment id to read scanner settings for (falls back to global defaults) (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -147,7 +150,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetSettingsScannerResponse"
+          "ReferenceName": "GetSettingsScannerAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -164,7 +167,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetSettingsSemverResponse"
+          "ReferenceName": "GetSettingsSemverAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -204,7 +207,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostSettingsGeneralResponse"
+          "ReferenceName": "PostSettingsGeneralAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -228,7 +231,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostSettingsScannerResponse"
+          "ReferenceName": "PostSettingsScannerAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -252,7 +255,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostSettingsSemverResponse"
+          "ReferenceName": "PostSettingsSemverAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -287,7 +290,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PutSettingsNavigationResponse"
+          "ReferenceName": "PutSettingsNavigationAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -297,7 +300,40 @@
   ],
   "Models": [
     {
-      "Name": "DeleteSettingsScannerCacheResponse",
+      "Name": "DeleteSettingsScannerAnswer",
+      "Fields": [
+        {
+          "Name": "Errors",
+          "JsonName": "errors",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Removed",
+          "JsonName": "removed",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "DeleteSettingsScannerCacheAnswer",
       "Fields": [
         {
           "Name": "RemovedDirs",
@@ -343,40 +379,7 @@
       ]
     },
     {
-      "Name": "DeleteSettingsScannerResponse",
-      "Fields": [
-        {
-          "Name": "Errors",
-          "JsonName": "errors",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Removed",
-          "JsonName": "removed",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "GetSettingsGeneralResponse",
+      "Name": "GetSettingsGeneralAnswer",
       "Fields": [
         {
           "Name": "ActionIconSize",
@@ -804,14 +807,14 @@
       ]
     },
     {
-      "Name": "GetSettingsNavigationResponse",
+      "Name": "GetSettingsNavigationAnswer",
       "Fields": [
         {
           "Name": "Effective",
           "JsonName": "effective",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetSettingsNavigationResponseEffective"
+            "ReferenceName": "GetSettingsNavigationAnswerEffective"
           }
         },
         {
@@ -819,7 +822,7 @@
           "JsonName": "global",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetSettingsNavigationResponseGlobal"
+            "ReferenceName": "GetSettingsNavigationAnswerGlobal"
           }
         },
         {
@@ -827,13 +830,13 @@
           "JsonName": "user",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetSettingsNavigationResponseUser"
+            "ReferenceName": "GetSettingsNavigationAnswerUser"
           }
         }
       ]
     },
     {
-      "Name": "GetSettingsNavigationResponseEffective",
+      "Name": "GetSettingsNavigationAnswerEffective",
       "Fields": [
         {
           "Name": "EnvClickPage",
@@ -854,7 +857,7 @@
       ]
     },
     {
-      "Name": "GetSettingsNavigationResponseGlobal",
+      "Name": "GetSettingsNavigationAnswerGlobal",
       "Fields": [
         {
           "Name": "EnvClickPage",
@@ -873,7 +876,7 @@
       ]
     },
     {
-      "Name": "GetSettingsNavigationResponseUser",
+      "Name": "GetSettingsNavigationAnswerUser",
       "Fields": [
         {
           "Name": "EnvClickPage",
@@ -892,7 +895,7 @@
       ]
     },
     {
-      "Name": "GetSettingsScannerResponse",
+      "Name": "GetSettingsScannerAnswer",
       "Fields": [
         {
           "Name": "Availability",
@@ -900,7 +903,7 @@
           "Description": "whether the environment has each scanner's image; absent when settingsOnly is asked",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetSettingsScannerResponseAvailability"
+            "ReferenceName": "GetSettingsScannerAnswerAvailability"
           }
         },
         {
@@ -908,7 +911,7 @@
           "JsonName": "defaults",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetSettingsScannerResponseDefaults"
+            "ReferenceName": "GetSettingsScannerAnswerDefaults"
           }
         },
         {
@@ -917,7 +920,7 @@
           "Description": "with checkNewerVersions: the newest release of each scanner",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetSettingsScannerResponseNewerVersions"
+            "ReferenceName": "GetSettingsScannerAnswerNewerVersions"
           }
         },
         {
@@ -925,7 +928,7 @@
           "JsonName": "settings",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetSettingsScannerResponseSettings"
+            "ReferenceName": "GetSettingsScannerAnswerSettings"
           }
         },
         {
@@ -934,7 +937,7 @@
           "Description": "with checkUpdates: whether the registry has a newer image under the same tag",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetSettingsScannerResponseUpdates"
+            "ReferenceName": "GetSettingsScannerAnswerUpdates"
           }
         },
         {
@@ -943,13 +946,13 @@
           "Description": "the version each scanner says it is, where Dockhand could tell; null where it could not or the image is not there",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetSettingsScannerResponseVersions"
+            "ReferenceName": "GetSettingsScannerAnswerVersions"
           }
         }
       ]
     },
     {
-      "Name": "GetSettingsScannerResponseAvailability",
+      "Name": "GetSettingsScannerAnswerAvailability",
       "Description": "whether the environment has each scanner's image; absent when settingsOnly is asked",
       "Fields": [
         {
@@ -969,7 +972,7 @@
       ]
     },
     {
-      "Name": "GetSettingsScannerResponseDefaults",
+      "Name": "GetSettingsScannerAnswerDefaults",
       "Fields": [
         {
           "Name": "Dns",
@@ -1023,7 +1026,7 @@
       ]
     },
     {
-      "Name": "GetSettingsScannerResponseNewerVersions",
+      "Name": "GetSettingsScannerAnswerNewerVersions",
       "Description": "with checkNewerVersions: the newest release of each scanner",
       "Fields": [
         {
@@ -1031,7 +1034,7 @@
           "JsonName": "grype",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetSettingsScannerResponseNewerVersionsGrype"
+            "ReferenceName": "GetSettingsScannerAnswerNewerVersionsGrype"
           }
         },
         {
@@ -1039,13 +1042,13 @@
           "JsonName": "trivy",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetSettingsScannerResponseNewerVersionsTrivy"
+            "ReferenceName": "GetSettingsScannerAnswerNewerVersionsTrivy"
           }
         }
       ]
     },
     {
-      "Name": "GetSettingsScannerResponseNewerVersionsGrype",
+      "Name": "GetSettingsScannerAnswerNewerVersionsGrype",
       "Fields": [
         {
           "Name": "Current",
@@ -1065,7 +1068,7 @@
       ]
     },
     {
-      "Name": "GetSettingsScannerResponseNewerVersionsTrivy",
+      "Name": "GetSettingsScannerAnswerNewerVersionsTrivy",
       "Fields": [
         {
           "Name": "Current",
@@ -1085,7 +1088,7 @@
       ]
     },
     {
-      "Name": "GetSettingsScannerResponseSettings",
+      "Name": "GetSettingsScannerAnswerSettings",
       "Fields": [
         {
           "Name": "GrypeArgs",
@@ -1108,7 +1111,8 @@
           "JsonName": "scanner",
           "Description": "what the environment's images are scanned with: none, grype, trivy or both",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "Scanner"
           }
         },
         {
@@ -1130,7 +1134,7 @@
       ]
     },
     {
-      "Name": "GetSettingsScannerResponseUpdates",
+      "Name": "GetSettingsScannerAnswerUpdates",
       "Description": "with checkUpdates: whether the registry has a newer image under the same tag",
       "Fields": [
         {
@@ -1138,7 +1142,7 @@
           "JsonName": "grype",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetSettingsScannerResponseUpdatesGrype"
+            "ReferenceName": "GetSettingsScannerAnswerUpdatesGrype"
           }
         },
         {
@@ -1146,13 +1150,13 @@
           "JsonName": "trivy",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetSettingsScannerResponseUpdatesTrivy"
+            "ReferenceName": "GetSettingsScannerAnswerUpdatesTrivy"
           }
         }
       ]
     },
     {
-      "Name": "GetSettingsScannerResponseUpdatesGrype",
+      "Name": "GetSettingsScannerAnswerUpdatesGrype",
       "Fields": [
         {
           "Name": "HasUpdate",
@@ -1178,7 +1182,7 @@
       ]
     },
     {
-      "Name": "GetSettingsScannerResponseUpdatesTrivy",
+      "Name": "GetSettingsScannerAnswerUpdatesTrivy",
       "Fields": [
         {
           "Name": "HasUpdate",
@@ -1204,7 +1208,7 @@
       ]
     },
     {
-      "Name": "GetSettingsScannerResponseVersions",
+      "Name": "GetSettingsScannerAnswerVersions",
       "Description": "the version each scanner says it is, where Dockhand could tell; null where it could not or the image is not there",
       "Fields": [
         {
@@ -1224,7 +1228,7 @@
       ]
     },
     {
-      "Name": "GetSettingsSemverResponse",
+      "Name": "GetSettingsSemverAnswer",
       "Fields": [
         {
           "Name": "Enabled",
@@ -1257,6 +1261,434 @@
             "Type": "String"
           },
           "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostSettingsGeneralAnswer",
+      "Fields": [
+        {
+          "Name": "ActionIconSize",
+          "JsonName": "actionIconSize",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "AnimateIcons",
+          "JsonName": "animateIcons",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ColoredActionButtons",
+          "JsonName": "coloredActionButtons",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "CompactPorts",
+          "JsonName": "compactPorts",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ConfirmDestructive",
+          "JsonName": "confirmDestructive",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "DarkTheme",
+          "JsonName": "darkTheme",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "DateFormat",
+          "JsonName": "dateFormat",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "DefaultBackupImage",
+          "JsonName": "defaultBackupImage",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "DefaultComposeTemplate",
+          "JsonName": "defaultComposeTemplate",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "DefaultGrypeArgs",
+          "JsonName": "defaultGrypeArgs",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "DefaultGrypeImage",
+          "JsonName": "defaultGrypeImage",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "DefaultScannerDns",
+          "JsonName": "defaultScannerDns",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "DefaultScannerNetworkMode",
+          "JsonName": "defaultScannerNetworkMode",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "DefaultTimezone",
+          "JsonName": "defaultTimezone",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "DefaultTrivyArgs",
+          "JsonName": "defaultTrivyArgs",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "DefaultTrivyImage",
+          "JsonName": "defaultTrivyImage",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "DeployLogReconcileCron",
+          "JsonName": "deployLogReconcileCron",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "DeployLogReconcileEnabled",
+          "JsonName": "deployLogReconcileEnabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "DownloadFormat",
+          "JsonName": "downloadFormat",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EditorFont",
+          "JsonName": "editorFont",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EditorIndentGuides",
+          "JsonName": "editorIndentGuides",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "EditorTheme",
+          "JsonName": "editorTheme",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EventCleanupCron",
+          "JsonName": "eventCleanupCron",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EventCleanupEnabled",
+          "JsonName": "eventCleanupEnabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "EventCollectionMode",
+          "JsonName": "eventCollectionMode",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EventPollInterval",
+          "JsonName": "eventPollInterval",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "EventRetentionDays",
+          "JsonName": "eventRetentionDays",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ExternalStackPaths",
+          "JsonName": "externalStackPaths",
+          "Description": "paths, as the list the server takes and answers",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Font",
+          "JsonName": "font",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "FontSize",
+          "JsonName": "fontSize",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "FormatLogTimestamps",
+          "JsonName": "formatLogTimestamps",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "GridFontSize",
+          "JsonName": "gridFontSize",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HighlightUpdates",
+          "JsonName": "highlightUpdates",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "HonorProxyLabels",
+          "JsonName": "honorProxyLabels",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "LabelFilterMode",
+          "JsonName": "labelFilterMode",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LightTheme",
+          "JsonName": "lightTheme",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LogBufferSizeKb",
+          "JsonName": "logBufferSizeKb",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "LogMaxLines",
+          "JsonName": "logMaxLines",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "MetricsCollectionInterval",
+          "JsonName": "metricsCollectionInterval",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "PrimaryStackLocation",
+          "JsonName": "primaryStackLocation",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ProtectScannerImages",
+          "JsonName": "protectScannerImages",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ScanRetentionCron",
+          "JsonName": "scanRetentionCron",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ScanRetentionEnabled",
+          "JsonName": "scanRetentionEnabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ScanRetentionGraceDays",
+          "JsonName": "scanRetentionGraceDays",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ScanRetentionKeep",
+          "JsonName": "scanRetentionKeep",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ScannerCleanupCron",
+          "JsonName": "scannerCleanupCron",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ScannerCleanupEnabled",
+          "JsonName": "scannerCleanupEnabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ScheduleCleanupCron",
+          "JsonName": "scheduleCleanupCron",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ScheduleCleanupEnabled",
+          "JsonName": "scheduleCleanupEnabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ScheduleRetentionDays",
+          "JsonName": "scheduleRetentionDays",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ShowExposedPorts",
+          "JsonName": "showExposedPorts",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ShowGitCommitHash",
+          "JsonName": "showGitCommitHash",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ShowImageChangelogLinks",
+          "JsonName": "showImageChangelogLinks",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ShowStoppedContainers",
+          "JsonName": "showStoppedContainers",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "ShowWhatsNew",
+          "JsonName": "showWhatsNew",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "StackLogOperations",
+          "JsonName": "stackLogOperations",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "TerminalFont",
+          "JsonName": "terminalFont",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TimeFormat",
+          "JsonName": "timeFormat",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UseSelfhstIcons",
+          "JsonName": "useSelfhstIcons",
+          "Type": {
+            "Type": "Boolean"
+          }
         }
       ]
     },
@@ -1689,489 +2121,14 @@
       ]
     },
     {
-      "Name": "PostSettingsGeneralResponse",
-      "Fields": [
-        {
-          "Name": "ActionIconSize",
-          "JsonName": "actionIconSize",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "AnimateIcons",
-          "JsonName": "animateIcons",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "ColoredActionButtons",
-          "JsonName": "coloredActionButtons",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "CompactPorts",
-          "JsonName": "compactPorts",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "ConfirmDestructive",
-          "JsonName": "confirmDestructive",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "DarkTheme",
-          "JsonName": "darkTheme",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "DateFormat",
-          "JsonName": "dateFormat",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "DefaultBackupImage",
-          "JsonName": "defaultBackupImage",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "DefaultComposeTemplate",
-          "JsonName": "defaultComposeTemplate",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "DefaultGrypeArgs",
-          "JsonName": "defaultGrypeArgs",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "DefaultGrypeImage",
-          "JsonName": "defaultGrypeImage",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "DefaultScannerDns",
-          "JsonName": "defaultScannerDns",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "DefaultScannerNetworkMode",
-          "JsonName": "defaultScannerNetworkMode",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "DefaultTimezone",
-          "JsonName": "defaultTimezone",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "DefaultTrivyArgs",
-          "JsonName": "defaultTrivyArgs",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "DefaultTrivyImage",
-          "JsonName": "defaultTrivyImage",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "DeployLogReconcileCron",
-          "JsonName": "deployLogReconcileCron",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "DeployLogReconcileEnabled",
-          "JsonName": "deployLogReconcileEnabled",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "DownloadFormat",
-          "JsonName": "downloadFormat",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "EditorFont",
-          "JsonName": "editorFont",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "EditorIndentGuides",
-          "JsonName": "editorIndentGuides",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "EditorTheme",
-          "JsonName": "editorTheme",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "EventCleanupCron",
-          "JsonName": "eventCleanupCron",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "EventCleanupEnabled",
-          "JsonName": "eventCleanupEnabled",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "EventCollectionMode",
-          "JsonName": "eventCollectionMode",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "EventPollInterval",
-          "JsonName": "eventPollInterval",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "EventRetentionDays",
-          "JsonName": "eventRetentionDays",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "ExternalStackPaths",
-          "JsonName": "externalStackPaths",
-          "Description": "paths, as the list the server takes and answers",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Font",
-          "JsonName": "font",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "FontSize",
-          "JsonName": "fontSize",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "FormatLogTimestamps",
-          "JsonName": "formatLogTimestamps",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "GridFontSize",
-          "JsonName": "gridFontSize",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "HighlightUpdates",
-          "JsonName": "highlightUpdates",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "HonorProxyLabels",
-          "JsonName": "honorProxyLabels",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "LabelFilterMode",
-          "JsonName": "labelFilterMode",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "LightTheme",
-          "JsonName": "lightTheme",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "LogBufferSizeKb",
-          "JsonName": "logBufferSizeKb",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "LogMaxLines",
-          "JsonName": "logMaxLines",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "MetricsCollectionInterval",
-          "JsonName": "metricsCollectionInterval",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "PrimaryStackLocation",
-          "JsonName": "primaryStackLocation",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "ProtectScannerImages",
-          "JsonName": "protectScannerImages",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "ScanRetentionCron",
-          "JsonName": "scanRetentionCron",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "ScanRetentionEnabled",
-          "JsonName": "scanRetentionEnabled",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "ScanRetentionGraceDays",
-          "JsonName": "scanRetentionGraceDays",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "ScanRetentionKeep",
-          "JsonName": "scanRetentionKeep",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "ScannerCleanupCron",
-          "JsonName": "scannerCleanupCron",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "ScannerCleanupEnabled",
-          "JsonName": "scannerCleanupEnabled",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "ScheduleCleanupCron",
-          "JsonName": "scheduleCleanupCron",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "ScheduleCleanupEnabled",
-          "JsonName": "scheduleCleanupEnabled",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "ScheduleRetentionDays",
-          "JsonName": "scheduleRetentionDays",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "ShowExposedPorts",
-          "JsonName": "showExposedPorts",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "ShowGitCommitHash",
-          "JsonName": "showGitCommitHash",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "ShowImageChangelogLinks",
-          "JsonName": "showImageChangelogLinks",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "ShowStoppedContainers",
-          "JsonName": "showStoppedContainers",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "ShowWhatsNew",
-          "JsonName": "showWhatsNew",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "StackLogOperations",
-          "JsonName": "stackLogOperations",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "TerminalFont",
-          "JsonName": "terminalFont",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "TimeFormat",
-          "JsonName": "timeFormat",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "UseSelfhstIcons",
-          "JsonName": "useSelfhstIcons",
-          "Type": {
-            "Type": "Boolean"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostSettingsScannerRequest",
-      "Fields": [
-        {
-          "Name": "EnvId",
-          "JsonName": "envId",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "GrypeArgs",
-          "JsonName": "grypeArgs",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "GrypeImage",
-          "JsonName": "grypeImage",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Scanner",
-          "JsonName": "scanner",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "TrivyArgs",
-          "JsonName": "trivyArgs",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "TrivyImage",
-          "JsonName": "trivyImage",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostSettingsScannerResponse",
+      "Name": "PostSettingsScannerAnswer",
       "Fields": [
         {
           "Name": "Settings",
           "JsonName": "settings",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "PostSettingsScannerResponseSettings"
+            "ReferenceName": "PostSettingsScannerAnswerSettings"
           }
         },
         {
@@ -2185,7 +2142,7 @@
       ]
     },
     {
-      "Name": "PostSettingsScannerResponseSettings",
+      "Name": "PostSettingsScannerAnswerSettings",
       "Fields": [
         {
           "Name": "GrypeArgs",
@@ -2206,7 +2163,8 @@
           "Name": "Scanner",
           "JsonName": "scanner",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "Scanner"
           },
           "Required": true
         },
@@ -2224,6 +2182,68 @@
           "Type": {
             "Type": "String"
           }
+        }
+      ]
+    },
+    {
+      "Name": "PostSettingsScannerRequest",
+      "Fields": [
+        {
+          "Name": "EnvId",
+          "JsonName": "envId",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
+          }
+        },
+        {
+          "Name": "GrypeArgs",
+          "JsonName": "grypeArgs",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "GrypeImage",
+          "JsonName": "grypeImage",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Scanner",
+          "JsonName": "scanner",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "Scanner"
+          }
+        },
+        {
+          "Name": "TrivyArgs",
+          "JsonName": "trivyArgs",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TrivyImage",
+          "JsonName": "trivyImage",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostSettingsSemverAnswer",
+      "Fields": [
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
         }
       ]
     },
@@ -2261,39 +2281,7 @@
       ]
     },
     {
-      "Name": "PostSettingsSemverResponse",
-      "Fields": [
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PutSettingsNavigationRequest",
-      "Fields": [
-        {
-          "Name": "EnvClickPage",
-          "JsonName": "envClickPage",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "LandingPage",
-          "JsonName": "landingPage",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PutSettingsNavigationResponse",
+      "Name": "PutSettingsNavigationAnswer",
       "Fields": [
         {
           "Name": "Global",
@@ -2301,7 +2289,7 @@
           "Description": "the pages for everyone who chose none of their own, when that is what was changed",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "PutSettingsNavigationResponseGlobal"
+            "ReferenceName": "PutSettingsNavigationAnswerGlobal"
           }
         },
         {
@@ -2317,13 +2305,13 @@
           "Description": "the pages of the user who asked, when that is what was changed",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "PutSettingsNavigationResponseUser"
+            "ReferenceName": "PutSettingsNavigationAnswerUser"
           }
         }
       ]
     },
     {
-      "Name": "PutSettingsNavigationResponseGlobal",
+      "Name": "PutSettingsNavigationAnswerGlobal",
       "Description": "the pages for everyone who chose none of their own, when that is what was changed",
       "Fields": [
         {
@@ -2345,7 +2333,7 @@
       ]
     },
     {
-      "Name": "PutSettingsNavigationResponseUser",
+      "Name": "PutSettingsNavigationAnswerUser",
       "Description": "the pages of the user who asked, when that is what was changed",
       "Fields": [
         {
@@ -2360,6 +2348,25 @@
           "Name": "LandingPage",
           "JsonName": "landingPage",
           "Description": "the page the web interface opens on; null for none chosen",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutSettingsNavigationRequest",
+      "Fields": [
+        {
+          "Name": "EnvClickPage",
+          "JsonName": "envClickPage",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LandingPage",
+          "JsonName": "landingPage",
           "Type": {
             "Type": "String"
           }

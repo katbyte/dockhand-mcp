@@ -11,14 +11,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetBackupConfigsByIdOperationResponse is the result of GetBackupConfigsById.
-type GetBackupConfigsByIdOperationResponse struct {
+// GetBackupConfigsByIdResponse is the result of GetBackupConfigsById.
+type GetBackupConfigsByIdResponse struct {
 	HttpResponse *http.Response
-	Model        json.RawMessage
+	Answer       json.RawMessage
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetBackupConfigsByIdResponse) Answered() bool { return r.Answer != nil }
+
 // GetBackupConfigsById calls GET /api/backup/configs/{id}. Fetch a single backup configuration by id, enforcing environment-scoped access.
-func (c Client) GetBackupConfigsById(ctx context.Context, id int) (result GetBackupConfigsByIdOperationResponse, err error) {
+func (c Client) GetBackupConfigsById(ctx context.Context, id int) (result GetBackupConfigsByIdResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -41,7 +45,7 @@ func (c Client) GetBackupConfigsById(ctx context.Context, id int) (result GetBac
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

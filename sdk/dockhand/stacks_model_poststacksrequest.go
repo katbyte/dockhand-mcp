@@ -7,14 +7,14 @@ type PostStacksRequest struct {
 	Build            *bool            `json:"build,omitempty"`
 	Compose          string           `json:"compose"`
 	ComposePath      string           `json:"composePath,omitempty"`
-	EnvId            int              `json:"envId,omitempty"`
+	EnvId            EnvironmentID    `json:"envId,omitempty"`
 	EnvPath          string           `json:"envPath,omitempty"`
 	EnvVars          []map[string]any `json:"envVars,omitzero"`
-	EnvironmentId    int              `json:"environmentId,omitempty"`
+	EnvironmentId    EnvironmentID    `json:"environmentId,omitempty"`
 	ForceRecreate    *bool            `json:"forceRecreate,omitempty"`
 	Name             string           `json:"name"`
 	Pull             *bool            `json:"pull,omitempty"`
 	RawEnvContent    string           `json:"rawEnvContent,omitempty"`
-	SecretProviderId int              `json:"secretProviderId,omitempty"`
+	SecretProviderId SecretProviderID `json:"secretProviderId,omitempty"`
 	Start            *bool            `json:"start,omitempty"`
 }

@@ -4,20 +4,43 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetSchedulesExecutionsOperationResponse is the result of GetSchedulesExecutions.
-type GetSchedulesExecutionsOperationResponse struct {
+// GetSchedulesExecutionsResponse is the result of GetSchedulesExecutions.
+//
+// Answer is the GetSchedulesExecutionsAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetSchedulesExecutionsResponse struct {
 	HttpResponse *http.Response
-	Model        *GetSchedulesExecutionsResponse
+	Answer       *GetSchedulesExecutionsAnswer
+	*GetSchedulesExecutionsAnswer
 }
 
-// GetSchedulesExecutionsOperationOptions holds the query and header parameters of GetSchedulesExecutions.
-type GetSchedulesExecutionsOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetSchedulesExecutionsResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetSchedulesExecutionsAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetSchedulesExecutionsResponse) Record() (GetSchedulesExecutionsAnswer, error) {
+	if r.Answer == nil {
+		return GetSchedulesExecutionsAnswer{}, errors.New("GetSchedulesExecutions answered no GetSchedulesExecutionsAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetSchedulesExecutionsOptions holds the query and header parameters of GetSchedulesExecutions.
+type GetSchedulesExecutionsOptions struct {
 	// Filter by schedule type (container_update, git_stack_sync, ...)
 	ScheduleType string
 
@@ -25,10 +48,10 @@ type GetSchedulesExecutionsOperationOptions struct {
 	ScheduleId *int
 
 	// Filter by environment id ("null" for global/system schedules) (from GET /api/environments)
-	EnvironmentId *int
+	EnvironmentId EnvironmentID
 
 	// Filter by execution status (queued/running/success/warning/failed/skipped)
-	Status string
+	Status RunStatus
 
 	// Comma-separated list of statuses (alternative to status)
 	Statuses string
@@ -50,13 +73,13 @@ type GetSchedulesExecutionsOperationOptions struct {
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetSchedulesExecutionsOperationOptions) ToHeaders() *client.Headers {
+func (o GetSchedulesExecutionsOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetSchedulesExecutionsOperationOptions) ToQuery() *client.QueryParams {
+func (o GetSchedulesExecutionsOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.ScheduleType != "" {
 		out.Append("scheduleType", o.ScheduleType)
@@ -64,11 +87,11 @@ func (o GetSchedulesExecutionsOperationOptions) ToQuery() *client.QueryParams {
 	if o.ScheduleId != nil {
 		out.Append("scheduleId", strconv.Itoa(*o.ScheduleId))
 	}
-	if o.EnvironmentId != nil {
-		out.Append("environmentId", strconv.Itoa(*o.EnvironmentId))
+	if o.EnvironmentId != 0 {
+		out.Append("environmentId", strconv.Itoa(int(o.EnvironmentId)))
 	}
 	if o.Status != "" {
-		out.Append("status", o.Status)
+		out.Append("status", string(o.Status))
 	}
 	if o.Statuses != "" {
 		out.Append("statuses", o.Statuses)
@@ -92,13 +115,23 @@ func (o GetSchedulesExecutionsOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetSchedulesExecutions calls GET /api/schedules/executions. List schedule execution history, filterable and paginated.
-func (c Client) GetSchedulesExecutions(ctx context.Context, options GetSchedulesExecutionsOperationOptions) (result GetSchedulesExecutionsOperationResponse, err error) {
+func (c Client) GetSchedulesExecutions(ctx context.Context, options ...GetSchedulesExecutionsOptions) (result GetSchedulesExecutionsResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetSchedulesExecutions takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetSchedulesExecutionsOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetSchedulesExecutionsAnswer = &GetSchedulesExecutionsAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/schedules/executions",
 	}
 
@@ -116,11 +149,12 @@ func (c Client) GetSchedulesExecutions(ctx context.Context, options GetSchedules
 		return
 	}
 
-	var model GetSchedulesExecutionsResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetSchedulesExecutionsAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetSchedulesExecutionsAnswer = result.Answer
 
 	return
 }

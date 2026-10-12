@@ -10,13 +10,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostAuthLdapByIdTestOperationResponse is the result of PostAuthLdapByIdTest.
-type PostAuthLdapByIdTestOperationResponse struct {
+// PostAuthLdapByIdTestResponse is the result of PostAuthLdapByIdTest.
+type PostAuthLdapByIdTestResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostAuthLdapByIdTest calls POST /api/auth/ldap/{id}/test. Test connectivity of a stored LDAP configuration by id (enterprise only).
-func (c Client) PostAuthLdapByIdTest(ctx context.Context, id int) (result PostAuthLdapByIdTestOperationResponse, err error) {
+func (c Client) PostAuthLdapByIdTest(ctx context.Context, id int) (result PostAuthLdapByIdTestResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,

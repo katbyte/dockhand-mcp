@@ -4,8 +4,8 @@ package dockhand
 
 // PostImagesPushRequest is an object the document declares inline.
 type PostImagesPushRequest struct {
-	ImageId    string `json:"imageId"`
-	ImageName  string `json:"imageName,omitempty"`
-	NewTag     string `json:"newTag,omitempty"`
-	RegistryId int    `json:"registryId"`
+	ImageId    string     `json:"imageId"`
+	ImageName  string     `json:"imageName,omitempty"`
+	NewTag     string     `json:"newTag,omitempty"`
+	RegistryId RegistryID `json:"registryId"`
 }

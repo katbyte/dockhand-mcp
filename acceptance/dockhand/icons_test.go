@@ -42,29 +42,29 @@ func TestContainerIconsGivenFetchedAndRemoved(t *testing.T) {
 	env := world.Env(testenv.Alpha)
 	name := started(t, testenv.Alpha, "pictured")
 	ghost := named(t, "no-such-container")
-	here := dockhand.PostContainerIconsByNameOperationOptions{Env: &env}
+	here := dockhand.PostContainerIconsByNameOptions{Env: env}
 	icons := func() map[string]string {
-		given, err := c.GetContainerIcons(ctx, dockhand.GetContainerIconsOperationOptions{Env: &env})
+		given, err := c.GetContainerIcons(ctx, dockhand.GetContainerIconsOptions{Env: env})
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		return given.Model
+		return given.Answer
 	}
 	t.Cleanup(func() {
 		for _, held := range []string{name, ghost} {
-			_, _ = c.DeleteContainerIconsByName(noCancel(t), held, dockhand.DeleteContainerIconsByNameOperationOptions{Env: &env})
+			_, _ = c.DeleteContainerIconsByName(noCancel(t), held, dockhand.DeleteContainerIconsByNameOptions{Env: env})
 		}
 	})
 
 	// by name, any name: one of Dockhand's own, one of selfh.st's, and one that is nothing's are saved alike
 	for _, icon := range []string{"box", "selfhst:docker", "it-no-such-icon-anywhere", "two words"} {
-		if set, err := c.PostContainerIconsByName(ctx, name, dockhand.PostContainerIconsByNameRequest{Icon: icon}, here); err != nil || !yes(set.Model.Success) || set.Model.Icon != icon || icons()[name] != icon {
-			t.Errorf("a container given the icon %q = %+v, %v, read back as %q: Dockhand used to save any name", icon, set.Model, err, icons()[name])
+		if set, err := c.PostContainerIconsByName(ctx, name, dockhand.PostContainerIconsByNameRequest{Icon: icon}, here); err != nil || !set.Answer.Success || set.Answer.Icon != icon || icons()[name] != icon {
+			t.Errorf("a container given the icon %q = %+v, %v, read back as %q: Dockhand used to save any name", icon, set.Answer, err, icons()[name])
 		}
 	}
 	// one given by name has no picture to fetch
-	if _, err := c.GetContainerIconsByName(ctx, name, dockhand.GetContainerIconsByNameOperationOptions{Env: &env}); !client.IsNotFound(err) {
+	if _, err := c.GetContainerIconsByName(ctx, name, dockhand.GetContainerIconsByNameOptions{Env: env}); !client.IsNotFound(err) {
 		t.Errorf("the picture of an icon that is a name = %v, want a 404", err)
 	}
 	// neither a name nor a picture is refused, and so is a picture that is none
@@ -75,30 +75,30 @@ func TestContainerIconsGivenFetchedAndRemoved(t *testing.T) {
 	}
 
 	// a picture is kept as Dockhand's own kind whatever it was sent as, and wins over a name sent with it
-	if set, err := c.PostContainerIconsByName(ctx, name, dockhand.PostContainerIconsByNameRequest{Icon: "box", Image: onePixel}, here); err != nil || set.Model.Icon != "custom:container" || icons()[name] != "custom:container" {
-		t.Fatalf("a container given a picture = %+v, %v", set.Model, err)
+	if set, err := c.PostContainerIconsByName(ctx, name, dockhand.PostContainerIconsByNameRequest{Icon: "box", Image: onePixel}, here); err != nil || set.Answer.Icon != "custom:container" || icons()[name] != "custom:container" {
+		t.Fatalf("a container given a picture = %+v, %v", set.Answer, err)
 	}
-	fetched, err := c.GetContainerIconsByName(ctx, name, dockhand.GetContainerIconsByNameOperationOptions{Env: &env})
+	fetched, err := c.GetContainerIconsByName(ctx, name, dockhand.GetContainerIconsByNameOptions{Env: env})
 	if kind, size := pictureOf(t, fetched.HttpResponse, err); kind != "image/webp" || size == 0 {
 		t.Errorf("the picture fetched is %d bytes of %s, want some of image/webp", size, kind)
 	}
 
 	// the icon is the name's: one no container has is given an icon all the same, and an environment there is none of is not
 	if set, err := c.PostContainerIconsByName(ctx, ghost, dockhand.PostContainerIconsByNameRequest{Icon: "box"}, here); err != nil || icons()[ghost] != "box" {
-		t.Errorf("a name no container has, given an icon = %+v, %v: Dockhand used to keep it, which is why the tools look first", set.Model, err)
+		t.Errorf("a name no container has, given an icon = %+v, %v: Dockhand used to keep it, which is why the tools look first", set.Answer, err)
 	}
-	if _, err := c.PostContainerIconsByName(ctx, name, dockhand.PostContainerIconsByNameRequest{Icon: "box"}, dockhand.PostContainerIconsByNameOperationOptions{Env: new(999999)}); client.StatusCode(err) != http.StatusInternalServerError {
+	if _, err := c.PostContainerIconsByName(ctx, name, dockhand.PostContainerIconsByNameRequest{Icon: "box"}, dockhand.PostContainerIconsByNameOptions{Env: 999999}); client.StatusCode(err) != http.StatusInternalServerError {
 		t.Errorf("an icon on an environment there is none of = %v, want a 500", err)
 	}
 
 	// removed, and removed again, are both answered as done
 	for range 2 {
-		if gone, err := c.DeleteContainerIconsByName(ctx, name, dockhand.DeleteContainerIconsByNameOperationOptions{Env: &env}); err != nil || !yes(gone.Model.Success) {
-			t.Errorf("a container's icon removed = %+v, %v", gone.Model, err)
+		if gone, err := c.DeleteContainerIconsByName(ctx, name, dockhand.DeleteContainerIconsByNameOptions{Env: env}); err != nil || !gone.Answer.Success {
+			t.Errorf("a container's icon removed = %+v, %v", gone.Answer, err)
 		}
 	}
-	if gone, err := c.DeleteContainerIconsByName(ctx, ghost, dockhand.DeleteContainerIconsByNameOperationOptions{Env: &env}); err != nil || !yes(gone.Model.Success) || icons()[name] != "" || icons()[ghost] != "" {
-		t.Errorf("the other removed = %+v, %v, leaving %v", gone.Model, err, icons())
+	if gone, err := c.DeleteContainerIconsByName(ctx, ghost, dockhand.DeleteContainerIconsByNameOptions{Env: env}); err != nil || !gone.Answer.Success || icons()[name] != "" || icons()[ghost] != "" {
+		t.Errorf("the other removed = %+v, %v, leaving %v", gone.Answer, err, icons())
 	}
 }
 
@@ -115,7 +115,7 @@ func TestStackIconsAndTheRecordTheyLeave(t *testing.T) {
 	path := dir + "/compose.yaml"
 	file := "name: " + stack + "\nservices:\n  app:\n    image: " + world.Image + "\n    command: [\"sleep\", \"100000\"]\n    stop_grace_period: 1s\n"
 	ctx := noCancel(t)
-	here := dockhand.PostStacksByNameIconOperationOptions{Env: &env}
+	here := dockhand.PostStacksByNameIconOptions{Env: env}
 	for _, made := range []string{stack, twin, ghost} {
 		forgotten(t, host, made)
 	}
@@ -127,22 +127,22 @@ func TestStackIconsAndTheRecordTheyLeave(t *testing.T) {
 	if err := world.Lay(ctx, path, file); err != nil {
 		t.Fatal(err)
 	}
-	kept := func(name string) (dockhand.GetStacksSourcesResponse, bool) {
-		sources, err := c.GetStacksSources(ctx, dockhand.GetStacksSourcesOperationOptions{Env: &env})
+	kept := func(name string) (dockhand.GetStacksSourcesAnswer, bool) {
+		sources, err := c.GetStacksSources(ctx, dockhand.GetStacksSourcesOptions{Env: env})
 		if err != nil {
 			t.Fatal(err)
 		}
-		source, has := sources.Model[name]
+		source, has := sources.Answer[name]
 
 		return source, has
 	}
-	listed := func(name string) *dockhand.GetStacksResponse {
-		stacks, err := c.GetStacks(ctx, dockhand.GetStacksOperationOptions{Env: &env})
+	listed := func(name string) *dockhand.GetStacksAnswer {
+		stacks, err := c.GetStacks(ctx, dockhand.GetStacksOptions{Env: env})
 		if err != nil {
 			t.Fatal(err)
 		}
-		if i := slices.IndexFunc(stacks.Model, func(s dockhand.GetStacksResponse) bool { return s.Name == name }); i >= 0 {
-			return &stacks.Model[i]
+		if i := slices.IndexFunc(stacks.Answer, func(s dockhand.GetStacksAnswer) bool { return s.Name == name }); i >= 0 {
+			return &stacks.Answer[i]
 		}
 
 		return nil
@@ -152,8 +152,8 @@ func TestStackIconsAndTheRecordTheyLeave(t *testing.T) {
 	if _, has := kept(stack); has {
 		t.Fatal("a stack Dockhand only found has a record before it is given anything")
 	}
-	if set, err := c.PostStacksByNameIcon(ctx, stack, dockhand.PostStacksByNameIconRequest{Icon: "box"}, here); err != nil || !yes(set.Model.Success) || set.Model.Icon != "box" {
-		t.Fatalf("a stack given an icon = %+v, %v", set.Model, err)
+	if set, err := c.PostStacksByNameIcon(ctx, stack, dockhand.PostStacksByNameIconRequest{Icon: "box"}, here); err != nil || !set.Answer.Success || set.Answer.Icon != "box" {
+		t.Fatalf("a stack given an icon = %+v, %v", set.Answer, err)
 	}
 	if source, has := kept(stack); !has || source.SourceType != "external" || source.ComposePath != "" || source.Icon != "box" || listed(stack).Icon != "box" {
 		t.Errorf("the record of a found stack once given an icon = %+v, %v, and it is listed with the icon %q: Dockhand used to keep one as external with no file", source, has, listed(stack).Icon)
@@ -162,15 +162,15 @@ func TestStackIconsAndTheRecordTheyLeave(t *testing.T) {
 		t.Errorf("a stack given neither a name nor a picture = %v, want a 400", err)
 	}
 	// a picture, kept as Dockhand's own kind, and then nothing: the record stays when the icon goes
-	if set, err := c.PostStacksByNameIcon(ctx, stack, dockhand.PostStacksByNameIconRequest{Image: onePixel}, here); err != nil || set.Model.Icon != "custom:stack" {
-		t.Errorf("a stack given a picture = %+v, %v", set.Model, err)
+	if set, err := c.PostStacksByNameIcon(ctx, stack, dockhand.PostStacksByNameIconRequest{Image: onePixel}, here); err != nil || set.Answer.Icon != "custom:stack" {
+		t.Errorf("a stack given a picture = %+v, %v", set.Answer, err)
 	}
-	fetched, err := c.GetStacksByNameIcon(ctx, stack, dockhand.GetStacksByNameIconOperationOptions{Env: &env})
+	fetched, err := c.GetStacksByNameIcon(ctx, stack, dockhand.GetStacksByNameIconOptions{Env: env})
 	if kind, size := pictureOf(t, fetched.HttpResponse, err); kind != "image/webp" || size == 0 {
 		t.Errorf("the picture fetched is %d bytes of %s, want some of image/webp", size, kind)
 	}
-	if gone, err := c.DeleteStacksByNameIcon(ctx, stack, dockhand.DeleteStacksByNameIconOperationOptions{Env: &env}); err != nil || !yes(gone.Model.Success) {
-		t.Errorf("a stack's icon removed = %+v, %v", gone.Model, err)
+	if gone, err := c.DeleteStacksByNameIcon(ctx, stack, dockhand.DeleteStacksByNameIconOptions{Env: env}); err != nil || !gone.Answer.Success {
+		t.Errorf("a stack's icon removed = %+v, %v", gone.Answer, err)
 	}
 	if source, has := kept(stack); !has || source.SourceType != "external" || source.Icon != "" {
 		t.Errorf("the record once the icon is removed = %+v, %v: it used to stay", source, has)
@@ -178,32 +178,32 @@ func TestStackIconsAndTheRecordTheyLeave(t *testing.T) {
 
 	// Dockhand's own adoption of a stack it has a record of makes a second stack, with no containers, and leaves the first without its file
 	adopted, err := c.PostStacksAdopt(ctx, dockhand.PostStacksAdoptRequest{EnvironmentId: env, Stacks: []dockhand.PostStacksAdoptRequestStacks{{Name: stack, ComposePath: path}}})
-	if err != nil || !slices.Equal(adopted.Model.Adopted, []string{twin}) {
-		t.Errorf("a recorded stack adopted = %+v, %v: Dockhand used to adopt the file as %s, which is why stack_adopt saves the file instead", adopted.Model, err, twin)
+	if err != nil || !slices.Equal(adopted.Answer.Adopted, []string{twin}) {
+		t.Errorf("a recorded stack adopted = %+v, %v: Dockhand used to adopt the file as %s, which is why stack_adopt saves the file instead", adopted.Answer, err, twin)
 	}
 	if source, _ := kept(stack); source.SourceType != "external" || listed(twin) == nil || len(listed(twin).Containers) != 0 {
 		t.Errorf("after that adoption the stack is kept as %q and its twin is listed as %+v", source.SourceType, listed(twin))
 	}
-	if gone, err := c.DeleteStacksByName(ctx, twin, dockhand.DeleteStacksByNameOperationOptions{Env: &env, Force: new(true), Files: new(false)}); err != nil || !yes(gone.Model.Success) {
-		t.Errorf("removing the twin = %+v, %v", gone.Model, err)
+	if gone, err := c.DeleteStacksByName(ctx, twin, dockhand.DeleteStacksByNameOptions{Env: env, Force: new(true), Files: new(false)}); err != nil || !gone.Answer.Success {
+		t.Errorf("removing the twin = %+v, %v", gone.Answer, err)
 	}
 	// saving its file where it lies gives the record its file: it is the same stack, running as it was, and Dockhand has its file
-	if saved, err := c.PutStacksByNameCompose(ctx, stack, dockhand.PutStacksByNameComposeRequest{Content: file, ComposePath: path}, dockhand.PutStacksByNameComposeOperationOptions{Env: &env}); err != nil || !yes(saved.Model.Success) {
-		t.Fatalf("the file saved for a recorded stack = %+v, %v", saved.Model, err)
+	if saved, err := c.PutStacksByNameCompose(ctx, stack, dockhand.PutStacksByNameComposeRequest{Content: file, ComposePath: path}, dockhand.PutStacksByNameComposeOptions{Env: env}); err != nil || !saved.Answer.Success {
+		t.Fatalf("the file saved for a recorded stack = %+v, %v", saved.Answer, err)
 	}
 	if source, _ := kept(stack); source.SourceType != "internal" || source.ComposePath != path || listed(stack) == nil || listed(stack).Status != "running" || len(listed(stack).Containers) != 1 {
 		t.Errorf("once its file is saved the stack is kept as %+v and listed as %+v", source, listed(stack))
 	}
 
 	// a name no stack has is given an icon all the same, and is listed as a stack from then on, with nothing in it
-	if set, err := c.PostStacksByNameIcon(ctx, ghost, dockhand.PostStacksByNameIconRequest{Icon: "box"}, here); err != nil || set.Model.Icon != "box" {
-		t.Errorf("a name no stack has, given an icon = %+v, %v", set.Model, err)
+	if set, err := c.PostStacksByNameIcon(ctx, ghost, dockhand.PostStacksByNameIconRequest{Icon: "box"}, here); err != nil || set.Answer.Icon != "box" {
+		t.Errorf("a name no stack has, given an icon = %+v, %v", set.Answer, err)
 	}
 	if phantom := listed(ghost); phantom == nil || len(phantom.Containers) != 0 || phantom.Icon != "box" {
 		t.Errorf("a name no stack has, once given an icon, is listed as %+v: Dockhand used to list a stack of that name, which is why the tools look first", phantom)
 	}
-	if gone, err := c.DeleteStacksByName(ctx, ghost, dockhand.DeleteStacksByNameOperationOptions{Env: &env, Force: new(true)}); err != nil || !yes(gone.Model.Success) || listed(ghost) != nil {
-		t.Errorf("removing the stack of nothing = %+v, %v, leaving %+v", gone.Model, err, listed(ghost))
+	if gone, err := c.DeleteStacksByName(ctx, ghost, dockhand.DeleteStacksByNameOptions{Env: env, Force: new(true)}); err != nil || !gone.Answer.Success || listed(ghost) != nil {
+		t.Errorf("removing the stack of nothing = %+v, %v, leaving %+v", gone.Answer, err, listed(ghost))
 	}
 }
 
@@ -219,7 +219,7 @@ func TestEnvironmentIconsGivenFetchedAndRemoved(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		return record.Model.Icon
+		return record.Answer.Icon
 	}
 	was := icon()
 	t.Cleanup(func() {
@@ -229,8 +229,8 @@ func TestEnvironmentIconsGivenFetchedAndRemoved(t *testing.T) {
 
 	// a name is saved with the environment, whatever name; one given by name has no picture
 	for _, name := range []string{"server", "selfhst:docker", "it-no-such-icon-anywhere"} {
-		if saved, err := c.PutEnvironmentsById(ctx, env, dockhand.PutEnvironmentsByIdRequest{Icon: name}); err != nil || saved.Model.Icon != name || icon() != name {
-			t.Errorf("an environment given the icon %q = %q, %v, read back as %q", name, saved.Model.Icon, err, icon())
+		if saved, err := c.PutEnvironmentsById(ctx, env, dockhand.PutEnvironmentsByIdRequest{Icon: name}); err != nil || saved.Answer.Icon != name || icon() != name {
+			t.Errorf("an environment given the icon %q = %q, %v, read back as %q", name, saved.Answer.Icon, err, icon())
 		}
 	}
 	if _, err := c.GetEnvironmentsByIdIcon(ctx, env); !client.IsNotFound(err) {
@@ -239,30 +239,30 @@ func TestEnvironmentIconsGivenFetchedAndRemoved(t *testing.T) {
 
 	// a picture is kept as Dockhand's own kind, under a name that says whose it is
 	set, err := c.PostEnvironmentsByIdIcon(ctx, env, dockhand.PostEnvironmentsByIdIconRequest{Image: onePixel})
-	if err != nil || !yes(set.Model.Success) || !strings.HasPrefix(set.Model.Icon, "custom:env-") || icon() != set.Model.Icon {
-		t.Fatalf("an environment given a picture = %+v, %v, read back as %q", set.Model, err, icon())
+	if err != nil || !set.Answer.Success || !strings.HasPrefix(set.Answer.Icon, "custom:env-") || icon() != set.Answer.Icon {
+		t.Fatalf("an environment given a picture = %+v, %v, read back as %q", set.Answer, err, icon())
 	}
 	fetched, err := c.GetEnvironmentsByIdIcon(ctx, env)
 	if kind, size := pictureOf(t, fetched.HttpResponse, err); kind != "image/webp" || size == 0 {
 		t.Errorf("the picture fetched is %d bytes of %s, want some of image/webp", size, kind)
 	}
 	// what is no picture at all is taken as one, where a container's and a stack's is refused
-	if odd, err := c.PostEnvironmentsByIdIcon(ctx, env, dockhand.PostEnvironmentsByIdIconRequest{Image: "not a picture"}); err != nil || !yes(odd.Model.Success) {
-		t.Errorf("an environment given text for a picture = %+v, %v: Dockhand used to take it, which is why the tools look at a picture first", odd.Model, err)
+	if odd, err := c.PostEnvironmentsByIdIcon(ctx, env, dockhand.PostEnvironmentsByIdIconRequest{Image: "not a picture"}); err != nil || !odd.Answer.Success {
+		t.Errorf("an environment given text for a picture = %+v, %v: Dockhand used to take it, which is why the tools look at a picture first", odd.Answer, err)
 	}
 	if _, err := c.PostEnvironmentsByIdIcon(ctx, 999999, dockhand.PostEnvironmentsByIdIconRequest{Image: onePixel}); !client.IsNotFound(err) {
 		t.Errorf("a picture for an environment there is none of = %v, want a 404", err)
 	}
 
 	// removed, the environment has the plain icon, and has it again when a name is removed
-	if gone, err := c.DeleteEnvironmentsByIdIcon(ctx, env); err != nil || !yes(gone.Model.Success) || gone.Model.Icon != "globe" || icon() != "globe" {
-		t.Errorf("an environment's picture removed = %+v, %v, leaving %q", gone.Model, err, icon())
+	if gone, err := c.DeleteEnvironmentsByIdIcon(ctx, env); err != nil || !gone.Answer.Success || gone.Answer.Icon != "globe" || icon() != "globe" {
+		t.Errorf("an environment's picture removed = %+v, %v, leaving %q", gone.Answer, err, icon())
 	}
 	if _, err := c.PutEnvironmentsById(ctx, env, dockhand.PutEnvironmentsByIdRequest{Icon: "server"}); err != nil {
 		t.Fatal(err)
 	}
-	if gone, err := c.DeleteEnvironmentsByIdIcon(ctx, env); err != nil || gone.Model.Icon != "globe" || icon() != "globe" {
-		t.Errorf("an environment's named icon removed = %+v, %v, leaving %q", gone.Model, err, icon())
+	if gone, err := c.DeleteEnvironmentsByIdIcon(ctx, env); err != nil || gone.Answer.Icon != "globe" || icon() != "globe" {
+		t.Errorf("an environment's named icon removed = %+v, %v, leaving %q", gone.Answer, err, icon())
 	}
 	if _, err := c.DeleteEnvironmentsByIdIcon(ctx, 999999); !client.IsNotFound(err) {
 		t.Errorf("removing the icon of an environment there is none of = %v, want a 404", err)
@@ -276,11 +276,11 @@ func TestSelfhstIconsListedAndFetched(t *testing.T) {
 	ctx := t.Context()
 
 	listed, err := c.GetIconsSelfhstManifest(ctx)
-	if err != nil || len(listed.Model) < 100 {
-		t.Fatalf("the list of selfh.st's icons = %d of them, %v", len(listed.Model), err)
+	if err != nil || len(listed.Answer) < 100 {
+		t.Fatalf("the list of selfh.st's icons = %d of them, %v", len(listed.Answer), err)
 	}
-	i := slices.IndexFunc(listed.Model, func(icon dockhand.GetIconsSelfhstManifestResponse) bool { return icon.Reference == "docker" })
-	if i < 0 || listed.Model[i].Name == "" || listed.Model[i].Category == "" || listed.Model[i].PNG == "" {
+	i := slices.IndexFunc(listed.Answer, func(icon dockhand.GetIconsSelfhstManifestAnswer) bool { return icon.Reference == "docker" })
+	if i < 0 || listed.Answer[i].Name == "" || listed.Answer[i].Category == "" || listed.Answer[i].PNG == "" {
 		t.Fatalf("the list has no icon asked for by docker, or says nothing of it: %d", i)
 	}
 
@@ -300,7 +300,7 @@ func TestSelfhstIconsListedAndFetched(t *testing.T) {
 
 	// several at once: each that can be had as a data: address by its reference, and the rest left out
 	several, err := c.PostIconsSelfhstBatch(ctx, dockhand.PostIconsSelfhstBatchRequest{Refs: []string{"docker", "it-no-such-app-anywhere"}})
-	if err != nil || len(several.Model.Icons) != 1 || !strings.HasPrefix(several.Model.Icons["docker"], "data:image/") {
-		t.Errorf("two icons asked for at once = %d of them, %v", len(several.Model.Icons), err)
+	if err != nil || len(several.Answer.Icons) != 1 || !strings.HasPrefix(several.Answer.Icons["docker"], "data:image/") {
+		t.Errorf("two icons asked for at once = %d of them, %v", len(several.Answer.Icons), err)
 	}
 }

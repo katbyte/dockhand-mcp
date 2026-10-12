@@ -4,31 +4,54 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetLegalLicenseOperationResponse is the result of GetLegalLicense.
-type GetLegalLicenseOperationResponse struct {
+// GetLegalLicenseResponse is the result of GetLegalLicense.
+//
+// Answer is the GetLegalLicenseAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetLegalLicenseResponse struct {
 	HttpResponse *http.Response
-	Model        *GetLegalLicenseResponse
+	Answer       *GetLegalLicenseAnswer
+	*GetLegalLicenseAnswer
 }
 
-// GetLegalLicenseOperationOptions holds the query and header parameters of GetLegalLicense.
-type GetLegalLicenseOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetLegalLicenseResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetLegalLicenseAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetLegalLicenseResponse) Record() (GetLegalLicenseAnswer, error) {
+	if r.Answer == nil {
+		return GetLegalLicenseAnswer{}, errors.New("GetLegalLicense answered no GetLegalLicenseAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetLegalLicenseOptions holds the query and header parameters of GetLegalLicense.
+type GetLegalLicenseOptions struct {
 	// Set to "text" to return the raw license as text/plain instead of JSON
 	Format string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetLegalLicenseOperationOptions) ToHeaders() *client.Headers {
+func (o GetLegalLicenseOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetLegalLicenseOperationOptions) ToQuery() *client.QueryParams {
+func (o GetLegalLicenseOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Format != "" {
 		out.Append("format", o.Format)
@@ -37,13 +60,23 @@ func (o GetLegalLicenseOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetLegalLicense calls GET /api/legal/license. Return the bundled LICENSE.txt — as JSON by default, or as raw text/plain when format=text.
-func (c Client) GetLegalLicense(ctx context.Context, options GetLegalLicenseOperationOptions) (result GetLegalLicenseOperationResponse, err error) {
+func (c Client) GetLegalLicense(ctx context.Context, options ...GetLegalLicenseOptions) (result GetLegalLicenseResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetLegalLicense takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetLegalLicenseOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetLegalLicenseAnswer = &GetLegalLicenseAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/legal/license",
 	}
 
@@ -61,11 +94,12 @@ func (c Client) GetLegalLicense(ctx context.Context, options GetLegalLicenseOper
 		return
 	}
 
-	var model GetLegalLicenseResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetLegalLicenseAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetLegalLicenseAnswer = result.Answer
 
 	return
 }

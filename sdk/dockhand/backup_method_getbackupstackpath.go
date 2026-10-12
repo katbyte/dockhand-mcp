@@ -11,41 +11,45 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetBackupStackPathOperationResponse is the result of GetBackupStackPath.
-type GetBackupStackPathOperationResponse struct {
+// GetBackupStackPathResponse is the result of GetBackupStackPath.
+type GetBackupStackPathResponse struct {
 	HttpResponse *http.Response
-	Model        json.RawMessage
+	Answer       json.RawMessage
 }
 
-// GetBackupStackPathOperationOptions holds the query and header parameters of GetBackupStackPath.
-type GetBackupStackPathOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetBackupStackPathResponse) Answered() bool { return r.Answer != nil }
+
+// GetBackupStackPathOptions holds the query and header parameters of GetBackupStackPath.
+type GetBackupStackPathOptions struct {
 	// Target stack name
 	Target string
 
 	// Environment ID the stack belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetBackupStackPathOperationOptions) ToHeaders() *client.Headers {
+func (o GetBackupStackPathOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetBackupStackPathOperationOptions) ToQuery() *client.QueryParams {
+func (o GetBackupStackPathOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Target != "" {
 		out.Append("target", o.Target)
 	}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetBackupStackPath calls GET /api/backup/stack-path. Preview where a stack's directory will be captured from on the host, without running a backup.
-func (c Client) GetBackupStackPath(ctx context.Context, options GetBackupStackPathOperationOptions) (result GetBackupStackPathOperationResponse, err error) {
+func (c Client) GetBackupStackPath(ctx context.Context, options GetBackupStackPathOptions) (result GetBackupStackPathResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -69,7 +73,7 @@ func (c Client) GetBackupStackPath(ctx context.Context, options GetBackupStackPa
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

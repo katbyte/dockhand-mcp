@@ -57,8 +57,8 @@ func count(counts map[string]any, key string) int {
 }
 
 // environmentRowOf is an environment as Dockhand lists it, before anything is known of how its host is doing.
-func environmentRowOf(e *dockhand.GetEnvironmentsResponse) environmentRow {
-	row := environmentRow{Env: e.Name, ID: e.Id, Connection: e.ConnectionType}
+func environmentRowOf(e *dockhand.GetEnvironmentsAnswer) environmentRow {
+	row := environmentRow{Env: e.Name, ID: int(e.Id), Connection: string(e.ConnectionType)}
 	if e.ConnectionType != connectionSocket && e.Host != "" {
 		row.Address = e.Host
 		if e.Port != 0 {
@@ -83,9 +83,9 @@ func registerEnvironmentTools(r *registry) {
 			return nil, envListOut{}, fmt.Errorf("the environments could not be listed: %w", refusal(err))
 		}
 
-		out := envListOut{Environments: make([]environmentRow, 0, len(environments.Model))}
-		for i := range environments.Model {
-			out.Environments = append(out.Environments, environmentRowOf(&environments.Model[i]))
+		out := envListOut{Environments: make([]environmentRow, 0, len(environments.Answer))}
+		for i := range environments.Answer {
+			out.Environments = append(out.Environments, environmentRowOf(&environments.Answer[i]))
 		}
 		if len(out.Environments) == 0 {
 			out.Note = "this Dockhand manages no Docker host yet"
@@ -100,9 +100,9 @@ func registerEnvironmentTools(r *registry) {
 			out.Note = "whether each host is online, and what it holds, could not be read: " + err.Error()
 		}
 
-		byID := map[int]*dockhand.GetDashboardStatsResponse{}
-		for i := range stats.Model {
-			byID[stats.Model[i].Id] = &stats.Model[i]
+		byID := map[int]*dockhand.GetDashboardStatsAnswer{}
+		for i := range stats.Answer {
+			byID[int(stats.Answer[i].Id)] = &stats.Answer[i]
 		}
 		offline := 0
 		for i := range out.Environments {
@@ -112,8 +112,8 @@ func registerEnvironmentTools(r *registry) {
 				continue
 			}
 
-			row.Online = stat.Online
-			if !yes(stat.Online) {
+			row.Online = new(stat.Online)
+			if !stat.Online {
 				offline++
 
 				continue

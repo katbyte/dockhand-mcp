@@ -9,14 +9,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetDashboardStatsOperationResponse is the result of GetDashboardStats.
-type GetDashboardStatsOperationResponse struct {
+// GetDashboardStatsResponse is the result of GetDashboardStats.
+type GetDashboardStatsResponse struct {
 	HttpResponse *http.Response
-	Model        []GetDashboardStatsResponse
+	Answer       []GetDashboardStatsAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetDashboardStatsResponse) Answered() bool { return r.Answer != nil }
+
 // GetDashboardStats calls GET /api/dashboard/stats. Get aggregated dashboard statistics per environment (containers, images, volumes, stacks, metrics).
-func (c Client) GetDashboardStats(ctx context.Context) (result GetDashboardStatsOperationResponse, err error) {
+func (c Client) GetDashboardStats(ctx context.Context) (result GetDashboardStatsResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,7 +43,7 @@ func (c Client) GetDashboardStats(ctx context.Context) (result GetDashboardStats
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

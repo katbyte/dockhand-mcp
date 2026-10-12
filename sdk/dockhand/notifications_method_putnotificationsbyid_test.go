@@ -5,6 +5,7 @@ package dockhand
 import (
 	"encoding/json"
 	"net/http"
+	"reflect"
 	"testing"
 
 	"github.com/katbyte/pandorest/client"
@@ -14,7 +15,7 @@ func TestOperationPutNotificationsById(t *testing.T) {
 	t.Parallel()
 
 	c, s := newOperationServer(t, 200, "application/json", "{}")
-	result, err := c.PutNotificationsById(t.Context(), 7, PutNotificationsByIdRequest{})
+	result, err := c.PutNotificationsById(t.Context(), NotificationID(7), PutNotificationsByIdRequest{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -26,23 +27,32 @@ func TestOperationPutNotificationsById(t *testing.T) {
 	if !json.Valid([]byte(body)) {
 		t.Errorf("body = %q, want JSON", body)
 	}
+	if body != "{}" {
+		t.Errorf("an empty record sent %q, want %q: a field never set went out", body, "{}")
+	}
 	if result.HttpResponse == nil || result.HttpResponse.StatusCode != 200 {
 		t.Fatalf("HttpResponse = %+v", result.HttpResponse)
 	}
-	if result.Model == nil {
-		t.Error("the model was not decoded")
+	if result.Answer == nil || !result.Answered() {
+		t.Error("the answer was not decoded")
+	}
+	if result.PutNotificationsByIdAnswer != result.Answer {
+		t.Error("the embedded answer is not the answer")
+	}
+	if record, err := result.Record(); err != nil || !reflect.DeepEqual(record, *result.Answer) {
+		t.Errorf("Record = %+v, %v", record, err)
 	}
 
 	// an answer that does not decode is an error, with the response
 	c, _ = newOperationServer(t, 200, "application/json", "<html>")
-	result, err = c.PutNotificationsById(t.Context(), 7, PutNotificationsByIdRequest{})
+	result, err = c.PutNotificationsById(t.Context(), NotificationID(7), PutNotificationsByIdRequest{})
 	if err == nil || client.StatusCode(err) != 0 || result.HttpResponse == nil {
 		t.Errorf("an answer that does not decode = %v", err)
 	}
 
 	// a status the operation does not document is an error, with the response
 	c, _ = newOperationServer(t, 418, "text/plain", "no")
-	result, err = c.PutNotificationsById(t.Context(), 7, PutNotificationsByIdRequest{})
+	result, err = c.PutNotificationsById(t.Context(), NotificationID(7), PutNotificationsByIdRequest{})
 	if client.StatusCode(err) != 418 || result.HttpResponse == nil {
 		t.Errorf("an undocumented status = %v, %+v", err, result.HttpResponse)
 	}

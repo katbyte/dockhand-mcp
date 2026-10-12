@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostEnvironmentsByIdTestOperationResponse is the result of PostEnvironmentsByIdTest.
-type PostEnvironmentsByIdTestOperationResponse struct {
+// PostEnvironmentsByIdTestResponse is the result of PostEnvironmentsByIdTest.
+//
+// Answer is the PostEnvironmentsByIdTestAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostEnvironmentsByIdTestResponse struct {
 	HttpResponse *http.Response
-	Model        *PostEnvironmentsByIdTestResponse
+	Answer       *PostEnvironmentsByIdTestAnswer
+	*PostEnvironmentsByIdTestAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostEnvironmentsByIdTestResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostEnvironmentsByIdTestAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostEnvironmentsByIdTestResponse) Record() (PostEnvironmentsByIdTestAnswer, error) {
+	if r.Answer == nil {
+		return PostEnvironmentsByIdTestAnswer{}, errors.New("PostEnvironmentsByIdTest answered no PostEnvironmentsByIdTestAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostEnvironmentsByIdTest calls POST /api/environments/{id}/test. Test connectivity to a saved environment's Docker/Hawser endpoint.
-func (c Client) PostEnvironmentsByIdTest(ctx context.Context, id int) (result PostEnvironmentsByIdTestOperationResponse, err error) {
+func (c Client) PostEnvironmentsByIdTest(ctx context.Context, id EnvironmentID) (result PostEnvironmentsByIdTestResponse, err error) {
+	result.PostEnvironmentsByIdTestAnswer = &PostEnvironmentsByIdTestAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
-		Path:       fmt.Sprintf("/api/environments/%d/test", id),
+		Path:       fmt.Sprintf("/api/environments/%s/test", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) PostEnvironmentsByIdTest(ctx context.Context, id int) (result Po
 		return
 	}
 
-	var model PostEnvironmentsByIdTestResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostEnvironmentsByIdTestAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostEnvironmentsByIdTestAnswer = result.Answer
 
 	return
 }

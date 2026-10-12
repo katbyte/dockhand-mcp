@@ -4,24 +4,47 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetAuditOutsideApiOperationResponse is the result of GetAuditOutsideApi.
-type GetAuditOutsideApiOperationResponse struct {
+// GetAuditOutsideApiResponse is the result of GetAuditOutsideApi.
+//
+// Answer is the GetAuditOutsideApiAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetAuditOutsideApiResponse struct {
 	HttpResponse *http.Response
-	Model        *GetAuditOutsideApiResponse
+	Answer       *GetAuditOutsideApiAnswer
+	*GetAuditOutsideApiAnswer
 }
 
-// GetAuditOutsideApiOperationOptions holds the query and header parameters of GetAuditOutsideApi.
-type GetAuditOutsideApiOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetAuditOutsideApiResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetAuditOutsideApiAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetAuditOutsideApiResponse) Record() (GetAuditOutsideApiAnswer, error) {
+	if r.Answer == nil {
+		return GetAuditOutsideApiAnswer{}, errors.New("GetAuditOutsideApi answered no GetAuditOutsideApiAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetAuditOutsideApiOptions holds the query and header parameters of GetAuditOutsideApi.
+type GetAuditOutsideApiOptions struct {
 	Username      string
 	EntityType    string
 	Action        string
-	EnvironmentId *int
+	EnvironmentId EnvironmentID
 	FromDate      string
 	ToDate        string
 	Limit         *int
@@ -29,13 +52,13 @@ type GetAuditOutsideApiOperationOptions struct {
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetAuditOutsideApiOperationOptions) ToHeaders() *client.Headers {
+func (o GetAuditOutsideApiOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetAuditOutsideApiOperationOptions) ToQuery() *client.QueryParams {
+func (o GetAuditOutsideApiOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Username != "" {
 		out.Append("username", o.Username)
@@ -46,8 +69,8 @@ func (o GetAuditOutsideApiOperationOptions) ToQuery() *client.QueryParams {
 	if o.Action != "" {
 		out.Append("action", o.Action)
 	}
-	if o.EnvironmentId != nil {
-		out.Append("environment_id", strconv.Itoa(*o.EnvironmentId))
+	if o.EnvironmentId != 0 {
+		out.Append("environment_id", strconv.Itoa(int(o.EnvironmentId)))
 	}
 	if o.FromDate != "" {
 		out.Append("from_date", o.FromDate)
@@ -65,13 +88,23 @@ func (o GetAuditOutsideApiOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetAuditOutsideApi calls GET /audit. List audit log entries with optional filters (Enterprise only).
-func (c Client) GetAuditOutsideApi(ctx context.Context, options GetAuditOutsideApiOperationOptions) (result GetAuditOutsideApiOperationResponse, err error) {
+func (c Client) GetAuditOutsideApi(ctx context.Context, options ...GetAuditOutsideApiOptions) (result GetAuditOutsideApiResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetAuditOutsideApi takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetAuditOutsideApiOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetAuditOutsideApiAnswer = &GetAuditOutsideApiAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/audit",
 	}
 
@@ -89,11 +122,12 @@ func (c Client) GetAuditOutsideApi(ctx context.Context, options GetAuditOutsideA
 		return
 	}
 
-	var model GetAuditOutsideApiResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetAuditOutsideApiAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetAuditOutsideApiAnswer = result.Answer
 
 	return
 }

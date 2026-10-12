@@ -4,20 +4,43 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetAuditOperationResponse is the result of GetAudit.
-type GetAuditOperationResponse struct {
+// GetAuditResponse is the result of GetAudit.
+//
+// Answer is the GetAuditAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetAuditResponse struct {
 	HttpResponse *http.Response
-	Model        *GetAuditResponse
+	Answer       *GetAuditAnswer
+	*GetAuditAnswer
 }
 
-// GetAuditOperationOptions holds the query and header parameters of GetAudit.
-type GetAuditOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetAuditResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetAuditAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetAuditResponse) Record() (GetAuditAnswer, error) {
+	if r.Answer == nil {
+		return GetAuditAnswer{}, errors.New("GetAudit answered no GetAuditAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetAuditOptions holds the query and header parameters of GetAudit.
+type GetAuditOptions struct {
 	// Comma-separated usernames to filter by
 	Usernames string
 
@@ -37,7 +60,7 @@ type GetAuditOperationOptions struct {
 	Action string
 
 	// Filter to a single environment (from GET /api/environments)
-	EnvironmentId *int
+	EnvironmentId EnvironmentID
 
 	// Comma-separated labels to filter by
 	Labels string
@@ -56,13 +79,13 @@ type GetAuditOperationOptions struct {
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetAuditOperationOptions) ToHeaders() *client.Headers {
+func (o GetAuditOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetAuditOperationOptions) ToQuery() *client.QueryParams {
+func (o GetAuditOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Usernames != "" {
 		out.Append("usernames", o.Usernames)
@@ -82,8 +105,8 @@ func (o GetAuditOperationOptions) ToQuery() *client.QueryParams {
 	if o.Action != "" {
 		out.Append("action", o.Action)
 	}
-	if o.EnvironmentId != nil {
-		out.Append("environmentId", strconv.Itoa(*o.EnvironmentId))
+	if o.EnvironmentId != 0 {
+		out.Append("environmentId", strconv.Itoa(int(o.EnvironmentId)))
 	}
 	if o.Labels != "" {
 		out.Append("labels", o.Labels)
@@ -104,13 +127,23 @@ func (o GetAuditOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetAudit calls GET /api/audit. Query the audit log with filters and pagination (Enterprise only).
-func (c Client) GetAudit(ctx context.Context, options GetAuditOperationOptions) (result GetAuditOperationResponse, err error) {
+func (c Client) GetAudit(ctx context.Context, options ...GetAuditOptions) (result GetAuditResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetAudit takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetAuditOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetAuditAnswer = &GetAuditAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/audit",
 	}
 
@@ -128,11 +161,12 @@ func (c Client) GetAudit(ctx context.Context, options GetAuditOperationOptions) 
 		return
 	}
 
-	var model GetAuditResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetAuditAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetAuditAnswer = result.Answer
 
 	return
 }

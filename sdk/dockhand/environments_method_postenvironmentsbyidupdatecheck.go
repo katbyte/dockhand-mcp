@@ -4,27 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostEnvironmentsByIdUpdateCheckOperationResponse is the result of PostEnvironmentsByIdUpdateCheck.
-type PostEnvironmentsByIdUpdateCheckOperationResponse struct {
+// PostEnvironmentsByIdUpdateCheckResponse is the result of PostEnvironmentsByIdUpdateCheck.
+//
+// Answer is the PostEnvironmentsByIdUpdateCheckAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostEnvironmentsByIdUpdateCheckResponse struct {
 	HttpResponse *http.Response
-	Model        *PostEnvironmentsByIdUpdateCheckResponse
+	Answer       *PostEnvironmentsByIdUpdateCheckAnswer
+	*PostEnvironmentsByIdUpdateCheckAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostEnvironmentsByIdUpdateCheckResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostEnvironmentsByIdUpdateCheckAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostEnvironmentsByIdUpdateCheckResponse) Record() (PostEnvironmentsByIdUpdateCheckAnswer, error) {
+	if r.Answer == nil {
+		return PostEnvironmentsByIdUpdateCheckAnswer{}, errors.New("PostEnvironmentsByIdUpdateCheck answered no PostEnvironmentsByIdUpdateCheckAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostEnvironmentsByIdUpdateCheck calls POST /api/environments/{id}/update-check. Save the automatic image update-check schedule for an environment (registers/unregisters the croner job).
-func (c Client) PostEnvironmentsByIdUpdateCheck(ctx context.Context, id int, input PostEnvironmentsByIdUpdateCheckRequest) (result PostEnvironmentsByIdUpdateCheckOperationResponse, err error) {
+func (c Client) PostEnvironmentsByIdUpdateCheck(ctx context.Context, id EnvironmentID, input PostEnvironmentsByIdUpdateCheckRequest) (result PostEnvironmentsByIdUpdateCheckResponse, err error) {
+	result.PostEnvironmentsByIdUpdateCheckAnswer = &PostEnvironmentsByIdUpdateCheckAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
-		Path:       fmt.Sprintf("/api/environments/%d/update-check", id),
+		Path:       fmt.Sprintf("/api/environments/%s/update-check", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -45,11 +70,12 @@ func (c Client) PostEnvironmentsByIdUpdateCheck(ctx context.Context, id int, inp
 		return
 	}
 
-	var model PostEnvironmentsByIdUpdateCheckResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostEnvironmentsByIdUpdateCheckAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostEnvironmentsByIdUpdateCheckAnswer = result.Answer
 
 	return
 }

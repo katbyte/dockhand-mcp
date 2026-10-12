@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,41 +13,72 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetContainerTagsByNameOperationResponse is the result of GetContainerTagsByName.
-type GetContainerTagsByNameOperationResponse struct {
+// GetContainerTagsByNameResponse is the result of GetContainerTagsByName.
+//
+// Answer is the GetContainerTagsByNameAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetContainerTagsByNameResponse struct {
 	HttpResponse *http.Response
-	Model        *GetContainerTagsByNameResponse
+	Answer       *GetContainerTagsByNameAnswer
+	*GetContainerTagsByNameAnswer
 }
 
-// GetContainerTagsByNameOperationOptions holds the query and header parameters of GetContainerTagsByName.
-type GetContainerTagsByNameOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetContainerTagsByNameResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetContainerTagsByNameAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetContainerTagsByNameResponse) Record() (GetContainerTagsByNameAnswer, error) {
+	if r.Answer == nil {
+		return GetContainerTagsByNameAnswer{}, errors.New("GetContainerTagsByName answered no GetContainerTagsByNameAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetContainerTagsByNameOptions holds the query and header parameters of GetContainerTagsByName.
+type GetContainerTagsByNameOptions struct {
 	// Environment id
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetContainerTagsByNameOperationOptions) ToHeaders() *client.Headers {
+func (o GetContainerTagsByNameOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetContainerTagsByNameOperationOptions) ToQuery() *client.QueryParams {
+func (o GetContainerTagsByNameOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetContainerTagsByName calls GET /api/container-tags/{name}. Get the tag ids assigned to one container (by name).
-func (c Client) GetContainerTagsByName(ctx context.Context, name string, options GetContainerTagsByNameOperationOptions) (result GetContainerTagsByNameOperationResponse, err error) {
+func (c Client) GetContainerTagsByName(ctx context.Context, name string, options ...GetContainerTagsByNameOptions) (result GetContainerTagsByNameResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetContainerTagsByName takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetContainerTagsByNameOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetContainerTagsByNameAnswer = &GetContainerTagsByNameAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/container-tags/%s", url.PathEscape(name)),
 	}
 
@@ -64,11 +96,12 @@ func (c Client) GetContainerTagsByName(ctx context.Context, name string, options
 		return
 	}
 
-	var model GetContainerTagsByNameResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetContainerTagsByNameAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetContainerTagsByNameAnswer = result.Answer
 
 	return
 }

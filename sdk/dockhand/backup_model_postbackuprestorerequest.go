@@ -6,7 +6,7 @@ package dockhand
 type PostBackupRestoreRequest struct {
 	ConfirmOverwrite   *bool            `json:"confirmOverwrite,omitempty"`
 	DestinationId      int              `json:"destinationId"`
-	EnvironmentId      int              `json:"environmentId,omitempty"`
+	EnvironmentId      EnvironmentID    `json:"environmentId,omitempty"`
 	Mode               string           `json:"mode,omitempty"`
 	PostRestore        string           `json:"postRestore,omitempty"`
 	RestoreSecrets     *bool            `json:"restoreSecrets,omitempty"`

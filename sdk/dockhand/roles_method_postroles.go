@@ -9,13 +9,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostRolesOperationResponse is the result of PostRoles.
-type PostRolesOperationResponse struct {
+// PostRolesResponse is the result of PostRoles.
+type PostRolesResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostRoles calls POST /api/roles. Create a custom role (enterprise; admin required when auth is enabled).
-func (c Client) PostRoles(ctx context.Context, input PostRolesRequest) (result PostRolesOperationResponse, err error) {
+func (c Client) PostRoles(ctx context.Context, input PostRolesRequest) (result PostRolesResponse, err error) {
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{

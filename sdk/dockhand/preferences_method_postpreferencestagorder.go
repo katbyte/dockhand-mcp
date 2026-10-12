@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostPreferencesTagOrderOperationResponse is the result of PostPreferencesTagOrder.
-type PostPreferencesTagOrderOperationResponse struct {
+// PostPreferencesTagOrderResponse is the result of PostPreferencesTagOrder.
+//
+// Answer is the PostPreferencesTagOrderAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostPreferencesTagOrderResponse struct {
 	HttpResponse *http.Response
-	Model        *PostPreferencesTagOrderResponse
+	Answer       *PostPreferencesTagOrderAnswer
+	*PostPreferencesTagOrderAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostPreferencesTagOrderResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostPreferencesTagOrderAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostPreferencesTagOrderResponse) Record() (PostPreferencesTagOrderAnswer, error) {
+	if r.Answer == nil {
+		return PostPreferencesTagOrderAnswer{}, errors.New("PostPreferencesTagOrder answered no PostPreferencesTagOrderAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostPreferencesTagOrder calls POST /api/preferences/tag-order. Save the tag order.
-func (c Client) PostPreferencesTagOrder(ctx context.Context, input PostPreferencesTagOrderRequest) (result PostPreferencesTagOrderOperationResponse, err error) {
+func (c Client) PostPreferencesTagOrder(ctx context.Context, input PostPreferencesTagOrderRequest) (result PostPreferencesTagOrderResponse, err error) {
+	result.PostPreferencesTagOrderAnswer = &PostPreferencesTagOrderAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostPreferencesTagOrder(ctx context.Context, input PostPreferenc
 		return
 	}
 
-	var model PostPreferencesTagOrderResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostPreferencesTagOrderAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostPreferencesTagOrderAnswer = result.Answer
 
 	return
 }

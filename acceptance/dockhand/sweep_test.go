@@ -37,6 +37,7 @@ func loadDefinitions(t *testing.T) *definitions.Service {
 // sweepStack is a compose stack brought up on alpha for the sweep, from outside Dockhand, with a service that writes a log and keeps a volume.
 const (
 	sweepStack   = "sweep"
+	sweepKept    = "sweep-kept"
 	sweepCompose = `name: sweep
 services:
   app:
@@ -68,18 +69,26 @@ func sweepFixtures(t *testing.T) sweep.Fixtures {
 	})
 
 	env := world.Env(testenv.Alpha)
-	containers, err := c.GetContainers(t.Context(), dockhand.GetContainersOperationOptions{Env: &env})
+	// and a stack Dockhand made itself, never brought up: the one the sweep's containers run in was made outside it, and Dockhand keeps a record of
+	// where a stack came from only for its own
+	if _, err := c.PostStacks(t.Context(), dockhand.PostStacksRequest{Name: sweepKept, Compose: "services:\n  app:\n    image: " + world.Image + "\n    command: sleep 1000\n", Start: new(false)}, dockhand.PostStacksOptions{Env: env}); err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() {
+		_, _ = c.DeleteStacksByName(ctx, sweepKept, dockhand.DeleteStacksByNameOptions{Env: env, Force: new(true)})
+	})
+	containers, err := c.GetContainers(t.Context(), dockhand.GetContainersOptions{Env: env})
 	if err != nil {
 		t.Fatal(err)
 	}
-	var container dockhand.GetContainersResponse
-	for _, listed := range containers.Model {
+	var container dockhand.GetContainersAnswer
+	for _, listed := range containers.Answer {
 		if listed.Name == sweepStack+"-app-1" {
 			container = listed
 		}
 	}
 	if container.Id == "" {
-		t.Fatalf("the sweep's container is not among the %d on alpha", len(containers.Model))
+		t.Fatalf("the sweep's container is not among the %d on alpha", len(containers.Answer))
 	}
 	network, err := world.Docker(t.Context(), testenv.Alpha, "network", "inspect", "-f", "{{.Id}}", sweepStack+"_default")
 	if err != nil {
@@ -88,7 +97,7 @@ func sweepFixtures(t *testing.T) sweep.Fixtures {
 
 	fixtures := sweep.Fixtures{
 		Path: map[string]string{
-			"environments/id": strconv.Itoa(env),
+			"environments/id": strconv.Itoa(int(env)),
 			"containers/id":   container.Id,
 			"images/id":       container.ImageId,
 			"networks/id":     strings.TrimSpace(network),
@@ -113,16 +122,16 @@ func sweepFixtures(t *testing.T) sweep.Fixtures {
 			"term":       "busybox",
 			"registry":   "1",
 		},
-		Always: map[string]string{"env": strconv.Itoa(env)},
+		Always: map[string]string{"env": strconv.Itoa(int(env))},
 	}
 
 	// with its login on the server has a user: the administrator the stage made
 	if world.Stage == testenv.StageLogin {
 		users, err := c.GetUsers(t.Context())
-		if err != nil || len(users.Model) == 0 {
-			t.Fatalf("the users of a server with its login on = %d, %v", len(users.Model), err)
+		if err != nil || len(users.Answer) == 0 {
+			t.Fatalf("the users of a server with its login on = %d, %v", len(users.Answer), err)
 		}
-		fixtures.Path["users/id"] = strconv.Itoa(users.Model[0].Id)
+		fixtures.Path["users/id"] = strconv.Itoa(int(users.Answer[0].Id))
 	}
 
 	return fixtures

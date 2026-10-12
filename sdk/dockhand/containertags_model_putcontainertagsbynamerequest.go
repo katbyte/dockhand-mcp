@@ -4,5 +4,5 @@ package dockhand
 
 // PutContainerTagsByNameRequest is an object the document declares inline.
 type PutContainerTagsByNameRequest struct {
-	TagIds []int `json:"tagIds"`
+	TagIds []TagID `json:"tagIds"`
 }

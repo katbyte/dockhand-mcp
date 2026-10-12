@@ -4,8 +4,8 @@ package dockhand
 
 // PostHawserTokensRequest is an object the document declares inline.
 type PostHawserTokensRequest struct {
-	EnvironmentId int    `json:"environmentId"`
-	ExpiresAt     string `json:"expiresAt,omitempty"`
-	Name          string `json:"name"`
-	RawToken      string `json:"rawToken,omitempty"`
+	EnvironmentId EnvironmentID `json:"environmentId"`
+	ExpiresAt     Time          `json:"expiresAt,omitzero"`
+	Name          string        `json:"name"`
+	RawToken      string        `json:"rawToken,omitempty"`
 }

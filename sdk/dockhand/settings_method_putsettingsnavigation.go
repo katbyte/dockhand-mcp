@@ -4,31 +4,54 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutSettingsNavigationOperationResponse is the result of PutSettingsNavigation.
-type PutSettingsNavigationOperationResponse struct {
+// PutSettingsNavigationResponse is the result of PutSettingsNavigation.
+//
+// Answer is the PutSettingsNavigationAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PutSettingsNavigationResponse struct {
 	HttpResponse *http.Response
-	Model        *PutSettingsNavigationResponse
+	Answer       *PutSettingsNavigationAnswer
+	*PutSettingsNavigationAnswer
 }
 
-// PutSettingsNavigationOperationOptions holds the query and header parameters of PutSettingsNavigation.
-type PutSettingsNavigationOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutSettingsNavigationResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutSettingsNavigationAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutSettingsNavigationResponse) Record() (PutSettingsNavigationAnswer, error) {
+	if r.Answer == nil {
+		return PutSettingsNavigationAnswer{}, errors.New("PutSettingsNavigation answered no PutSettingsNavigationAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PutSettingsNavigationOptions holds the query and header parameters of PutSettingsNavigation.
+type PutSettingsNavigationOptions struct {
 	// Preference scope to update — "global" (default) or "user"
 	Scope string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PutSettingsNavigationOperationOptions) ToHeaders() *client.Headers {
+func (o PutSettingsNavigationOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PutSettingsNavigationOperationOptions) ToQuery() *client.QueryParams {
+func (o PutSettingsNavigationOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Scope != "" {
 		out.Append("scope", o.Scope)
@@ -37,14 +60,24 @@ func (o PutSettingsNavigationOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // PutSettingsNavigation calls PUT /api/settings/navigation. Update navigation preferences (landing page, env-click target) at global or per-user scope.
-func (c Client) PutSettingsNavigation(ctx context.Context, input PutSettingsNavigationRequest, options PutSettingsNavigationOperationOptions) (result PutSettingsNavigationOperationResponse, err error) {
+func (c Client) PutSettingsNavigation(ctx context.Context, input PutSettingsNavigationRequest, options ...PutSettingsNavigationOptions) (result PutSettingsNavigationResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PutSettingsNavigation takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PutSettingsNavigationOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PutSettingsNavigationAnswer = &PutSettingsNavigationAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPut,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/settings/navigation",
 	}
 
@@ -66,11 +99,12 @@ func (c Client) PutSettingsNavigation(ctx context.Context, input PutSettingsNavi
 		return
 	}
 
-	var model PutSettingsNavigationResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PutSettingsNavigationAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PutSettingsNavigationAnswer = result.Answer
 
 	return
 }

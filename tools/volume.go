@@ -31,7 +31,7 @@ type volumeRow struct {
 }
 
 // volumeRowOf is a volume of an environment as the tools give one.
-func volumeRowOf(env string, v *dockhand.GetVolumesResponse) volumeRow {
+func volumeRowOf(env string, v *dockhand.GetVolumesAnswer) volumeRow {
 	row := volumeRow{Env: env, Name: v.Name, Driver: v.Driver, Stack: v.Labels[labelStack], Created: v.Created, UsedBy: make([]string, 0, len(v.UsedBy))}
 	for i := range v.UsedBy {
 		row.UsedBy = append(row.UsedBy, v.UsedBy[i].ContainerName)
@@ -42,13 +42,13 @@ func volumeRowOf(env string, v *dockhand.GetVolumesResponse) volumeRow {
 }
 
 // volumesOf is every volume on an environment.
-func (r *registry) volumesOf(ctx context.Context, env environment) ([]dockhand.GetVolumesResponse, error) {
-	listed, err := r.dock.GetVolumes(ctx, dockhand.GetVolumesOperationOptions{Env: &env.ID})
+func (r *registry) volumesOf(ctx context.Context, env environment) ([]dockhand.GetVolumesAnswer, error) {
+	listed, err := r.dock.GetVolumes(ctx, dockhand.GetVolumesOptions{Env: env.ID})
 	if err != nil {
 		return nil, refusal(err)
 	}
 
-	return listed.Model, nil
+	return listed.Answer, nil
 }
 
 // volumeArg is the arguments of a tool about one volume: which, and where to look for it.
@@ -61,7 +61,7 @@ type volumeArg struct {
 // locatedVolume is one volume and the environment it is on.
 type locatedVolume struct {
 	Env    environment
-	Volume dockhand.GetVolumesResponse
+	Volume dockhand.GetVolumesAnswer
 }
 
 // findVolume is the one volume a call names, looked for on the environment given or on every one, by its name in full: a volume holds data, and one
@@ -119,7 +119,7 @@ func (r *registry) mountersOf(ctx context.Context, at *locatedVolume) []string {
 	states := map[string]string{}
 	if containers, err := r.containersOf(ctx, at.Env); err == nil {
 		for i := range containers {
-			states[containers[i].Id] = containers[i].State
+			states[containers[i].Id] = string(containers[i].State)
 		}
 	}
 
@@ -257,10 +257,10 @@ func registerVolumeTools(r *registry) {
 		out.Labels = labels
 
 		// Docker's own record of the volume has what the list leaves out: what its driver was told
-		if one, err := r.dock.GetVolumesByNameInspect(ctx, at.Volume.Name, dockhand.GetVolumesByNameInspectOperationOptions{Env: &at.Env.ID}); err != nil {
+		if one, err := r.dock.GetVolumesByNameInspect(ctx, at.Volume.Name, dockhand.GetVolumesByNameInspectOptions{Env: at.Env.ID}); err != nil {
 			out.Note = "what its driver was told could not be read: " + refusal(err).Error()
 		} else {
-			options, more := maskedLabels(one.Model.Options, in.RevealSecrets)
+			options, more := maskedLabels(one.Answer.Options, in.RevealSecrets)
 			out.Options, hidden = options, hidden+more
 		}
 		if hidden > 0 {
@@ -303,7 +303,7 @@ func registerVolumeTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("the volumes of %s could not be listed, so nothing was made: %w", env.Name, err)
 		}
-		if slices.ContainsFunc(before, func(v dockhand.GetVolumesResponse) bool { return v.Name == name }) {
+		if slices.ContainsFunc(before, func(v dockhand.GetVolumesAnswer) bool { return v.Name == name }) {
 			return nil, out, fmt.Errorf("%s already has a volume named %s, which was left as it is: volume_get describes it", env.Name, name)
 		}
 		if in.DryRun {
@@ -319,11 +319,11 @@ func registerVolumeTools(r *registry) {
 				body.Labels[label] = value
 			}
 		}
-		made, err := r.dock.PostVolumes(ctx, body, dockhand.PostVolumesOperationOptions{Env: &env.ID})
+		made, err := r.dock.PostVolumes(ctx, body, dockhand.PostVolumesOptions{Env: env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("the volume %s was not made on %s: %w", name, env.Name, refusal(err))
 		}
-		if !yes(made.Model.Success) {
+		if !made.Answer.Success {
 			return nil, out, fmt.Errorf("making the volume %s was answered without its being said to have succeeded: volume_list says whether it is there", name)
 		}
 
@@ -379,7 +379,7 @@ func registerVolumeTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("the volumes of %s could not be listed, so nothing was copied: %w", at.Env.Name, err)
 		}
-		if slices.ContainsFunc(before, func(v dockhand.GetVolumesResponse) bool { return v.Name == as }) {
+		if slices.ContainsFunc(before, func(v dockhand.GetVolumesAnswer) bool { return v.Name == as }) {
 			return nil, out, fmt.Errorf("%s already has a volume named %s, which was left as it is: a copy is made into a new volume", at.Env.Name, as)
 		}
 		if in.DryRun {
@@ -388,11 +388,11 @@ func registerVolumeTools(r *registry) {
 			return nil, out, nil
 		}
 
-		copied, err := r.dock.PostVolumesByNameClone(ctx, at.Volume.Name, dockhand.PostVolumesByNameCloneRequest{Name: as}, dockhand.PostVolumesByNameCloneOperationOptions{Env: &at.Env.ID})
+		copied, err := r.dock.PostVolumesByNameClone(ctx, at.Volume.Name, dockhand.PostVolumesByNameCloneRequest{Name: as}, dockhand.PostVolumesByNameCloneOptions{Env: at.Env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("%s was not copied into %s: %w", out.From, as, refusal(err))
 		}
-		if !yes(copied.Model.Success) {
+		if !copied.Answer.Success {
 			return nil, out, fmt.Errorf("copying %s into %s was answered without its being said to have succeeded: volume_list says whether it is there", out.From, as)
 		}
 
@@ -448,7 +448,7 @@ func registerVolumeTools(r *registry) {
 		dir := path.Clean("/" + strings.TrimSpace(in.Path))
 		out := volumeFilesOut{Env: at.Env.Name, Volume: at.Volume.Name, Path: dir, Entries: []volumeEntry{}}
 
-		listed, err := r.dock.GetVolumesByNameBrowse(ctx, at.Volume.Name, dockhand.GetVolumesByNameBrowseOperationOptions{Env: &at.Env.ID, Path: dir})
+		listed, err := r.dock.GetVolumesByNameBrowse(ctx, at.Volume.Name, dockhand.GetVolumesByNameBrowseOptions{Env: at.Env.ID, Path: dir})
 		// the helper is wanted for this one look and no longer, however the look went
 		unreleased := r.release(ctx, &at)
 		switch {
@@ -460,14 +460,14 @@ func registerVolumeTools(r *registry) {
 		}
 		out.Note = unreleased
 
-		for i := range listed.Model.Entries {
-			e := &listed.Model.Entries[i]
-			entry := volumeEntry{Name: e.Name, Type: e.Type, Size: e.Size, Modified: e.Modified, Mode: e.Permissions}
+		for i := range listed.Answer.Entries {
+			e := &listed.Answer.Entries[i]
+			entry := volumeEntry{Name: e.Name, Type: string(e.Type), Size: e.Size, Modified: e.Modified, Mode: e.Permissions}
 			if e.Owner != "" || e.Group != "" {
 				entry.Owner = e.Owner + ":" + e.Group
 			}
 			// asked for a file, Dockhand answers the file alone, by where the helper has it
-			if len(listed.Model.Entries) == 1 && strings.HasPrefix(e.Name, "/") {
+			if len(listed.Answer.Entries) == 1 && strings.HasPrefix(e.Name, "/") {
 				entry.Name = path.Base(e.Name)
 				out.Note = noted(fmt.Sprintf("%s is a %s, not a directory: volume_read reads it", dir, cmp.Or(e.Type, "file")), unreleased)
 			}
@@ -514,7 +514,7 @@ func registerVolumeTools(r *registry) {
 		file := path.Clean("/" + strings.TrimSpace(in.Path))
 		out := volumeReadOut{Env: at.Env.Name, Volume: at.Volume.Name, Path: file}
 
-		read, err := r.dock.GetVolumesByNameBrowseContent(ctx, at.Volume.Name, dockhand.GetVolumesByNameBrowseContentOperationOptions{Env: &at.Env.ID, Path: file})
+		read, err := r.dock.GetVolumesByNameBrowseContent(ctx, at.Volume.Name, dockhand.GetVolumesByNameBrowseContentOptions{Env: at.Env.ID, Path: file})
 		// the helper is wanted for this one read and no longer, however the read went
 		unreleased := r.release(ctx, &at)
 		switch status := client.StatusCode(err); {
@@ -529,7 +529,7 @@ func registerVolumeTools(r *registry) {
 		default:
 		}
 
-		text := read.Model.Content
+		text := read.Answer.Content
 		// Dockhand hands a file over as text whatever it is: what was not text shows as bytes that are none, or as the mark of ones that could not be
 		// read
 		if strings.ContainsRune(text, 0) || strings.ContainsRune(text, utf8.RuneError) {
@@ -585,11 +585,11 @@ func registerVolumeTools(r *registry) {
 			return nil, out, nil
 		}
 
-		gone, err := r.dock.DeleteVolumesByName(ctx, at.Volume.Name, dockhand.DeleteVolumesByNameOperationOptions{Env: &at.Env.ID})
+		gone, err := r.dock.DeleteVolumesByName(ctx, at.Volume.Name, dockhand.DeleteVolumesByNameOptions{Env: at.Env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("the volume %s was not removed: %w", out.Name, refusal(err))
 		}
-		if !yes(gone.Model.Success) {
+		if !gone.Answer.Success {
 			return nil, out, fmt.Errorf("the removal of the volume %s was answered without its being said to have succeeded: volume_list says whether it is still there", out.Name)
 		}
 
@@ -599,7 +599,7 @@ func registerVolumeTools(r *registry) {
 
 			return nil, out, nil //nolint:nilerr // the removal went through: that it could not be read back is said in the answer
 		}
-		if slices.ContainsFunc(left, func(v dockhand.GetVolumesResponse) bool { return v.Name == at.Volume.Name }) {
+		if slices.ContainsFunc(left, func(v dockhand.GetVolumesAnswer) bool { return v.Name == at.Volume.Name }) {
 			return nil, out, fmt.Errorf("the removal of the volume %s was answered as done, and it is still listed", out.Name)
 		}
 		out.Removed = true
@@ -649,18 +649,18 @@ func registerVolumeTools(r *registry) {
 			return nil, out, nil
 		}
 
-		pruned, err := r.dock.PostPruneVolumes(ctx, dockhand.PostPruneVolumesOperationOptions{Env: &env.ID})
+		pruned, err := r.dock.PostPruneVolumes(ctx, dockhand.PostPruneVolumesOptions{Env: env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("the volumes of %s were not pruned: %w", env.Name, refusal(err))
 		}
-		if !yes(pruned.Model.Success) || pruned.Model.Result == nil {
+		if !pruned.Answer.Success || pruned.Answer.Result == nil {
 			return nil, out, fmt.Errorf("the pruning of %s was answered without its being said to have succeeded: volume_list says what is left", env.Name)
 		}
 
 		out.WouldGo = nil
-		out.Removed = append(out.Removed, pruned.Model.Result.VolumesDeleted...)
+		out.Removed = append(out.Removed, pruned.Answer.Result.VolumesDeleted...)
 		slices.Sort(out.Removed)
-		out.FreedMB = megabytes(pruned.Model.Result.SpaceReclaimed)
+		out.FreedMB = megabytes(pruned.Answer.Result.SpaceReclaimed)
 		if len(out.Removed) == 0 {
 			out.Note = "nothing was removed: a container came to mount what was unused, or it had gone already"
 		}
@@ -697,11 +697,11 @@ const (
 func (r *registry) release(ctx context.Context, at *locatedVolume) string {
 	const helper = "the helper container Dockhand started on the host to look inside the volume was not "
 
-	released, err := r.dock.PostVolumesByNameBrowseRelease(context.WithoutCancel(ctx), at.Volume.Name, dockhand.PostVolumesByNameBrowseReleaseOperationOptions{Env: &at.Env.ID})
+	released, err := r.dock.PostVolumesByNameBrowseRelease(context.WithoutCancel(ctx), at.Volume.Name, dockhand.PostVolumesByNameBrowseReleaseOptions{Env: at.Env.ID})
 	switch {
 	case err != nil:
 		return helper + "taken away: " + err.Error()
-	case !yes(released.Model.Success):
+	case !released.Answer.Success:
 		return helper + "said to have been taken away"
 	default:
 	}
@@ -709,7 +709,7 @@ func (r *registry) release(ctx context.Context, at *locatedVolume) string {
 	// Dockhand answers before the helper is gone, and a volume a helper still has is one Docker will not remove: it is waited for, a little
 	for range helperPolls {
 		listed, err := r.containersOf(context.WithoutCancel(ctx), at.Env)
-		still := func(c dockhand.GetContainersResponse) bool {
+		still := func(c dockhand.GetContainersAnswer) bool {
 			return strings.HasPrefix(c.Name, helperPrefix+at.Volume.Name+"-")
 		}
 		if err != nil || !slices.ContainsFunc(listed, still) {

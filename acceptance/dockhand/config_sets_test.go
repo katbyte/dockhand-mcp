@@ -18,13 +18,13 @@ func TestConfigSetsSavedChangedAndRemoved(t *testing.T) {
 	c := dock(t)
 	ctx := t.Context()
 
-	sets := func() map[string]dockhand.GetConfigSetsResponse {
+	sets := func() map[string]dockhand.GetConfigSetsAnswer {
 		listed, err := c.GetConfigSets(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}
-		out := map[string]dockhand.GetConfigSetsResponse{}
-		for _, set := range listed.Model {
+		out := map[string]dockhand.GetConfigSetsAnswer{}
+		for _, set := range listed.Answer {
 			out[set.Name] = set
 		}
 
@@ -35,7 +35,7 @@ func TestConfigSetsSavedChangedAndRemoved(t *testing.T) {
 		if err != nil {
 			return
 		}
-		for _, set := range listed.Model {
+		for _, set := range listed.Answer {
 			if strings.HasPrefix(strings.ToLower(set.Name), "it-set-") {
 				_, _ = c.DeleteConfigSetsById(noCancel(t), set.Id)
 			}
@@ -50,16 +50,16 @@ func TestConfigSetsSavedChangedAndRemoved(t *testing.T) {
 		t.Errorf("a config set with no name = %v, want a 400", err)
 	}
 	plain, err := c.PostConfigSets(ctx, dockhand.PostConfigSetsRequest{Name: " " + name + " "})
-	if err != nil || plain.Model.Id == 0 || plain.Model.Name != name || plain.Model.NetworkMode != "bridge" || plain.Model.RestartPolicy != "no" || plain.Model.Description != "" || len(plain.Model.EnvVars)+len(plain.Model.Labels)+len(plain.Model.Ports)+len(plain.Model.Volumes) != 0 || plain.Model.CreatedAt == "" {
-		t.Fatalf("a config set saved with a name alone = %+v, %v", plain.Model, err)
+	if err != nil || plain.Answer.Id == 0 || plain.Answer.Name != name || plain.Answer.NetworkMode != "bridge" || plain.Answer.RestartPolicy != "no" || plain.Answer.Description != "" || len(plain.Answer.EnvVars)+len(plain.Answer.Labels)+len(plain.Answer.Ports)+len(plain.Answer.Volumes) != 0 || plain.Answer.CreatedAt.IsZero() {
+		t.Fatalf("a config set saved with a name alone = %+v, %v", plain.Answer, err)
 	}
 	// the same name is refused, and in another case it is another set
 	if _, err := c.PostConfigSets(ctx, dockhand.PostConfigSetsRequest{Name: name}); client.StatusCode(err) != http.StatusBadRequest {
 		t.Errorf("a second config set of the same name = %v, want a 400", err)
 	}
 	twin, err := c.PostConfigSets(ctx, dockhand.PostConfigSetsRequest{Name: strings.ToUpper(name)})
-	if err != nil || twin.Model.Id == plain.Model.Id {
-		t.Fatalf("a config set of the same name in another case = %+v, %v: names used to differ by their case", twin.Model, err)
+	if err != nil || twin.Answer.Id == plain.Answer.Id {
+		t.Fatalf("a config set of the same name in another case = %+v, %v: names used to differ by their case", twin.Answer, err)
 	}
 
 	// everything one holds is given back as it was sent, a value that is a secret among it
@@ -73,10 +73,10 @@ func TestConfigSetsSavedChangedAndRemoved(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	id := made.Model.Id
+	id := made.Answer.Id
 	read, err := c.GetConfigSetsById(ctx, id)
-	if err != nil || read.Model.Name != full || read.Model.Description != "all of it" || read.Model.NetworkMode != "host" || read.Model.RestartPolicy != "unless-stopped" || len(read.Model.EnvVars) != 2 || read.Model.EnvVars[1].Key != "API_TOKEN" || read.Model.EnvVars[1].Value != "not-a-real-token" || len(read.Model.Labels) != 1 || read.Model.Labels[0].Value != "ops" || len(read.Model.Ports) != 1 || read.Model.Ports[0].HostPort != "8080" || read.Model.Ports[0].ContainerPort != "80" || read.Model.Ports[0].Protocol != "tcp" || len(read.Model.Volumes) != 1 || read.Model.Volumes[0].HostPath != "/srv/data" || read.Model.Volumes[0].Mode != "rw" {
-		t.Errorf("the config set read by its number = %+v, %v", read.Model, err)
+	if err != nil || read.Answer.Name != full || read.Answer.Description != "all of it" || read.Answer.NetworkMode != "host" || read.Answer.RestartPolicy != "unless-stopped" || len(read.Answer.EnvVars) != 2 || read.Answer.EnvVars[1].Key != "API_TOKEN" || read.Answer.EnvVars[1].Value != "not-a-real-token" || len(read.Answer.Labels) != 1 || read.Answer.Labels[0].Value != "ops" || len(read.Answer.Ports) != 1 || read.Answer.Ports[0].HostPort != "8080" || read.Answer.Ports[0].ContainerPort != "80" || read.Answer.Ports[0].Protocol != "tcp" || len(read.Answer.Volumes) != 1 || read.Answer.Volumes[0].HostPath != "/srv/data" || read.Answer.Volumes[0].Mode != "rw" {
+		t.Errorf("the config set read by its number = %+v, %v", read.Answer, err)
 	}
 	if listed := sets()[full]; listed.Id != id || len(listed.EnvVars) != 2 || listed.EnvVars[1].Value != "not-a-real-token" || len(sets()) != before+3 {
 		t.Errorf("the config set as listed = %+v, among %d", listed, len(sets()))
@@ -89,21 +89,21 @@ func TestConfigSetsSavedChangedAndRemoved(t *testing.T) {
 		Ports:   []dockhand.PostConfigSetsRequestPorts{{HostPort: "not-a-port", ContainerPort: "99999", Protocol: "icmp"}},
 		Volumes: []dockhand.PostConfigSetsRequestVolumes{{HostPath: "", ContainerPath: "relative", Mode: "zz"}},
 	})
-	if err != nil || odd.Model.NetworkMode != "no-such-mode" || odd.Model.RestartPolicy != "whenever" || len(odd.Model.EnvVars) != 3 || odd.Model.EnvVars[0].Key != "" || odd.Model.EnvVars[2].Key != "A B" || odd.Model.Ports[0].HostPort != "not-a-port" || odd.Model.Volumes[0].Mode != "zz" {
-		t.Errorf("a config set of nonsense = %+v, %v: Dockhand used to save it as it came, which is why the tools check one first", odd.Model, err)
+	if err != nil || odd.Answer.NetworkMode != "no-such-mode" || odd.Answer.RestartPolicy != "whenever" || len(odd.Answer.EnvVars) != 3 || odd.Answer.EnvVars[0].Key != "" || odd.Answer.EnvVars[2].Key != "A B" || odd.Answer.Ports[0].HostPort != "not-a-port" || odd.Answer.Volumes[0].Mode != "zz" {
+		t.Errorf("a config set of nonsense = %+v, %v: Dockhand used to save it as it came, which is why the tools check one first", odd.Answer, err)
 	}
 
 	// a change sets what it is sent and keeps the rest; an empty list takes everything of its kind away
 	changed, err := c.PutConfigSetsById(ctx, id, dockhand.PutConfigSetsByIdRequest{Name: " " + full + "-renamed ", RestartPolicy: "always", Labels: []dockhand.PutConfigSetsByIdRequestLabels{}})
-	if err != nil || changed.Model.Name != full+"-renamed" || changed.Model.RestartPolicy != "always" || len(changed.Model.Labels) != 0 || len(changed.Model.EnvVars) != 2 || changed.Model.Description != "all of it" || changed.Model.NetworkMode != "host" || len(changed.Model.Ports) != 1 {
-		t.Errorf("the config set changed = %+v, %v", changed.Model, err)
+	if err != nil || changed.Answer.Name != full+"-renamed" || changed.Answer.RestartPolicy != "always" || len(changed.Answer.Labels) != 0 || len(changed.Answer.EnvVars) != 2 || changed.Answer.Description != "all of it" || changed.Answer.NetworkMode != "host" || len(changed.Answer.Ports) != 1 {
+		t.Errorf("the config set changed = %+v, %v", changed.Answer, err)
 	}
 	// another set's name is refused, and its description is forgotten when it is sent empty, which the generated call leaves out
 	if _, err := c.PutConfigSetsById(ctx, id, dockhand.PutConfigSetsByIdRequest{Name: name}); client.StatusCode(err) != http.StatusBadRequest {
 		t.Errorf("a config set renamed to another's name = %v, want a 400", err)
 	}
-	if forgot, err := c.ForgetConfigSetDescription(ctx, id); err != nil || forgot.Model.Description != "" || forgot.Model.Name != full+"-renamed" || len(forgot.Model.EnvVars) != 2 {
-		t.Errorf("the description forgotten = %+v, %v", forgot.Model, err)
+	if forgot, err := c.ForgetConfigSetDescription(ctx, int(id)); err != nil || forgot.Answer.Description != "" || forgot.Answer.Name != full+"-renamed" || len(forgot.Answer.EnvVars) != 2 {
+		t.Errorf("the description forgotten = %+v, %v", forgot.Answer, err)
 	}
 
 	// a set there is none of is said to be none, whatever is asked of it
@@ -118,9 +118,9 @@ func TestConfigSetsSavedChangedAndRemoved(t *testing.T) {
 	}
 
 	// removed, each, and the list is as it was
-	for _, number := range []int{plain.Model.Id, twin.Model.Id, id, odd.Model.Id} {
-		if gone, err := c.DeleteConfigSetsById(ctx, number); err != nil || !yes(gone.Model.Success) {
-			t.Errorf("removing config set %d = %+v, %v", number, gone.Model, err)
+	for _, number := range []int{int(plain.Answer.Id), int(twin.Answer.Id), int(id), int(odd.Answer.Id)} {
+		if gone, err := c.DeleteConfigSetsById(ctx, dockhand.ConfigSetID(number)); err != nil || !gone.Answer.Success {
+			t.Errorf("removing config set %d = %+v, %v", number, gone.Answer, err)
 		}
 	}
 	if after := len(sets()); after != before {

@@ -23,7 +23,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetDebugMemoryResponse"
+          "ReferenceName": "GetDebugMemoryAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -33,7 +33,7 @@
   ],
   "Models": [
     {
-      "Name": "GetDebugMemoryResponse",
+      "Name": "GetDebugMemoryAnswer",
       "Fields": [
         {
           "Name": "GcAvailable",
@@ -98,7 +98,7 @@
           "Name": "Timestamp",
           "JsonName": "timestamp",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           },
           "Required": true
         },

@@ -5,6 +5,7 @@ package dockhand
 import (
 	"context"
 	"fmt"
+	"io"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -12,18 +13,51 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetContainersByIdLogsStreamOperationResponse is the result of GetContainersByIdLogsStream.
+// GetContainersByIdLogsStreamResponse is the result of GetContainersByIdLogsStream.
 //
-// The operation answers text/event-stream, left unread in HttpResponse.Body, which
-// the caller must close.
-type GetContainersByIdLogsStreamOperationResponse struct {
+// The operation answers text/event-stream, left open in HttpResponse.Body: Reader hands it
+// over for the caller to read event by event and close; it has no end to copy to.
+type GetContainersByIdLogsStreamResponse struct {
 	HttpResponse *http.Response
 }
 
-// GetContainersByIdLogsStreamOperationOptions holds the query and header parameters of GetContainersByIdLogsStream.
-type GetContainersByIdLogsStreamOperationOptions struct {
+// Reader is the file's body, for the caller to read and close, and the content
+// type the server named it; an empty body and "" when the operation gave no
+// answer, so a deferred Close is always safe. The body stays readable after
+// the result goes out of scope, and has no size or time limit of the client's:
+// the caller's context is the one bound on a slow read.
+func (r GetContainersByIdLogsStreamResponse) Reader() (io.ReadCloser, string) {
+	if r.HttpResponse == nil || r.HttpResponse.Body == nil {
+		return http.NoBody, ""
+	}
+
+	return r.HttpResponse.Body, r.HttpResponse.Header.Get("Content-Type")
+}
+
+// ContentLength is the file's length as the server named it, or -1 when it
+// did not, to refuse one too big before reading any of it.
+func (r GetContainersByIdLogsStreamResponse) ContentLength() int64 {
+	if r.HttpResponse == nil {
+		return -1
+	}
+
+	return r.HttpResponse.ContentLength
+}
+
+// Filename is the name the server gave the file (Content-Disposition), or ""
+// when it gave none, for a caller saving it under the server's name.
+func (r GetContainersByIdLogsStreamResponse) Filename() string {
+	if r.HttpResponse == nil {
+		return ""
+	}
+
+	return client.Filename(r.HttpResponse.Header)
+}
+
+// GetContainersByIdLogsStreamOptions holds the query and header parameters of GetContainersByIdLogsStream.
+type GetContainersByIdLogsStreamOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// Number of trailing log lines to prime the stream with (default "100")
 	Tail string
@@ -36,16 +70,16 @@ type GetContainersByIdLogsStreamOperationOptions struct {
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetContainersByIdLogsStreamOperationOptions) ToHeaders() *client.Headers {
+func (o GetContainersByIdLogsStreamOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetContainersByIdLogsStreamOperationOptions) ToQuery() *client.QueryParams {
+func (o GetContainersByIdLogsStreamOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	if o.Tail != "" {
 		out.Append("tail", o.Tail)
@@ -60,7 +94,7 @@ func (o GetContainersByIdLogsStreamOperationOptions) ToQuery() *client.QueryPara
 }
 
 // GetContainersByIdLogsStream calls GET /api/containers/{id}/logs/stream. Stream a container's logs live as Server-Sent Events (connected/log/end/error events, with keepalive heartbeats).
-func (c Client) GetContainersByIdLogsStream(ctx context.Context, id string, options GetContainersByIdLogsStreamOperationOptions) (result GetContainersByIdLogsStreamOperationResponse, err error) {
+func (c Client) GetContainersByIdLogsStream(ctx context.Context, id string, options GetContainersByIdLogsStreamOptions) (result GetContainersByIdLogsStreamResponse, err error) {
 	opts := client.RequestOptions{
 		Accept: "text/event-stream",
 		ExpectedStatusCodes: []int{

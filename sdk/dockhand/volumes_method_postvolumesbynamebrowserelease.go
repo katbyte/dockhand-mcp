@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,41 +13,72 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostVolumesByNameBrowseReleaseOperationResponse is the result of PostVolumesByNameBrowseRelease.
-type PostVolumesByNameBrowseReleaseOperationResponse struct {
+// PostVolumesByNameBrowseReleaseResponse is the result of PostVolumesByNameBrowseRelease.
+//
+// Answer is the PostVolumesByNameBrowseReleaseAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostVolumesByNameBrowseReleaseResponse struct {
 	HttpResponse *http.Response
-	Model        *PostVolumesByNameBrowseReleaseResponse
+	Answer       *PostVolumesByNameBrowseReleaseAnswer
+	*PostVolumesByNameBrowseReleaseAnswer
 }
 
-// PostVolumesByNameBrowseReleaseOperationOptions holds the query and header parameters of PostVolumesByNameBrowseRelease.
-type PostVolumesByNameBrowseReleaseOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostVolumesByNameBrowseReleaseResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostVolumesByNameBrowseReleaseAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostVolumesByNameBrowseReleaseResponse) Record() (PostVolumesByNameBrowseReleaseAnswer, error) {
+	if r.Answer == nil {
+		return PostVolumesByNameBrowseReleaseAnswer{}, errors.New("PostVolumesByNameBrowseRelease answered no PostVolumesByNameBrowseReleaseAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostVolumesByNameBrowseReleaseOptions holds the query and header parameters of PostVolumesByNameBrowseRelease.
+type PostVolumesByNameBrowseReleaseOptions struct {
 	// Environment ID the volume belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostVolumesByNameBrowseReleaseOperationOptions) ToHeaders() *client.Headers {
+func (o PostVolumesByNameBrowseReleaseOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostVolumesByNameBrowseReleaseOperationOptions) ToQuery() *client.QueryParams {
+func (o PostVolumesByNameBrowseReleaseOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostVolumesByNameBrowseRelease calls POST /api/volumes/{name}/browse/release. Release the cached helper container used to browse a Docker volume.
-func (c Client) PostVolumesByNameBrowseRelease(ctx context.Context, name string, options PostVolumesByNameBrowseReleaseOperationOptions) (result PostVolumesByNameBrowseReleaseOperationResponse, err error) {
+func (c Client) PostVolumesByNameBrowseRelease(ctx context.Context, name string, options ...PostVolumesByNameBrowseReleaseOptions) (result PostVolumesByNameBrowseReleaseResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostVolumesByNameBrowseRelease takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostVolumesByNameBrowseReleaseOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostVolumesByNameBrowseReleaseAnswer = &PostVolumesByNameBrowseReleaseAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/volumes/%s/browse/release", url.PathEscape(name)),
 	}
 
@@ -64,11 +96,12 @@ func (c Client) PostVolumesByNameBrowseRelease(ctx context.Context, name string,
 		return
 	}
 
-	var model PostVolumesByNameBrowseReleaseResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostVolumesByNameBrowseReleaseAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostVolumesByNameBrowseReleaseAnswer = result.Answer
 
 	return
 }

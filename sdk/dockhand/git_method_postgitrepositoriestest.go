@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostGitRepositoriesTestOperationResponse is the result of PostGitRepositoriesTest.
-type PostGitRepositoriesTestOperationResponse struct {
+// PostGitRepositoriesTestResponse is the result of PostGitRepositoriesTest.
+//
+// Answer is the PostGitRepositoriesTestAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostGitRepositoriesTestResponse struct {
 	HttpResponse *http.Response
-	Model        *PostGitRepositoriesTestResponse
+	Answer       *PostGitRepositoriesTestAnswer
+	*PostGitRepositoriesTestAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostGitRepositoriesTestResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostGitRepositoriesTestAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostGitRepositoriesTestResponse) Record() (PostGitRepositoriesTestAnswer, error) {
+	if r.Answer == nil {
+		return PostGitRepositoriesTestAnswer{}, errors.New("PostGitRepositoriesTest answered no PostGitRepositoriesTestAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostGitRepositoriesTest calls POST /api/git/repositories/test. Test an unsaved repository configuration (url/branch/credentialId) before creating it.
-func (c Client) PostGitRepositoriesTest(ctx context.Context, input PostGitRepositoriesTestRequest) (result PostGitRepositoriesTestOperationResponse, err error) {
+func (c Client) PostGitRepositoriesTest(ctx context.Context, input PostGitRepositoriesTestRequest) (result PostGitRepositoriesTestResponse, err error) {
+	result.PostGitRepositoriesTestAnswer = &PostGitRepositoriesTestAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostGitRepositoriesTest(ctx context.Context, input PostGitReposi
 		return
 	}
 
-	var model PostGitRepositoriesTestResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostGitRepositoriesTestAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostGitRepositoriesTestAnswer = result.Answer
 
 	return
 }

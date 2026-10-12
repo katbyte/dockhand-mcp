@@ -37,7 +37,7 @@ type configSetRow struct {
 	NetworkMode   string            `json:"network_mode,omitempty"   jsonschema:"bridge, host, none or a network's name"`
 	RestartPolicy string            `json:"restart_policy,omitempty" jsonschema:"no, always, unless-stopped or on-failure"`
 	Hidden        int               `json:"hidden,omitempty"         jsonschema:"how many values above are hidden as secrets; config_set_list shows them when asked to with reveal_secrets"`
-	Updated       string            `json:"updated,omitempty"        jsonschema:"when it was last changed, as Dockhand writes it"`
+	Updated       string            `json:"updated,omitempty"        jsonschema:"when it was last changed"`
 	Note          string            `json:"note,omitempty"`
 }
 
@@ -58,8 +58,8 @@ func mountOf(source, target, mode string) string {
 
 // configSetRowOf is a config set as it is shown: its secrets hidden unless they are asked for, and a note when it holds a name more than once, which
 // Dockhand lets it and a list by name cannot show.
-func configSetRowOf(s *dockhand.GetConfigSetsResponse, reveal bool) configSetRow {
-	row := configSetRow{ID: s.Id, Name: s.Name, Description: s.Description, NetworkMode: s.NetworkMode, RestartPolicy: s.RestartPolicy, Updated: s.UpdatedAt}
+func configSetRowOf(s *dockhand.GetConfigSetsAnswer, reveal bool) configSetRow {
+	row := configSetRow{ID: int(s.Id), Name: s.Name, Description: s.Description, NetworkMode: s.NetworkMode, RestartPolicy: s.RestartPolicy, Updated: when(s.UpdatedAt)}
 	twice := 0
 	vars := make(map[string]string, len(s.EnvVars))
 	for _, v := range s.EnvVars {
@@ -93,18 +93,18 @@ func configSetRowOf(s *dockhand.GetConfigSetsResponse, reveal bool) configSetRow
 }
 
 // configSets is every config set the Dockhand keeps.
-func (r *registry) configSets(ctx context.Context) ([]dockhand.GetConfigSetsResponse, error) {
+func (r *registry) configSets(ctx context.Context) ([]dockhand.GetConfigSetsAnswer, error) {
 	listed, err := r.dock.GetConfigSets(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("the config sets could not be listed: %w", refusal(err))
 	}
 
-	return listed.Model, nil
+	return listed.Answer, nil
 }
 
 // configSetIn is the config set of a list a call names, by its number or by its name. Dockhand keeps two whose names differ only by case, so a name
 // is matched letter for letter first, and whatever its case only when that is one set alone.
-func configSetIn(listed []dockhand.GetConfigSetsResponse, given any) (*dockhand.GetConfigSetsResponse, error) {
+func configSetIn(listed []dockhand.GetConfigSetsAnswer, given any) (*dockhand.GetConfigSetsAnswer, error) {
 	wanted, err := named(given, "set")
 	if err != nil {
 		return nil, err
@@ -112,10 +112,10 @@ func configSetIn(listed []dockhand.GetConfigSetsResponse, given any) (*dockhand.
 	if wanted == "" {
 		return nil, errors.New("set is required: the config set's name or number, as config_set_list gives them")
 	}
-	var near []*dockhand.GetConfigSetsResponse
+	var near []*dockhand.GetConfigSetsAnswer
 	names := make([]string, 0, len(listed))
 	for i := range listed {
-		if strconv.Itoa(listed[i].Id) == wanted || listed[i].Name == wanted {
+		if strconv.Itoa(int(listed[i].Id)) == wanted || listed[i].Name == wanted {
 			return &listed[i], nil
 		}
 		if strings.EqualFold(listed[i].Name, wanted) {
@@ -131,7 +131,7 @@ func configSetIn(listed []dockhand.GetConfigSetsResponse, given any) (*dockhand.
 	default:
 		numbers := make([]string, 0, len(near))
 		for _, s := range near {
-			numbers = append(numbers, s.Name+" ("+strconv.Itoa(s.Id)+")")
+			numbers = append(numbers, s.Name+" ("+strconv.Itoa(int(s.Id))+")")
 		}
 
 		return nil, fmt.Errorf("no config set is named %q letter for letter, and %d are but for their case: give the number of one, %s", wanted, len(near), strings.Join(numbers, " or "))
@@ -242,7 +242,7 @@ func (r *registry) configSetBack(ctx context.Context, id int, out *configSetChan
 
 		return
 	}
-	i := slices.IndexFunc(listed, func(s dockhand.GetConfigSetsResponse) bool { return s.Id == id })
+	i := slices.IndexFunc(listed, func(s dockhand.GetConfigSetsAnswer) bool { return int(s.Id) == id })
 	if i < 0 {
 		out.Set = nil
 		out.Note = note(out.Note, "it was saved, and is not among the config sets read back")
@@ -372,7 +372,7 @@ func registerConfigSetTools(r *registry) {
 			return nil, out, fmt.Errorf("the config set %s was not saved: %w", name, refusal(err))
 		}
 		out.Changes = append(out.Changes, "saved "+what)
-		r.configSetBack(ctx, made.Model.Id, &out)
+		r.configSetBack(ctx, int(made.Answer.Id), &out)
 
 		return nil, out, nil
 	})
@@ -438,7 +438,7 @@ func registerConfigSetTools(r *registry) {
 		request := dockhand.PutConfigSetsByIdRequest{}
 		name := strings.TrimSpace(in.Name)
 		if name != "" && name != saved.Name {
-			if i := slices.IndexFunc(listed, func(s dockhand.GetConfigSetsResponse) bool { return s.Id != saved.Id && s.Name == name }); i >= 0 {
+			if i := slices.IndexFunc(listed, func(s dockhand.GetConfigSetsAnswer) bool { return s.Id != saved.Id && s.Name == name }); i >= 0 {
 				return nil, out, fmt.Errorf("another config set is named %s, numbered %d, so %s is not renamed to it", name, listed[i].Id, saved.Name)
 			}
 			request.Name = name
@@ -535,11 +535,11 @@ func registerConfigSetTools(r *registry) {
 			}
 		}
 		if forget {
-			if _, failed := r.dock.ForgetConfigSetDescription(ctx, saved.Id); failed != nil {
+			if _, failed := r.dock.ForgetConfigSetDescription(ctx, int(saved.Id)); failed != nil {
 				return nil, out, fmt.Errorf("the description of the config set %s was not forgotten, and anything else asked for was done: %w", saved.Name, refusal(failed))
 			}
 		}
-		r.configSetBack(ctx, saved.Id, &out)
+		r.configSetBack(ctx, int(saved.Id), &out)
 
 		return nil, out, nil
 	})
@@ -579,7 +579,7 @@ func registerConfigSetTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("the config set %s was not removed: %w", saved.Name, refusal(err))
 		}
-		if !yes(gone.Model.Success) {
+		if !gone.Answer.Success {
 			return nil, out, fmt.Errorf("the removal of the config set %s was answered without its being said to have succeeded: config_set_list says whether it is still there", saved.Name)
 		}
 		left, err := r.configSets(ctx)
@@ -588,7 +588,7 @@ func registerConfigSetTools(r *registry) {
 
 			return nil, out, nil //nolint:nilerr // the removal went through: that it could not be read back is said in the answer
 		}
-		if slices.ContainsFunc(left, func(s dockhand.GetConfigSetsResponse) bool { return s.Id == saved.Id }) {
+		if slices.ContainsFunc(left, func(s dockhand.GetConfigSetsAnswer) bool { return s.Id == saved.Id }) {
 			return nil, out, fmt.Errorf("the removal of the config set %s was answered as done, and it is still listed", saved.Name)
 		}
 		out.Removed = true

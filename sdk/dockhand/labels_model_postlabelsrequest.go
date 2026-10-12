@@ -4,10 +4,10 @@ package dockhand
 
 // PostLabelsRequest is an object the document declares inline.
 type PostLabelsRequest struct {
-	Action         string `json:"action"`
-	Color          string `json:"color,omitempty"`
-	EnvironmentIds []int  `json:"environmentIds,omitzero"`
-	Label          string `json:"label,omitempty"`
-	NewLabel       string `json:"newLabel,omitempty"`
-	OldLabel       string `json:"oldLabel,omitempty"`
+	Action         string          `json:"action"`
+	Color          string          `json:"color,omitempty"`
+	EnvironmentIds []EnvironmentID `json:"environmentIds,omitzero"`
+	Label          string          `json:"label,omitempty"`
+	NewLabel       string          `json:"newLabel,omitempty"`
+	OldLabel       string          `json:"oldLabel,omitempty"`
 }

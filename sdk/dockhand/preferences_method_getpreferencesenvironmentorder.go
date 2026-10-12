@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetPreferencesEnvironmentOrderOperationResponse is the result of GetPreferencesEnvironmentOrder.
-type GetPreferencesEnvironmentOrderOperationResponse struct {
+// GetPreferencesEnvironmentOrderResponse is the result of GetPreferencesEnvironmentOrder.
+//
+// Answer is the GetPreferencesEnvironmentOrderAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetPreferencesEnvironmentOrderResponse struct {
 	HttpResponse *http.Response
-	Model        *GetPreferencesEnvironmentOrderResponse
+	Answer       *GetPreferencesEnvironmentOrderAnswer
+	*GetPreferencesEnvironmentOrderAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetPreferencesEnvironmentOrderResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetPreferencesEnvironmentOrderAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetPreferencesEnvironmentOrderResponse) Record() (GetPreferencesEnvironmentOrderAnswer, error) {
+	if r.Answer == nil {
+		return GetPreferencesEnvironmentOrderAnswer{}, errors.New("GetPreferencesEnvironmentOrder answered no GetPreferencesEnvironmentOrderAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetPreferencesEnvironmentOrder calls GET /api/preferences/environment-order. Retrieve the saved environment order (environment ids, most preferred first).
-func (c Client) GetPreferencesEnvironmentOrder(ctx context.Context) (result GetPreferencesEnvironmentOrderOperationResponse, err error) {
+func (c Client) GetPreferencesEnvironmentOrder(ctx context.Context) (result GetPreferencesEnvironmentOrderResponse, err error) {
+	result.GetPreferencesEnvironmentOrderAnswer = &GetPreferencesEnvironmentOrderAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) GetPreferencesEnvironmentOrder(ctx context.Context) (result GetP
 		return
 	}
 
-	var model GetPreferencesEnvironmentOrderResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetPreferencesEnvironmentOrderAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetPreferencesEnvironmentOrderAnswer = result.Answer
 
 	return
 }

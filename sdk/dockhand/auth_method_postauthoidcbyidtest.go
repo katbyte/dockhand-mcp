@@ -10,13 +10,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostAuthOidcByIdTestOperationResponse is the result of PostAuthOidcByIdTest.
-type PostAuthOidcByIdTestOperationResponse struct {
+// PostAuthOidcByIdTestResponse is the result of PostAuthOidcByIdTest.
+type PostAuthOidcByIdTestResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostAuthOidcByIdTest calls POST /api/auth/oidc/{id}/test. Test the discovery/connection of a stored OIDC configuration by id.
-func (c Client) PostAuthOidcByIdTest(ctx context.Context, id int) (result PostAuthOidcByIdTestOperationResponse, err error) {
+func (c Client) PostAuthOidcByIdTest(ctx context.Context, id int) (result PostAuthOidcByIdTestResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,

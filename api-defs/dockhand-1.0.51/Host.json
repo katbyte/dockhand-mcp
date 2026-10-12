@@ -15,7 +15,8 @@
           "In": "Query",
           "Description": "ID of the environment to describe (basic local info is returned when omitted) (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -23,7 +24,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetHostResponse"
+          "ReferenceName": "GetHostAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -33,7 +34,7 @@
   ],
   "Models": [
     {
-      "Name": "GetHostResponse",
+      "Name": "GetHostAnswer",
       "Fields": [
         {
           "Name": "Arch",

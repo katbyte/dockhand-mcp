@@ -4,7 +4,7 @@ package dockhand
 
 // PostAuthTokensRequest is an object the document declares inline.
 type PostAuthTokensRequest struct {
-	ExpiresAt string `json:"expiresAt,omitempty"`
+	ExpiresAt Time   `json:"expiresAt,omitzero"`
 	Name      string `json:"name"`
 	Password  string `json:"password,omitempty"`
 }

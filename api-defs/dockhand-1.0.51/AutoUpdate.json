@@ -24,7 +24,8 @@
           "In": "Query",
           "Description": "Environment the container belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -32,7 +33,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteAutoUpdateByContainerNameResponse"
+          "ReferenceName": "DeleteAutoUpdateByContainerNameAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -52,7 +53,8 @@
           "In": "Query",
           "Description": "Environment ID to read settings for (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -62,7 +64,7 @@
           "Type": "Dictionary",
           "NestedItem": {
             "Type": "Reference",
-            "ReferenceName": "GetAutoUpdateResponse"
+            "ReferenceName": "GetAutoUpdateAnswer"
           }
         }
       },
@@ -92,7 +94,8 @@
           "In": "Query",
           "Description": "Environment the container belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -100,7 +103,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetAutoUpdateByContainerNameResponse"
+          "ReferenceName": "GetAutoUpdateByContainerNameAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -129,7 +132,8 @@
           "In": "Query",
           "Description": "Environment the container belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -144,7 +148,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostAutoUpdateByContainerNameResponse"
+          "ReferenceName": "PostAutoUpdateByContainerNameAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -154,7 +158,7 @@
   ],
   "Models": [
     {
-      "Name": "DeleteAutoUpdateByContainerNameResponse",
+      "Name": "DeleteAutoUpdateByContainerNameAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -167,89 +171,7 @@
       ]
     },
     {
-      "Name": "GetAutoUpdateByContainerNameResponse",
-      "Fields": [
-        {
-          "Name": "ContainerName",
-          "JsonName": "containerName",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "CreatedAt",
-          "JsonName": "createdAt",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "CronExpression",
-          "JsonName": "cronExpression",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Enabled",
-          "JsonName": "enabled",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "EnvironmentId",
-          "JsonName": "environmentId",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Id",
-          "JsonName": "id",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "LastChecked",
-          "JsonName": "lastChecked",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "LastUpdated",
-          "JsonName": "lastUpdated",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "ScheduleType",
-          "JsonName": "scheduleType",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "UpdatedAt",
-          "JsonName": "updatedAt",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "VulnerabilityCriteria",
-          "JsonName": "vulnerabilityCriteria",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetAutoUpdateResponse",
+      "Name": "GetAutoUpdateAnswer",
       "Fields": [
         {
           "Name": "CronExpression",
@@ -285,8 +207,22 @@
       ]
     },
     {
-      "Name": "PostAutoUpdateByContainerNameRequest",
+      "Name": "GetAutoUpdateByContainerNameAnswer",
       "Fields": [
+        {
+          "Name": "ContainerName",
+          "JsonName": "containerName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
         {
           "Name": "CronExpression",
           "JsonName": "cronExpression",
@@ -302,6 +238,49 @@
           }
         },
         {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "LastChecked",
+          "JsonName": "lastChecked",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "LastUpdated",
+          "JsonName": "lastUpdated",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "ScheduleType",
+          "JsonName": "scheduleType",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
           "Name": "VulnerabilityCriteria",
           "JsonName": "vulnerabilityCriteria",
           "Type": {
@@ -311,7 +290,7 @@
       ]
     },
     {
-      "Name": "PostAutoUpdateByContainerNameResponse",
+      "Name": "PostAutoUpdateByContainerNameAnswer",
       "Fields": [
         {
           "Name": "ContainerName",
@@ -324,7 +303,7 @@
           "Name": "CreatedAt",
           "JsonName": "createdAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -352,7 +331,8 @@
           "Name": "EnvironmentId",
           "JsonName": "environmentId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -366,14 +346,14 @@
           "Name": "LastChecked",
           "JsonName": "lastChecked",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
           "Name": "LastUpdated",
           "JsonName": "lastUpdated",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -394,7 +374,33 @@
           "Name": "UpdatedAt",
           "JsonName": "updatedAt",
           "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "VulnerabilityCriteria",
+          "JsonName": "vulnerabilityCriteria",
+          "Type": {
             "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostAutoUpdateByContainerNameRequest",
+      "Fields": [
+        {
+          "Name": "CronExpression",
+          "JsonName": "cronExpression",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
           }
         },
         {

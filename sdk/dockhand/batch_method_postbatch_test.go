@@ -14,8 +14,8 @@ func TestOperationPostBatch(t *testing.T) {
 	t.Parallel()
 
 	c, s := newOperationServer(t, 200, "", "")
-	result, err := c.PostBatch(t.Context(), PostBatchRequest{}, PostBatchOperationOptions{
-		Env: new(7),
+	result, err := c.PostBatch(t.Context(), PostBatchRequest{}, PostBatchOptions{
+		Env: EnvironmentID(7),
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -29,16 +29,28 @@ func TestOperationPostBatch(t *testing.T) {
 	if !json.Valid([]byte(body)) {
 		t.Errorf("body = %q, want JSON", body)
 	}
+	if body != "{\"entityType\":\"\",\"items\":null,\"operation\":\"\"}" {
+		t.Errorf("an empty record sent %q, want %q: a field never set went out", body, "{\"entityType\":\"\",\"items\":null,\"operation\":\"\"}")
+	}
 	if result.HttpResponse == nil || result.HttpResponse.StatusCode != 200 {
 		t.Fatalf("HttpResponse = %+v", result.HttpResponse)
 	}
 
 	// a status the operation does not document is an error, with the response
 	c, _ = newOperationServer(t, 418, "text/plain", "no")
-	result, err = c.PostBatch(t.Context(), PostBatchRequest{}, PostBatchOperationOptions{
-		Env: new(7),
+	result, err = c.PostBatch(t.Context(), PostBatchRequest{}, PostBatchOptions{
+		Env: EnvironmentID(7),
 	})
 	if client.StatusCode(err) != 418 || result.HttpResponse == nil {
 		t.Errorf("an undocumented status = %v, %+v", err, result.HttpResponse)
+	}
+
+	// the options may be left out, and two are refused before any request
+	c, s = newOperationServer(t, 200, "", "")
+	if _, err = c.PostBatch(t.Context(), PostBatchRequest{}); err != nil {
+		t.Errorf("without options = %v", err)
+	}
+	if _, err = c.PostBatch(t.Context(), PostBatchRequest{}, PostBatchOptions{}, PostBatchOptions{}); err == nil || len(s.requests) != 1 {
+		t.Errorf("two options structs = %v, %d requests", err, len(s.requests))
 	}
 }

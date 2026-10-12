@@ -10,13 +10,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutBackupDestinationsByIdOperationResponse is the result of PutBackupDestinationsById.
-type PutBackupDestinationsByIdOperationResponse struct {
+// PutBackupDestinationsByIdResponse is the result of PutBackupDestinationsById.
+type PutBackupDestinationsByIdResponse struct {
 	HttpResponse *http.Response
 }
 
 // PutBackupDestinationsById calls PUT /api/backup/destinations/{id}. Update a backup destination, re-validating repository and flags when supplied and re-registering maintenance schedules when policies change.
-func (c Client) PutBackupDestinationsById(ctx context.Context, id int, input PutBackupDestinationsByIdRequest) (result PutBackupDestinationsByIdOperationResponse, err error) {
+func (c Client) PutBackupDestinationsById(ctx context.Context, id int, input PutBackupDestinationsByIdRequest) (result PutBackupDestinationsByIdResponse, err error) {
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{

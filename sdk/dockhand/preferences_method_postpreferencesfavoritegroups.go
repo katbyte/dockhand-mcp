@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostPreferencesFavoriteGroupsOperationResponse is the result of PostPreferencesFavoriteGroups.
-type PostPreferencesFavoriteGroupsOperationResponse struct {
+// PostPreferencesFavoriteGroupsResponse is the result of PostPreferencesFavoriteGroups.
+//
+// Answer is the PostPreferencesFavoriteGroupsAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostPreferencesFavoriteGroupsResponse struct {
 	HttpResponse *http.Response
-	Model        *PostPreferencesFavoriteGroupsResponse
+	Answer       *PostPreferencesFavoriteGroupsAnswer
+	*PostPreferencesFavoriteGroupsAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostPreferencesFavoriteGroupsResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostPreferencesFavoriteGroupsAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostPreferencesFavoriteGroupsResponse) Record() (PostPreferencesFavoriteGroupsAnswer, error) {
+	if r.Answer == nil {
+		return PostPreferencesFavoriteGroupsAnswer{}, errors.New("PostPreferencesFavoriteGroups answered no PostPreferencesFavoriteGroupsAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostPreferencesFavoriteGroups calls POST /api/preferences/favorite-groups. Add, remove, update or reorder log favorite-groups for an environment.
-func (c Client) PostPreferencesFavoriteGroups(ctx context.Context, input PostPreferencesFavoriteGroupsRequest) (result PostPreferencesFavoriteGroupsOperationResponse, err error) {
+func (c Client) PostPreferencesFavoriteGroups(ctx context.Context, input PostPreferencesFavoriteGroupsRequest) (result PostPreferencesFavoriteGroupsResponse, err error) {
+	result.PostPreferencesFavoriteGroupsAnswer = &PostPreferencesFavoriteGroupsAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostPreferencesFavoriteGroups(ctx context.Context, input PostPre
 		return
 	}
 
-	var model PostPreferencesFavoriteGroupsResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostPreferencesFavoriteGroupsAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostPreferencesFavoriteGroupsAnswer = result.Answer
 
 	return
 }

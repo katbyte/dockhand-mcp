@@ -10,35 +10,39 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetContainersSizesOperationResponse is the result of GetContainersSizes.
-type GetContainersSizesOperationResponse struct {
+// GetContainersSizesResponse is the result of GetContainersSizes.
+type GetContainersSizesResponse struct {
 	HttpResponse *http.Response
-	Model        map[string]GetContainersSizesResponse
+	Answer       map[string]GetContainersSizesAnswer
 }
 
-// GetContainersSizesOperationOptions holds the query and header parameters of GetContainersSizes.
-type GetContainersSizesOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetContainersSizesResponse) Answered() bool { return r.Answer != nil }
+
+// GetContainersSizesOptions holds the query and header parameters of GetContainersSizes.
+type GetContainersSizesOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetContainersSizesOperationOptions) ToHeaders() *client.Headers {
+func (o GetContainersSizesOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetContainersSizesOperationOptions) ToQuery() *client.QueryParams {
+func (o GetContainersSizesOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetContainersSizes calls GET /api/containers/sizes. List all containers in an environment together with their writable-layer and root-filesystem sizes (requires the 'view' permission).
-func (c Client) GetContainersSizes(ctx context.Context, options GetContainersSizesOperationOptions) (result GetContainersSizesOperationResponse, err error) {
+func (c Client) GetContainersSizes(ctx context.Context, options GetContainersSizesOptions) (result GetContainersSizesResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -62,7 +66,7 @@ func (c Client) GetContainersSizes(ctx context.Context, options GetContainersSiz
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

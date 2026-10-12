@@ -56,15 +56,15 @@ type gitStackRow struct {
 }
 
 // gitStackRowOf is a git stack as the tools list it, on the environment of that name.
-func gitStackRowOf(s *dockhand.GetGitStacksResponse, env string) gitStackRow {
-	row := gitStackRow{ID: s.Id, Env: env, Stack: s.StackName, Branch: s.Branch, ComposePath: s.ComposePath, Sync: s.SyncStatus, SyncError: gitSaid(s.SyncError), Commit: s.LastCommit, Fetched: s.LastSync, Webhook: yes(s.WebhookEnabled)}
+func gitStackRowOf(s *dockhand.GetGitStacksAnswer, env string) gitStackRow {
+	row := gitStackRow{ID: int(s.Id), Env: env, Stack: s.StackName, Branch: s.Branch, ComposePath: s.ComposePath, Sync: s.SyncStatus, SyncError: gitSaid(s.SyncError), Commit: s.LastCommit, Fetched: when(s.LastSync), Webhook: s.WebhookEnabled}
 	if s.SyncError == "" {
 		row.SyncError = ""
 	}
 	if s.Repository != nil {
 		row.Repository, row.Branch = s.Repository.Name, cmp.Or(s.Branch, s.Repository.Branch)
 	}
-	if yes(s.AutoUpdate) {
+	if s.AutoUpdate {
 		row.AutoUpdate = s.AutoUpdateCron
 	}
 
@@ -72,8 +72,8 @@ func gitStackRowOf(s *dockhand.GetGitStacksResponse, env string) gitStackRow {
 }
 
 // gitStackOf is a git stack as any of the calls that answer one sends it, read as the list's record: the same fields, declared four times over.
-func gitStackOf(answered any) dockhand.GetGitStacksResponse {
-	var s dockhand.GetGitStacksResponse
+func gitStackOf(answered any) dockhand.GetGitStacksAnswer {
+	var s dockhand.GetGitStacksAnswer
 	if raw, err := json.Marshal(answered); err == nil {
 		_ = json.Unmarshal(raw, &s)
 	}
@@ -102,7 +102,7 @@ func webhookPath(id int) string {
 // findGitStack is the one git stack a call names, on the environment given or on every one. A name that is a git stack's on several environments is
 // refused until the call says which. One made with no environment is found only when unplaced says so, for the one tool that can act on it, and is
 // otherwise refused as what it is.
-func (r *registry) findGitStack(ctx context.Context, in gitStackArg, unplaced bool) (environment, *dockhand.GetGitStacksResponse, error) {
+func (r *registry) findGitStack(ctx context.Context, in gitStackArg, unplaced bool) (environment, *dockhand.GetGitStacksAnswer, error) {
 	want := strings.TrimSpace(in.Stack)
 	if want == "" {
 		return environment{}, nil, errors.New("stack is required: the git stack's name, as git_stack_list gives it")
@@ -118,7 +118,7 @@ func (r *registry) findGitStack(ctx context.Context, in gitStackArg, unplaced bo
 
 	var (
 		on      []environment
-		found   []*dockhand.GetGitStacksResponse
+		found   []*dockhand.GetGitStacksAnswer
 		nowhere bool
 	)
 	for i := range listed {
@@ -156,7 +156,7 @@ func (r *registry) findGitStack(ctx context.Context, in gitStackArg, unplaced bo
 }
 
 // gitReported is the last of what a git deploy reported as it went, in words, with any secret in a line hidden and a line said twice said once.
-func gitReported(lines []dockhand.GetJobsByIdResponseLines) []string {
+func gitReported(lines []dockhand.GetJobsByIdAnswerLines) []string {
 	var said []string
 	for i := range lines {
 		line := cmp.Or(textOf(lines[i].Data["message"]), textOf(lines[i].Data["logLine"]), textOf(lines[i].Data["error"]))
@@ -177,14 +177,14 @@ func gitReported(lines []dockhand.GetJobsByIdResponseLines) []string {
 // patience given. Still running then, the state says so and nothing is reported yet. The call that reports as it goes is the one used: the other
 // answers the values of the stack's secrets with how it went.
 func (r *registry) gitDeploy(ctx context.Context, id int, patience time.Duration) (reported []string, state jobState, err error) {
-	started, err := r.dock.PostGitStacksByIdDeployStream(ctx, id, dockhand.PostGitStacksByIdDeployStreamOperationOptions{Accept: dockhand.AcceptJob})
+	started, err := r.dock.PostGitStacksByIdDeployStream(ctx, dockhand.GitStackID(id), dockhand.PostGitStacksByIdDeployStreamOptions{Accept: dockhand.AcceptJob})
 	if err != nil {
 		return nil, jobState{}, refusal(err)
 	}
-	if started.Model.JobId == "" {
+	if started.Answer.JobId == "" {
 		return nil, jobState{}, errors.New("Dockhand started no job for the deploy, and says nothing of how it went") //nolint:staticcheck // ST1005: the sentence begins with the server's name
 	}
-	j, err := r.await(ctx, started.Model.JobId, patience)
+	j, err := r.await(ctx, started.Answer.JobId, patience)
 	if err != nil {
 		return nil, jobState{}, err
 	}
@@ -260,16 +260,16 @@ func registerGitStackTools(r *registry) {
 			// each is asked on its own, a few at a time: one repository that cannot be reached is said for its stack, and the others are still asked
 			_ = parallel.Each(ctx, len(out.Stacks), askAtOnce, func(ctx context.Context, i int) error {
 				row := &out.Stacks[i]
-				tried, err := r.dock.PostGitStacksByIdTest(ctx, row.ID)
+				tried, err := r.dock.PostGitStacksByIdTest(ctx, dockhand.GitStackID(row.ID))
 				switch {
 				case err != nil:
 					row.CheckError = refusal(err).Error()
-				case !yes(tried.Model.Success):
-					row.CheckError = gitSaid(tried.Model.Error)
+				case !tried.Answer.Success:
+					row.CheckError = gitSaid(tried.Answer.Error)
 				default:
-					row.Newest = tried.Model.LastCommit
-					if got, err := r.dock.GetGitStacksById(ctx, row.ID); err == nil {
-						row.Deployed = deployedCommit(got.Model.SyncedFiles)
+					row.Newest = tried.Answer.LastCommit
+					if got, err := r.dock.GetGitStacksById(ctx, dockhand.GitStackID(row.ID)); err == nil {
+						row.Deployed = deployedCommit(got.Answer.SyncedFiles)
 					}
 					row.Behind = row.Newest != "" && row.Deployed != row.Newest
 				}
@@ -335,11 +335,11 @@ func registerGitStackTools(r *registry) {
 		if err != nil {
 			return nil, gitStackGetOut{}, fmt.Errorf("the git stack %s could not be read: %w", listed.StackName, refusal(err))
 		}
-		stack := gitStackOf(got.Model)
-		out := gitStackGetOut{gitStackRow: gitStackRowOf(&stack, env.Name), EnvFile: stack.EnvFilePath, ContextDir: stack.ContextDir, Build: yes(stack.BuildOnDeploy), NoBuildCache: yes(stack.NoBuildCache), Pull: yes(stack.RepullImages), Recreate: yes(stack.ForceRedeploy)}
+		stack := gitStackOf(got.Answer)
+		out := gitStackGetOut{gitStackRow: gitStackRowOf(&stack, env.Name), EnvFile: stack.EnvFilePath, ContextDir: stack.ContextDir, Build: stack.BuildOnDeploy, NoBuildCache: stack.NoBuildCache, Pull: stack.RepullImages, Recreate: stack.ForceRedeploy}
 		out.Deployed = deployedCommit(stack.SyncedFiles)
 		if out.Webhook {
-			out.WebhookPath, out.WebhookSecret = webhookPath(stack.Id), stack.WebhookSecret
+			out.WebhookPath, out.WebhookSecret = webhookPath(int(stack.Id)), stack.WebhookSecret
 			if !in.RevealSecrets && out.WebhookSecret != "" {
 				out.WebhookSecret, out.Hidden = masked, 1
 			}
@@ -353,20 +353,20 @@ func registerGitStackTools(r *registry) {
 		switch {
 		case err != nil:
 			out.CheckError = refusal(err).Error()
-		case !yes(tried.Model.Success):
-			out.CheckError = gitSaid(tried.Model.Error)
+		case !tried.Answer.Success:
+			out.CheckError = gitSaid(tried.Answer.Error)
 		default:
-			out.Newest = tried.Model.LastCommit
+			out.Newest = tried.Answer.LastCommit
 			out.Behind = out.Deployed != out.Newest
 		}
 		if files, err := r.dock.GetGitStacksByIdEnvFiles(ctx, stack.Id); err == nil {
-			out.EnvFiles = files.Model.Files
+			out.EnvFiles = files.Answer.Files
 		}
-		if vars, err := r.dock.GetStacksByNameEnv(ctx, stack.StackName, dockhand.GetStacksByNameEnvOperationOptions{Env: &env.ID}); err != nil {
+		if vars, err := r.dock.GetStacksByNameEnv(ctx, stack.StackName, dockhand.GetStacksByNameEnvOptions{Env: env.ID}); err != nil {
 			out.Note = noted(out.Note, "the variables Dockhand keeps for it could not be read: "+refusal(err).Error())
 		} else {
-			for i := range vars.Model.Variables {
-				v := stackVariable{Name: vars.Model.Variables[i].Key, Value: vars.Model.Variables[i].Value, Secret: yes(vars.Model.Variables[i].IsSecret)}
+			for i := range vars.Answer.Variables {
+				v := stackVariable{Name: vars.Answer.Variables[i].Key, Value: vars.Answer.Variables[i].Value, Secret: vars.Answer.Variables[i].IsSecret}
 				if v.Name == secretPathKey {
 					out.SecretPath = v.Value
 
@@ -381,7 +381,7 @@ func registerGitStackTools(r *registry) {
 				out.Variables = append(out.Variables, v)
 			}
 			slices.SortFunc(out.Variables, func(a, b stackVariable) int { return cmp.Compare(a.Name, b.Name) })
-			if bound := vars.Model.SecretProvider; bound != nil {
+			if bound := vars.Answer.SecretProvider; bound != nil {
 				out.SecretProvider = bound.Name
 			}
 		}
@@ -392,8 +392,8 @@ func registerGitStackTools(r *registry) {
 				return nil, out, fmt.Errorf("%s could not be read from Dockhand's copy of the repository: %w", file, refusal(err))
 			}
 			out.FileVariables = []stackVariable{}
-			for _, name := range slices.Sorted(maps.Keys(read.Model.Vars)) {
-				value, hidden := read.Model.Vars[name], false
+			for _, name := range slices.Sorted(maps.Keys(read.Answer.Vars)) {
+				value, hidden := read.Answer.Vars[name], false
 				if !in.RevealSecrets {
 					value, hidden = maskValue(name, value)
 				}
@@ -519,7 +519,7 @@ func registerGitStackTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("%w, so nothing was made", err)
 		}
-		tried, err := r.tryRepository(ctx, repository.Url, branch, repository.CredentialId)
+		tried, err := r.tryRepository(ctx, repository.Url, branch, int(repository.CredentialId))
 		if err != nil {
 			return nil, out, fmt.Errorf("the repository %s could not be tried, so nothing was made: %w", repository.Name, err)
 		}
@@ -588,11 +588,11 @@ func registerGitStackTools(r *registry) {
 			out.Changes = append(out.Changes, "had Dockhand "+strings.Join(also, ", and "))
 		}
 		if hook != "" {
-			out.WebhookPath = webhookPath(made.Model.Id)
+			out.WebhookPath = webhookPath(int(made.Answer.Id))
 		}
 
 		if start {
-			reported, state, failed := r.gitDeploy(ctx, made.Model.Id, patience)
+			reported, state, failed := r.gitDeploy(ctx, int(made.Answer.Id), patience)
 			out.jobState = state
 			if failed != nil {
 				return nil, out, fmt.Errorf("the git stack %s was made on %s and could not be brought up: %w; it is kept, with whatever compose had made by then: git_stack_deploy tries again once what is wrong is put right, and git_stack_delete forgets it", name, env.Name, failed)
@@ -706,7 +706,7 @@ func registerGitStackTools(r *registry) {
 
 				return
 			}
-			now := gitStackOf(got.Model)
+			now := gitStackOf(got.Answer)
 			row := gitStackRowOf(&now, env.Name)
 			out.GitStack, out.Stack = &row, now.StackName
 		}
@@ -728,10 +728,10 @@ func registerGitStackTools(r *registry) {
 			if err != nil {
 				return nil, out, fmt.Errorf("the stacks Dockhand keeps for %s could not be listed, so nothing was changed: %w", env.Name, err)
 			}
-			if keptAs != keptNowhere || slices.ContainsFunc(on, func(s dockhand.GetStacksResponse) bool { return s.Name == rename }) {
+			if keptAs != keptNowhere || slices.ContainsFunc(on, func(s dockhand.GetStacksAnswer) bool { return s.Name == rename }) {
 				return nil, out, fmt.Errorf("a stack named %s is already on %s, so nothing was changed", rename, env.Name)
 			}
-			if i := slices.IndexFunc(on, func(s dockhand.GetStacksResponse) bool { return s.Name == stack.StackName }); i >= 0 && len(on[i].ContainerDetails) > 0 {
+			if i := slices.IndexFunc(on, func(s dockhand.GetStacksAnswer) bool { return s.Name == stack.StackName }); i >= 0 && len(on[i].ContainerDetails) > 0 {
 				return nil, out, fmt.Errorf("%s has %s: Dockhand would rename the stack and leave what runs behind under the old name, with nothing deploying it. Take the stack down first, rename it, and deploy it again", stack.StackName, several(len(on[i].ContainerDetails), "container"))
 			}
 			out.Changes = append(out.Changes, fmt.Sprintf("%s it from %s to %s", does("renamed", "would rename"), stack.StackName, rename))
@@ -764,7 +764,7 @@ func registerGitStackTools(r *registry) {
 					return nil, out, fmt.Errorf("the branches of its repository could not be listed, so nothing was changed: %w", refusal(err))
 				}
 				var names []string
-				for _, b := range tried.Model.Branches {
+				for _, b := range tried.Answer.Branches {
 					names = append(names, b.Name)
 				}
 				if !slices.Contains(names, branch) {
@@ -800,12 +800,12 @@ func registerGitStackTools(r *registry) {
 		}
 		for _, flag := range []struct {
 			given *bool
-			was   *bool
+			was   bool
 			set   **bool
 			on    string
 			off   string
 		}{{in.Build, stack.BuildOnDeploy, &request.BuildOnDeploy, "each deploy build its images", "no deploy build its images"}, {in.NoBuildCache, stack.NoBuildCache, &request.NoBuildCache, "its builds start from nothing", "its builds use what was built before"}, {in.Pull, stack.RepullImages, &request.RepullImages, "each deploy pull every image first", "no deploy pull an image the host has"}, {in.Recreate, stack.ForceRedeploy, &request.ForceRedeploy, "each deploy make every container again, changed or not", "a deploy leave alone what did not change"}} {
-			if flag.given == nil || *flag.given == yes(flag.was) {
+			if flag.given == nil || *flag.given == flag.was {
 				continue
 			}
 			*flag.set = flag.given
@@ -813,10 +813,10 @@ func registerGitStackTools(r *registry) {
 		}
 		if in.AutoUpdateCron != nil {
 			switch {
-			case cron == "" && yes(stack.AutoUpdate):
+			case cron == "" && stack.AutoUpdate:
 				request.AutoUpdate = new(false)
 				out.Changes = append(out.Changes, does("had", "would have")+" Dockhand no longer fetch it by itself")
-			case cron != "" && (!yes(stack.AutoUpdate) || cron != stack.AutoUpdateCron):
+			case cron != "" && (!stack.AutoUpdate || cron != stack.AutoUpdateCron):
 				request.AutoUpdate, request.AutoUpdateSchedule, request.AutoUpdateCron = new(true), customSchedule, cron
 				out.Changes = append(out.Changes, fmt.Sprintf("%s Dockhand fetch it by itself at %s", does("had", "would have"), cron))
 			default:
@@ -825,12 +825,12 @@ func registerGitStackTools(r *registry) {
 		if in.WebhookSecret != nil {
 			hook := strings.TrimSpace(*in.WebhookSecret)
 			switch {
-			case hook == "" && (yes(stack.WebhookEnabled) || stack.WebhookSecret != ""):
+			case hook == "" && (stack.WebhookEnabled || stack.WebhookSecret != ""):
 				forget.Webhook = true
 				out.Changes = append(out.Changes, does("switched", "would switch")+" its webhook off, with its secret forgotten")
-			case hook != "" && (!yes(stack.WebhookEnabled) || hook != stack.WebhookSecret):
+			case hook != "" && (!stack.WebhookEnabled || hook != stack.WebhookSecret):
 				request.WebhookEnabled, request.WebhookSecret = new(true), hook
-				out.Changes = append(out.Changes, map[bool]string{true: does("gave", "would give") + " its webhook another secret", false: does("switched", "would switch") + " its webhook on"}[yes(stack.WebhookEnabled)])
+				out.Changes = append(out.Changes, map[bool]string{true: does("gave", "would give") + " its webhook another secret", false: does("switched", "would switch") + " its webhook on"}[stack.WebhookEnabled])
 			default:
 			}
 		}
@@ -838,16 +838,16 @@ func registerGitStackTools(r *registry) {
 		// the variables Dockhand keeps for it, as they are to be: Dockhand keeps the ones it is sent and drops the rest, and a secret sent back as it
 		// is shown, hidden, keeps the value it had. The path its secrets are loaded from is one of them
 		var variables []dockhand.PutStacksByNameEnvRequestVariables
-		var provider *dockhand.GetSecretProvidersResponse
+		var provider *dockhand.GetSecretProvidersAnswer
 		rebind, unbind := false, false
 		if kept || in.SecretProvider != nil {
-			vars, err := r.dock.GetStacksByNameEnv(ctx, stack.StackName, dockhand.GetStacksByNameEnvOperationOptions{Env: &env.ID})
+			vars, err := r.dock.GetStacksByNameEnv(ctx, stack.StackName, dockhand.GetStacksByNameEnvOptions{Env: env.ID})
 			if err != nil {
 				return nil, out, fmt.Errorf("the variables Dockhand keeps for %s could not be read, so nothing was changed: %w", stack.StackName, refusal(err))
 			}
 			was, secret := map[string]string{}, map[string]bool{}
-			for i := range vars.Model.Variables {
-				was[vars.Model.Variables[i].Key], secret[vars.Model.Variables[i].Key] = vars.Model.Variables[i].Value, yes(vars.Model.Variables[i].IsSecret)
+			for i := range vars.Answer.Variables {
+				was[vars.Answer.Variables[i].Key], secret[vars.Answer.Variables[i].Key] = vars.Answer.Variables[i].Value, vars.Answer.Variables[i].IsSecret
 			}
 			for _, gone := range in.RemoveVariables {
 				if _, has := was[gone]; !has || secret[gone] || gone == secretPathKey {
@@ -869,7 +869,7 @@ func registerGitStackTools(r *registry) {
 					return nil, out, fmt.Errorf("%w, so nothing was changed", refused)
 				}
 				provider = wanted
-				unbind, rebind = provider == nil && bound != 0 && in.SecretProvider != nil, provider != nil && provider.Id != bound
+				unbind, rebind = provider == nil && bound != 0 && in.SecretProvider != nil, provider != nil && int(provider.Id) != bound
 				if in.SecretPath != nil && path != was[secretPathKey] {
 					if path == "" {
 						out.Changes = append(out.Changes, does("took", "would take")+" out the path its secrets are loaded from")
@@ -953,7 +953,7 @@ func registerGitStackTools(r *registry) {
 			}
 		}
 		if forget != (dockhand.GitStackSettings{}) {
-			if _, err := r.dock.ForgetGitStackSettings(ctx, stack.Id, forget); err != nil {
+			if _, err := r.dock.ForgetGitStackSettings(ctx, int(stack.Id), forget); err != nil {
 				readBack()
 				out.Changes = []string{}
 
@@ -961,7 +961,7 @@ func registerGitStackTools(r *registry) {
 			}
 		}
 		if variables != nil {
-			if _, err := r.dock.PutStacksByNameEnv(ctx, stack.StackName, dockhand.PutStacksByNameEnvRequest{Variables: variables}, dockhand.PutStacksByNameEnvOperationOptions{Env: &env.ID}); err != nil {
+			if _, err := r.dock.PutStacksByNameEnv(ctx, stack.StackName, dockhand.PutStacksByNameEnvRequest{Variables: variables}, dockhand.PutStacksByNameEnvOptions{Env: env.ID}); err != nil {
 				readBack()
 				out.Changes = []string{}
 
@@ -997,17 +997,17 @@ func registerGitStackTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("%s was not fetched: %w", stack.StackName, refusal(err))
 		}
-		if !yes(fetched.Model.Success) {
-			return nil, out, fmt.Errorf("%s was not fetched: %s", stack.StackName, gitSaid(fetched.Model.Error))
+		if !fetched.Answer.Success {
+			return nil, out, fmt.Errorf("%s was not fetched: %s", stack.StackName, gitSaid(fetched.Answer.Error))
 		}
-		out.Commit, out.Changed = fetched.Model.Commit, append(out.Changed, fetched.Model.ChangedFiles...)
-		if plan := fetched.Model.DeletionPlan; plan != nil {
+		out.Commit, out.Changed = fetched.Answer.Commit, append(out.Changed, fetched.Answer.ChangedFiles...)
+		if plan := fetched.Answer.DeletionPlan; plan != nil {
 			for _, gone := range plan.ToDelete {
 				out.WouldGo = append(out.WouldGo, gone.Path)
 			}
 		}
 		if got, err := r.dock.GetGitStacksById(ctx, stack.Id); err == nil {
-			out.Deployed = deployedCommit(got.Model.SyncedFiles)
+			out.Deployed = deployedCommit(got.Answer.SyncedFiles)
 		}
 		switch out.Deployed {
 		case out.Commit:
@@ -1059,7 +1059,7 @@ func registerGitStackTools(r *registry) {
 			return nil, out, fmt.Errorf("how %s stands could not be read, so nothing was deployed: %w", listed.StackName, err)
 		}
 		if got, err := r.dock.GetGitStacksById(ctx, listed.Id); err == nil {
-			out.From = deployedCommit(got.Model.SyncedFiles)
+			out.From = deployedCommit(got.Answer.SyncedFiles)
 		}
 
 		if in.DryRun || in.OnlyIfChanged {
@@ -1067,10 +1067,10 @@ func registerGitStackTools(r *registry) {
 			if unasked != nil {
 				return nil, out, fmt.Errorf("the repository of %s could not be asked, so nothing was deployed: %w", listed.StackName, refusal(unasked))
 			}
-			if !yes(tried.Model.Success) {
-				return nil, out, fmt.Errorf("Dockhand could not fetch the repository of %s, so nothing was deployed: %s", listed.StackName, gitSaid(tried.Model.Error)) //nolint:staticcheck // ST1005: the sentence begins with the server's name
+			if !tried.Answer.Success {
+				return nil, out, fmt.Errorf("Dockhand could not fetch the repository of %s, so nothing was deployed: %s", listed.StackName, gitSaid(tried.Answer.Error)) //nolint:staticcheck // ST1005: the sentence begins with the server's name
 			}
-			out.Commit = tried.Model.LastCommit
+			out.Commit = tried.Answer.LastCommit
 			if in.OnlyIfChanged && out.From == out.Commit {
 				out.Is = out.Was
 				out.Note = fmt.Sprintf("nothing to do: it runs from %s, which is the newest commit on its branch", out.Commit)
@@ -1086,7 +1086,7 @@ func registerGitStackTools(r *registry) {
 			return nil, out, nil
 		}
 
-		reported, state, err := r.gitDeploy(ctx, listed.Id, patience)
+		reported, state, err := r.gitDeploy(ctx, int(listed.Id), patience)
 		out.jobState = state
 		if err != nil {
 			return nil, out, fmt.Errorf("%s on %s was not deployed: %w; what was running is left as it was", listed.StackName, env.Name, err)
@@ -1100,7 +1100,7 @@ func registerGitStackTools(r *registry) {
 		out.Reported, out.Progress = reported, nil
 		out.Changes = append(out.Changes, "fetched its repository and brought up "+how)
 		if got, err := r.dock.GetGitStacksById(ctx, listed.Id); err == nil {
-			out.Commit = deployedCommit(got.Model.SyncedFiles)
+			out.Commit = deployedCommit(got.Answer.SyncedFiles)
 		}
 		if out.Is, _, err = r.standing(ctx, env, listed.StackName); err != nil {
 			out.Is, out.Note = "", "how it stands after could not be read back: "+err.Error()
@@ -1140,10 +1140,10 @@ func registerGitStackTools(r *registry) {
 			}
 		}
 		out.WouldGo = append(out.WouldGo, fmt.Sprintf("the tie of %s to the repository %s, and Dockhand's copy of it", stack.StackName, gitStackRowOf(stack, env.Name).Repository), "the variables and secrets Dockhand keeps for it")
-		if yes(stack.AutoUpdate) {
+		if stack.AutoUpdate {
 			out.WouldGo = append(out.WouldGo, "its schedule, "+stack.AutoUpdateCron)
 		}
-		if yes(stack.WebhookEnabled) {
+		if stack.WebhookEnabled {
 			out.WouldGo = append(out.WouldGo, "its webhook, which a git server may still be calling")
 		}
 		if len(out.Containers) > 0 {
@@ -1163,7 +1163,7 @@ func registerGitStackTools(r *registry) {
 		case err != nil:
 			out.Removed, out.WouldGo = true, nil
 			out.Note = "it was forgotten, and the git stacks could not be listed afterwards: " + err.Error()
-		case slices.ContainsFunc(after, func(s dockhand.GetGitStacksResponse) bool { return s.Id == stack.Id }):
+		case slices.ContainsFunc(after, func(s dockhand.GetGitStacksAnswer) bool { return s.Id == stack.Id }):
 			return nil, out, fmt.Errorf("Dockhand answered that %s was forgotten, and still lists it", stack.StackName) //nolint:staticcheck // ST1005: the sentence begins with the server's name
 		default:
 			out.Removed, out.WouldGo = true, nil

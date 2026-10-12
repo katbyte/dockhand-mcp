@@ -9,14 +9,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetEnvironmentsOperationResponse is the result of GetEnvironments.
-type GetEnvironmentsOperationResponse struct {
+// GetEnvironmentsResponse is the result of GetEnvironments.
+type GetEnvironmentsResponse struct {
 	HttpResponse *http.Response
-	Model        []GetEnvironmentsResponse
+	Answer       []GetEnvironmentsAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetEnvironmentsResponse) Answered() bool { return r.Answer != nil }
+
 // GetEnvironments calls GET /api/environments. List all Docker environments (hosts) known to Dockhand.
-func (c Client) GetEnvironments(ctx context.Context) (result GetEnvironmentsOperationResponse, err error) {
+func (c Client) GetEnvironments(ctx context.Context) (result GetEnvironmentsResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,7 +43,7 @@ func (c Client) GetEnvironments(ctx context.Context) (result GetEnvironmentsOper
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

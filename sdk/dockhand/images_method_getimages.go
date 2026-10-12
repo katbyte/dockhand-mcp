@@ -4,47 +4,61 @@ package dockhand
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetImagesOperationResponse is the result of GetImages.
-type GetImagesOperationResponse struct {
+// GetImagesResponse is the result of GetImages.
+type GetImagesResponse struct {
 	HttpResponse *http.Response
-	Model        []GetImagesResponse
+	Answer       []GetImagesAnswer
 }
 
-// GetImagesOperationOptions holds the query and header parameters of GetImages.
-type GetImagesOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetImagesResponse) Answered() bool { return r.Answer != nil }
+
+// GetImagesOptions holds the query and header parameters of GetImages.
+type GetImagesOptions struct {
 	// ID of the environment whose images to list (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetImagesOperationOptions) ToHeaders() *client.Headers {
+func (o GetImagesOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetImagesOperationOptions) ToQuery() *client.QueryParams {
+func (o GetImagesOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetImages calls GET /api/images. List the Docker images of an environment (returns an empty array when no env is given or Docker is unreachable).
-func (c Client) GetImages(ctx context.Context, options GetImagesOperationOptions) (result GetImagesOperationResponse, err error) {
+func (c Client) GetImages(ctx context.Context, options ...GetImagesOptions) (result GetImagesResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetImages takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetImagesOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/images",
 	}
 
@@ -62,7 +76,7 @@ func (c Client) GetImages(ctx context.Context, options GetImagesOperationOptions
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

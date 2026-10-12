@@ -10,13 +10,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutBackupConfigsByIdOperationResponse is the result of PutBackupConfigsById.
-type PutBackupConfigsByIdOperationResponse struct {
+// PutBackupConfigsByIdResponse is the result of PutBackupConfigsById.
+type PutBackupConfigsByIdResponse struct {
 	HttpResponse *http.Response
 }
 
 // PutBackupConfigsById calls PUT /api/backup/configs/{id}. Update a backup configuration and re-register or remove its cron schedule accordingly.
-func (c Client) PutBackupConfigsById(ctx context.Context, id int, input PutBackupConfigsByIdRequest) (result PutBackupConfigsByIdOperationResponse, err error) {
+func (c Client) PutBackupConfigsById(ctx context.Context, id int, input PutBackupConfigsByIdRequest) (result PutBackupConfigsByIdResponse, err error) {
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{

@@ -12,7 +12,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteActivityResponse"
+          "ReferenceName": "DeleteActivityAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -32,7 +32,8 @@
           "In": "Query",
           "Description": "Filter to a single environment (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -112,7 +113,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetActivityResponse"
+          "ReferenceName": "GetActivityAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -132,7 +133,8 @@
           "In": "Query",
           "Description": "Filter to a single environment (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -178,7 +180,8 @@
           "In": "Query",
           "Description": "Filter to a single environment (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -186,7 +189,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetActivityStatsResponse"
+          "ReferenceName": "GetActivityStatsAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -196,7 +199,7 @@
   ],
   "Models": [
     {
-      "Name": "DeleteActivityResponse",
+      "Name": "DeleteActivityAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -209,7 +212,7 @@
       ]
     },
     {
-      "Name": "GetActivityResponse",
+      "Name": "GetActivityAnswer",
       "Fields": [
         {
           "Name": "Events",
@@ -218,7 +221,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetActivityResponseEvents"
+              "ReferenceName": "GetActivityAnswerEvents"
             }
           }
         },
@@ -249,7 +252,7 @@
       ]
     },
     {
-      "Name": "GetActivityResponseEvents",
+      "Name": "GetActivityAnswerEvents",
       "Fields": [
         {
           "Name": "Action",
@@ -288,7 +291,7 @@
           "Name": "CreatedAt",
           "JsonName": "createdAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -302,7 +305,8 @@
           "Name": "EnvironmentId",
           "JsonName": "environmentId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -331,13 +335,13 @@
           "Name": "Timestamp",
           "JsonName": "timestamp",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         }
       ]
     },
     {
-      "Name": "GetActivityStatsResponse",
+      "Name": "GetActivityStatsAnswer",
       "Fields": [
         {
           "Name": "ByAction",

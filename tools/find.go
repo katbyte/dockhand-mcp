@@ -23,7 +23,7 @@ type containerArg struct {
 // located is one container and the environment it is on.
 type located struct {
 	Env       environment
-	Container dockhand.GetContainersResponse
+	Container dockhand.GetContainersAnswer
 }
 
 // where is a container's own row, with the environment it is on.

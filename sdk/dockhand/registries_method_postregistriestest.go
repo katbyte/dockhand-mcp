@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostRegistriesTestOperationResponse is the result of PostRegistriesTest.
-type PostRegistriesTestOperationResponse struct {
+// PostRegistriesTestResponse is the result of PostRegistriesTest.
+//
+// Answer is the PostRegistriesTestAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostRegistriesTestResponse struct {
 	HttpResponse *http.Response
-	Model        *PostRegistriesTestResponse
+	Answer       *PostRegistriesTestAnswer
+	*PostRegistriesTestAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostRegistriesTestResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostRegistriesTestAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostRegistriesTestResponse) Record() (PostRegistriesTestAnswer, error) {
+	if r.Answer == nil {
+		return PostRegistriesTestAnswer{}, errors.New("PostRegistriesTest answered no PostRegistriesTestAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostRegistriesTest calls POST /api/registries/test. Test registry connectivity and (if credentials are given) authentication against the V2 endpoint.
-func (c Client) PostRegistriesTest(ctx context.Context, input PostRegistriesTestRequest) (result PostRegistriesTestOperationResponse, err error) {
+func (c Client) PostRegistriesTest(ctx context.Context, input PostRegistriesTestRequest) (result PostRegistriesTestResponse, err error) {
+	result.PostRegistriesTestAnswer = &PostRegistriesTestAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostRegistriesTest(ctx context.Context, input PostRegistriesTest
 		return
 	}
 
-	var model PostRegistriesTestResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostRegistriesTestAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostRegistriesTestAnswer = result.Answer
 
 	return
 }

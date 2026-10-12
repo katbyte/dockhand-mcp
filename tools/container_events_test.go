@@ -39,7 +39,7 @@ func TestContainerEvents(t *testing.T) {
 	if acctest.Num(t, out["total"], "total") != 4 || len(rows) != 4 || out["note"] != nil || out["by_action"] != nil {
 		t.Fatalf("what the containers did = %v", out)
 	}
-	if died := rows[0]; died["at"] != "2026-10-10T13:08:26.073Z" || died["env"] != "alpha" || died["container"] != "loose" || died["action"] != "die" || acctest.Num(t, died["exit_code"], "exit_code") != 137 || died["signal"] != nil || died["image"] != "registry.example/tool:latest" || died["stack"] != nil {
+	if died := rows[0]; died["at"] != "2026-10-10T13:08:26Z" || died["env"] != "alpha" || died["container"] != "loose" || died["action"] != "die" || acctest.Num(t, died["exit_code"], "exit_code") != 137 || died["signal"] != nil || died["image"] != "registry.example/tool:latest" || died["stack"] != nil {
 		t.Errorf("a death = %v", died)
 	}
 	if killed, renamed, started := rows[1], rows[2], rows[3]; killed["signal"] != "9" || killed["exit_code"] != nil || renamed["env"] != "beta" || renamed["was"] != "single" || started["stack"] != "web" || started["exit_code"] != nil {

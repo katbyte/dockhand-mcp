@@ -4,48 +4,81 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostNetworksOperationResponse is the result of PostNetworks.
-type PostNetworksOperationResponse struct {
+// PostNetworksResponse is the result of PostNetworks.
+//
+// Answer is the PostNetworksAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostNetworksResponse struct {
 	HttpResponse *http.Response
-	Model        *PostNetworksResponse
+	Answer       *PostNetworksAnswer
+	*PostNetworksAnswer
 }
 
-// PostNetworksOperationOptions holds the query and header parameters of PostNetworks.
-type PostNetworksOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostNetworksResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostNetworksAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostNetworksResponse) Record() (PostNetworksAnswer, error) {
+	if r.Answer == nil {
+		return PostNetworksAnswer{}, errors.New("PostNetworks answered no PostNetworksAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostNetworksOptions holds the query and header parameters of PostNetworks.
+type PostNetworksOptions struct {
 	// Environment ID to create the network in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostNetworksOperationOptions) ToHeaders() *client.Headers {
+func (o PostNetworksOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostNetworksOperationOptions) ToQuery() *client.QueryParams {
+func (o PostNetworksOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostNetworks calls POST /api/networks. Create a Docker network in the given environment.
-func (c Client) PostNetworks(ctx context.Context, input PostNetworksRequest, options PostNetworksOperationOptions) (result PostNetworksOperationResponse, err error) {
+func (c Client) PostNetworks(ctx context.Context, input PostNetworksRequest, options ...PostNetworksOptions) (result PostNetworksResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostNetworks takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostNetworksOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostNetworksAnswer = &PostNetworksAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/networks",
 	}
 
@@ -67,11 +100,12 @@ func (c Client) PostNetworks(ctx context.Context, input PostNetworksRequest, opt
 		return
 	}
 
-	var model PostNetworksResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostNetworksAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostNetworksAnswer = result.Answer
 
 	return
 }

@@ -9,14 +9,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetIconsSelfhstManifestOperationResponse is the result of GetIconsSelfhstManifest.
-type GetIconsSelfhstManifestOperationResponse struct {
+// GetIconsSelfhstManifestResponse is the result of GetIconsSelfhstManifest.
+type GetIconsSelfhstManifestResponse struct {
 	HttpResponse *http.Response
-	Model        []GetIconsSelfhstManifestResponse
+	Answer       []GetIconsSelfhstManifestAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetIconsSelfhstManifestResponse) Answered() bool { return r.Answer != nil }
+
 // GetIconsSelfhstManifest calls GET /api/icons/selfhst-manifest. Get the selfh.st icon manifest (index.json), cached on disk with a 7-day TTL.
-func (c Client) GetIconsSelfhstManifest(ctx context.Context) (result GetIconsSelfhstManifestOperationResponse, err error) {
+func (c Client) GetIconsSelfhstManifest(ctx context.Context) (result GetIconsSelfhstManifestResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,7 +43,7 @@ func (c Client) GetIconsSelfhstManifest(ctx context.Context) (result GetIconsSel
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

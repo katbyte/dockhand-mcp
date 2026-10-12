@@ -23,8 +23,8 @@ func TestSettingsSavedMangledAndPutBack(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	was := before.Model
-	if was.EventRetentionDays == 0 || was.EventCleanupCron == "" || was.DefaultTimezone == "" || was.LogMaxLines == 0 || was.ShowWhatsNew == nil || len(was.StackLogOperations) == 0 {
+	was := before.Answer
+	if was.EventRetentionDays == 0 || was.EventCleanupCron == "" || was.DefaultTimezone == "" || was.LogMaxLines == 0 || len(was.StackLogOperations) == 0 {
 		t.Fatalf("the general settings as they are = %+v", was)
 	}
 	// put back whatever happens: each key this test touches, as it was
@@ -33,44 +33,44 @@ func TestSettingsSavedMangledAndPutBack(t *testing.T) {
 		back["externalStackPaths"] = []string{}
 	}
 	t.Cleanup(func() { _, _ = c.SaveGeneralSettings(noCancel(t), back) })
-	read := func() *dockhand.GetSettingsGeneralResponse {
+	read := func() *dockhand.GetSettingsGeneralAnswer {
 		now, failed := c.GetSettingsGeneral(ctx)
 		if failed != nil {
 			t.Fatal(failed)
 		}
 
-		return now.Model
+		return now.Answer
 	}
 
 	// taken as given: only the keys sent change, a number that is 0 and a text that is empty among them, and the answer is every setting
 	saved, err := c.SaveGeneralSettings(ctx, map[string]any{"eventRetentionDays": was.EventRetentionDays + 1, "scanRetentionGraceDays": 0, "externalStackPaths": []string{"/srv/one", "/srv/two"}, "primaryStackLocation": "/srv/stacks"})
-	if err != nil || saved.Model.EventRetentionDays != was.EventRetentionDays+1 || saved.Model.ScanRetentionGraceDays != 0 || !slices.Equal(saved.Model.ExternalStackPaths, []string{"/srv/one", "/srv/two"}) || saved.Model.PrimaryStackLocation != "/srv/stacks" || saved.Model.EventCleanupCron != was.EventCleanupCron || saved.Model.DefaultTimezone != was.DefaultTimezone {
-		t.Fatalf("settings saved = %+v, %v", saved.Model, err)
+	if err != nil || saved.Answer.EventRetentionDays != was.EventRetentionDays+1 || saved.Answer.ScanRetentionGraceDays != 0 || !slices.Equal(saved.Answer.ExternalStackPaths, []string{"/srv/one", "/srv/two"}) || saved.Answer.PrimaryStackLocation != "/srv/stacks" || saved.Answer.EventCleanupCron != was.EventCleanupCron || saved.Answer.DefaultTimezone != was.DefaultTimezone {
+		t.Fatalf("settings saved = %+v, %v", saved.Answer, err)
 	}
 	if now := read(); now.EventRetentionDays != was.EventRetentionDays+1 || now.ScanRetentionGraceDays != 0 || len(now.ExternalStackPaths) != 2 || now.PrimaryStackLocation != "/srv/stacks" || now.LogMaxLines != was.LogMaxLines {
 		t.Errorf("the settings read back = %+v", now)
 	}
 	// the generated call sends the paths as the list they are, and the text is forgotten by an empty one
-	if listed, err := c.PostSettingsGeneral(ctx, dockhand.PostSettingsGeneralRequest{ExternalStackPaths: []string{"/srv/three"}}); err != nil || !slices.Equal(listed.Model.ExternalStackPaths, []string{"/srv/three"}) {
-		t.Errorf("the paths saved by the generated call = %+v, %v", listed.Model.ExternalStackPaths, err)
+	if listed, err := c.PostSettingsGeneral(ctx, dockhand.PostSettingsGeneralRequest{ExternalStackPaths: []string{"/srv/three"}}); err != nil || !slices.Equal(listed.Answer.ExternalStackPaths, []string{"/srv/three"}) {
+		t.Errorf("the paths saved by the generated call = %+v, %v", listed.Answer.ExternalStackPaths, err)
 	}
-	if forgot, err := c.SaveGeneralSettings(ctx, map[string]any{"primaryStackLocation": "", "externalStackPaths": []string{}}); err != nil || forgot.Model.PrimaryStackLocation != "" || len(forgot.Model.ExternalStackPaths) != 0 {
-		t.Errorf("a place and the paths forgotten = %q and %v, %v", forgot.Model.PrimaryStackLocation, forgot.Model.ExternalStackPaths, err)
+	if forgot, err := c.SaveGeneralSettings(ctx, map[string]any{"primaryStackLocation": "", "externalStackPaths": []string{}}); err != nil || forgot.Answer.PrimaryStackLocation != "" || len(forgot.Answer.ExternalStackPaths) != 0 {
+		t.Errorf("a place and the paths forgotten = %q and %v, %v", forgot.Answer.PrimaryStackLocation, forgot.Answer.ExternalStackPaths, err)
 	}
 
 	// changed or passed over without a word, each answered 200: a number too small raised, one too big brought down, a word it does not know left,
 	// and the entries of a list it does not know dropped
 	for what, tc := range map[string]struct {
 		sent map[string]any
-		ok   func(now *dockhand.GetSettingsGeneralResponse) bool
+		ok   func(now *dockhand.GetSettingsGeneralAnswer) bool
 	}{
-		"a number too small":      {map[string]any{"scanRetentionKeep": 0}, func(now *dockhand.GetSettingsGeneralResponse) bool { return now.ScanRetentionKeep == 1 }},
-		"a number too big":        {map[string]any{"logMaxLines": 5000}, func(now *dockhand.GetSettingsGeneralResponse) bool { return now.LogMaxLines == 2000 }},
-		"a word it does not know": {map[string]any{"downloadFormat": "no-such-format"}, func(now *dockhand.GetSettingsGeneralResponse) bool { return now.DownloadFormat == was.DownloadFormat }},
-		"a list with an unknown entry": {map[string]any{"stackLogOperations": []string{"deploy", "no-such-operation"}}, func(now *dockhand.GetSettingsGeneralResponse) bool {
+		"a number too small":      {map[string]any{"scanRetentionKeep": 0}, func(now *dockhand.GetSettingsGeneralAnswer) bool { return now.ScanRetentionKeep == 1 }},
+		"a number too big":        {map[string]any{"logMaxLines": 5000}, func(now *dockhand.GetSettingsGeneralAnswer) bool { return now.LogMaxLines == 2000 }},
+		"a word it does not know": {map[string]any{"downloadFormat": "no-such-format"}, func(now *dockhand.GetSettingsGeneralAnswer) bool { return now.DownloadFormat == was.DownloadFormat }},
+		"a list with an unknown entry": {map[string]any{"stackLogOperations": []string{"deploy", "no-such-operation"}}, func(now *dockhand.GetSettingsGeneralAnswer) bool {
 			return slices.Equal(now.StackLogOperations, []string{"deploy"})
 		}},
-		"a key it does not have": {map[string]any{"noSuchSetting": true}, func(now *dockhand.GetSettingsGeneralResponse) bool {
+		"a key it does not have": {map[string]any{"noSuchSetting": true}, func(now *dockhand.GetSettingsGeneralAnswer) bool {
 			return now.EventRetentionDays == was.EventRetentionDays+1
 		}},
 	} {
@@ -118,25 +118,25 @@ func TestNewerVersionSettingsAreReplacedWhole(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	was := before.Model
+	was := before.Answer
 	t.Cleanup(func() {
-		_, _ = c.PostSettingsSemver(noCancel(t), dockhand.PostSettingsSemverRequest{Enabled: was.Enabled, MaxBump: was.MaxBump, MatchFlavor: was.MatchFlavor, IncludePrerelease: was.IncludePrerelease})
+		_, _ = c.PostSettingsSemver(noCancel(t), dockhand.PostSettingsSemverRequest{Enabled: new(was.Enabled), MaxBump: was.MaxBump, MatchFlavor: new(was.MatchFlavor), IncludePrerelease: new(was.IncludePrerelease)})
 	})
-	save := func(request dockhand.PostSettingsSemverRequest) *dockhand.GetSettingsSemverResponse {
-		if answered, err := c.PostSettingsSemver(ctx, request); err != nil || !yes(answered.Model.Success) {
-			t.Fatalf("saving %+v = %+v, %v", request, answered.Model, err)
+	save := func(request dockhand.PostSettingsSemverRequest) *dockhand.GetSettingsSemverAnswer {
+		if answered, err := c.PostSettingsSemver(ctx, request); err != nil || !answered.Answer.Success {
+			t.Fatalf("saving %+v = %+v, %v", request, answered.Answer, err)
 		}
 		now, err := c.GetSettingsSemver(ctx)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		return now.Model
+		return now.Answer
 	}
 
 	// all four as given, each step it knows
 	for _, step := range []string{"minor", "patch", "major"} {
-		if now := save(dockhand.PostSettingsSemverRequest{Enabled: new(true), MaxBump: step, MatchFlavor: new(false), IncludePrerelease: new(true)}); !yes(now.Enabled) || now.MaxBump != step || yes(now.MatchFlavor) || !yes(now.IncludePrerelease) {
+		if now := save(dockhand.PostSettingsSemverRequest{Enabled: new(true), MaxBump: step, MatchFlavor: new(false), IncludePrerelease: new(true)}); !now.Enabled || now.MaxBump != step || now.MatchFlavor || !now.IncludePrerelease {
 			t.Errorf("newer versions looked for a %s step at most = %+v", step, now)
 		}
 	}
@@ -145,11 +145,11 @@ func TestNewerVersionSettingsAreReplacedWhole(t *testing.T) {
 		t.Errorf("a step there is none of = %+v, want it made major", now)
 	}
 	// one alone: the rest go to what they are by default, which switches the looking off
-	if now := save(dockhand.PostSettingsSemverRequest{MaxBump: "minor"}); yes(now.Enabled) || now.MaxBump != "minor" || !yes(now.MatchFlavor) || yes(now.IncludePrerelease) {
+	if now := save(dockhand.PostSettingsSemverRequest{MaxBump: "minor"}); now.Enabled || now.MaxBump != "minor" || !now.MatchFlavor || now.IncludePrerelease {
 		t.Errorf("one setting saved alone = %+v, want the others at their defaults: off, flavours matched, no pre-releases", now)
 	}
 
-	if now := save(dockhand.PostSettingsSemverRequest{Enabled: was.Enabled, MaxBump: was.MaxBump, MatchFlavor: was.MatchFlavor, IncludePrerelease: was.IncludePrerelease}); yes(now.Enabled) != yes(was.Enabled) || now.MaxBump != was.MaxBump || yes(now.MatchFlavor) != yes(was.MatchFlavor) || yes(now.IncludePrerelease) != yes(was.IncludePrerelease) {
+	if now := save(dockhand.PostSettingsSemverRequest{Enabled: new(was.Enabled), MaxBump: was.MaxBump, MatchFlavor: new(was.MatchFlavor), IncludePrerelease: new(was.IncludePrerelease)}); now.Enabled != was.Enabled || now.MaxBump != was.MaxBump || now.MatchFlavor != was.MatchFlavor || now.IncludePrerelease != was.IncludePrerelease {
 		t.Errorf("the settings for newer versions put back = %+v, want %+v", now, was)
 	}
 }

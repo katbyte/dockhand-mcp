@@ -9,14 +9,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetAuthTokensOperationResponse is the result of GetAuthTokens.
-type GetAuthTokensOperationResponse struct {
+// GetAuthTokensResponse is the result of GetAuthTokens.
+type GetAuthTokensResponse struct {
 	HttpResponse *http.Response
-	Model        []GetAuthTokensResponse
+	Answer       []GetAuthTokensAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetAuthTokensResponse) Answered() bool { return r.Answer != nil }
+
 // GetAuthTokens calls GET /api/auth/tokens. List the authenticated user's API tokens (never returns the hash/secret).
-func (c Client) GetAuthTokens(ctx context.Context) (result GetAuthTokensOperationResponse, err error) {
+func (c Client) GetAuthTokens(ctx context.Context) (result GetAuthTokensResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,7 +43,7 @@ func (c Client) GetAuthTokens(ctx context.Context) (result GetAuthTokensOperatio
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

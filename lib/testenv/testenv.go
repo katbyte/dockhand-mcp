@@ -116,7 +116,7 @@ type World struct {
 	GitPassword string
 
 	// Environments are the numbers Dockhand gave alpha and beta
-	Environments map[string]int
+	Environments map[string]dockhand.EnvironmentID
 
 	hosts map[string]string
 	// container is the container the Dockhand itself runs in, whose name leads the name of everything started beside it
@@ -161,7 +161,7 @@ func OpenBare(ctx context.Context) (*World, error) {
 		Git:          environment.Get("TEST_GIT"),
 		GitUser:      environment.Get("TEST_GIT_USER"),
 		GitPassword:  environment.Get("TEST_GIT_PASSWORD"),
-		Environments: map[string]int{},
+		Environments: map[string]dockhand.EnvironmentID{},
 		hosts:        map[string]string{},
 		container:    environment.Get("TEST_CONTAINER"),
 		network:      environment.Get("TEST_NETWORK"),
@@ -192,7 +192,7 @@ func OpenBare(ctx context.Context) (*World, error) {
 	if err != nil {
 		return nil, fmt.Errorf("the Dockhand under test could not be asked: %w", err)
 	}
-	loginOn := session.Model.AuthEnabled != nil && *session.Model.AuthEnabled
+	loginOn := session.Answer.AuthEnabled
 
 	switch {
 	case w.Stage == StageOpen && loginOn:
@@ -209,7 +209,7 @@ func OpenBare(ctx context.Context) (*World, error) {
 }
 
 // Manages records the number Dockhand gave a host, for a suite that added the hosts itself.
-func (w *World) Manages(host string, id int) { w.Environments[host] = id }
+func (w *World) Manages(host string, id dockhand.EnvironmentID) { w.Environments[host] = id }
 
 // logIn switches the server's login on, when it is not on already, and mints a token for the administrator: the first user is made with no login, the
 // login is switched on, and a token is made by a session, which is a user name and a password answered with a cookie.
@@ -247,11 +247,11 @@ func (w *World) logIn(ctx context.Context, open *dockhand.Client, loginOn bool) 
 	if err != nil {
 		return fmt.Errorf("minting a token for %s: %w", w.User, err)
 	}
-	if minted.Model.Token == "" {
+	if minted.Answer.Token == "" {
 		return errors.New("the server said it made a token and sent none")
 	}
 
-	w.Token = minted.Model.Token
+	w.Token = minted.Answer.Token
 	if w.Dock, err = dockhand.Connect(w.Server, w.Token); err != nil {
 		return err
 	}
@@ -265,11 +265,11 @@ func revokeMinted(ctx context.Context, session *dockhand.Client) error {
 	if err != nil {
 		return err
 	}
-	for i := range held.Model {
-		if !strings.HasPrefix(held.Model[i].Name, mintedAs+"-") {
+	for i := range held.Answer {
+		if !strings.HasPrefix(held.Answer[i].Name, mintedAs+"-") {
 			continue
 		}
-		if _, err := session.DeleteAuthTokensById(ctx, held.Model[i].Id); err != nil {
+		if _, err := session.DeleteAuthTokensById(ctx, held.Answer[i].Id); err != nil {
 			return err
 		}
 	}
@@ -283,8 +283,8 @@ func (w *World) register(ctx context.Context) error {
 	if err != nil {
 		return fmt.Errorf("listing the environments: %w", err)
 	}
-	for i := range listed.Model {
-		w.Environments[listed.Model[i].Name] = listed.Model[i].Id
+	for i := range listed.Answer {
+		w.Environments[listed.Answer[i].Name] = listed.Answer[i].Id
 	}
 
 	agentHost, agentPort, err := HostPort(w.Agent)
@@ -302,7 +302,7 @@ func (w *World) register(ctx context.Context) error {
 		if err != nil {
 			return fmt.Errorf("registering %s: %w", want.Name, err)
 		}
-		w.Environments[want.Name] = made.Model.Id
+		w.Environments[want.Name] = dockhand.EnvironmentID(int(made.Answer.Id))
 	}
 
 	return nil
@@ -322,7 +322,7 @@ func HostPort(address string) (host string, port int, err error) {
 }
 
 // Env is the number Dockhand gave a host.
-func (w *World) Env(host string) int { return w.Environments[host] }
+func (w *World) Env(host string) dockhand.EnvironmentID { return w.Environments[host] }
 
 // Docker runs a docker command on one of the hosts, inside the container the host is, and returns what it printed: how something is started on a host
 // that Dockhand had no part in.

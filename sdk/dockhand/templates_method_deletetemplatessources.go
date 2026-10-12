@@ -4,32 +4,54 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteTemplatesSourcesOperationResponse is the result of DeleteTemplatesSources.
-type DeleteTemplatesSourcesOperationResponse struct {
+// DeleteTemplatesSourcesResponse is the result of DeleteTemplatesSources.
+//
+// Answer is the DeleteTemplatesSourcesAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteTemplatesSourcesResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteTemplatesSourcesResponse
+	Answer       *DeleteTemplatesSourcesAnswer
+	*DeleteTemplatesSourcesAnswer
 }
 
-// DeleteTemplatesSourcesOperationOptions holds the query and header parameters of DeleteTemplatesSources.
-type DeleteTemplatesSourcesOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteTemplatesSourcesResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteTemplatesSourcesAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteTemplatesSourcesResponse) Record() (DeleteTemplatesSourcesAnswer, error) {
+	if r.Answer == nil {
+		return DeleteTemplatesSourcesAnswer{}, errors.New("DeleteTemplatesSources answered no DeleteTemplatesSourcesAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// DeleteTemplatesSourcesOptions holds the query and header parameters of DeleteTemplatesSources.
+type DeleteTemplatesSourcesOptions struct {
 	// ID of the template source to delete (from GET /api/templates/sources)
 	Id *int
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o DeleteTemplatesSourcesOperationOptions) ToHeaders() *client.Headers {
+func (o DeleteTemplatesSourcesOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o DeleteTemplatesSourcesOperationOptions) ToQuery() *client.QueryParams {
+func (o DeleteTemplatesSourcesOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Id != nil {
 		out.Append("id", strconv.Itoa(*o.Id))
@@ -38,7 +60,8 @@ func (o DeleteTemplatesSourcesOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // DeleteTemplatesSources calls DELETE /api/templates/sources. Delete a custom template source by ID.
-func (c Client) DeleteTemplatesSources(ctx context.Context, options DeleteTemplatesSourcesOperationOptions) (result DeleteTemplatesSourcesOperationResponse, err error) {
+func (c Client) DeleteTemplatesSources(ctx context.Context, options DeleteTemplatesSourcesOptions) (result DeleteTemplatesSourcesResponse, err error) {
+	result.DeleteTemplatesSourcesAnswer = &DeleteTemplatesSourcesAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -62,11 +85,12 @@ func (c Client) DeleteTemplatesSources(ctx context.Context, options DeleteTempla
 		return
 	}
 
-	var model DeleteTemplatesSourcesResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteTemplatesSourcesAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteTemplatesSourcesAnswer = result.Answer
 
 	return
 }

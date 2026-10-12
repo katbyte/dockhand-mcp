@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostUsersOperationResponse is the result of PostUsers.
-type PostUsersOperationResponse struct {
+// PostUsersResponse is the result of PostUsers.
+//
+// Answer is the PostUsersAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostUsersResponse struct {
 	HttpResponse *http.Response
-	Model        *PostUsersResponse
+	Answer       *PostUsersAnswer
+	*PostUsersAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostUsersResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostUsersAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostUsersResponse) Record() (PostUsersAnswer, error) {
+	if r.Answer == nil {
+		return PostUsersAnswer{}, errors.New("PostUsers answered no PostUsersAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostUsers calls POST /api/users. Create a local user (allowed without auth only during initial setup, before any admin exists).
-func (c Client) PostUsers(ctx context.Context, input PostUsersRequest) (result PostUsersOperationResponse, err error) {
+func (c Client) PostUsers(ctx context.Context, input PostUsersRequest) (result PostUsersResponse, err error) {
+	result.PostUsersAnswer = &PostUsersAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostUsers(ctx context.Context, input PostUsersRequest) (result P
 		return
 	}
 
-	var model PostUsersResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostUsersAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostUsersAnswer = result.Answer
 
 	return
 }

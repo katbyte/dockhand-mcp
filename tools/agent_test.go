@@ -56,7 +56,7 @@ func TestAgentList(t *testing.T) {
 	// who has called in, who is waited for, and the tokens that work, the newest first
 	out := suite.Call(t, "agent_list", nil)
 	connected := acctest.Rows(t, out["connected"], "connected")
-	if len(connected) != 1 || connected[0]["env"] != "gamma" || connected[0]["agent"] != "agent-gamma" || connected[0]["agent_version"] != "0.2.50" || connected[0]["docker_version"] != "29.9.0" || connected[0]["hostname"] != "host-gamma" || connected[0]["since"] != "2026-10-10T13:36:29.139Z" || connected[0]["last_heard"] != "2026-10-10T13:36:34.142Z" || len(acctest.Strs(t, connected[0]["can"], "can")) != 4 {
+	if len(connected) != 1 || connected[0]["env"] != "gamma" || connected[0]["agent"] != "agent-gamma" || connected[0]["agent_version"] != "0.2.50" || connected[0]["docker_version"] != "29.9.0" || connected[0]["hostname"] != "host-gamma" || connected[0]["since"] != "2026-10-10T13:36:29Z" || connected[0]["last_heard"] != "2026-10-10T13:36:34Z" || len(acctest.Strs(t, connected[0]["can"], "can")) != 4 {
 		t.Errorf("the agents connected = %v", connected)
 	}
 	if waiting := acctest.Strs(t, out["waiting"], "waiting"); len(waiting) != 1 || waiting[0] != "delta" {
@@ -66,7 +66,7 @@ func TestAgentList(t *testing.T) {
 	if len(listed) != 2 || acctest.Num(t, out["revoked"], "revoked") != 1 || out["note"] != nil {
 		t.Fatalf("the tokens = %v", out)
 	}
-	if first, second := listed[0], listed[1]; acctest.Num(t, first["id"], "id") != 5 || first["env"] != "delta" || first["starts"] != "m3Jw0aPd" || !acctest.IsBool(first["active"], true) || first["last_used"] != nil || first["expires"] != nil || second["name"] != "gamma again" || second["env"] != "gamma" || second["expires"] != "2030-01-01T00:00:00Z" || second["last_used"] != "2026-10-10T13:36:29.138Z" || second["made"] != "2026-10-10 13:40:00" {
+	if first, second := listed[0], listed[1]; acctest.Num(t, first["id"], "id") != 5 || first["env"] != "delta" || first["starts"] != "m3Jw0aPd" || !acctest.IsBool(first["active"], true) || first["last_used"] != nil || first["expires"] != nil || second["name"] != "gamma again" || second["env"] != "gamma" || second["expires"] != "2030-01-01T00:00:00Z" || second["last_used"] != "2026-10-10T13:36:29Z" || second["made"] != "2026-10-10T13:40:00Z" {
 		t.Errorf("the tokens that work = %v", listed)
 	}
 

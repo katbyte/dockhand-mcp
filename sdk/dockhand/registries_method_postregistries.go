@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostRegistriesOperationResponse is the result of PostRegistries.
-type PostRegistriesOperationResponse struct {
+// PostRegistriesResponse is the result of PostRegistries.
+//
+// Answer is the PostRegistriesAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostRegistriesResponse struct {
 	HttpResponse *http.Response
-	Model        *PostRegistriesResponse
+	Answer       *PostRegistriesAnswer
+	*PostRegistriesAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostRegistriesResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostRegistriesAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostRegistriesResponse) Record() (PostRegistriesAnswer, error) {
+	if r.Answer == nil {
+		return PostRegistriesAnswer{}, errors.New("PostRegistries answered no PostRegistriesAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostRegistries calls POST /api/registries. Create a container registry (optionally set it as default); credentials are trimmed and stored encrypted.
-func (c Client) PostRegistries(ctx context.Context, input PostRegistriesRequest) (result PostRegistriesOperationResponse, err error) {
+func (c Client) PostRegistries(ctx context.Context, input PostRegistriesRequest) (result PostRegistriesResponse, err error) {
+	result.PostRegistriesAnswer = &PostRegistriesAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostRegistries(ctx context.Context, input PostRegistriesRequest)
 		return
 	}
 
-	var model PostRegistriesResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostRegistriesAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostRegistriesAnswer = result.Answer
 
 	return
 }

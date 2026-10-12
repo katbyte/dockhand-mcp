@@ -27,11 +27,11 @@ func TestEnvironmentLabelsGivenColouredRenamedAndRemoved(t *testing.T) {
 		if err != nil {
 			return 0, err
 		}
-		if !yes(answer.Model.Success) {
+		if !answer.Answer.Success {
 			t.Errorf("%+v was answered without its being said to have succeeded", request)
 		}
 
-		return answer.Model.Affected, nil
+		return answer.Answer.Affected, nil
 	}
 	// on is the environments a label is on, by name in order, and its colour; colourOf is the colour kept under a name, whether or not any
 	// environment has the label
@@ -40,7 +40,7 @@ func TestEnvironmentLabelsGivenColouredRenamedAndRemoved(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		for _, l := range listed.Model.Labels {
+		for _, l := range listed.Answer.Labels {
 			if l.Label != label {
 				continue
 			}
@@ -65,23 +65,23 @@ func TestEnvironmentLabelsGivenColouredRenamedAndRemoved(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		return listed.Model.Colors[label]
+		return listed.Answer.Colors[label]
 	}
 	labelsOf := func(env int) []string {
-		got, err := c.GetEnvironmentsById(ctx, env)
+		got, err := c.GetEnvironmentsById(ctx, dockhand.EnvironmentID(env))
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		return got.Model.Labels
+		return got.Answer.Labels
 	}
-	had := map[int][]string{alpha: labelsOf(alpha), beta: labelsOf(beta)}
+	had := map[int][]string{int(alpha): labelsOf(int(alpha)), int(beta): labelsOf(int(beta))}
 	clean := func() {
 		for _, label := range []string{one, two, three, strings.ToUpper(one)} {
 			_, _ = c.PostLabels(noCancel(t), dockhand.PostLabelsRequest{Action: "delete", Label: label})
 		}
 		for env, labels := range had {
-			_, _ = c.PutEnvironmentsById(noCancel(t), env, dockhand.PutEnvironmentsByIdRequest{Labels: append([]string{}, labels...)})
+			_, _ = c.PutEnvironmentsById(noCancel(t), dockhand.EnvironmentID(env), dockhand.PutEnvironmentsByIdRequest{Labels: append([]string{}, labels...)})
 		}
 	}
 	clean()
@@ -92,7 +92,7 @@ func TestEnvironmentLabelsGivenColouredRenamedAndRemoved(t *testing.T) {
 		"no action":                      {},
 		"an action that is none":         {Action: "merge", Label: one},
 		"a label given to nothing":       {Action: "add", Label: one},
-		"no label to give":               {Action: "add", Label: "  ", EnvironmentIds: []int{alpha}},
+		"no label to give":               {Action: "add", Label: "  ", EnvironmentIds: []dockhand.EnvironmentID{alpha}},
 		"no label to remove":             {Action: "delete"},
 		"no label to colour":             {Action: "set-color", Color: "#123456"},
 		"a rename with no name to give":  {Action: "rename", OldLabel: one},
@@ -105,17 +105,17 @@ func TestEnvironmentLabelsGivenColouredRenamedAndRemoved(t *testing.T) {
 	}
 
 	// given to two environments, the spaces round it taken off; given again it changes none, and an environment there is none of is passed over
-	if given, err := act(dockhand.PostLabelsRequest{Action: "add", Label: "  " + one + " ", EnvironmentIds: []int{alpha, beta}}); err != nil || given != 2 {
+	if given, err := act(dockhand.PostLabelsRequest{Action: "add", Label: "  " + one + " ", EnvironmentIds: []dockhand.EnvironmentID{alpha, beta}}); err != nil || given != 2 {
 		t.Fatalf("a label given to two environments = %d, %v", given, err)
 	}
-	if where, colour := on(one); where != "alpha beta" || colour != "" || !slices.Contains(labelsOf(alpha), one) {
-		t.Errorf("the label is on %q with the colour %q, and alpha has %v", where, colour, labelsOf(alpha))
+	if where, colour := on(one); where != "alpha beta" || colour != "" || !slices.Contains(labelsOf(int(alpha)), one) {
+		t.Errorf("the label is on %q with the colour %q, and alpha has %v", where, colour, labelsOf(int(alpha)))
 	}
-	if again, err := act(dockhand.PostLabelsRequest{Action: "add", Label: one, EnvironmentIds: []int{alpha, 999999}}); err != nil || again != 0 {
+	if again, err := act(dockhand.PostLabelsRequest{Action: "add", Label: one, EnvironmentIds: []dockhand.EnvironmentID{alpha, 999999}}); err != nil || again != 0 {
 		t.Errorf("a label given to an environment that has it and to one there is none of = %d, %v: Dockhand answers that it was done to none", again, err)
 	}
 	// in another case it is another label
-	if given, err := act(dockhand.PostLabelsRequest{Action: "add", Label: strings.ToUpper(one), EnvironmentIds: []int{alpha}}); err != nil || given != 1 {
+	if given, err := act(dockhand.PostLabelsRequest{Action: "add", Label: strings.ToUpper(one), EnvironmentIds: []dockhand.EnvironmentID{alpha}}); err != nil || given != 1 {
 		t.Errorf("the label in another case = %d, %v", given, err)
 	}
 	if where, _ := on(strings.ToUpper(one)); where != "alpha" {
@@ -160,16 +160,16 @@ func TestEnvironmentLabelsGivenColouredRenamedAndRemoved(t *testing.T) {
 
 	// renamed to a label there is already, the two are one: on every environment that had either, with the colour of the one it joins when that has
 	// one
-	if _, err := act(dockhand.PostLabelsRequest{Action: "add", Label: three, EnvironmentIds: []int{beta}}); err != nil {
+	if _, err := act(dockhand.PostLabelsRequest{Action: "add", Label: three, EnvironmentIds: []dockhand.EnvironmentID{beta}}); err != nil {
 		t.Fatal(err)
 	}
 	if joined, err := act(dockhand.PostLabelsRequest{Action: "rename", OldLabel: two, NewLabel: three}); err != nil || joined != 2 {
 		t.Errorf("a label renamed to another's name = %d, %v", joined, err)
 	}
-	if where, colour := on(three); where != "alpha beta" || colour != "#111111" || slices.Contains(labelsOf(beta), two) {
+	if where, colour := on(three); where != "alpha beta" || colour != "#111111" || slices.Contains(labelsOf(int(beta)), two) {
 		t.Errorf("the two made one are on %q with the colour %q: the one with no colour used to take the other's", where, colour)
 	}
-	if _, err := act(dockhand.PostLabelsRequest{Action: "add", Label: one, EnvironmentIds: []int{alpha}}); err != nil {
+	if _, err := act(dockhand.PostLabelsRequest{Action: "add", Label: one, EnvironmentIds: []dockhand.EnvironmentID{alpha}}); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := act(dockhand.PostLabelsRequest{Action: "set-color", Label: one, Color: "#222222"}); err != nil {
@@ -183,9 +183,9 @@ func TestEnvironmentLabelsGivenColouredRenamedAndRemoved(t *testing.T) {
 	}
 
 	// taken from one environment by saving the environment with the labels it is to keep; taken from the last, its colour is kept under its name
-	for _, env := range []int{alpha, beta} {
+	for _, env := range []int{int(alpha), int(beta)} {
 		kept := slices.DeleteFunc(labelsOf(env), func(label string) bool { return label == one })
-		if _, err := c.PutEnvironmentsById(ctx, env, dockhand.PutEnvironmentsByIdRequest{Labels: append([]string{}, kept...)}); err != nil {
+		if _, err := c.PutEnvironmentsById(ctx, dockhand.EnvironmentID(env), dockhand.PutEnvironmentsByIdRequest{Labels: append([]string{}, kept...)}); err != nil {
 			t.Fatalf("saving environment %d without the label: %v", env, err)
 		}
 	}
@@ -198,7 +198,7 @@ func TestEnvironmentLabelsGivenColouredRenamedAndRemoved(t *testing.T) {
 	}
 
 	// renamed to itself, a label is taken from every environment, with its colour
-	if _, err := act(dockhand.PostLabelsRequest{Action: "add", Label: two, EnvironmentIds: []int{alpha, beta}}); err != nil {
+	if _, err := act(dockhand.PostLabelsRequest{Action: "add", Label: two, EnvironmentIds: []dockhand.EnvironmentID{alpha, beta}}); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := act(dockhand.PostLabelsRequest{Action: "set-color", Label: two, Color: "#333333"}); err != nil {
@@ -212,7 +212,7 @@ func TestEnvironmentLabelsGivenColouredRenamedAndRemoved(t *testing.T) {
 	}
 
 	// removed from every environment that has it, with its colour; one there is none of is answered as removed from none
-	if _, err := act(dockhand.PostLabelsRequest{Action: "add", Label: three, EnvironmentIds: []int{alpha, beta}}); err != nil {
+	if _, err := act(dockhand.PostLabelsRequest{Action: "add", Label: three, EnvironmentIds: []dockhand.EnvironmentID{alpha, beta}}); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := act(dockhand.PostLabelsRequest{Action: "set-color", Label: three, Color: "#444444"}); err != nil {

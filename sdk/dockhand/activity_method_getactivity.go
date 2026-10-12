@@ -4,22 +4,45 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetActivityOperationResponse is the result of GetActivity.
-type GetActivityOperationResponse struct {
+// GetActivityResponse is the result of GetActivity.
+//
+// Answer is the GetActivityAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetActivityResponse struct {
 	HttpResponse *http.Response
-	Model        *GetActivityResponse
+	Answer       *GetActivityAnswer
+	*GetActivityAnswer
 }
 
-// GetActivityOperationOptions holds the query and header parameters of GetActivity.
-type GetActivityOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetActivityResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetActivityAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetActivityResponse) Record() (GetActivityAnswer, error) {
+	if r.Answer == nil {
+		return GetActivityAnswer{}, errors.New("GetActivity answered no GetActivityAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetActivityOptions holds the query and header parameters of GetActivity.
+type GetActivityOptions struct {
 	// Filter to a single environment (from GET /api/environments)
-	EnvironmentId *int
+	EnvironmentId EnvironmentID
 
 	// Filter by container ID (from GET /api/containers)
 	ContainerId string
@@ -47,16 +70,16 @@ type GetActivityOperationOptions struct {
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetActivityOperationOptions) ToHeaders() *client.Headers {
+func (o GetActivityOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetActivityOperationOptions) ToQuery() *client.QueryParams {
+func (o GetActivityOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.EnvironmentId != nil {
-		out.Append("environmentId", strconv.Itoa(*o.EnvironmentId))
+	if o.EnvironmentId != 0 {
+		out.Append("environmentId", strconv.Itoa(int(o.EnvironmentId)))
 	}
 	if o.ContainerId != "" {
 		out.Append("containerId", o.ContainerId)
@@ -86,13 +109,23 @@ func (o GetActivityOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetActivity calls GET /api/activity. Query container activity events with filters and pagination.
-func (c Client) GetActivity(ctx context.Context, options GetActivityOperationOptions) (result GetActivityOperationResponse, err error) {
+func (c Client) GetActivity(ctx context.Context, options ...GetActivityOptions) (result GetActivityResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetActivity takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetActivityOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetActivityAnswer = &GetActivityAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/activity",
 	}
 
@@ -110,11 +143,12 @@ func (c Client) GetActivity(ctx context.Context, options GetActivityOperationOpt
 		return
 	}
 
-	var model GetActivityResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetActivityAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetActivityAnswer = result.Answer
 
 	return
 }

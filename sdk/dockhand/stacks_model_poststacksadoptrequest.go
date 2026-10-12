@@ -4,6 +4,6 @@ package dockhand
 
 // PostStacksAdoptRequest is an object the document declares inline.
 type PostStacksAdoptRequest struct {
-	EnvironmentId int                            `json:"environmentId"`
+	EnvironmentId EnvironmentID                  `json:"environmentId"`
 	Stacks        []PostStacksAdoptRequestStacks `json:"stacks"`
 }

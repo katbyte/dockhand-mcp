@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,41 +13,72 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetStacksByNameDeploysOperationResponse is the result of GetStacksByNameDeploys.
-type GetStacksByNameDeploysOperationResponse struct {
+// GetStacksByNameDeploysResponse is the result of GetStacksByNameDeploys.
+//
+// Answer is the GetStacksByNameDeploysAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetStacksByNameDeploysResponse struct {
 	HttpResponse *http.Response
-	Model        *GetStacksByNameDeploysResponse
+	Answer       *GetStacksByNameDeploysAnswer
+	*GetStacksByNameDeploysAnswer
 }
 
-// GetStacksByNameDeploysOperationOptions holds the query and header parameters of GetStacksByNameDeploys.
-type GetStacksByNameDeploysOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetStacksByNameDeploysResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetStacksByNameDeploysAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetStacksByNameDeploysResponse) Record() (GetStacksByNameDeploysAnswer, error) {
+	if r.Answer == nil {
+		return GetStacksByNameDeploysAnswer{}, errors.New("GetStacksByNameDeploys answered no GetStacksByNameDeploysAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetStacksByNameDeploysOptions holds the query and header parameters of GetStacksByNameDeploys.
+type GetStacksByNameDeploysOptions struct {
 	// Environment id the stack belongs to (from GET /api/environments). Omit, or pass the literal string "null", for the local/default environment (deploys triggered without an explicit env, the normal shape on a single-environment install).
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetStacksByNameDeploysOperationOptions) ToHeaders() *client.Headers {
+func (o GetStacksByNameDeploysOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetStacksByNameDeploysOperationOptions) ToQuery() *client.QueryParams {
+func (o GetStacksByNameDeploysOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetStacksByNameDeploys calls GET /api/stacks/{name}/deploys. List deploy runs recorded for a stack (no log text -- see GET .../{runId}/log).
-func (c Client) GetStacksByNameDeploys(ctx context.Context, name string, options GetStacksByNameDeploysOperationOptions) (result GetStacksByNameDeploysOperationResponse, err error) {
+func (c Client) GetStacksByNameDeploys(ctx context.Context, name string, options ...GetStacksByNameDeploysOptions) (result GetStacksByNameDeploysResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetStacksByNameDeploys takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetStacksByNameDeploysOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetStacksByNameDeploysAnswer = &GetStacksByNameDeploysAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/deploys", url.PathEscape(name)),
 	}
 
@@ -64,11 +96,12 @@ func (c Client) GetStacksByNameDeploys(ctx context.Context, name string, options
 		return
 	}
 
-	var model GetStacksByNameDeploysResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetStacksByNameDeploysAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetStacksByNameDeploysAnswer = result.Answer
 
 	return
 }

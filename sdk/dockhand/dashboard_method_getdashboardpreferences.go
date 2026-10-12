@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetDashboardPreferencesOperationResponse is the result of GetDashboardPreferences.
-type GetDashboardPreferencesOperationResponse struct {
+// GetDashboardPreferencesResponse is the result of GetDashboardPreferences.
+//
+// Answer is the GetDashboardPreferencesAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetDashboardPreferencesResponse struct {
 	HttpResponse *http.Response
-	Model        *GetDashboardPreferencesResponse
+	Answer       *GetDashboardPreferencesAnswer
+	*GetDashboardPreferencesAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetDashboardPreferencesResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetDashboardPreferencesAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetDashboardPreferencesResponse) Record() (GetDashboardPreferencesAnswer, error) {
+	if r.Answer == nil {
+		return GetDashboardPreferencesAnswer{}, errors.New("GetDashboardPreferences answered no GetDashboardPreferencesAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetDashboardPreferences calls GET /api/dashboard/preferences. Get the current user's dashboard preferences (grid layout, lock state, view mode).
-func (c Client) GetDashboardPreferences(ctx context.Context) (result GetDashboardPreferencesOperationResponse, err error) {
+func (c Client) GetDashboardPreferences(ctx context.Context) (result GetDashboardPreferencesResponse, err error) {
+	result.GetDashboardPreferencesAnswer = &GetDashboardPreferencesAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) GetDashboardPreferences(ctx context.Context) (result GetDashboar
 		return
 	}
 
-	var model GetDashboardPreferencesResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetDashboardPreferencesAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetDashboardPreferencesAnswer = result.Answer
 
 	return
 }

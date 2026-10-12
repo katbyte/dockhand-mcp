@@ -9,14 +9,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetTemplatesOperationResponse is the result of GetTemplates.
-type GetTemplatesOperationResponse struct {
+// GetTemplatesResponse is the result of GetTemplates.
+type GetTemplatesResponse struct {
 	HttpResponse *http.Response
-	Model        []GetTemplatesResponse
+	Answer       []GetTemplatesAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetTemplatesResponse) Answered() bool { return r.Answer != nil }
+
 // GetTemplates calls GET /api/templates. Return the normalized app templates aggregated from all enabled template sources (server-side cached for 1 hour).
-func (c Client) GetTemplates(ctx context.Context) (result GetTemplatesOperationResponse, err error) {
+func (c Client) GetTemplates(ctx context.Context) (result GetTemplatesResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,7 +43,7 @@ func (c Client) GetTemplates(ctx context.Context) (result GetTemplatesOperationR
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/katbyte/dockhand-mcp/sdk/dockhand"
+	"github.com/katbyte/pandorest/client"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 )
 
@@ -47,23 +48,23 @@ type tagRow struct {
 	On    []tagOn `json:"on,omitempty"   jsonschema:"where the tag is given, for each environment asked that has it on anything; absent for a tag on nothing there"`
 }
 
-func tagRowOf(t *dockhand.GetTagsResponseTags) tagRow {
-	return tagRow{ID: t.Id, Name: t.Name, Color: t.Color, Icon: t.Icon}
+func tagRowOf(t *dockhand.GetTagsAnswerTags) tagRow {
+	return tagRow{ID: int(t.Id), Name: t.Name, Color: t.Color, Icon: t.Icon}
 }
 
 // tags is every tag the Dockhand keeps.
-func (r *registry) tags(ctx context.Context) ([]dockhand.GetTagsResponseTags, error) {
+func (r *registry) tags(ctx context.Context) ([]dockhand.GetTagsAnswerTags, error) {
 	listed, err := r.dock.GetTags(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("the tags could not be listed: %w", refusal(err))
 	}
 
-	return listed.Model.Tags, nil
+	return listed.Answer.Tags, nil
 }
 
 // tagIn is the tag of a list a call names, by its number or by its name whatever its case: Dockhand keeps no two tags whose names differ only in
 // that.
-func tagIn(listed []dockhand.GetTagsResponseTags, given any) (*dockhand.GetTagsResponseTags, error) {
+func tagIn(listed []dockhand.GetTagsAnswerTags, given any) (*dockhand.GetTagsAnswerTags, error) {
 	wanted, err := named(given, "tag")
 	if err != nil {
 		return nil, err
@@ -74,7 +75,7 @@ func tagIn(listed []dockhand.GetTagsResponseTags, given any) (*dockhand.GetTagsR
 	names := make([]string, 0, len(listed))
 	byName := -1
 	for i := range listed {
-		if strconv.Itoa(listed[i].Id) == wanted {
+		if strconv.Itoa(int(listed[i].Id)) == wanted {
 			return &listed[i], nil
 		}
 		if byName < 0 && strings.EqualFold(listed[i].Name, wanted) {
@@ -107,16 +108,16 @@ type tagged struct {
 
 // taggedOn is what an environment has given tags to.
 func (r *registry) taggedOn(ctx context.Context, env environment) (tagged, error) {
-	containers, err := r.dock.GetContainerTags(ctx, dockhand.GetContainerTagsOperationOptions{Env: &env.ID})
+	containers, err := r.dock.GetContainerTags(ctx, dockhand.GetContainerTagsOptions{Env: env.ID})
 	if err != nil {
 		return tagged{}, refusal(err)
 	}
-	stacks, err := r.dock.GetStackTags(ctx, dockhand.GetStackTagsOperationOptions{Env: &env.ID})
+	stacks, err := r.dock.GetStackTags(ctx, dockhand.GetStackTagsOptions{Env: env.ID})
 	if err != nil {
 		return tagged{}, refusal(err)
 	}
 
-	return tagged{Containers: containers.Model, Stacks: stacks.Model}, nil
+	return tagged{Containers: containers.Answer, Stacks: stacks.Answer}, nil
 }
 
 // holding is the names of a list that hold a tag, in order.
@@ -134,7 +135,7 @@ func holding(given map[string][]int, tag int) []string {
 
 // tagsAcross is where each tag is given on the environments a call is about, by the tag's number, with the environments that could not be asked. With
 // no environment named it is every one, and none at all is an answer too: a Dockhand that manages no Docker host still keeps tags.
-func (r *registry) tagsAcross(ctx context.Context, in envArg, listed []dockhand.GetTagsResponseTags) (map[int][]tagOn, []envFailure, error) {
+func (r *registry) tagsAcross(ctx context.Context, in envArg, listed []dockhand.GetTagsAnswerTags) (map[int][]tagOn, []envFailure, error) {
 	which, err := in.named()
 	if err != nil {
 		return nil, nil, err
@@ -158,9 +159,9 @@ func (r *registry) tagsAcross(ctx context.Context, in envArg, listed []dockhand.
 			continue
 		}
 		for i := range listed {
-			here := tagOn{Env: answer.Env.Name, Containers: holding(answer.Value.Containers, listed[i].Id), Stacks: holding(answer.Value.Stacks, listed[i].Id)}
+			here := tagOn{Env: answer.Env.Name, Containers: holding(answer.Value.Containers, int(listed[i].Id)), Stacks: holding(answer.Value.Stacks, int(listed[i].Id))}
 			if len(here.Containers)+len(here.Stacks) > 0 {
-				on[listed[i].Id] = append(on[listed[i].Id], here)
+				on[int(listed[i].Id)] = append(on[int(listed[i].Id)], here)
 			}
 		}
 	}
@@ -258,7 +259,7 @@ func registerTagTools(r *registry) {
 		if err != nil {
 			return nil, tagChangeOut{}, err
 		}
-		if i := slices.IndexFunc(listed, func(t dockhand.GetTagsResponseTags) bool { return strings.EqualFold(t.Name, name) }); i >= 0 {
+		if i := slices.IndexFunc(listed, func(t dockhand.GetTagsAnswerTags) bool { return strings.EqualFold(t.Name, name) }); i >= 0 {
 			return nil, tagChangeOut{}, fmt.Errorf("a tag is already named %s, numbered %d: Dockhand would answer with that one, unchanged. tag_edit changes it, and another name is needed for another", listed[i].Name, listed[i].Id)
 		}
 
@@ -277,7 +278,7 @@ func registerTagTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("the tag %s was not made: %w", name, refusal(err))
 		}
-		row := tagRow{ID: made.Model.Id, Name: made.Model.Name, Color: made.Model.Color, Icon: made.Model.Icon}
+		row := tagRow{ID: int(made.Answer.Id), Name: made.Answer.Name, Color: made.Answer.Color, Icon: made.Answer.Icon}
 		out.Tag = &row
 		out.Changes = append(out.Changes, "made "+what)
 		if row.Color != cmp.Or(colour, tagColour) || row.Icon != icon {
@@ -325,7 +326,7 @@ func registerTagTools(r *registry) {
 		wanted := row
 		name := strings.TrimSpace(in.Name)
 		if name != "" && name != saved.Name {
-			if i := slices.IndexFunc(listed, func(t dockhand.GetTagsResponseTags) bool { return t.Id != saved.Id && strings.EqualFold(t.Name, name) }); i >= 0 {
+			if i := slices.IndexFunc(listed, func(t dockhand.GetTagsAnswerTags) bool { return t.Id != saved.Id && strings.EqualFold(t.Name, name) }); i >= 0 {
 				return nil, out, fmt.Errorf("another tag is named %s, numbered %d, so %s is not renamed to it", listed[i].Name, listed[i].Id, saved.Name)
 			}
 			request.Name, wanted.Name = name, name
@@ -362,15 +363,15 @@ func registerTagTools(r *registry) {
 
 		if sends {
 			changed, failed := r.dock.PutTagsById(ctx, saved.Id, request)
-			if failed != nil || !yes(changed.Model.Success) {
+			if failed != nil || !changed.Answer.Success {
 				out.Changes = []string{}
 
 				return nil, out, fmt.Errorf("the tag %s was not changed: %w", saved.Name, cmp.Or(refusal(failed), errNotSaid))
 			}
 		}
 		if forget {
-			forgot, failed := r.dock.ForgetTagIcon(ctx, saved.Id)
-			if failed != nil || !yes(forgot.Model.Success) {
+			forgot, failed := r.dock.ForgetTagIcon(ctx, int(saved.Id))
+			if failed != nil || !forgot.Answer.Success {
 				return nil, out, fmt.Errorf("the icon of the tag %s was not taken away, and anything else asked for was done: %w", saved.Name, cmp.Or(refusal(failed), errNotSaid))
 			}
 		}
@@ -381,7 +382,7 @@ func registerTagTools(r *registry) {
 
 			return nil, out, nil //nolint:nilerr // the change went through: that it could not be read back is said in the answer
 		}
-		i := slices.IndexFunc(after, func(t dockhand.GetTagsResponseTags) bool { return t.Id == saved.Id })
+		i := slices.IndexFunc(after, func(t dockhand.GetTagsAnswerTags) bool { return t.Id == saved.Id })
 		if i < 0 {
 			return nil, out, fmt.Errorf("the change to the tag %s was answered as done, and the Dockhand keeps no tag numbered %d any more", saved.Name, saved.Id)
 		}
@@ -421,7 +422,7 @@ func registerTagTools(r *registry) {
 		// what has it, which is said before it goes and counted once it has
 		var unread string
 		containers, stacks := 0, 0
-		on, failed, err := r.tagsAcross(ctx, envArg{}, []dockhand.GetTagsResponseTags{*saved})
+		on, failed, err := r.tagsAcross(ctx, envArg{}, []dockhand.GetTagsAnswerTags{*saved})
 		switch {
 		case err != nil:
 			unread = "what has the tag could not be read: " + err.Error()
@@ -432,12 +433,12 @@ func registerTagTools(r *registry) {
 			}
 			unread = "what has the tag on " + strings.Join(names, " and ") + " could not be read"
 		}
-		for _, here := range on[saved.Id] {
+		for _, here := range on[int(saved.Id)] {
 			containers, stacks = containers+len(here.Containers), stacks+len(here.Stacks)
 		}
 		if !in.Confirm {
 			out.WouldGo = []string{"the tag " + saved.Name}
-			for _, here := range on[saved.Id] {
+			for _, here := range on[int(saved.Id)] {
 				var from []string
 				if len(here.Containers) > 0 {
 					from = append(from, several(len(here.Containers), "container")+", "+strings.Join(here.Containers, ", "))
@@ -459,7 +460,7 @@ func registerTagTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("the tag %s was not removed: %w", saved.Name, refusal(err))
 		}
-		if !yes(gone.Model.Success) {
+		if !gone.Answer.Success {
 			return nil, out, fmt.Errorf("the removal of the tag %s was answered without its being said to have succeeded: tag_list says whether it is still there", saved.Name)
 		}
 		left, err := r.tags(ctx)
@@ -468,7 +469,7 @@ func registerTagTools(r *registry) {
 
 			return nil, out, nil //nolint:nilerr // the removal went through: that it could not be read back is said in the answer
 		}
-		if slices.ContainsFunc(left, func(t dockhand.GetTagsResponseTags) bool { return t.Id == saved.Id }) {
+		if slices.ContainsFunc(left, func(t dockhand.GetTagsAnswerTags) bool { return t.Id == saved.Id }) {
 			return nil, out, fmt.Errorf("the removal of the tag %s was answered as done, and it is still listed", saved.Name)
 		}
 		out.Removed = true
@@ -530,8 +531,8 @@ func registerTagTools(r *registry) {
 				if unknown != nil {
 					return nil, unknown
 				}
-				if !slices.Contains(ids, tag.Id) {
-					ids = append(ids, tag.Id)
+				if !slices.Contains(ids, int(tag.Id)) {
+					ids = append(ids, int(tag.Id))
 				}
 			}
 
@@ -562,43 +563,43 @@ func registerTagTools(r *registry) {
 			return found != nil, failed
 		}
 		read := func() ([]int, error) {
-			now, failed := r.dock.GetContainerTagsByName(ctx, container, dockhand.GetContainerTagsByNameOperationOptions{Env: &env.ID})
+			now, failed := r.dock.GetContainerTagsByName(ctx, container, dockhand.GetContainerTagsByNameOptions{Env: env.ID})
 			if failed != nil {
 				return nil, refusal(failed)
 			}
 
-			return now.Model.TagIds, nil
+			return client.IDs[int](now.Answer.TagIds), nil
 		}
 		write := func(ids []int) ([]int, error) {
-			set, failed := r.dock.PutContainerTagsByName(ctx, container, dockhand.PutContainerTagsByNameRequest{TagIds: ids}, dockhand.PutContainerTagsByNameOperationOptions{Env: &env.ID})
+			set, failed := r.dock.PutContainerTagsByName(ctx, container, dockhand.PutContainerTagsByNameRequest{TagIds: client.IDs[dockhand.TagID](ids)}, dockhand.PutContainerTagsByNameOptions{Env: env.ID})
 			if failed != nil {
 				return nil, refusal(failed)
 			}
 
-			return set.Model.TagIds, nil
+			return client.IDs[int](set.Answer.TagIds), nil
 		}
 		if stack != "" {
 			what, name, lister = "stack", stack, "stack_list"
 			isThere = func() (bool, error) {
 				stacks, failed := r.stacksOf(ctx, env)
 
-				return slices.ContainsFunc(stacks, func(s dockhand.GetStacksResponse) bool { return s.Name == stack }), failed
+				return slices.ContainsFunc(stacks, func(s dockhand.GetStacksAnswer) bool { return s.Name == stack }), failed
 			}
 			read = func() ([]int, error) {
-				now, failed := r.dock.GetStacksByNameTags(ctx, stack, dockhand.GetStacksByNameTagsOperationOptions{Env: &env.ID})
+				now, failed := r.dock.GetStacksByNameTags(ctx, stack, dockhand.GetStacksByNameTagsOptions{Env: env.ID})
 				if failed != nil {
 					return nil, refusal(failed)
 				}
 
-				return now.Model.TagIds, nil
+				return client.IDs[int](now.Answer.TagIds), nil
 			}
 			write = func(ids []int) ([]int, error) {
-				set, failed := r.dock.PutStacksByNameTags(ctx, stack, dockhand.PutStacksByNameTagsRequest{TagIds: ids}, dockhand.PutStacksByNameTagsOperationOptions{Env: &env.ID})
+				set, failed := r.dock.PutStacksByNameTags(ctx, stack, dockhand.PutStacksByNameTagsRequest{TagIds: client.IDs[dockhand.TagID](ids)}, dockhand.PutStacksByNameTagsOptions{Env: env.ID})
 				if failed != nil {
 					return nil, refusal(failed)
 				}
 
-				return set.Model.TagIds, nil
+				return client.IDs[int](set.Answer.TagIds), nil
 			}
 		}
 		there, err := isThere()
@@ -612,7 +613,7 @@ func registerTagTools(r *registry) {
 		called := func(ids []int) []string {
 			names := make([]string, 0, len(ids))
 			for _, id := range ids {
-				if i := slices.IndexFunc(listed, func(t dockhand.GetTagsResponseTags) bool { return t.Id == id }); i >= 0 {
+				if i := slices.IndexFunc(listed, func(t dockhand.GetTagsAnswerTags) bool { return int(t.Id) == id }); i >= 0 {
 					names = append(names, listed[i].Name)
 				} else {
 					names = append(names, strconv.Itoa(id))

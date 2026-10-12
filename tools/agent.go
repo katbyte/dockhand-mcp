@@ -44,14 +44,14 @@ func (r *registry) agentTokens(ctx context.Context, envs []environment) ([]agent
 		return nil, fmt.Errorf("the agent tokens could not be listed: %w", refusal(err))
 	}
 
-	out := make([]agentToken, 0, len(listed.Model))
-	for i := range listed.Model {
-		t := &listed.Model[i]
-		env := "#" + strconv.Itoa(t.EnvironmentId)
+	out := make([]agentToken, 0, len(listed.Answer))
+	for i := range listed.Answer {
+		t := &listed.Answer[i]
+		env := "#" + strconv.Itoa(int(t.EnvironmentId))
 		if at := slices.IndexFunc(envs, func(e environment) bool { return e.ID == t.EnvironmentId }); at >= 0 {
 			env = envs[at].Name
 		}
-		out = append(out, agentToken{ID: t.Id, Name: t.Name, Env: env, Starts: t.TokenPrefix, Active: yes(t.IsActive), Made: t.CreatedAt, LastUsed: t.LastUsed, Expires: t.ExpiresAt})
+		out = append(out, agentToken{ID: t.Id, Name: t.Name, Env: env, Starts: t.TokenPrefix, Active: t.IsActive, Made: when(t.CreatedAt), LastUsed: when(t.LastUsed), Expires: when(t.ExpiresAt)})
 	}
 	slices.SortStableFunc(out, func(a, b agentToken) int { return cmp.Compare(b.ID, a.ID) })
 
@@ -59,15 +59,15 @@ func (r *registry) agentTokens(ctx context.Context, envs []environment) ([]agent
 }
 
 // callers is the agents that have called in and are connected now, each by the number of the environment it called in for.
-func (r *registry) callers(ctx context.Context) (map[int]*dockhand.GetHawserConnectResponseConnections, error) {
+func (r *registry) callers(ctx context.Context) (map[int]*dockhand.GetHawserConnectAnswerConnections, error) {
 	answer, err := r.dock.GetHawserConnect(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("the agents that have called in could not be listed: %w", refusal(err))
 	}
 
-	out := map[int]*dockhand.GetHawserConnectResponseConnections{}
-	for i := range answer.Model.Connections {
-		out[answer.Model.Connections[i].EnvironmentId] = &answer.Model.Connections[i]
+	out := map[int]*dockhand.GetHawserConnectAnswerConnections{}
+	for i := range answer.Answer.Connections {
+		out[int(answer.Answer.Connections[i].EnvironmentId)] = &answer.Answer.Connections[i]
 	}
 
 	return out, nil
@@ -103,18 +103,24 @@ func expiryOf(given string, now time.Time) (string, error) {
 // tokenFor makes the token an environment's agent calls in with: Dockhand's own making unless the caller gives one. Making it ends every token the
 // environment had, and Dockhand cuts off the agent that called in with one.
 func (r *registry) tokenFor(ctx context.Context, env environment, name, expires, own string) (token string, id int, err error) {
-	made, err := r.dock.PostHawserTokens(ctx, dockhand.PostHawserTokensRequest{Name: name, EnvironmentId: env.ID, ExpiresAt: expires, RawToken: own})
+	// expires is expiryOf's own writing, or nothing for a token that never expires
+	var until dockhand.Time
+	if at, failed := time.Parse(time.RFC3339, expires); failed == nil {
+		until.Time = at
+	}
+
+	made, err := r.dock.PostHawserTokens(ctx, dockhand.PostHawserTokensRequest{Name: name, EnvironmentId: env.ID, ExpiresAt: until, RawToken: own})
 	if err != nil {
 		return "", 0, refusal(err)
 	}
 	if own != "" {
-		return "", made.Model.TokenId, nil
+		return "", made.Answer.TokenId, nil
 	}
-	if made.Model.Token == "" {
-		return "", made.Model.TokenId, errors.New("Dockhand answered that it made a token and gave none") //nolint:staticcheck // ST1005: the sentence begins with the server's name
+	if made.Answer.Token == "" {
+		return "", made.Answer.TokenId, errors.New("Dockhand answered that it made a token and gave none") //nolint:staticcheck // ST1005: the sentence begins with the server's name
 	}
 
-	return made.Model.Token, made.Model.TokenId, nil
+	return made.Answer.Token, made.Answer.TokenId, nil
 }
 
 // addCalledBy adds an environment an agent calls in for, which is saved with nothing tried, and makes the token its agent is to call in with.
@@ -136,17 +142,17 @@ func (r *registry) addCalledBy(ctx context.Context, name, own string, labels []s
 		return nil, out, fmt.Errorf("%s was not added: %w", name, refusal(err))
 	}
 	out.Changes = append(out.Changes, "added "+what)
-	row := environmentRowOf(&dockhand.GetEnvironmentsResponse{Id: made.Model.Id, Name: name, ConnectionType: connectionEdge})
-	if back, err := r.dock.GetEnvironmentsById(ctx, made.Model.Id); err != nil {
+	row := environmentRowOf(&dockhand.GetEnvironmentsAnswer{Id: made.Answer.Id, Name: name, ConnectionType: connectionEdge})
+	if back, err := r.dock.GetEnvironmentsById(ctx, made.Answer.Id); err != nil {
 		out.Note = "it was added, and could not be read back: " + err.Error()
 	} else {
-		row = environmentRowOf(&dockhand.GetEnvironmentsResponse{Id: back.Model.Id, Name: back.Model.Name, ConnectionType: back.Model.ConnectionType})
+		row = environmentRowOf(&dockhand.GetEnvironmentsAnswer{Id: back.Answer.Id, Name: back.Answer.Name, ConnectionType: back.Answer.ConnectionType})
 	}
 	row.Online = new(false)
 	out.Environment = &row
 
 	// an environment with no token is one nothing can call in for, which is said rather than left to be found
-	if out.Token, _, err = r.tokenFor(ctx, environment{ID: made.Model.Id, Name: name}, name, "", own); err != nil {
+	if out.Token, _, err = r.tokenFor(ctx, environment{ID: made.Answer.Id, Name: name}, name, "", own); err != nil {
 		return nil, out, fmt.Errorf("%s was added, and the token for its agent was not made, so nothing can call in for it yet: %w (agent_token_create makes one)", name, err)
 	}
 	out.Changes = append(out.Changes, "made "+calledWith)
@@ -195,7 +201,7 @@ func registerAgentTools(r *registry) {
 			if failed != nil {
 				return nil, agentListOut{}, failed
 			}
-			only = env.ID
+			only = int(env.ID)
 		}
 		listed, err := r.dock.GetEnvironments(ctx)
 		if err != nil {
@@ -207,16 +213,16 @@ func registerAgentTools(r *registry) {
 		}
 
 		out := agentListOut{Connected: []agentCaller{}, Waiting: []string{}, Tokens: []agentToken{}}
-		envs := make([]environment, 0, len(listed.Model))
-		for i := range listed.Model {
-			e := &listed.Model[i]
+		envs := make([]environment, 0, len(listed.Answer))
+		for i := range listed.Answer {
+			e := &listed.Answer[i]
 			envs = append(envs, environment{ID: e.Id, Name: e.Name})
-			if only != 0 && e.Id != only {
+			if only != 0 && int(e.Id) != only {
 				continue
 			}
-			switch caller := callers[e.Id]; {
+			switch caller := callers[int(e.Id)]; {
 			case caller != nil:
-				out.Connected = append(out.Connected, agentCaller{Env: e.Name, Agent: caller.AgentName, AgentVersion: caller.AgentVersion, DockerVersion: caller.DockerVersion, Hostname: caller.Hostname, Can: caller.Capabilities, Since: caller.ConnectedAt, LastHeard: caller.LastHeartbeat})
+				out.Connected = append(out.Connected, agentCaller{Env: e.Name, Agent: caller.AgentName, AgentVersion: caller.AgentVersion, DockerVersion: caller.DockerVersion, Hostname: caller.Hostname, Can: caller.Capabilities, Since: when(caller.ConnectedAt), LastHeard: when(caller.LastHeartbeat)})
 			case e.ConnectionType == connectionEdge:
 				out.Waiting = append(out.Waiting, e.Name)
 			default:
@@ -229,7 +235,7 @@ func registerAgentTools(r *registry) {
 		}
 		for _, token := range tokens {
 			switch {
-			case only != 0 && token.Env != envs[slices.IndexFunc(envs, func(e environment) bool { return e.ID == only })].Name:
+			case only != 0 && token.Env != envs[slices.IndexFunc(envs, func(e environment) bool { return int(e.ID) == only })].Name:
 			case token.Active || in.Revoked:
 				out.Tokens = append(out.Tokens, token)
 			default:
@@ -280,8 +286,8 @@ func registerAgentTools(r *registry) {
 		if err != nil {
 			return nil, agentTokenCreateOut{}, fmt.Errorf("%s could not be read: %w", env.Name, refusal(err))
 		}
-		if kept.Model.ConnectionType != connectionEdge {
-			return nil, agentTokenCreateOut{}, fmt.Errorf("%s is reached by %s: a token made here is what an agent that calls Dockhand (hawser-edge) calls in with. The token of an agent Dockhand calls is the agent's own, which env_edit gives Dockhand", env.Name, kept.Model.ConnectionType)
+		if kept.Answer.ConnectionType != connectionEdge {
+			return nil, agentTokenCreateOut{}, fmt.Errorf("%s is reached by %s: a token made here is what an agent that calls Dockhand (hawser-edge) calls in with. The token of an agent Dockhand calls is the agent's own, which env_edit gives Dockhand", env.Name, kept.Answer.ConnectionType)
 		}
 		out := agentTokenCreateOut{Env: env.Name, Name: cmp.Or(strings.TrimSpace(in.Name), env.Name), Expires: expires, Changes: []string{}, DryRun: in.DryRun}
 
@@ -311,9 +317,9 @@ func registerAgentTools(r *registry) {
 				out.Changes = append(out.Changes, fmt.Sprintf("%s the token %s (it begins %s), which was the one that worked", done("ended", "would end"), token.Name, token.Starts))
 			}
 		}
-		cutOff := callers[env.ID] != nil
+		cutOff := callers[int(env.ID)] != nil
 		if cutOff {
-			out.Changes = append(out.Changes, fmt.Sprintf("%s the agent %s, which called in with the token before: %s is not reached until its agent is started with the new one", done("cut off", "would cut off"), callers[env.ID].AgentName, env.Name))
+			out.Changes = append(out.Changes, fmt.Sprintf("%s the agent %s, which called in with the token before: %s is not reached until its agent is started with the new one", done("cut off", "would cut off"), callers[int(env.ID)].AgentName, env.Name))
 		}
 		if in.DryRun {
 			if cutOff {
@@ -387,8 +393,8 @@ func registerAgentTools(r *registry) {
 		// the agent connected with it is the one that is cut off, which is looked for before it is
 		connected := ""
 		if callers, failed := r.callers(ctx); failed == nil {
-			if at := slices.IndexFunc(envs, func(e environment) bool { return e.Name == token.Env }); at >= 0 && callers[envs[at].ID] != nil {
-				connected = callers[envs[at].ID].AgentName
+			if at := slices.IndexFunc(envs, func(e environment) bool { return e.Name == token.Env }); at >= 0 && callers[int(envs[at].ID)] != nil {
+				connected = callers[int(envs[at].ID)].AgentName
 			}
 		}
 		if !in.Confirm {
@@ -402,7 +408,7 @@ func registerAgentTools(r *registry) {
 			return nil, out, nil
 		}
 
-		if _, err := r.dock.DeleteHawserTokens(ctx, dockhand.DeleteHawserTokensOperationOptions{Id: &in.ID}); err != nil {
+		if _, err := r.dock.DeleteHawserTokens(ctx, dockhand.DeleteHawserTokensOptions{Id: &in.ID}); err != nil {
 			return nil, out, fmt.Errorf("the token %s was not revoked: %w", token.Name, refusal(err))
 		}
 		after, err := found()

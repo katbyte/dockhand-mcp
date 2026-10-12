@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,32 +13,53 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutContainersByIdFilesContentOperationResponse is the result of PutContainersByIdFilesContent.
-type PutContainersByIdFilesContentOperationResponse struct {
+// PutContainersByIdFilesContentResponse is the result of PutContainersByIdFilesContent.
+//
+// Answer is the PutContainersByIdFilesContentAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PutContainersByIdFilesContentResponse struct {
 	HttpResponse *http.Response
-	Model        *PutContainersByIdFilesContentResponse
+	Answer       *PutContainersByIdFilesContentAnswer
+	*PutContainersByIdFilesContentAnswer
 }
 
-// PutContainersByIdFilesContentOperationOptions holds the query and header parameters of PutContainersByIdFilesContent.
-type PutContainersByIdFilesContentOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutContainersByIdFilesContentResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutContainersByIdFilesContentAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutContainersByIdFilesContentResponse) Record() (PutContainersByIdFilesContentAnswer, error) {
+	if r.Answer == nil {
+		return PutContainersByIdFilesContentAnswer{}, errors.New("PutContainersByIdFilesContent answered no PutContainersByIdFilesContentAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PutContainersByIdFilesContentOptions holds the query and header parameters of PutContainersByIdFilesContent.
+type PutContainersByIdFilesContentOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// Absolute file path inside the container
 	Path string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PutContainersByIdFilesContentOperationOptions) ToHeaders() *client.Headers {
+func (o PutContainersByIdFilesContentOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PutContainersByIdFilesContentOperationOptions) ToQuery() *client.QueryParams {
+func (o PutContainersByIdFilesContentOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	if o.Path != "" {
 		out.Append("path", o.Path)
@@ -46,7 +68,8 @@ func (o PutContainersByIdFilesContentOperationOptions) ToQuery() *client.QueryPa
 }
 
 // PutContainersByIdFilesContent calls PUT /api/containers/{id}/files/content. Overwrite the content of a file inside a container (max 1 MB, requires the 'exec' permission).
-func (c Client) PutContainersByIdFilesContent(ctx context.Context, id string, input PutContainersByIdFilesContentRequest, options PutContainersByIdFilesContentOperationOptions) (result PutContainersByIdFilesContentOperationResponse, err error) {
+func (c Client) PutContainersByIdFilesContent(ctx context.Context, id string, input PutContainersByIdFilesContentRequest, options PutContainersByIdFilesContentOptions) (result PutContainersByIdFilesContentResponse, err error) {
+	result.PutContainersByIdFilesContentAnswer = &PutContainersByIdFilesContentAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -75,11 +98,12 @@ func (c Client) PutContainersByIdFilesContent(ctx context.Context, id string, in
 		return
 	}
 
-	var model PutContainersByIdFilesContentResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PutContainersByIdFilesContentAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PutContainersByIdFilesContentAnswer = result.Answer
 
 	return
 }

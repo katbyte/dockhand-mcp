@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetSelfUpdateCheckOperationResponse is the result of GetSelfUpdateCheck.
-type GetSelfUpdateCheckOperationResponse struct {
+// GetSelfUpdateCheckResponse is the result of GetSelfUpdateCheck.
+//
+// Answer is the GetSelfUpdateCheckAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetSelfUpdateCheckResponse struct {
 	HttpResponse *http.Response
-	Model        *GetSelfUpdateCheckResponse
+	Answer       *GetSelfUpdateCheckAnswer
+	*GetSelfUpdateCheckAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetSelfUpdateCheckResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetSelfUpdateCheckAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetSelfUpdateCheckResponse) Record() (GetSelfUpdateCheckAnswer, error) {
+	if r.Answer == nil {
+		return GetSelfUpdateCheckAnswer{}, errors.New("GetSelfUpdateCheck answered no GetSelfUpdateCheckAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetSelfUpdateCheck calls GET /api/self-update/check. Check whether a newer Dockhand image is available (version-tag compare via GitHub changelog, or registry-digest compare for mutable tags like :latest).
-func (c Client) GetSelfUpdateCheck(ctx context.Context) (result GetSelfUpdateCheckOperationResponse, err error) {
+func (c Client) GetSelfUpdateCheck(ctx context.Context) (result GetSelfUpdateCheckResponse, err error) {
+	result.GetSelfUpdateCheckAnswer = &GetSelfUpdateCheckAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) GetSelfUpdateCheck(ctx context.Context) (result GetSelfUpdateChe
 		return
 	}
 
-	var model GetSelfUpdateCheckResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetSelfUpdateCheckAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetSelfUpdateCheckAnswer = result.Answer
 
 	return
 }

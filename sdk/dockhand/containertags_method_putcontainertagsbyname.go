@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,42 +13,73 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutContainerTagsByNameOperationResponse is the result of PutContainerTagsByName.
-type PutContainerTagsByNameOperationResponse struct {
+// PutContainerTagsByNameResponse is the result of PutContainerTagsByName.
+//
+// Answer is the PutContainerTagsByNameAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PutContainerTagsByNameResponse struct {
 	HttpResponse *http.Response
-	Model        *PutContainerTagsByNameResponse
+	Answer       *PutContainerTagsByNameAnswer
+	*PutContainerTagsByNameAnswer
 }
 
-// PutContainerTagsByNameOperationOptions holds the query and header parameters of PutContainerTagsByName.
-type PutContainerTagsByNameOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutContainerTagsByNameResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutContainerTagsByNameAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutContainerTagsByNameResponse) Record() (PutContainerTagsByNameAnswer, error) {
+	if r.Answer == nil {
+		return PutContainerTagsByNameAnswer{}, errors.New("PutContainerTagsByName answered no PutContainerTagsByNameAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PutContainerTagsByNameOptions holds the query and header parameters of PutContainerTagsByName.
+type PutContainerTagsByNameOptions struct {
 	// Environment id
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PutContainerTagsByNameOperationOptions) ToHeaders() *client.Headers {
+func (o PutContainerTagsByNameOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PutContainerTagsByNameOperationOptions) ToQuery() *client.QueryParams {
+func (o PutContainerTagsByNameOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PutContainerTagsByName calls PUT /api/container-tags/{name}. Replace the tag ids assigned to one container (by name).
-func (c Client) PutContainerTagsByName(ctx context.Context, name string, input PutContainerTagsByNameRequest, options PutContainerTagsByNameOperationOptions) (result PutContainerTagsByNameOperationResponse, err error) {
+func (c Client) PutContainerTagsByName(ctx context.Context, name string, input PutContainerTagsByNameRequest, options ...PutContainerTagsByNameOptions) (result PutContainerTagsByNameResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PutContainerTagsByName takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PutContainerTagsByNameOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PutContainerTagsByNameAnswer = &PutContainerTagsByNameAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPut,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/container-tags/%s", url.PathEscape(name)),
 	}
 
@@ -69,11 +101,12 @@ func (c Client) PutContainerTagsByName(ctx context.Context, name string, input P
 		return
 	}
 
-	var model PutContainerTagsByNameResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PutContainerTagsByNameAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PutContainerTagsByNameAnswer = result.Answer
 
 	return
 }

@@ -47,7 +47,7 @@ func (r *registry) stateOf(ctx context.Context, at *located) (string, error) {
 	}
 	for i := range listed {
 		if listed[i].Id == at.Container.Id {
-			return listed[i].State, nil
+			return string(listed[i].State), nil
 		}
 	}
 
@@ -61,15 +61,15 @@ func (r *registry) actOnContainer(ctx context.Context, action string, in contain
 		return actionOut{}, err
 	}
 	name, env, id, was := at.Container.Name, at.Env.Name, at.Container.Id, at.Container.State
-	out := actionOut{Env: env, Name: name, Was: was, Is: was, Changes: []string{}, DryRun: dryRun}
+	out := actionOut{Env: env, Name: name, Was: string(was), Is: string(was), Changes: []string{}, DryRun: dryRun}
 
 	// what is already so is left so: starting what runs and stopping what does not are no change
 	switch {
-	case action == actStart && running(was):
+	case action == actStart && running(string(was)):
 		out.Note = fmt.Sprintf("%s is already %s: nothing was done", name, was)
 
 		return out, nil
-	case action == actStop && !running(was):
+	case action == actStop && !running(string(was)):
 		out.Note = fmt.Sprintf("%s is not running, it is %s: nothing was done", name, was)
 
 		return out, nil
@@ -80,7 +80,7 @@ func (r *registry) actOnContainer(ctx context.Context, action string, in contain
 	default:
 	}
 
-	ok, err := r.containerAction(ctx, action, id, at.Env.ID)
+	ok, err := r.containerAction(ctx, action, id, int(at.Env.ID))
 	if err != nil {
 		return out, fmt.Errorf("%s on %s was not %s: %w", name, env, past(action), refusal(err))
 	}
@@ -106,26 +106,26 @@ func (r *registry) actOnContainer(ctx context.Context, action string, in contain
 func (r *registry) containerAction(ctx context.Context, action, id string, env int) (bool, error) {
 	switch action {
 	case actStart:
-		answer, err := r.dock.PostContainersByIdStart(ctx, id, dockhand.PostContainersByIdStartOperationOptions{Env: &env})
+		answer, err := r.dock.PostContainersByIdStart(ctx, id, dockhand.PostContainersByIdStartOptions{Env: dockhand.EnvironmentID(env)})
 		if err != nil {
 			return false, err
 		}
 
-		return yes(answer.Model.Success), nil
+		return answer.Answer.Success, nil
 	case actStop:
-		answer, err := r.dock.PostContainersByIdStop(ctx, id, dockhand.PostContainersByIdStopOperationOptions{Env: &env})
+		answer, err := r.dock.PostContainersByIdStop(ctx, id, dockhand.PostContainersByIdStopOptions{Env: dockhand.EnvironmentID(env)})
 		if err != nil {
 			return false, err
 		}
 
-		return yes(answer.Model.Success), nil
+		return answer.Answer.Success, nil
 	default:
-		answer, err := r.dock.PostContainersByIdRestart(ctx, id, dockhand.PostContainersByIdRestartOperationOptions{Env: &env})
+		answer, err := r.dock.PostContainersByIdRestart(ctx, id, dockhand.PostContainersByIdRestartOptions{Env: dockhand.EnvironmentID(env)})
 		if err != nil {
 			return false, err
 		}
 
-		return yes(answer.Model.Success), nil
+		return answer.Answer.Success, nil
 	}
 }
 
@@ -150,23 +150,23 @@ type stackArg struct {
 
 // findStack is the one stack a call names, on the environment given or on every one. A name that is a stack's on several environments is refused
 // until the call says which.
-func (r *registry) findStack(ctx context.Context, in stackArg) (environment, dockhand.GetStacksResponse, error) {
+func (r *registry) findStack(ctx context.Context, in stackArg) (environment, dockhand.GetStacksAnswer, error) {
 	want := strings.TrimSpace(in.Stack)
 	if want == "" {
-		return environment{}, dockhand.GetStacksResponse{}, errors.New("stack is required: the stack's name, as stack_list gives it")
+		return environment{}, dockhand.GetStacksAnswer{}, errors.New("stack is required: the stack's name, as stack_list gives it")
 	}
 	envs, err := r.pick(ctx, in.envArg)
 	if err != nil {
-		return environment{}, dockhand.GetStacksResponse{}, err
+		return environment{}, dockhand.GetStacksAnswer{}, err
 	}
 
 	var (
 		on    []environment
-		found []dockhand.GetStacksResponse
+		found []dockhand.GetStacksAnswer
 	)
 	for _, answer := range ask(ctx, envs, r.stacksOf) {
 		if answer.Err != nil {
-			return environment{}, dockhand.GetStacksResponse{}, fmt.Errorf("the stacks of %s could not be listed: %w", answer.Env.Name, answer.Err)
+			return environment{}, dockhand.GetStacksAnswer{}, fmt.Errorf("the stacks of %s could not be listed: %w", answer.Env.Name, answer.Err)
 		}
 		for i := range answer.Value {
 			if answer.Value[i].Name == want {
@@ -176,7 +176,7 @@ func (r *registry) findStack(ctx context.Context, in stackArg) (environment, doc
 	}
 	switch len(on) {
 	case 0:
-		return environment{}, dockhand.GetStacksResponse{}, fmt.Errorf("no stack is named %q on the environments asked: stack_list gives the ones there are", want)
+		return environment{}, dockhand.GetStacksAnswer{}, fmt.Errorf("no stack is named %q on the environments asked: stack_list gives the ones there are", want)
 	case 1:
 		return on[0], found[0], nil
 	default:
@@ -185,7 +185,7 @@ func (r *registry) findStack(ctx context.Context, in stackArg) (environment, doc
 			names = append(names, e.Name)
 		}
 
-		return environment{}, dockhand.GetStacksResponse{}, fmt.Errorf("a stack named %q is on %s: say which with env", want, strings.Join(names, " and "))
+		return environment{}, dockhand.GetStacksAnswer{}, fmt.Errorf("a stack named %q is on %s: say which with env", want, strings.Join(names, " and "))
 	}
 }
 
@@ -195,7 +195,7 @@ func (r *registry) actOnStack(ctx context.Context, action string, in stackArg, d
 	if err != nil {
 		return actionOut{}, err
 	}
-	out := actionOut{Env: env.Name, Name: stack.Name, Was: stack.Status, Is: stack.Status, Changes: []string{}, DryRun: dryRun}
+	out := actionOut{Env: env.Name, Name: stack.Name, Was: string(stack.Status), Is: string(stack.Status), Changes: []string{}, DryRun: dryRun}
 
 	switch {
 	case action == actStart && stack.Status == stackRunning:
@@ -214,7 +214,7 @@ func (r *registry) actOnStack(ctx context.Context, action string, in stackArg, d
 	}
 
 	// asked for JSON, as this client asks, Dockhand does the work before it answers and says how it went; a failure comes with HTTP 200 all the same
-	ok, done, whyNot, err := r.stackAction(ctx, action, stack.Name, env.ID)
+	ok, done, whyNot, err := r.stackAction(ctx, action, stack.Name, int(env.ID))
 	if err != nil {
 		return out, fmt.Errorf("%s on %s was not %s: %w", stack.Name, env.Name, past(action), refusal(err))
 	}
@@ -229,7 +229,7 @@ func (r *registry) actOnStack(ctx context.Context, action string, in stackArg, d
 		out.Is = stackGone
 		for i := range listed {
 			if listed[i].Name == stack.Name {
-				out.Is = listed[i].Status
+				out.Is = string(listed[i].Status)
 			}
 		}
 		// a stack that was stopped is stopped, and one that was started or restarted is wholly running: anything else is said
@@ -249,26 +249,26 @@ func (r *registry) actOnStack(ctx context.Context, action string, in stackArg, d
 func (r *registry) stackAction(ctx context.Context, action, name string, env int) (ok bool, done, whyNot string, err error) {
 	switch action {
 	case actStart:
-		answer, err := r.dock.PostStacksByNameStart(ctx, name, dockhand.PostStacksByNameStartOperationOptions{Env: &env})
+		answer, err := r.dock.PostStacksByNameStart(ctx, name, dockhand.PostStacksByNameStartOptions{Env: dockhand.EnvironmentID(env)})
 		if err != nil {
 			return false, "", "", err
 		}
 
-		return yes(answer.Model.Success), answer.Model.Output, answer.Model.Error, nil
+		return answer.Answer.Success, answer.Answer.Output, answer.Answer.Error, nil
 	case actStop:
-		answer, err := r.dock.PostStacksByNameStop(ctx, name, dockhand.PostStacksByNameStopOperationOptions{Env: &env})
+		answer, err := r.dock.PostStacksByNameStop(ctx, name, dockhand.PostStacksByNameStopOptions{Env: dockhand.EnvironmentID(env)})
 		if err != nil {
 			return false, "", "", err
 		}
 
-		return yes(answer.Model.Success), answer.Model.Output, answer.Model.Error, nil
+		return answer.Answer.Success, answer.Answer.Output, answer.Answer.Error, nil
 	default:
-		answer, err := r.dock.PostStacksByNameRestart(ctx, name, dockhand.PostStacksByNameRestartOperationOptions{Env: &env})
+		answer, err := r.dock.PostStacksByNameRestart(ctx, name, dockhand.PostStacksByNameRestartOptions{Env: dockhand.EnvironmentID(env)})
 		if err != nil {
 			return false, "", "", err
 		}
 
-		return yes(answer.Model.Success), answer.Model.Output, answer.Model.Error, nil
+		return answer.Answer.Success, answer.Answer.Output, answer.Answer.Error, nil
 	}
 }
 

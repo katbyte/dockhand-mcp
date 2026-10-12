@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,16 +13,37 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteStacksByNameOperationResponse is the result of DeleteStacksByName.
-type DeleteStacksByNameOperationResponse struct {
+// DeleteStacksByNameResponse is the result of DeleteStacksByName.
+//
+// Answer is the DeleteStacksByNameAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteStacksByNameResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteStacksByNameResponse
+	Answer       *DeleteStacksByNameAnswer
+	*DeleteStacksByNameAnswer
 }
 
-// DeleteStacksByNameOperationOptions holds the query and header parameters of DeleteStacksByName.
-type DeleteStacksByNameOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteStacksByNameResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteStacksByNameAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteStacksByNameResponse) Record() (DeleteStacksByNameAnswer, error) {
+	if r.Answer == nil {
+		return DeleteStacksByNameAnswer{}, errors.New("DeleteStacksByName answered no DeleteStacksByNameAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// DeleteStacksByNameOptions holds the query and header parameters of DeleteStacksByName.
+type DeleteStacksByNameOptions struct {
 	// Environment id (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// Force removal even if the compose down step fails
 	Force *bool
@@ -34,16 +56,16 @@ type DeleteStacksByNameOperationOptions struct {
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o DeleteStacksByNameOperationOptions) ToHeaders() *client.Headers {
+func (o DeleteStacksByNameOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o DeleteStacksByNameOperationOptions) ToQuery() *client.QueryParams {
+func (o DeleteStacksByNameOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	if o.Force != nil {
 		out.Append("force", strconv.FormatBool(*o.Force))
@@ -58,13 +80,23 @@ func (o DeleteStacksByNameOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // DeleteStacksByName calls DELETE /api/stacks/{name}. Remove a stack completely (compose down + delete files + database cleanup).
-func (c Client) DeleteStacksByName(ctx context.Context, name string, options DeleteStacksByNameOperationOptions) (result DeleteStacksByNameOperationResponse, err error) {
+func (c Client) DeleteStacksByName(ctx context.Context, name string, options ...DeleteStacksByNameOptions) (result DeleteStacksByNameResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("DeleteStacksByName takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option DeleteStacksByNameOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.DeleteStacksByNameAnswer = &DeleteStacksByNameAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s", url.PathEscape(name)),
 	}
 
@@ -82,11 +114,12 @@ func (c Client) DeleteStacksByName(ctx context.Context, name string, options Del
 		return
 	}
 
-	var model DeleteStacksByNameResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteStacksByNameAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteStacksByNameAnswer = result.Answer
 
 	return
 }

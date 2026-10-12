@@ -4,7 +4,7 @@ package dockhand
 
 // PostEnvironmentsByIdNotificationsRequest is an object the document declares inline.
 type PostEnvironmentsByIdNotificationsRequest struct {
-	Enabled        *bool    `json:"enabled,omitempty"`
-	EventTypes     []string `json:"eventTypes,omitzero"`
-	NotificationId int      `json:"notificationId"`
+	Enabled        *bool          `json:"enabled,omitempty"`
+	EventTypes     []string       `json:"eventTypes,omitzero"`
+	NotificationId NotificationID `json:"notificationId"`
 }

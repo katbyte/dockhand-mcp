@@ -21,7 +21,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteJobsByIdResponse"
+          "ReferenceName": "DeleteJobsByIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -47,7 +47,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetJobsByIdResponse"
+          "ReferenceName": "GetJobsByIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -57,7 +57,7 @@
   ],
   "Models": [
     {
-      "Name": "DeleteJobsByIdResponse",
+      "Name": "DeleteJobsByIdAnswer",
       "Fields": [
         {
           "Name": "Cancelled",
@@ -70,7 +70,7 @@
       ]
     },
     {
-      "Name": "GetJobsByIdResponse",
+      "Name": "GetJobsByIdAnswer",
       "Fields": [
         {
           "Name": "Id",
@@ -87,7 +87,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetJobsByIdResponseLines"
+              "ReferenceName": "GetJobsByIdAnswerLines"
             }
           },
           "Required": true
@@ -106,14 +106,15 @@
           "Name": "Status",
           "JsonName": "status",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "JobStatus"
           },
           "Required": true
         }
       ]
     },
     {
-      "Name": "GetJobsByIdResponseLines",
+      "Name": "GetJobsByIdAnswerLines",
       "Fields": [
         {
           "Name": "Data",
@@ -131,6 +132,26 @@
           "Type": {
             "Type": "String"
           }
+        }
+      ]
+    }
+  ],
+  "Constants": [
+    {
+      "Name": "JobStatus",
+      "SchemaName": "JobStatus",
+      "Values": [
+        {
+          "Name": "JobStatusRunning",
+          "Value": "running"
+        },
+        {
+          "Name": "JobStatusDone",
+          "Value": "done"
+        },
+        {
+          "Name": "JobStatusError",
+          "Value": "error"
         }
       ]
     }

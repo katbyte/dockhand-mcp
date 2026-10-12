@@ -69,7 +69,8 @@
           "In": "Query",
           "Description": "Filter to a single environment (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -122,7 +123,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetAuditResponse"
+          "ReferenceName": "GetAuditAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -185,7 +186,8 @@
           "In": "Query",
           "Description": "Filter to a single environment (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -262,7 +264,8 @@
           "Field": "EnvironmentId",
           "In": "Query",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -302,7 +305,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetAuditOutsideApiResponse"
+          "ReferenceName": "GetAuditOutsideApiAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -350,7 +353,78 @@
   ],
   "Models": [
     {
-      "Name": "GetAuditOutsideApiResponse",
+      "Name": "GetAuditAnswer",
+      "Fields": [
+        {
+          "Name": "Logs",
+          "JsonName": "logs",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetAuditAnswerLogs"
+            }
+          }
+        },
+        {
+          "Name": "Total",
+          "JsonName": "total",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetAuditAnswerLogs",
+      "Fields": [
+        {
+          "Name": "Action",
+          "JsonName": "action",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "EntityName",
+          "JsonName": "entityName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "EntityType",
+          "JsonName": "entityType",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "Integer"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetAuditOutsideApiAnswer",
       "Fields": [
         {
           "Name": "Limit",
@@ -367,7 +441,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetAuditOutsideApiResponseLogs"
+              "ReferenceName": "GetAuditOutsideApiAnswerLogs"
             }
           },
           "Required": true
@@ -391,7 +465,7 @@
       ]
     },
     {
-      "Name": "GetAuditOutsideApiResponseLogs",
+      "Name": "GetAuditOutsideApiAnswerLogs",
       "Fields": [
         {
           "Name": "Action",
@@ -405,7 +479,7 @@
           "Name": "CreatedAt",
           "JsonName": "createdAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           },
           "Required": true
         },
@@ -452,7 +526,8 @@
           "Name": "EnvironmentId",
           "JsonName": "environmentId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -481,7 +556,8 @@
           "Name": "UserId",
           "JsonName": "userId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "UserID"
           }
         },
         {
@@ -491,77 +567,6 @@
             "Type": "String"
           },
           "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "GetAuditResponse",
-      "Fields": [
-        {
-          "Name": "Logs",
-          "JsonName": "logs",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "Reference",
-              "ReferenceName": "GetAuditResponseLogs"
-            }
-          }
-        },
-        {
-          "Name": "Total",
-          "JsonName": "total",
-          "Type": {
-            "Type": "Integer"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetAuditResponseLogs",
-      "Fields": [
-        {
-          "Name": "Action",
-          "JsonName": "action",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "CreatedAt",
-          "JsonName": "createdAt",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "EntityName",
-          "JsonName": "entityName",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "EntityType",
-          "JsonName": "entityType",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Id",
-          "JsonName": "id",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Username",
-          "JsonName": "username",
-          "Type": {
-            "Type": "String"
-          }
         }
       ]
     }

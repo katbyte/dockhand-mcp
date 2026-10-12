@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostRegistriesByIdDefaultOperationResponse is the result of PostRegistriesByIdDefault.
-type PostRegistriesByIdDefaultOperationResponse struct {
+// PostRegistriesByIdDefaultResponse is the result of PostRegistriesByIdDefault.
+//
+// Answer is the PostRegistriesByIdDefaultAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostRegistriesByIdDefaultResponse struct {
 	HttpResponse *http.Response
-	Model        *PostRegistriesByIdDefaultResponse
+	Answer       *PostRegistriesByIdDefaultAnswer
+	*PostRegistriesByIdDefaultAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostRegistriesByIdDefaultResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostRegistriesByIdDefaultAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostRegistriesByIdDefaultResponse) Record() (PostRegistriesByIdDefaultAnswer, error) {
+	if r.Answer == nil {
+		return PostRegistriesByIdDefaultAnswer{}, errors.New("PostRegistriesByIdDefault answered no PostRegistriesByIdDefaultAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostRegistriesByIdDefault calls POST /api/registries/{id}/default. Mark a registry as the default registry.
-func (c Client) PostRegistriesByIdDefault(ctx context.Context, id int) (result PostRegistriesByIdDefaultOperationResponse, err error) {
+func (c Client) PostRegistriesByIdDefault(ctx context.Context, id RegistryID) (result PostRegistriesByIdDefaultResponse, err error) {
+	result.PostRegistriesByIdDefaultAnswer = &PostRegistriesByIdDefaultAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
-		Path:       fmt.Sprintf("/api/registries/%d/default", id),
+		Path:       fmt.Sprintf("/api/registries/%s/default", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) PostRegistriesByIdDefault(ctx context.Context, id int) (result P
 		return
 	}
 
-	var model PostRegistriesByIdDefaultResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostRegistriesByIdDefaultAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostRegistriesByIdDefaultAnswer = result.Answer
 
 	return
 }

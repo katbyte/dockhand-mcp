@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,41 +13,72 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetAutoUpdateByContainerNameOperationResponse is the result of GetAutoUpdateByContainerName.
-type GetAutoUpdateByContainerNameOperationResponse struct {
+// GetAutoUpdateByContainerNameResponse is the result of GetAutoUpdateByContainerName.
+//
+// Answer is the GetAutoUpdateByContainerNameAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetAutoUpdateByContainerNameResponse struct {
 	HttpResponse *http.Response
-	Model        *GetAutoUpdateByContainerNameResponse
+	Answer       *GetAutoUpdateByContainerNameAnswer
+	*GetAutoUpdateByContainerNameAnswer
 }
 
-// GetAutoUpdateByContainerNameOperationOptions holds the query and header parameters of GetAutoUpdateByContainerName.
-type GetAutoUpdateByContainerNameOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetAutoUpdateByContainerNameResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetAutoUpdateByContainerNameAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetAutoUpdateByContainerNameResponse) Record() (GetAutoUpdateByContainerNameAnswer, error) {
+	if r.Answer == nil {
+		return GetAutoUpdateByContainerNameAnswer{}, errors.New("GetAutoUpdateByContainerName answered no GetAutoUpdateByContainerNameAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetAutoUpdateByContainerNameOptions holds the query and header parameters of GetAutoUpdateByContainerName.
+type GetAutoUpdateByContainerNameOptions struct {
 	// Environment the container belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetAutoUpdateByContainerNameOperationOptions) ToHeaders() *client.Headers {
+func (o GetAutoUpdateByContainerNameOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetAutoUpdateByContainerNameOperationOptions) ToQuery() *client.QueryParams {
+func (o GetAutoUpdateByContainerNameOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetAutoUpdateByContainerName calls GET /api/auto-update/{containerName}. Get the auto-update setting for a container (returns sensible defaults when none is stored).
-func (c Client) GetAutoUpdateByContainerName(ctx context.Context, containerName string, options GetAutoUpdateByContainerNameOperationOptions) (result GetAutoUpdateByContainerNameOperationResponse, err error) {
+func (c Client) GetAutoUpdateByContainerName(ctx context.Context, containerName string, options ...GetAutoUpdateByContainerNameOptions) (result GetAutoUpdateByContainerNameResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetAutoUpdateByContainerName takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetAutoUpdateByContainerNameOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetAutoUpdateByContainerNameAnswer = &GetAutoUpdateByContainerNameAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/auto-update/%s", url.PathEscape(containerName)),
 	}
 
@@ -64,11 +96,12 @@ func (c Client) GetAutoUpdateByContainerName(ctx context.Context, containerName 
 		return
 	}
 
-	var model GetAutoUpdateByContainerNameResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetAutoUpdateByContainerNameAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetAutoUpdateByContainerNameAnswer = result.Answer
 
 	return
 }

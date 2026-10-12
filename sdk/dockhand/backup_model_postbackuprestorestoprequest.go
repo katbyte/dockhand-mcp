@@ -4,6 +4,6 @@ package dockhand
 
 // PostBackupRestoreStopRequest is an object the document declares inline.
 type PostBackupRestoreStopRequest struct {
-	EnvironmentId int    `json:"environmentId,omitempty"`
-	SnapshotId    string `json:"snapshotId,omitempty"`
+	EnvironmentId EnvironmentID `json:"environmentId,omitempty"`
+	SnapshotId    string        `json:"snapshotId,omitempty"`
 }

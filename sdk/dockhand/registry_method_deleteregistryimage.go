@@ -4,22 +4,44 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteRegistryImageOperationResponse is the result of DeleteRegistryImage.
-type DeleteRegistryImageOperationResponse struct {
+// DeleteRegistryImageResponse is the result of DeleteRegistryImage.
+//
+// Answer is the DeleteRegistryImageAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteRegistryImageResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteRegistryImageResponse
+	Answer       *DeleteRegistryImageAnswer
+	*DeleteRegistryImageAnswer
 }
 
-// DeleteRegistryImageOperationOptions holds the query and header parameters of DeleteRegistryImage.
-type DeleteRegistryImageOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteRegistryImageResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteRegistryImageAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteRegistryImageResponse) Record() (DeleteRegistryImageAnswer, error) {
+	if r.Answer == nil {
+		return DeleteRegistryImageAnswer{}, errors.New("DeleteRegistryImage answered no DeleteRegistryImageAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// DeleteRegistryImageOptions holds the query and header parameters of DeleteRegistryImage.
+type DeleteRegistryImageOptions struct {
 	// ID of the configured registry (from GET /api/registries)
-	Registry *int
+	Registry RegistryID
 
 	// Repository/image name (may include an org path)
 	Image string
@@ -29,16 +51,16 @@ type DeleteRegistryImageOperationOptions struct {
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o DeleteRegistryImageOperationOptions) ToHeaders() *client.Headers {
+func (o DeleteRegistryImageOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o DeleteRegistryImageOperationOptions) ToQuery() *client.QueryParams {
+func (o DeleteRegistryImageOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Registry != nil {
-		out.Append("registry", strconv.Itoa(*o.Registry))
+	if o.Registry != 0 {
+		out.Append("registry", strconv.Itoa(int(o.Registry)))
 	}
 	if o.Image != "" {
 		out.Append("image", o.Image)
@@ -50,7 +72,8 @@ func (o DeleteRegistryImageOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // DeleteRegistryImage calls DELETE /api/registry/image. Delete a tagged image from a registry by resolving its manifest digest, then deleting by digest.
-func (c Client) DeleteRegistryImage(ctx context.Context, options DeleteRegistryImageOperationOptions) (result DeleteRegistryImageOperationResponse, err error) {
+func (c Client) DeleteRegistryImage(ctx context.Context, options DeleteRegistryImageOptions) (result DeleteRegistryImageResponse, err error) {
+	result.DeleteRegistryImageAnswer = &DeleteRegistryImageAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -74,11 +97,12 @@ func (c Client) DeleteRegistryImage(ctx context.Context, options DeleteRegistryI
 		return
 	}
 
-	var model DeleteRegistryImageResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteRegistryImageAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteRegistryImageAnswer = result.Answer
 
 	return
 }

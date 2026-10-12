@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,32 +13,53 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteContainersByIdOperationResponse is the result of DeleteContainersById.
-type DeleteContainersByIdOperationResponse struct {
+// DeleteContainersByIdResponse is the result of DeleteContainersById.
+//
+// Answer is the DeleteContainersByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteContainersByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteContainersByIdResponse
+	Answer       *DeleteContainersByIdAnswer
+	*DeleteContainersByIdAnswer
 }
 
-// DeleteContainersByIdOperationOptions holds the query and header parameters of DeleteContainersById.
-type DeleteContainersByIdOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteContainersByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteContainersByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteContainersByIdResponse) Record() (DeleteContainersByIdAnswer, error) {
+	if r.Answer == nil {
+		return DeleteContainersByIdAnswer{}, errors.New("DeleteContainersById answered no DeleteContainersByIdAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// DeleteContainersByIdOptions holds the query and header parameters of DeleteContainersById.
+type DeleteContainersByIdOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// Force removal of a running container (Docker force flag)
 	Force *bool
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o DeleteContainersByIdOperationOptions) ToHeaders() *client.Headers {
+func (o DeleteContainersByIdOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o DeleteContainersByIdOperationOptions) ToQuery() *client.QueryParams {
+func (o DeleteContainersByIdOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	if o.Force != nil {
 		out.Append("force", strconv.FormatBool(*o.Force))
@@ -46,7 +68,8 @@ func (o DeleteContainersByIdOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // DeleteContainersById calls DELETE /api/containers/{id}. Remove a container and clean up its auto-update schedule and pending-update record.
-func (c Client) DeleteContainersById(ctx context.Context, id string, options DeleteContainersByIdOperationOptions) (result DeleteContainersByIdOperationResponse, err error) {
+func (c Client) DeleteContainersById(ctx context.Context, id string, options DeleteContainersByIdOptions) (result DeleteContainersByIdResponse, err error) {
+	result.DeleteContainersByIdAnswer = &DeleteContainersByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -70,11 +93,12 @@ func (c Client) DeleteContainersById(ctx context.Context, id string, options Del
 		return
 	}
 
-	var model DeleteContainersByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteContainersByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteContainersByIdAnswer = result.Answer
 
 	return
 }

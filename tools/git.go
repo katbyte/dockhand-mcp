@@ -146,43 +146,43 @@ type gitRepositoryRow struct {
 }
 
 // gitCredentials is every git credential the Dockhand keeps.
-func (r *registry) gitCredentials(ctx context.Context) ([]dockhand.GetGitCredentialsResponse, error) {
+func (r *registry) gitCredentials(ctx context.Context) ([]dockhand.GetGitCredentialsAnswer, error) {
 	listed, err := r.dock.GetGitCredentials(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("the git credentials could not be listed: %w", refusal(err))
 	}
 
-	return listed.Model, nil
+	return listed.Answer, nil
 }
 
 // gitRepositories is every git repository the Dockhand keeps.
-func (r *registry) gitRepositories(ctx context.Context) ([]dockhand.GetGitRepositoriesResponse, error) {
+func (r *registry) gitRepositories(ctx context.Context) ([]dockhand.GetGitRepositoriesAnswer, error) {
 	listed, err := r.dock.GetGitRepositories(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("the git repositories could not be listed: %w", refusal(err))
 	}
 
-	return listed.Model, nil
+	return listed.Answer, nil
 }
 
 // gitStacks is every git stack the Dockhand keeps, on whichever environment.
-func (r *registry) gitStacks(ctx context.Context) ([]dockhand.GetGitStacksResponse, error) {
-	listed, err := r.dock.GetGitStacks(ctx, dockhand.GetGitStacksOperationOptions{})
+func (r *registry) gitStacks(ctx context.Context) ([]dockhand.GetGitStacksAnswer, error) {
+	listed, err := r.dock.GetGitStacks(ctx, dockhand.GetGitStacksOptions{})
 	if err != nil {
 		return nil, fmt.Errorf("the git stacks could not be listed: %w", refusal(err))
 	}
 
-	return listed.Model, nil
+	return listed.Answer, nil
 }
 
 // How a credential and a repository are told apart and put in order: by number, and by name whatever its case.
-func gitCredentialID(c *dockhand.GetGitCredentialsResponse) int { return c.Id }
+func gitCredentialID(c *dockhand.GetGitCredentialsAnswer) int { return int(c.Id) }
 
-func gitCredentialName(c *dockhand.GetGitCredentialsResponse) string { return c.Name }
+func gitCredentialName(c *dockhand.GetGitCredentialsAnswer) string { return c.Name }
 
-func gitRepositoryID(p *dockhand.GetGitRepositoriesResponse) int { return p.Id }
+func gitRepositoryID(p *dockhand.GetGitRepositoriesAnswer) int { return int(p.Id) }
 
-func gitRepositoryName(p *dockhand.GetGitRepositoriesResponse) string { return p.Name }
+func gitRepositoryName(p *dockhand.GetGitRepositoriesAnswer) string { return p.Name }
 
 func credentialsByName(a, b gitCredentialRow) int {
 	return cmp.Or(cmp.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name)), cmp.Compare(a.ID, b.ID))
@@ -193,8 +193,8 @@ func repositoriesByName(a, b gitRepositoryRow) int {
 }
 
 // gitCredentialRowOf is a credential as the tools give it, with the repositories of a list that are fetched with it.
-func gitCredentialRowOf(c *dockhand.GetGitCredentialsResponse, repositories []dockhand.GetGitRepositoriesResponse) gitCredentialRow {
-	row := gitCredentialRow{ID: c.Id, Name: c.Name, Kind: c.AuthType, Username: c.Username, HasPassword: yes(c.HasPassword), HasKey: yes(c.HasSshKey), Created: c.CreatedAt, Changed: c.UpdatedAt}
+func gitCredentialRowOf(c *dockhand.GetGitCredentialsAnswer, repositories []dockhand.GetGitRepositoriesAnswer) gitCredentialRow {
+	row := gitCredentialRow{ID: int(c.Id), Name: c.Name, Kind: string(c.AuthType), Username: c.Username, HasPassword: c.HasPassword, HasKey: c.HasSshKey, Created: when(c.CreatedAt), Changed: when(c.UpdatedAt)}
 	for i := range repositories {
 		if repositories[i].CredentialId == c.Id {
 			row.Repositories = append(row.Repositories, repositories[i].Name)
@@ -206,16 +206,16 @@ func gitCredentialRowOf(c *dockhand.GetGitCredentialsResponse, repositories []do
 }
 
 // stacksFrom is the git stacks of a list that are deployed from a repository, each with the name of its environment.
-func stacksFrom(repository int, stacks []dockhand.GetGitStacksResponse, envs []environment) []gitStackUse {
+func stacksFrom(repository int, stacks []dockhand.GetGitStacksAnswer, envs []environment) []gitStackUse {
 	var uses []gitStackUse
 	for i := range stacks {
-		if stacks[i].RepositoryId != repository {
+		if int(stacks[i].RepositoryId) != repository {
 			continue
 		}
 		use := gitStackUse{Env: noEnvironment, Stack: stacks[i].StackName}
 		if stacks[i].EnvironmentId != 0 {
 			at := slices.IndexFunc(envs, func(e environment) bool { return e.ID == stacks[i].EnvironmentId })
-			use.Env = nameOr(at, stacks[i].EnvironmentId, func(i int) string { return envs[i].Name })
+			use.Env = nameOr(at, int(stacks[i].EnvironmentId), func(i int) string { return envs[i].Name })
 		}
 		uses = append(uses, use)
 	}
@@ -235,10 +235,10 @@ func stacksSaid(uses []gitStackUse) string {
 }
 
 // gitRepositoryRowOf is a repository as the tools give it, with the name of its credential and the git stacks deployed from it.
-func gitRepositoryRowOf(p *dockhand.GetGitRepositoriesResponse, credentials []dockhand.GetGitCredentialsResponse, stacks []dockhand.GetGitStacksResponse, envs []environment, reveal bool) (gitRepositoryRow, bool) {
+func gitRepositoryRowOf(p *dockhand.GetGitRepositoriesAnswer, credentials []dockhand.GetGitCredentialsAnswer, stacks []dockhand.GetGitStacksAnswer, envs []environment, reveal bool) (gitRepositoryRow, bool) {
 	address, hidden := gitAddress(p.Url, reveal)
-	row := gitRepositoryRow{ID: p.Id, Name: p.Name, URL: address, Branch: p.Branch, Stacks: stacksFrom(p.Id, stacks, envs), Created: p.CreatedAt, Changed: p.UpdatedAt}
-	if i := slices.IndexFunc(credentials, func(c dockhand.GetGitCredentialsResponse) bool { return c.Id == p.CredentialId }); i >= 0 {
+	row := gitRepositoryRow{ID: int(p.Id), Name: p.Name, URL: address, Branch: p.Branch, Stacks: stacksFrom(int(p.Id), stacks, envs), Created: when(p.CreatedAt), Changed: when(p.UpdatedAt)}
+	if i := slices.IndexFunc(credentials, func(c dockhand.GetGitCredentialsAnswer) bool { return c.Id == p.CredentialId }); i >= 0 {
 		row.Credential = credentials[i].Name
 	}
 
@@ -255,12 +255,12 @@ type gitTried struct {
 
 // tryRepository has Dockhand reach for a repository that is not saved, or not saved this way yet, and says what it found.
 func (r *registry) tryRepository(ctx context.Context, address, branch string, credential int) (gitTried, error) {
-	tried, err := r.dock.PostGitRepositoriesTest(ctx, dockhand.PostGitRepositoriesTestRequest{Url: address, Branch: branch, CredentialId: credential})
+	tried, err := r.dock.PostGitRepositoriesTest(ctx, dockhand.PostGitRepositoriesTestRequest{Url: address, Branch: branch, CredentialId: dockhand.GitCredentialID(credential)})
 	if err != nil {
 		return gitTried{}, refusal(err)
 	}
 
-	return gitTried{Reached: yes(tried.Model.Success), Branch: tried.Model.Branch, Commit: tried.Model.LastCommit, Error: tried.Model.Error}, nil
+	return gitTried{Reached: tried.Answer.Success, Branch: tried.Answer.Branch, Commit: tried.Answer.LastCommit, Error: tried.Answer.Error}, nil
 }
 
 // embedsSecret is the note for an address with a password or token written into it, or nothing for one without.
@@ -295,7 +295,7 @@ func registerGitTools(r *registry) {
 			if unknown != nil {
 				return nil, gitCredentialListOut{}, unknown
 			}
-			listed = []dockhand.GetGitCredentialsResponse{*one}
+			listed = []dockhand.GetGitCredentialsAnswer{*one}
 		}
 		out := gitCredentialListOut{Credentials: make([]gitCredentialRow, 0, len(listed))}
 		if len(listed) == 0 {
@@ -324,7 +324,7 @@ func registerGitTools(r *registry) {
 	}
 	// credentialBack is a credential as it stands after a change, with the note that it could not be read when it could not
 	credentialBack := func(ctx context.Context, out *gitCredentialOut, id int) {
-		got, err := r.dock.GetGitCredentialsById(ctx, id)
+		got, err := r.dock.GetGitCredentialsById(ctx, dockhand.GitCredentialID(id))
 		if err != nil {
 			out.Note = noted(out.Note, "it was done, and could not be read back: "+refusal(err).Error())
 
@@ -334,7 +334,7 @@ func registerGitTools(r *registry) {
 		if err != nil {
 			out.Note = noted(out.Note, "the repositories fetched with it could not be listed: "+err.Error())
 		}
-		row := gitCredentialRowOf(&dockhand.GetGitCredentialsResponse{Id: got.Model.Id, Name: got.Model.Name, AuthType: got.Model.AuthType, Username: got.Model.Username, HasPassword: got.Model.HasPassword, HasSshKey: got.Model.HasSshKey, CreatedAt: got.Model.CreatedAt, UpdatedAt: got.Model.UpdatedAt}, repositories)
+		row := gitCredentialRowOf(&dockhand.GetGitCredentialsAnswer{Id: got.Answer.Id, Name: got.Answer.Name, AuthType: got.Answer.AuthType, Username: got.Answer.Username, HasPassword: got.Answer.HasPassword, HasSshKey: got.Answer.HasSshKey, CreatedAt: got.Answer.CreatedAt, UpdatedAt: got.Answer.UpdatedAt}, repositories)
 		out.Credential = &row
 	}
 	// signsInWith checks that a credential of a kind has what that kind signs in with: given now, or kept already
@@ -387,7 +387,7 @@ func registerGitTools(r *registry) {
 		if err != nil {
 			return nil, gitCredentialOut{}, err
 		}
-		if slices.ContainsFunc(listed, func(c dockhand.GetGitCredentialsResponse) bool { return strings.TrimSpace(c.Name) == name }) {
+		if slices.ContainsFunc(listed, func(c dockhand.GetGitCredentialsAnswer) bool { return strings.TrimSpace(c.Name) == name }) {
 			return nil, gitCredentialOut{}, fmt.Errorf("a git credential is already named %s: git_credential_edit changes it, and a new one takes a name of its own", name)
 		}
 		out := gitCredentialOut{Changes: []string{}, DryRun: in.DryRun}
@@ -397,12 +397,12 @@ func registerGitTools(r *registry) {
 			return nil, out, nil
 		}
 
-		made, err := r.dock.PostGitCredentials(ctx, dockhand.PostGitCredentialsRequest{Name: name, AuthType: kind, Username: strings.TrimSpace(in.Username), Password: in.Password, SshPrivateKey: in.SSHKey, SshPassphrase: in.Passphrase})
+		made, err := r.dock.PostGitCredentials(ctx, dockhand.PostGitCredentialsRequest{Name: name, AuthType: dockhand.GitAuthType(kind), Username: strings.TrimSpace(in.Username), Password: in.Password, SshPrivateKey: in.SSHKey, SshPassphrase: in.Passphrase})
 		if err != nil {
 			return nil, out, fmt.Errorf("the git credential %s was not saved: %w", name, refusal(err))
 		}
 		out.Changes = append(out.Changes, fmt.Sprintf("saved the git credential %s, which signs in with %s", name, kind))
-		credentialBack(ctx, &out, made.Model.Id)
+		credentialBack(ctx, &out, int(made.Answer.Id))
 
 		return nil, out, nil
 	})
@@ -434,10 +434,10 @@ func registerGitTools(r *registry) {
 		if err != nil {
 			return nil, gitCredentialOut{}, err
 		}
-		if name != "" && name != credential.Name && slices.ContainsFunc(listed, func(c dockhand.GetGitCredentialsResponse) bool { return strings.TrimSpace(c.Name) == name }) {
+		if name != "" && name != credential.Name && slices.ContainsFunc(listed, func(c dockhand.GetGitCredentialsAnswer) bool { return strings.TrimSpace(c.Name) == name }) {
 			return nil, gitCredentialOut{}, fmt.Errorf("a git credential is already named %s", name)
 		}
-		if err := signsInWith(cmp.Or(kind, credential.AuthType), in.Password, in.SSHKey, yes(credential.HasPassword), yes(credential.HasSshKey)); err != nil {
+		if err := signsInWith(string(cmp.Or(dockhand.GitAuthType(kind), credential.AuthType)), in.Password, in.SSHKey, credential.HasPassword, credential.HasSshKey); err != nil {
 			return nil, gitCredentialOut{}, err
 		}
 		out := gitCredentialOut{Changes: []string{}, DryRun: in.DryRun}
@@ -455,8 +455,8 @@ func registerGitTools(r *registry) {
 			request.Name = name
 			out.Changes = append(out.Changes, fmt.Sprintf("%s it from %s to %s", does("renamed", "would rename"), credential.Name, name))
 		}
-		if kind != "" && kind != credential.AuthType {
-			request.AuthType, signsIn = kind, true
+		if kind != "" && kind != string(credential.AuthType) {
+			request.AuthType, signsIn = dockhand.GitAuthType(kind), true
 			out.Changes = append(out.Changes, fmt.Sprintf("%s how it signs in from %s to %s", does("changed", "would change"), credential.AuthType, kind))
 		}
 		if in.Username != nil && strings.TrimSpace(*in.Username) != credential.Username {
@@ -476,12 +476,12 @@ func registerGitTools(r *registry) {
 		}
 		if len(out.Changes) == 0 {
 			out.Note = "nothing to do: it is that way already"
-			credentialBack(ctx, &out, credential.Id)
+			credentialBack(ctx, &out, int(credential.Id))
 
 			return nil, out, nil
 		}
 		if in.DryRun {
-			credentialBack(ctx, &out, credential.Id)
+			credentialBack(ctx, &out, int(credential.Id))
 
 			return nil, out, nil
 		}
@@ -489,7 +489,7 @@ func registerGitTools(r *registry) {
 		if _, err := r.dock.PutGitCredentialsById(ctx, credential.Id, request); err != nil {
 			return nil, gitCredentialOut{Changes: []string{}}, fmt.Errorf("the git credential %s was not changed: %w", credential.Name, refusal(err))
 		}
-		credentialBack(ctx, &out, credential.Id)
+		credentialBack(ctx, &out, int(credential.Id))
 
 		// every repository fetched with it signs in with what was just saved
 		if signsIn && out.Credential != nil && len(out.Credential.Repositories) > 0 {
@@ -503,8 +503,8 @@ func registerGitTools(r *registry) {
 				switch {
 				case err != nil:
 					lost = append(lost, fmt.Sprintf("%s (could not be tried: %s)", repositories[i].Name, refusal(err)))
-				case !yes(tried.Model.Success):
-					lost = append(lost, fmt.Sprintf("%s (%s)", repositories[i].Name, gitSaid(tried.Model.Error)))
+				case !tried.Answer.Success:
+					lost = append(lost, fmt.Sprintf("%s (%s)", repositories[i].Name, gitSaid(tried.Answer.Error)))
 				default:
 				}
 			}
@@ -575,7 +575,7 @@ func registerGitTools(r *registry) {
 		case err != nil:
 			out.Removed, out.WouldGo = true, nil
 			out.Note = "it was removed, and the credentials could not be listed afterwards: " + err.Error()
-		case slices.ContainsFunc(after, func(c dockhand.GetGitCredentialsResponse) bool { return c.Id == credential.Id }):
+		case slices.ContainsFunc(after, func(c dockhand.GetGitCredentialsAnswer) bool { return c.Id == credential.Id }):
 			return nil, out, fmt.Errorf("Dockhand answered that %s was removed, and still lists it", credential.Name) //nolint:staticcheck // ST1005: the sentence begins with the server's name
 		default:
 			out.Removed, out.WouldGo = true, nil
@@ -598,7 +598,7 @@ func registerGitTools(r *registry) {
 		Note         string             `json:"note,omitempty"`
 	}
 	// repositoryRows is the repositories given as the tools give them, with everything each is told with read once
-	repositoryRows := func(ctx context.Context, listed []dockhand.GetGitRepositoriesResponse, reveal bool) ([]gitRepositoryRow, int, error) {
+	repositoryRows := func(ctx context.Context, listed []dockhand.GetGitRepositoriesAnswer, reveal bool) ([]gitRepositoryRow, int, error) {
 		credentials, err := r.gitCredentials(ctx)
 		if err != nil {
 			return nil, 0, err
@@ -636,7 +636,7 @@ func registerGitTools(r *registry) {
 			if unknown != nil {
 				return nil, gitRepositoryListOut{}, unknown
 			}
-			listed = []dockhand.GetGitRepositoriesResponse{*one}
+			listed = []dockhand.GetGitRepositoriesAnswer{*one}
 		}
 		out := gitRepositoryListOut{Repositories: []gitRepositoryRow{}}
 		if len(listed) == 0 {
@@ -693,7 +693,7 @@ func registerGitTools(r *registry) {
 				if err != nil {
 					return nil, gitRepositoryTestOut{}, err
 				}
-				credential = one.Id
+				credential = int(one.Id)
 			}
 			tried, err := r.tryRepository(ctx, address, strings.TrimSpace(in.Branch), credential)
 			if err != nil {
@@ -703,8 +703,8 @@ func registerGitTools(r *registry) {
 			if tried.Reached {
 				out.Error = ""
 			}
-			if branches, err := r.dock.PostGitBranches(ctx, dockhand.PostGitBranchesRequest{Url: address, CredentialId: credential}); err == nil {
-				for _, b := range branches.Model.Branches {
+			if branches, err := r.dock.PostGitBranches(ctx, dockhand.PostGitBranchesRequest{Url: address, CredentialId: dockhand.GitCredentialID(credential)}); err == nil {
+				for _, b := range branches.Answer.Branches {
 					out.Branches = append(out.Branches, gitBranch{Name: b.Name, Commit: b.Sha})
 				}
 			}
@@ -726,12 +726,12 @@ func registerGitTools(r *registry) {
 		if err != nil {
 			return nil, gitRepositoryTestOut{}, fmt.Errorf("the repository %s could not be tried: %w", repository.Name, refusal(err))
 		}
-		out := gitRepositoryTestOut{Repository: repository.Name, Reached: yes(tried.Model.Success), Branch: cmp.Or(tried.Model.Branch, repository.Branch), Commit: tried.Model.LastCommit}
+		out := gitRepositoryTestOut{Repository: repository.Name, Reached: tried.Answer.Success, Branch: cmp.Or(tried.Answer.Branch, repository.Branch), Commit: tried.Answer.LastCommit}
 		if !out.Reached {
-			out.Error = gitSaid(tried.Model.Error)
+			out.Error = gitSaid(tried.Answer.Error)
 		}
 		if branches, err := r.dock.PostGitBranches(ctx, dockhand.PostGitBranchesRequest{RepositoryId: repository.Id}); err == nil {
-			for _, b := range branches.Model.Branches {
+			for _, b := range branches.Answer.Branches {
 				out.Branches = append(out.Branches, gitBranch{Name: b.Name, Commit: b.Sha})
 			}
 		}
@@ -777,15 +777,15 @@ func registerGitTools(r *registry) {
 
 			return nil, out, fmt.Errorf("the variables of %s could not be read: %s", repository.Name, shown)
 		}
-		for _, name := range slices.Sorted(maps.Keys(read.Model.Vars)) {
-			value, hidden := read.Model.Vars[name], false
+		for _, name := range slices.Sorted(maps.Keys(read.Answer.Vars)) {
+			value, hidden := read.Answer.Vars[name], false
 			if !in.RevealSecrets {
 				value, hidden = maskValue(name, value)
 			}
 			if hidden {
 				out.Hidden++
 			}
-			out.Variables = append(out.Variables, gitVariable{Name: name, Value: value, From: read.Model.Sources[name]})
+			out.Variables = append(out.Variables, gitVariable{Name: name, Value: value, From: read.Answer.Sources[name]})
 		}
 		out.Total = len(out.Variables)
 		switch {
@@ -808,13 +808,13 @@ func registerGitTools(r *registry) {
 	}
 	// repositoryBack is a repository as it stands after a change, with the note that it could not be read when it could not
 	repositoryBack := func(ctx context.Context, out *gitRepositoryOut, id int) {
-		got, err := r.dock.GetGitRepositoriesById(ctx, id)
+		got, err := r.dock.GetGitRepositoriesById(ctx, dockhand.GitRepositoryID(id))
 		if err != nil {
 			out.Note = noted(out.Note, "it was done, and could not be read back: "+refusal(err).Error())
 
 			return
 		}
-		rows, _, err := repositoryRows(ctx, []dockhand.GetGitRepositoriesResponse{{Id: got.Model.Id, Name: got.Model.Name, Url: got.Model.Url, Branch: got.Model.Branch, CredentialId: got.Model.CredentialId, CreatedAt: got.Model.CreatedAt, UpdatedAt: got.Model.UpdatedAt}}, false)
+		rows, _, err := repositoryRows(ctx, []dockhand.GetGitRepositoriesAnswer{{Id: got.Answer.Id, Name: got.Answer.Name, Url: got.Answer.Url, Branch: got.Answer.Branch, CredentialId: got.Answer.CredentialId, CreatedAt: got.Answer.CreatedAt, UpdatedAt: got.Answer.UpdatedAt}}, false)
 		if err != nil {
 			out.Note = noted(out.Note, "it was done, and could not be read back: "+err.Error())
 
@@ -848,7 +848,7 @@ func registerGitTools(r *registry) {
 		if err != nil {
 			return nil, gitRepositoryOut{}, err
 		}
-		if slices.ContainsFunc(listed, func(p dockhand.GetGitRepositoriesResponse) bool { return strings.TrimSpace(p.Name) == name }) {
+		if slices.ContainsFunc(listed, func(p dockhand.GetGitRepositoriesAnswer) bool { return strings.TrimSpace(p.Name) == name }) {
 			return nil, gitRepositoryOut{}, fmt.Errorf("a git repository is already named %s: git_repository_edit changes it, and a new one takes a name of its own", name)
 		}
 		credential, with := 0, ""
@@ -861,7 +861,7 @@ func registerGitTools(r *registry) {
 			if unknown != nil {
 				return nil, gitRepositoryOut{}, unknown
 			}
-			credential, with = one.Id, ", fetched with the credential "+one.Name
+			credential, with = int(one.Id), ", fetched with the credential "+one.Name
 		}
 		out := gitRepositoryOut{Changes: []string{}, DryRun: in.DryRun, Note: embedsSecret(address)}
 
@@ -883,12 +883,12 @@ func registerGitTools(r *registry) {
 			return nil, out, nil
 		}
 
-		made, err := r.dock.PostGitRepositories(ctx, dockhand.PostGitRepositoriesRequest{Name: name, Url: address, Branch: branch, CredentialId: credential})
+		made, err := r.dock.PostGitRepositories(ctx, dockhand.PostGitRepositoriesRequest{Name: name, Url: address, Branch: branch, CredentialId: dockhand.GitCredentialID(credential)})
 		if err != nil {
 			return nil, out, fmt.Errorf("the git repository %s was not saved: %w", name, refusal(err))
 		}
 		out.Changes = append(out.Changes, fmt.Sprintf("saved the git repository %s, the branch %s of %s%s", name, branch, shown, with))
-		repositoryBack(ctx, &out, made.Model.Id)
+		repositoryBack(ctx, &out, int(made.Answer.Id))
 
 		return nil, out, nil
 	})
@@ -919,7 +919,7 @@ func registerGitTools(r *registry) {
 		if err != nil {
 			return nil, gitRepositoryOut{}, err
 		}
-		if name != "" && name != repository.Name && slices.ContainsFunc(listed, func(p dockhand.GetGitRepositoriesResponse) bool { return strings.TrimSpace(p.Name) == name }) {
+		if name != "" && name != repository.Name && slices.ContainsFunc(listed, func(p dockhand.GetGitRepositoriesAnswer) bool { return strings.TrimSpace(p.Name) == name }) {
 			return nil, gitRepositoryOut{}, fmt.Errorf("a git repository is already named %s", name)
 		}
 		out := gitRepositoryOut{Changes: []string{}, DryRun: in.DryRun}
@@ -973,14 +973,14 @@ func registerGitTools(r *registry) {
 		}
 		if len(out.Changes) == 0 {
 			out.Note = "nothing to do: it is that way already"
-			repositoryBack(ctx, &out, repository.Id)
+			repositoryBack(ctx, &out, int(repository.Id))
 
 			return nil, out, nil
 		}
 
 		// only a change to how it is fetched is tried: a new name fetches nothing differently
 		if request.Url != "" || request.Branch != "" || credential != repository.CredentialId {
-			tried, err := r.tryRepository(ctx, cmp.Or(request.Url, repository.Url), cmp.Or(request.Branch, repository.Branch), credential)
+			tried, err := r.tryRepository(ctx, cmp.Or(request.Url, repository.Url), cmp.Or(request.Branch, repository.Branch), int(credential))
 			if err != nil {
 				return nil, gitRepositoryOut{Changes: []string{}, DryRun: in.DryRun}, fmt.Errorf("the change could not be tried, so nothing was changed: %w", err)
 			}
@@ -993,7 +993,7 @@ func registerGitTools(r *registry) {
 			}
 		}
 		if in.DryRun {
-			repositoryBack(ctx, &out, repository.Id)
+			repositoryBack(ctx, &out, int(repository.Id))
 
 			return nil, out, nil
 		}
@@ -1004,14 +1004,14 @@ func registerGitTools(r *registry) {
 			}
 		}
 		if off {
-			if _, err := r.dock.ForgetGitRepositoryCredential(ctx, repository.Id); err != nil {
+			if _, err := r.dock.ForgetGitRepositoryCredential(ctx, int(repository.Id)); err != nil {
 				out.Changes = slices.DeleteFunc(out.Changes, func(change string) bool { return strings.HasSuffix(change, "with no credential") })
-				repositoryBack(ctx, &out, repository.Id)
+				repositoryBack(ctx, &out, int(repository.Id))
 
 				return nil, out, fmt.Errorf("the credential of %s was not taken away: %w", repository.Name, refusal(err))
 			}
 		}
-		repositoryBack(ctx, &out, repository.Id)
+		repositoryBack(ctx, &out, int(repository.Id))
 		if out.Repository != nil && len(out.Repository.Stacks) > 0 {
 			out.Note = noted(out.Note, "the next deploy of each git stack made from it fetches it this way: "+stacksSaid(out.Repository.Stacks))
 		}
@@ -1044,7 +1044,7 @@ func registerGitTools(r *registry) {
 		if err != nil {
 			return nil, gitRepositoryDeleteOut{}, err
 		}
-		rows, _, err := repositoryRows(ctx, []dockhand.GetGitRepositoriesResponse{*repository}, false)
+		rows, _, err := repositoryRows(ctx, []dockhand.GetGitRepositoriesAnswer{*repository}, false)
 		if err != nil {
 			return nil, gitRepositoryDeleteOut{}, fmt.Errorf("%w, so nothing was removed", err)
 		}
@@ -1074,7 +1074,7 @@ func registerGitTools(r *registry) {
 		case err != nil:
 			out.Removed, out.WouldGo = true, nil
 			out.Note = "it was removed, and the repositories could not be listed afterwards: " + err.Error()
-		case slices.ContainsFunc(after, func(p dockhand.GetGitRepositoriesResponse) bool { return p.Id == repository.Id }):
+		case slices.ContainsFunc(after, func(p dockhand.GetGitRepositoriesAnswer) bool { return p.Id == repository.Id }):
 			return nil, out, fmt.Errorf("Dockhand answered that %s was removed, and still lists it", repository.Name) //nolint:staticcheck // ST1005: the sentence begins with the server's name
 		default:
 			out.Removed, out.WouldGo = true, nil

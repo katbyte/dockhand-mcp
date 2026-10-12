@@ -9,14 +9,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetRolesOperationResponse is the result of GetRoles.
-type GetRolesOperationResponse struct {
+// GetRolesResponse is the result of GetRoles.
+type GetRolesResponse struct {
 	HttpResponse *http.Response
-	Model        []GetRolesResponse
+	Answer       []GetRolesAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetRolesResponse) Answered() bool { return r.Answer != nil }
+
 // GetRoles calls GET /api/roles. List all roles (built-in and custom); needs admin or users:view, plus an enterprise license.
-func (c Client) GetRoles(ctx context.Context) (result GetRolesOperationResponse, err error) {
+func (c Client) GetRoles(ctx context.Context) (result GetRolesResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,7 +43,7 @@ func (c Client) GetRoles(ctx context.Context) (result GetRolesOperationResponse,
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

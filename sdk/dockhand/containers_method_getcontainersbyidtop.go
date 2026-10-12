@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,35 +13,57 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetContainersByIdTopOperationResponse is the result of GetContainersByIdTop.
-type GetContainersByIdTopOperationResponse struct {
+// GetContainersByIdTopResponse is the result of GetContainersByIdTop.
+//
+// Answer is the GetContainersByIdTopAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetContainersByIdTopResponse struct {
 	HttpResponse *http.Response
-	Model        *GetContainersByIdTopResponse
+	Answer       *GetContainersByIdTopAnswer
+	*GetContainersByIdTopAnswer
 }
 
-// GetContainersByIdTopOperationOptions holds the query and header parameters of GetContainersByIdTop.
-type GetContainersByIdTopOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetContainersByIdTopResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetContainersByIdTopAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetContainersByIdTopResponse) Record() (GetContainersByIdTopAnswer, error) {
+	if r.Answer == nil {
+		return GetContainersByIdTopAnswer{}, errors.New("GetContainersByIdTop answered no GetContainersByIdTopAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetContainersByIdTopOptions holds the query and header parameters of GetContainersByIdTop.
+type GetContainersByIdTopOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetContainersByIdTopOperationOptions) ToHeaders() *client.Headers {
+func (o GetContainersByIdTopOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetContainersByIdTopOperationOptions) ToQuery() *client.QueryParams {
+func (o GetContainersByIdTopOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetContainersByIdTop calls GET /api/containers/{id}/top. List the processes running inside a container (via `ps` in the container, falling back to the Docker top API).
-func (c Client) GetContainersByIdTop(ctx context.Context, id string, options GetContainersByIdTopOperationOptions) (result GetContainersByIdTopOperationResponse, err error) {
+func (c Client) GetContainersByIdTop(ctx context.Context, id string, options GetContainersByIdTopOptions) (result GetContainersByIdTopResponse, err error) {
+	result.GetContainersByIdTopAnswer = &GetContainersByIdTopAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -64,11 +87,12 @@ func (c Client) GetContainersByIdTop(ctx context.Context, id string, options Get
 		return
 	}
 
-	var model GetContainersByIdTopResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetContainersByIdTopAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetContainersByIdTopAnswer = result.Answer
 
 	return
 }

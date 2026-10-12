@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostDashboardPreferencesOperationResponse is the result of PostDashboardPreferences.
-type PostDashboardPreferencesOperationResponse struct {
+// PostDashboardPreferencesResponse is the result of PostDashboardPreferences.
+//
+// Answer is the PostDashboardPreferencesAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostDashboardPreferencesResponse struct {
 	HttpResponse *http.Response
-	Model        *PostDashboardPreferencesResponse
+	Answer       *PostDashboardPreferencesAnswer
+	*PostDashboardPreferencesAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostDashboardPreferencesResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostDashboardPreferencesAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostDashboardPreferencesResponse) Record() (PostDashboardPreferencesAnswer, error) {
+	if r.Answer == nil {
+		return PostDashboardPreferencesAnswer{}, errors.New("PostDashboardPreferences answered no PostDashboardPreferencesAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostDashboardPreferences calls POST /api/dashboard/preferences. Update the current user's dashboard preferences (only provided fields are merged).
-func (c Client) PostDashboardPreferences(ctx context.Context, input PostDashboardPreferencesRequest) (result PostDashboardPreferencesOperationResponse, err error) {
+func (c Client) PostDashboardPreferences(ctx context.Context, input PostDashboardPreferencesRequest) (result PostDashboardPreferencesResponse, err error) {
+	result.PostDashboardPreferencesAnswer = &PostDashboardPreferencesAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostDashboardPreferences(ctx context.Context, input PostDashboar
 		return
 	}
 
-	var model PostDashboardPreferencesResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostDashboardPreferencesAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostDashboardPreferencesAnswer = result.Answer
 
 	return
 }

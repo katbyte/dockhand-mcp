@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,32 +13,53 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteVolumesByNameOperationResponse is the result of DeleteVolumesByName.
-type DeleteVolumesByNameOperationResponse struct {
+// DeleteVolumesByNameResponse is the result of DeleteVolumesByName.
+//
+// Answer is the DeleteVolumesByNameAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteVolumesByNameResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteVolumesByNameResponse
+	Answer       *DeleteVolumesByNameAnswer
+	*DeleteVolumesByNameAnswer
 }
 
-// DeleteVolumesByNameOperationOptions holds the query and header parameters of DeleteVolumesByName.
-type DeleteVolumesByNameOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteVolumesByNameResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteVolumesByNameAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteVolumesByNameResponse) Record() (DeleteVolumesByNameAnswer, error) {
+	if r.Answer == nil {
+		return DeleteVolumesByNameAnswer{}, errors.New("DeleteVolumesByName answered no DeleteVolumesByNameAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// DeleteVolumesByNameOptions holds the query and header parameters of DeleteVolumesByName.
+type DeleteVolumesByNameOptions struct {
 	// Environment ID the volume belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// Force removal of the volume
 	Force *bool
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o DeleteVolumesByNameOperationOptions) ToHeaders() *client.Headers {
+func (o DeleteVolumesByNameOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o DeleteVolumesByNameOperationOptions) ToQuery() *client.QueryParams {
+func (o DeleteVolumesByNameOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	if o.Force != nil {
 		out.Append("force", strconv.FormatBool(*o.Force))
@@ -46,13 +68,23 @@ func (o DeleteVolumesByNameOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // DeleteVolumesByName calls DELETE /api/volumes/{name}. Remove a Docker volume by name, optionally forcing removal.
-func (c Client) DeleteVolumesByName(ctx context.Context, name string, options DeleteVolumesByNameOperationOptions) (result DeleteVolumesByNameOperationResponse, err error) {
+func (c Client) DeleteVolumesByName(ctx context.Context, name string, options ...DeleteVolumesByNameOptions) (result DeleteVolumesByNameResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("DeleteVolumesByName takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option DeleteVolumesByNameOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.DeleteVolumesByNameAnswer = &DeleteVolumesByNameAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/volumes/%s", url.PathEscape(name)),
 	}
 
@@ -70,11 +102,12 @@ func (c Client) DeleteVolumesByName(ctx context.Context, name string, options De
 		return
 	}
 
-	var model DeleteVolumesByNameResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteVolumesByNameAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteVolumesByNameAnswer = result.Answer
 
 	return
 }

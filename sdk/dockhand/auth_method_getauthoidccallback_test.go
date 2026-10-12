@@ -13,7 +13,7 @@ func TestOperationGetAuthOidcCallback(t *testing.T) {
 	t.Parallel()
 
 	c, s := newOperationServer(t, 302, "", "")
-	result, err := c.GetAuthOidcCallback(t.Context(), GetAuthOidcCallbackOperationOptions{
+	result, err := c.GetAuthOidcCallback(t.Context(), GetAuthOidcCallbackOptions{
 		Code:             "v-Code",
 		State:            "v-State",
 		Error:            "v-Error",
@@ -35,7 +35,7 @@ func TestOperationGetAuthOidcCallback(t *testing.T) {
 
 	// a status the operation does not document is an error, with the response
 	c, _ = newOperationServer(t, 418, "text/plain", "no")
-	result, err = c.GetAuthOidcCallback(t.Context(), GetAuthOidcCallbackOperationOptions{
+	result, err = c.GetAuthOidcCallback(t.Context(), GetAuthOidcCallbackOptions{
 		Code:             "v-Code",
 		State:            "v-State",
 		Error:            "v-Error",
@@ -43,5 +43,14 @@ func TestOperationGetAuthOidcCallback(t *testing.T) {
 	})
 	if client.StatusCode(err) != 418 || result.HttpResponse == nil {
 		t.Errorf("an undocumented status = %v, %+v", err, result.HttpResponse)
+	}
+
+	// the options may be left out, and two are refused before any request
+	c, s = newOperationServer(t, 302, "", "")
+	if _, err = c.GetAuthOidcCallback(t.Context()); err != nil {
+		t.Errorf("without options = %v", err)
+	}
+	if _, err = c.GetAuthOidcCallback(t.Context(), GetAuthOidcCallbackOptions{}, GetAuthOidcCallbackOptions{}); err == nil || len(s.requests) != 1 {
+		t.Errorf("two options structs = %v, %d requests", err, len(s.requests))
 	}
 }

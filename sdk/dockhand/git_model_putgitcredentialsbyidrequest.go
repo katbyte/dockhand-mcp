@@ -4,10 +4,10 @@ package dockhand
 
 // PutGitCredentialsByIdRequest is an object the document declares inline.
 type PutGitCredentialsByIdRequest struct {
-	AuthType      string `json:"authType,omitempty"`
-	Name          string `json:"name,omitempty"`
-	Password      string `json:"password,omitempty"`
-	SshPassphrase string `json:"sshPassphrase,omitempty"`
-	SshPrivateKey string `json:"sshPrivateKey,omitempty"`
-	Username      string `json:"username,omitempty"`
+	AuthType      GitAuthType `json:"authType,omitempty"`
+	Name          string      `json:"name,omitempty"`
+	Password      string      `json:"password,omitempty"`
+	SshPassphrase string      `json:"sshPassphrase,omitempty"`
+	SshPrivateKey string      `json:"sshPrivateKey,omitempty"`
+	Username      string      `json:"username,omitempty"`
 }

@@ -39,23 +39,23 @@ type templateRow struct {
 }
 
 // templates is every app template Dockhand has from the sources that are switched on.
-func (r *registry) templates(ctx context.Context) ([]dockhand.GetTemplatesResponse, error) {
+func (r *registry) templates(ctx context.Context) ([]dockhand.GetTemplatesAnswer, error) {
 	listed, err := r.dock.GetTemplates(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("the templates could not be listed: %w", refusal(err))
 	}
 
-	return listed.Model, nil
+	return listed.Answer, nil
 }
 
 // templateSources is every source of templates Dockhand keeps.
-func (r *registry) templateSources(ctx context.Context) ([]dockhand.GetTemplatesSourcesResponse, error) {
+func (r *registry) templateSources(ctx context.Context) ([]dockhand.GetTemplatesSourcesAnswer, error) {
 	listed, err := r.dock.GetTemplatesSources(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("the template sources could not be listed: %w", refusal(err))
 	}
 
-	return listed.Model, nil
+	return listed.Answer, nil
 }
 
 // sourceArg names one source of templates.
@@ -65,7 +65,7 @@ type sourceArg struct {
 
 // sourceIn is the source of a list a call names, by its name whatever its case or by its number. Dockhand lets two share a name, and a name two share
 // is refused with their numbers.
-func sourceIn(listed []dockhand.GetTemplatesSourcesResponse, a sourceArg) (*dockhand.GetTemplatesSourcesResponse, error) {
+func sourceIn(listed []dockhand.GetTemplatesSourcesAnswer, a sourceArg) (*dockhand.GetTemplatesSourcesAnswer, error) {
 	wanted, err := named(a.Source, "source")
 	if err != nil {
 		return nil, err
@@ -73,10 +73,10 @@ func sourceIn(listed []dockhand.GetTemplatesSourcesResponse, a sourceArg) (*dock
 	if wanted == "" {
 		return nil, errors.New("source is required: the template source's name or number, as template_source_list gives them")
 	}
-	var found []*dockhand.GetTemplatesSourcesResponse
+	var found []*dockhand.GetTemplatesSourcesAnswer
 	names := make([]string, 0, len(listed))
 	for i := range listed {
-		if strconv.Itoa(listed[i].Id) == wanted {
+		if strconv.Itoa(int(listed[i].Id)) == wanted {
 			return &listed[i], nil
 		}
 		if strings.EqualFold(listed[i].Name, wanted) {
@@ -92,7 +92,7 @@ func sourceIn(listed []dockhand.GetTemplatesSourcesResponse, a sourceArg) (*dock
 	default:
 		numbers := make([]string, 0, len(found))
 		for _, s := range found {
-			numbers = append(numbers, strconv.Itoa(s.Id))
+			numbers = append(numbers, strconv.Itoa(int(s.Id)))
 		}
 
 		return nil, fmt.Errorf("%d template sources are named %q: give the number of one, %s", len(found), wanted, strings.Join(numbers, " or "))
@@ -109,8 +109,8 @@ type sourceRow struct {
 	Templates int    `json:"templates"         jsonschema:"how many templates are listed under its name now: none for one that is switched off, none for one whose address answers nothing Dockhand can read, and none for one whose address was fetched within the hour under another name"`
 }
 
-func sourceRowOf(s *dockhand.GetTemplatesSourcesResponse, all []dockhand.GetTemplatesResponse) sourceRow {
-	row := sourceRow{ID: s.Id, Name: s.Name, URL: s.Url, Enabled: yes(s.Enabled), Builtin: yes(s.Builtin)}
+func sourceRowOf(s *dockhand.GetTemplatesSourcesAnswer, all []dockhand.GetTemplatesAnswer) sourceRow {
+	row := sourceRow{ID: int(s.Id), Name: s.Name, URL: s.Url, Enabled: s.Enabled, Builtin: s.Builtin}
 	for i := range all {
 		if all[i].Source == s.Name {
 			row.Templates++
@@ -172,12 +172,12 @@ func registerTemplateTools(r *registry) {
 
 		words := strings.Fields(strings.ToLower(in.Search))
 		category, source := strings.TrimSpace(in.Category), strings.ToLower(strings.TrimSpace(in.Source))
-		matched := make([]*dockhand.GetTemplatesResponse, 0, len(all))
+		matched := make([]*dockhand.GetTemplatesAnswer, 0, len(all))
 		for i := range all {
 			t := &all[i]
 			about := strings.ToLower(t.Title + " " + t.Description + " " + strings.Join(t.Categories, " "))
 			switch {
-			case kind != "" && t.Type != kind:
+			case kind != "" && string(t.Type) != kind:
 			case source != "" && !strings.Contains(strings.ToLower(t.Source), source):
 			case category != "" && !slices.ContainsFunc(t.Categories, func(c string) bool { return strings.EqualFold(c, category) }):
 			case slices.ContainsFunc(words, func(word string) bool { return !strings.Contains(about, word) }):
@@ -185,7 +185,7 @@ func registerTemplateTools(r *registry) {
 				matched = append(matched, t)
 			}
 		}
-		slices.SortStableFunc(matched, func(a, b *dockhand.GetTemplatesResponse) int {
+		slices.SortStableFunc(matched, func(a, b *dockhand.GetTemplatesAnswer) int {
 			return cmp.Or(cmp.Compare(strings.ToLower(a.Title), strings.ToLower(b.Title)), cmp.Compare(a.Source, b.Source))
 		})
 
@@ -198,7 +198,7 @@ func registerTemplateTools(r *registry) {
 			if len([]rune(about)) > aboutTemplate {
 				about = string([]rune(about)[:aboutTemplate]) + "…"
 			}
-			out.Templates = append(out.Templates, templateRow{ID: t.Id, Title: t.Title, Type: t.Type, Description: about, Categories: t.Categories, Image: t.Image, Source: t.Source})
+			out.Templates = append(out.Templates, templateRow{ID: t.Id, Title: t.Title, Type: string(t.Type), Description: about, Categories: t.Categories, Image: t.Image, Source: t.Source})
 		}
 		switch {
 		case out.Of == 0:
@@ -253,10 +253,10 @@ func registerTemplateTools(r *registry) {
 		if err != nil {
 			return nil, templateGetOut{}, err
 		}
-		var found []*dockhand.GetTemplatesResponse
+		var found []*dockhand.GetTemplatesAnswer
 		for i := range all {
 			if all[i].Id == wanted {
-				found = []*dockhand.GetTemplatesResponse{&all[i]}
+				found = []*dockhand.GetTemplatesAnswer{&all[i]}
 
 				break
 			}
@@ -277,11 +277,11 @@ func registerTemplateTools(r *registry) {
 			return nil, templateGetOut{}, fmt.Errorf("%d templates are titled %q: give the id of one, %s", len(found), wanted, strings.Join(ids, ", "))
 		}
 		t := found[0]
-		whole := templateRow{ID: t.Id, Title: t.Title, Type: t.Type, Description: t.Description, Categories: t.Categories, Image: t.Image, Source: t.Source}
-		out := templateGetOut{templateRow: whole, Ports: t.Ports, RestartPolicy: t.RestartPolicy, Network: t.Network, ProjectURL: t.ProjectUrl, About: t.Note}
+		whole := templateRow{ID: t.Id, Title: t.Title, Type: string(t.Type), Description: t.Description, Categories: t.Categories, Image: t.Image, Source: t.Source}
+		out := templateGetOut{templateRow: whole, Ports: t.Ports, RestartPolicy: string(t.RestartPolicy), Network: t.Network, ProjectURL: t.ProjectUrl, About: t.Note}
 
 		// the template goes back to Dockhand as it gave it, which is what it writes the compose file from
-		given := dockhand.PostTemplatesComposeRequestTemplate{Id: t.Id, Type: t.Type, Title: t.Title, Image: t.Image, Ports: t.Ports, RestartPolicy: t.RestartPolicy, Network: t.Network}
+		given := dockhand.PostTemplatesComposeRequestTemplate{Id: t.Id, Type: string(t.Type), Title: t.Title, Image: t.Image, Ports: t.Ports, RestartPolicy: string(t.RestartPolicy), Network: t.Network}
 		for i := range t.Volumes {
 			out.Volumes = append(out.Volumes, templateVolume{Container: t.Volumes[i].Container, Host: t.Volumes[i].Bind})
 			given.Volumes = append(given.Volumes, dockhand.PostTemplatesComposeRequestTemplateVolumes{Container: t.Volumes[i].Container, Bind: t.Volumes[i].Bind})
@@ -302,7 +302,7 @@ func registerTemplateTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("the compose file of %s could not be had: %w", t.Title, refusal(err))
 		}
-		out.Compose = written.Model.Compose
+		out.Compose = written.Answer.Compose
 		if n := strings.Count(out.Compose, "- "+noPlace); n > 0 {
 			out.Note = fmt.Sprintf("Dockhand wrote \"undefined\" as where %d of its volumes are kept on the host, the template naming no place for them, and that is no volume: put a volume's name or a path there before a stack is made from this", n)
 		}
@@ -388,7 +388,7 @@ func registerTemplateTools(r *registry) {
 		if err != nil {
 			out.Note = "it was added, and its templates could not be counted: " + err.Error()
 		}
-		row := sourceRowOf(new(dockhand.GetTemplatesSourcesResponse(*made.Model)), all)
+		row := sourceRowOf(new(dockhand.GetTemplatesSourcesAnswer(*made.Answer)), all)
 		out.Source = &row
 		if err != nil || row.Templates > 0 {
 			return nil, out, nil //nolint:nilerr // the source was added: that its templates could not be counted is said in the answer
@@ -448,9 +448,9 @@ func registerTemplateTools(r *registry) {
 
 			return did
 		}
-		request := dockhand.PutTemplatesSourcesRequest{Id: saved.Id}
+		request := dockhand.PutTemplatesSourcesRequest{Id: int(saved.Id)}
 		if name != "" && name != saved.Name {
-			if slices.ContainsFunc(listed, func(s dockhand.GetTemplatesSourcesResponse) bool {
+			if slices.ContainsFunc(listed, func(s dockhand.GetTemplatesSourcesAnswer) bool {
 				return s.Id != saved.Id && strings.EqualFold(s.Name, name)
 			}) {
 				return nil, out, fmt.Errorf("another template source is named %q, so %s is not renamed to it", name, saved.Name)
@@ -462,7 +462,7 @@ func registerTemplateTools(r *registry) {
 			request.Url = url
 			out.Changes = append(out.Changes, fmt.Sprintf("%s its address from %s to %s", done("changed", "would change"), saved.Url, url))
 		}
-		if in.Enabled != nil && *in.Enabled != yes(saved.Enabled) {
+		if in.Enabled != nil && *in.Enabled != saved.Enabled {
 			request.Enabled = in.Enabled
 			out.Changes = append(out.Changes, map[bool]string{true: done("switched", "would switch") + " it on", false: done("switched", "would switch") + " it off"}[*in.Enabled])
 		}
@@ -479,7 +479,7 @@ func registerTemplateTools(r *registry) {
 
 				return nil, out, fmt.Errorf("%s was not changed: %w", saved.Name, refusal(failed))
 			}
-			if !yes(changed.Model.Ok) {
+			if !changed.Answer.Ok {
 				out.Changes = []string{}
 
 				return nil, out, fmt.Errorf("the change to %s was answered without its being said to have been made: template_source_list says how it is now", saved.Name)
@@ -489,7 +489,7 @@ func registerTemplateTools(r *registry) {
 
 				return nil, out, nil //nolint:nilerr // the change went through: that it could not be read back is said in the answer
 			}
-			i := slices.IndexFunc(listed, func(s dockhand.GetTemplatesSourcesResponse) bool { return s.Id == saved.Id })
+			i := slices.IndexFunc(listed, func(s dockhand.GetTemplatesSourcesAnswer) bool { return s.Id == saved.Id })
 			if i < 0 {
 				return nil, out, fmt.Errorf("%s was changed, and is no longer listed", saved.Name)
 			}
@@ -534,7 +534,7 @@ func registerTemplateTools(r *registry) {
 		}
 		out := sourceDeleteOut{Source: saved.Name}
 		own := ""
-		if yes(saved.Builtin) {
+		if saved.Builtin {
 			own = "it is one of the sources Dockhand comes with, and nothing brings it back as that: it can only be added again by its address, " + saved.Url
 		}
 		if !in.Confirm {
@@ -547,11 +547,11 @@ func registerTemplateTools(r *registry) {
 			return nil, out, nil
 		}
 
-		gone, err := r.dock.DeleteTemplatesSources(ctx, dockhand.DeleteTemplatesSourcesOperationOptions{Id: &saved.Id})
+		gone, err := r.dock.DeleteTemplatesSources(ctx, dockhand.DeleteTemplatesSourcesOptions{Id: new(int(saved.Id))})
 		if err != nil {
 			return nil, out, fmt.Errorf("%s was not removed: %w", saved.Name, refusal(err))
 		}
-		if !yes(gone.Model.Ok) {
+		if !gone.Answer.Ok {
 			return nil, out, fmt.Errorf("the removal of %s was answered without its being said to have been done: template_source_list says whether it is still there", saved.Name)
 		}
 		left, err := r.templateSources(ctx)
@@ -560,7 +560,7 @@ func registerTemplateTools(r *registry) {
 
 			return nil, out, nil //nolint:nilerr // the removal went through: that it could not be read back is said in the answer
 		}
-		if slices.ContainsFunc(left, func(s dockhand.GetTemplatesSourcesResponse) bool { return s.Id == saved.Id }) {
+		if slices.ContainsFunc(left, func(s dockhand.GetTemplatesSourcesAnswer) bool { return s.Id == saved.Id }) {
 			return nil, out, fmt.Errorf("the removal of %s was answered as done, and it is still listed", saved.Name)
 		}
 		out.Removed, out.Note = true, own

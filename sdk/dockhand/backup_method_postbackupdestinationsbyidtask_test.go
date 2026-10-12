@@ -26,6 +26,9 @@ func TestOperationPostBackupDestinationsByIdTask(t *testing.T) {
 	if !json.Valid([]byte(body)) {
 		t.Errorf("body = %q, want JSON", body)
 	}
+	if body != "{\"task\":\"\"}" {
+		t.Errorf("an empty record sent %q, want %q: a field never set went out", body, "{\"task\":\"\"}")
+	}
 	if result.HttpResponse == nil || result.HttpResponse.StatusCode != 200 {
 		t.Fatalf("HttpResponse = %+v", result.HttpResponse)
 	}

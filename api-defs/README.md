@@ -91,6 +91,19 @@ Left as the document has them:
 
 - Three request bodies declare one field under two spellings, `cronExpression` and `cron_expression`, `vulnerabilityCriteria` and `vulnerability_criteria` (setting a container's auto-update), `eventTypes` and `event_types` (a notification channel). The client keeps the first.
 
+## What the document never declares: dates, fixed sets and ids
+
+The document declares every date a plain string, every value from a fixed set a plain string, and every id a plain number. Each is declared here instead (`sdk/pandorest/workarounds/value_sets.go` and `ids.go`), read off a recording of every answer a real 1.0.51 server gave both live suites, and the live sweep holds them to the server from then on: it fails an answer with a date no form reads or a value no set lists.
+
+- **Dates come in three forms.** `2026-10-10T13:08:26.073Z` with any number of fractional digits, `2026-10-10 13:08:26` with a space and no zone (Dockhand's own database's, which is UTC), and `2024-08-16 00:27:23+00:00`. 21 names are dates wherever they sit (`createdAt`, `updatedAt`, `lastSync`, `scannedAt`, `lastLogin`, `hawserLastSeen`, `lastUsed`, `lastChecked` and the rest). The one number that is a date is `timestamp` in `GET /api/containers/{id}/stats`, in milliseconds.
+- **Left as text: when a file inside a container or a volume was changed** (`modified`), written `2026-10-10T09:39:00` with no zone, in whatever zone the container keeps.
+- **24 sets of values**, among them how an environment is reached (`socket`, `direct`, `hawser-standard`, `hawser-edge`), a container's state and health, a job's status (`running`, `done`, `error`), a stack's (`running`, `partial`, `stopped`, `created`), a scheduled run's and a deploy's, a finding's severity and a compose check's, the kinds of notification, secret provider, schedule, sign-in and template.
+- **One name is several things.** `status` is a job's own beside the free text of its progress lines, and a stack's own beside each container's (`Up 6 seconds`); `type` is eight different things; `protocol` is `http` or `https` on an environment, `tcp` or `udp` on a port and a whole address on `GET /api/hawser/connect`; `severity` is also a search parameter that takes several with commas between. Each set says where it holds.
+- **Left as text because Dockhand keeps whatever it is sent:** a config set's restart policy, mount mode and port protocol (it saved `whenever`, `zz` and `icmp`).
+- **Left as text because the words are Docker's**, open to plugins and versions: a network's and a volume's driver and scope, a mount's type and mode, a container's status text, and what a container did in the activity log.
+- **12 kinds of id** are told apart, all Dockhand's own records: environment, notification, registry, user, role, git repository, git credential, git stack, secret provider, config set, tag and template source. `env` is the environment's id as a query parameter on nearly every call, and a container's list of variables in four bodies.
+- **Left as plain ids:** Docker's (a container, an image or a network is named by its id, the start of it or its name in the same place), a job's and a deploy run's (used once), a schedule's and an audit record's (whose id it is depends on the type beside it), and the backup calls', which a free server does not answer.
+
 ## What the server does
 
 Found by running a 1.0.51 server with a Hawser 0.2.50 agent.

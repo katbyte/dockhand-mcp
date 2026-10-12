@@ -4,20 +4,43 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetSchedulesExecutionsByIdOperationResponse is the result of GetSchedulesExecutionsById.
-type GetSchedulesExecutionsByIdOperationResponse struct {
+// GetSchedulesExecutionsByIdResponse is the result of GetSchedulesExecutionsById.
+//
+// Answer is the GetSchedulesExecutionsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetSchedulesExecutionsByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *GetSchedulesExecutionsByIdResponse
+	Answer       *GetSchedulesExecutionsByIdAnswer
+	*GetSchedulesExecutionsByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetSchedulesExecutionsByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetSchedulesExecutionsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetSchedulesExecutionsByIdResponse) Record() (GetSchedulesExecutionsByIdAnswer, error) {
+	if r.Answer == nil {
+		return GetSchedulesExecutionsByIdAnswer{}, errors.New("GetSchedulesExecutionsById answered no GetSchedulesExecutionsByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetSchedulesExecutionsById calls GET /api/schedules/executions/{id}. Get a single schedule execution, including its logs.
-func (c Client) GetSchedulesExecutionsById(ctx context.Context, id int) (result GetSchedulesExecutionsByIdOperationResponse, err error) {
+func (c Client) GetSchedulesExecutionsById(ctx context.Context, id int) (result GetSchedulesExecutionsByIdResponse, err error) {
+	result.GetSchedulesExecutionsByIdAnswer = &GetSchedulesExecutionsByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -40,11 +63,12 @@ func (c Client) GetSchedulesExecutionsById(ctx context.Context, id int) (result 
 		return
 	}
 
-	var model GetSchedulesExecutionsByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetSchedulesExecutionsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetSchedulesExecutionsByIdAnswer = result.Answer
 
 	return
 }

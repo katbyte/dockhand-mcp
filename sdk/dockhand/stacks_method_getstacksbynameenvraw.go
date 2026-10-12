@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,41 +13,72 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetStacksByNameEnvRawOperationResponse is the result of GetStacksByNameEnvRaw.
-type GetStacksByNameEnvRawOperationResponse struct {
+// GetStacksByNameEnvRawResponse is the result of GetStacksByNameEnvRaw.
+//
+// Answer is the GetStacksByNameEnvRawAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetStacksByNameEnvRawResponse struct {
 	HttpResponse *http.Response
-	Model        *GetStacksByNameEnvRawResponse
+	Answer       *GetStacksByNameEnvRawAnswer
+	*GetStacksByNameEnvRawAnswer
 }
 
-// GetStacksByNameEnvRawOperationOptions holds the query and header parameters of GetStacksByNameEnvRaw.
-type GetStacksByNameEnvRawOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetStacksByNameEnvRawResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetStacksByNameEnvRawAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetStacksByNameEnvRawResponse) Record() (GetStacksByNameEnvRawAnswer, error) {
+	if r.Answer == nil {
+		return GetStacksByNameEnvRawAnswer{}, errors.New("GetStacksByNameEnvRaw answered no GetStacksByNameEnvRawAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetStacksByNameEnvRawOptions holds the query and header parameters of GetStacksByNameEnvRaw.
+type GetStacksByNameEnvRawOptions struct {
 	// Environment ID the stack belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetStacksByNameEnvRawOperationOptions) ToHeaders() *client.Headers {
+func (o GetStacksByNameEnvRawOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetStacksByNameEnvRawOperationOptions) ToQuery() *client.QueryParams {
+func (o GetStacksByNameEnvRawOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetStacksByNameEnvRaw calls GET /api/stacks/{name}/env/raw. Get the raw .env file content as-is (comments and formatting preserved) for a stack.
-func (c Client) GetStacksByNameEnvRaw(ctx context.Context, name string, options GetStacksByNameEnvRawOperationOptions) (result GetStacksByNameEnvRawOperationResponse, err error) {
+func (c Client) GetStacksByNameEnvRaw(ctx context.Context, name string, options ...GetStacksByNameEnvRawOptions) (result GetStacksByNameEnvRawResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetStacksByNameEnvRaw takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetStacksByNameEnvRawOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetStacksByNameEnvRawAnswer = &GetStacksByNameEnvRawAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/env/raw", url.PathEscape(name)),
 	}
 
@@ -64,11 +96,12 @@ func (c Client) GetStacksByNameEnvRaw(ctx context.Context, name string, options 
 		return
 	}
 
-	var model GetStacksByNameEnvRawResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetStacksByNameEnvRawAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetStacksByNameEnvRawAnswer = result.Answer
 
 	return
 }

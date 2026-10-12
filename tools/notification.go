@@ -82,18 +82,18 @@ func (a channelArg) named() (string, error) {
 }
 
 // channels is every notification channel the Dockhand keeps.
-func (r *registry) channels(ctx context.Context) ([]dockhand.GetNotificationsResponse, error) {
+func (r *registry) channels(ctx context.Context) ([]dockhand.GetNotificationsAnswer, error) {
 	listed, err := r.dock.GetNotifications(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("the notification channels could not be listed: %w", refusal(err))
 	}
 
-	return listed.Model, nil
+	return listed.Answer, nil
 }
 
 // oneChannel is the single channel a call names, by its name whatever its case or by its number. Dockhand lets two channels share a name, and which
 // of them is meant is not guessed at.
-func (r *registry) oneChannel(ctx context.Context, a channelArg) (*dockhand.GetNotificationsResponse, error) {
+func (r *registry) oneChannel(ctx context.Context, a channelArg) (*dockhand.GetNotificationsAnswer, error) {
 	named, err := a.named()
 	if err != nil {
 		return nil, err
@@ -105,10 +105,10 @@ func (r *registry) oneChannel(ctx context.Context, a channelArg) (*dockhand.GetN
 	if err != nil {
 		return nil, err
 	}
-	var found []*dockhand.GetNotificationsResponse
+	var found []*dockhand.GetNotificationsAnswer
 	names := make([]string, 0, len(listed))
 	for i := range listed {
-		if strconv.Itoa(listed[i].Id) == named {
+		if strconv.Itoa(int(listed[i].Id)) == named {
 			return &listed[i], nil
 		}
 		if strings.EqualFold(listed[i].Name, named) {
@@ -124,7 +124,7 @@ func (r *registry) oneChannel(ctx context.Context, a channelArg) (*dockhand.GetN
 	default:
 		numbers := make([]string, 0, len(found))
 		for _, k := range found {
-			numbers = append(numbers, strconv.Itoa(k.Id))
+			numbers = append(numbers, strconv.Itoa(int(k.Id)))
 		}
 
 		return nil, fmt.Errorf("%d notification channels are named %q, numbered %s: say which by its number", len(found), named, strings.Join(numbers, " and "))
@@ -145,10 +145,10 @@ func (r *registry) eventTypes(ctx context.Context) ([]eventType, error) {
 	if err != nil {
 		return nil, fmt.Errorf("the events a channel can be told of could not be listed: %w", refusal(err))
 	}
-	out := make([]eventType, 0, len(listed.Model.EventTypes))
-	for i := range listed.Model.EventTypes {
-		e := &listed.Model.EventTypes[i]
-		out = append(out, eventType{ID: e.Id, Means: cmp.Or(e.Description, e.Label), Group: e.Group, Scope: e.Scope})
+	out := make([]eventType, 0, len(listed.Answer.EventTypes))
+	for i := range listed.Answer.EventTypes {
+		e := &listed.Answer.EventTypes[i]
+		out = append(out, eventType{ID: e.Id, Means: cmp.Or(e.Description, e.Label), Group: e.Group, Scope: string(e.Scope)})
 	}
 
 	return out, nil
@@ -208,8 +208,8 @@ type channelRow struct {
 	Environments []channelLink `json:"environments,omitempty" jsonschema:"the environments whose events it is sent: a channel tied to none is told of nothing that happens on a host"`
 }
 
-func channelRowOf(k *dockhand.GetNotificationsResponse, known []eventType, reveal bool) (row channelRow, hidden int) {
-	row = channelRow{ID: k.Id, Name: k.Name, Type: k.Type, Enabled: yes(k.Enabled), To: []string{}}
+func channelRowOf(k *dockhand.GetNotificationsAnswer, known []eventType, reveal bool) (row channelRow, hidden int) {
+	row = channelRow{ID: int(k.Id), Name: k.Name, Type: string(k.Type), Enabled: k.Enabled, To: []string{}}
 	row.Events, row.AllEvents = told(k.EventTypes, known)
 	if k.Config == nil {
 		return row, 0
@@ -246,13 +246,13 @@ func (r *registry) linksOf(ctx context.Context, envs []environment, known []even
 	known = ofHosts(known)
 	out := map[int][]channelLink{}
 	var failed []envFailure
-	for _, answer := range ask(ctx, envs, func(ctx context.Context, env environment) ([]dockhand.GetEnvironmentsByIdNotificationsResponse, error) {
+	for _, answer := range ask(ctx, envs, func(ctx context.Context, env environment) ([]dockhand.GetEnvironmentsByIdNotificationsAnswer, error) {
 		listed, err := r.dock.GetEnvironmentsByIdNotifications(ctx, env.ID)
 		if err != nil {
 			return nil, refusal(err)
 		}
 
-		return listed.Model, nil
+		return listed.Answer, nil
 	}) {
 		if answer.Err != nil {
 			failed = append(failed, envFailure{Env: answer.Env.Name, Error: answer.Err.Error()})
@@ -260,9 +260,9 @@ func (r *registry) linksOf(ctx context.Context, envs []environment, known []even
 			continue
 		}
 		for i := range answer.Value {
-			link := channelLink{Env: answer.Env.Name, Enabled: yes(answer.Value[i].Enabled)}
+			link := channelLink{Env: answer.Env.Name, Enabled: answer.Value[i].Enabled}
 			link.Events, link.AllEvents = told(answer.Value[i].EventTypes, known)
-			out[answer.Value[i].NotificationId] = append(out[answer.Value[i].NotificationId], link)
+			out[int(answer.Value[i].NotificationId)] = append(out[int(answer.Value[i].NotificationId)], link)
 		}
 	}
 
@@ -378,7 +378,7 @@ func registerNotificationTools(r *registry) {
 		out := notificationListOut{Channels: make([]channelRow, 0, len(listed)), Total: len(listed), Failed: failed}
 		for i := range listed {
 			row, hidden := channelRowOf(&listed[i], known, in.RevealSecrets)
-			row.Environments = links[listed[i].Id]
+			row.Environments = links[int(listed[i].Id)]
 			out.Channels, out.Hidden = append(out.Channels, row), out.Hidden+hidden
 		}
 		slices.SortStableFunc(out.Channels, func(a, b channelRow) int { return cmp.Compare(strings.ToLower(a.Name), strings.ToLower(b.Name)) })
@@ -433,8 +433,8 @@ func registerNotificationTools(r *registry) {
 			if failed != nil {
 				return nil, out, fmt.Errorf("%s could not be tried: %w", saved.Name, refusal(failed))
 			}
-			out.Sent, out.Error = yes(answer.Model.Success), answer.Model.Error
-			if !yes(saved.Enabled) {
+			out.Sent, out.Error = answer.Answer.Success, answer.Answer.Error
+			if !saved.Enabled {
 				out.Note = "the channel is switched off: a test goes through all the same, and nothing else does"
 			}
 		case unsaved:
@@ -442,11 +442,11 @@ func registerNotificationTools(r *registry) {
 			if failed != nil {
 				return nil, sentOut{}, failed
 			}
-			answer, failed := r.dock.PostNotificationsTest(ctx, dockhand.PostNotificationsTestRequest{Type: kind, Name: "test", Config: new(dockhand.PostNotificationsTestRequestConfig(cfg))})
+			answer, failed := r.dock.PostNotificationsTest(ctx, dockhand.PostNotificationsTestRequest{Type: dockhand.NotificationType(kind), Name: "test", Config: new(dockhand.PostNotificationsTestRequestConfig(cfg))})
 			if failed != nil {
 				return nil, out, fmt.Errorf("the channel could not be tried: %w", refusal(failed))
 			}
-			out.Sent, out.Error = yes(answer.Model.Success), answer.Model.Error
+			out.Sent, out.Error = answer.Answer.Success, answer.Answer.Error
 			out.Note = "this channel is not saved: nothing on the Dockhand was changed by trying it"
 		default:
 			known, failed := r.eventTypes(ctx)
@@ -475,9 +475,9 @@ func registerNotificationTools(r *registry) {
 			if failed != nil {
 				return nil, out, fmt.Errorf("the event could not be set off: %w", refusal(failed))
 			}
-			out.SentTo, out.Sent = &answer.Model.Sent, answer.Model.Sent > 0
+			out.SentTo, out.Sent = &answer.Answer.Sent, answer.Answer.Sent > 0
 			switch {
-			case !yes(answer.Model.Success):
+			case !answer.Answer.Success:
 				out.Note = "a channel it went to did not take it, which Dockhand does not name: trying each channel by itself says which and why"
 			case !out.Sent && ofHost:
 				out.Note = "it was sent to no channel: none that is switched on is tied to the environment for this event, or the tie itself is switched off"
@@ -522,7 +522,7 @@ func registerNotificationTools(r *registry) {
 		if err != nil {
 			return nil, channelChangeOut{}, err
 		}
-		if slices.ContainsFunc(listed, func(k dockhand.GetNotificationsResponse) bool { return strings.EqualFold(k.Name, name) }) {
+		if slices.ContainsFunc(listed, func(k dockhand.GetNotificationsAnswer) bool { return strings.EqualFold(k.Name, name) }) {
 			return nil, channelChangeOut{}, fmt.Errorf("a notification channel is already named %q: notification_list gives it, and another name is needed for another", name)
 		}
 
@@ -546,7 +546,7 @@ func registerNotificationTools(r *registry) {
 			return nil, out, nil
 		}
 
-		request := dockhand.PostNotificationsRequest{Type: kind, Name: name, Config: &cfg, EventTypes: events}
+		request := dockhand.PostNotificationsRequest{Type: dockhand.NotificationType(kind), Name: name, Config: &cfg, EventTypes: events}
 		if in.Disabled {
 			request.Enabled = new(false)
 		}
@@ -556,7 +556,7 @@ func registerNotificationTools(r *registry) {
 		}
 		out.Changes = append(out.Changes, "saved "+what)
 		out.Note = "it is tied to no environment yet, so it is told of nothing that happens on a host: notification_link ties it to one"
-		back, err := r.oneChannel(ctx, channelArg{Channel: float64(made.Model.Id)})
+		back, err := r.oneChannel(ctx, channelArg{Channel: float64(made.Answer.Id)})
 		if err != nil {
 			out.Note = note("it was saved, and could not be read back: "+err.Error(), out.Note)
 
@@ -612,7 +612,7 @@ func registerNotificationTools(r *registry) {
 			if failed != nil {
 				return nil, out, failed
 			}
-			if slices.ContainsFunc(listed, func(k dockhand.GetNotificationsResponse) bool {
+			if slices.ContainsFunc(listed, func(k dockhand.GetNotificationsAnswer) bool {
 				return k.Id != saved.Id && strings.EqualFold(k.Name, name)
 			}) {
 				return nil, out, fmt.Errorf("another notification channel is named %q, so %s is not renamed to it", name, saved.Name)
@@ -620,7 +620,7 @@ func registerNotificationTools(r *registry) {
 			request.Name = name
 			out.Changes = append(out.Changes, fmt.Sprintf("%s it from %s to %s", done("renamed", "would rename"), saved.Name, name))
 		}
-		if in.Enabled != nil && *in.Enabled != yes(saved.Enabled) {
+		if in.Enabled != nil && *in.Enabled != saved.Enabled {
 			request.Enabled = in.Enabled
 			out.Changes = append(out.Changes, done("switched", "would switch")+" it "+map[bool]string{true: "on", false: "off"}[*in.Enabled])
 		}
@@ -633,7 +633,7 @@ func registerNotificationTools(r *registry) {
 		// for it
 		have := saved.Config
 		if have == nil {
-			have = &dockhand.GetNotificationsResponseConfig{}
+			have = &dockhand.GetNotificationsAnswerConfig{}
 		}
 		switch {
 		case len(in.URLs) > 0:
@@ -650,7 +650,7 @@ func registerNotificationTools(r *registry) {
 				out.Changes = append(out.Changes, fmt.Sprintf("%s where it sends to %s", done("changed", "would change"), strings.Join(short, ", ")))
 			}
 		case in.mail():
-			cfg := dockhand.PutNotificationsByIdRequestConfig{Host: have.Host, Port: have.Port, Secure: have.Secure, Username: have.Username, Password: have.Password, FromEmail: have.FromEmail, FromName: have.FromName, ToEmails: have.ToEmails}
+			cfg := dockhand.PutNotificationsByIdRequestConfig{Host: have.Host, Port: have.Port, Secure: new(have.Secure), Username: have.Username, Password: have.Password, FromEmail: have.FromEmail, FromName: have.FromName, ToEmails: have.ToEmails}
 			var changed []string
 			set := func(what string, differs bool, apply func()) {
 				if differs {
@@ -660,7 +660,7 @@ func registerNotificationTools(r *registry) {
 			}
 			set("its mail server", strings.TrimSpace(in.SMTPHost) != "" && strings.TrimSpace(in.SMTPHost) != have.Host, func() { cfg.Host = strings.TrimSpace(in.SMTPHost) })
 			set("its port", in.SMTPPort != 0 && in.SMTPPort != have.Port, func() { cfg.Port = in.SMTPPort })
-			set("whether it speaks TLS from the first word", in.SMTPSecure != nil && *in.SMTPSecure != yes(have.Secure), func() { cfg.Secure = in.SMTPSecure })
+			set("whether it speaks TLS from the first word", in.SMTPSecure != nil && *in.SMTPSecure != have.Secure, func() { cfg.Secure = in.SMTPSecure })
 			set("the user name it signs in with", in.SMTPUsername != "" && in.SMTPUsername != have.Username, func() { cfg.Username = in.SMTPUsername })
 			set("the password it signs in with", in.SMTPPassword != "", func() { cfg.Password = in.SMTPPassword })
 			set("the address it sends from", strings.TrimSpace(in.FromEmail) != "" && strings.TrimSpace(in.FromEmail) != have.FromEmail, func() { cfg.FromEmail = strings.TrimSpace(in.FromEmail) })
@@ -753,7 +753,7 @@ func registerNotificationTools(r *registry) {
 		}
 		told := func(some []string) string { return cmp.Or(strings.Join(some, ", "), "every event") }
 
-		have := links[saved.Id]
+		have := links[int(saved.Id)]
 		switch {
 		case len(have) == 0:
 			out.Changes = append(out.Changes, fmt.Sprintf("%s %s to %s, for %s", done("tied", "would tie"), saved.Name, env.Name, told(events)))
@@ -799,11 +799,11 @@ func registerNotificationTools(r *registry) {
 		switch {
 		case len(failed) > 0:
 			out.Note = "it was done, and the tie could not be read back: " + failed[0].Error
-		case len(links[saved.Id]) == 0:
+		case len(links[int(saved.Id)]) == 0:
 			return nil, out, fmt.Errorf("the tie of %s to %s was answered as made, and %s lists none", saved.Name, env.Name, env.Name)
 		default:
-			out.Link = &links[saved.Id][0]
-			if out.Link.Enabled && !yes(saved.Enabled) {
+			out.Link = &links[int(saved.Id)][0]
+			if out.Link.Enabled && !saved.Enabled {
 				out.Note = saved.Name + " is itself switched off, so nothing is sent over the tie until notification_edit switches it on"
 			}
 		}
@@ -846,10 +846,10 @@ func registerNotificationTools(r *registry) {
 		if len(failed) > 0 {
 			return nil, out, fmt.Errorf("the channels tied to %s could not be read, so nothing was untied: %s", env.Name, failed[0].Error)
 		}
-		if len(links[saved.Id]) == 0 {
+		if len(links[int(saved.Id)]) == 0 {
 			return nil, out, fmt.Errorf("%s is not tied to %s: notification_list gives the environments each channel is tied to", saved.Name, env.Name)
 		}
-		out.Link = &links[saved.Id][0]
+		out.Link = &links[int(saved.Id)][0]
 		if !in.Confirm {
 			out.Note = fmt.Sprintf("nothing was untied: call again with confirm, and nothing that happens on %s is sent to %s any more", env.Name, saved.Name)
 
@@ -863,7 +863,7 @@ func registerNotificationTools(r *registry) {
 		switch {
 		case len(failed) > 0:
 			out.Note = "it was untied, and that it is could not be read back: " + failed[0].Error
-		case len(links[saved.Id]) > 0:
+		case len(links[int(saved.Id)]) > 0:
 			return nil, out, fmt.Errorf("the untying of %s from %s was answered as done, and %s still lists the tie", saved.Name, env.Name, env.Name)
 		default:
 			out.Removed = true
@@ -898,7 +898,7 @@ func registerNotificationTools(r *registry) {
 			// what it is tied to goes with it: an environment that cannot be asked is no reason not to say the rest
 			if envs, failed := r.environments(ctx); failed == nil {
 				links, _ := r.linksOf(ctx, envs, nil)
-				for _, link := range links[saved.Id] {
+				for _, link := range links[int(saved.Id)] {
 					out.WouldGo = append(out.WouldGo, fmt.Sprintf("its tie to %s: what happens there is no longer sent to it", link.Env))
 				}
 			}
@@ -910,7 +910,7 @@ func registerNotificationTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("%s was not removed: %w", saved.Name, refusal(err))
 		}
-		if !yes(gone.Model.Success) {
+		if !gone.Answer.Success {
 			return nil, out, fmt.Errorf("the removal of %s was answered without its being said to have succeeded: notification_list says whether it is still there", saved.Name)
 		}
 		left, err := r.channels(ctx)
@@ -919,7 +919,7 @@ func registerNotificationTools(r *registry) {
 
 			return nil, out, nil //nolint:nilerr // the removal went through: that it could not be read back is said in the answer
 		}
-		if slices.ContainsFunc(left, func(k dockhand.GetNotificationsResponse) bool { return k.Id == saved.Id }) {
+		if slices.ContainsFunc(left, func(k dockhand.GetNotificationsAnswer) bool { return k.Id == saved.Id }) {
 			return nil, out, fmt.Errorf("the removal of %s was answered as done, and it is still listed", saved.Name)
 		}
 		out.Removed = true

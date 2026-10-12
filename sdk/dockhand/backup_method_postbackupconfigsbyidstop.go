@@ -10,13 +10,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostBackupConfigsByIdStopOperationResponse is the result of PostBackupConfigsByIdStop.
-type PostBackupConfigsByIdStopOperationResponse struct {
+// PostBackupConfigsByIdStopResponse is the result of PostBackupConfigsByIdStop.
+type PostBackupConfigsByIdStopResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostBackupConfigsByIdStop calls POST /api/backup/configs/{id}/stop. Cancel the in-flight backup for a configuration.
-func (c Client) PostBackupConfigsByIdStop(ctx context.Context, id int) (result PostBackupConfigsByIdStopOperationResponse, err error) {
+func (c Client) PostBackupConfigsByIdStop(ctx context.Context, id int) (result PostBackupConfigsByIdStopResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,

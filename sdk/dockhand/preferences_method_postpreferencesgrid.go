@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostPreferencesGridOperationResponse is the result of PostPreferencesGrid.
-type PostPreferencesGridOperationResponse struct {
+// PostPreferencesGridResponse is the result of PostPreferencesGrid.
+//
+// Answer is the PostPreferencesGridAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostPreferencesGridResponse struct {
 	HttpResponse *http.Response
-	Model        *PostPreferencesGridResponse
+	Answer       *PostPreferencesGridAnswer
+	*PostPreferencesGridAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostPreferencesGridResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostPreferencesGridAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostPreferencesGridResponse) Record() (PostPreferencesGridAnswer, error) {
+	if r.Answer == nil {
+		return PostPreferencesGridAnswer{}, errors.New("PostPreferencesGrid answered no PostPreferencesGridAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostPreferencesGrid calls POST /api/preferences/grid. Save column preferences for one data grid and return all grid preferences.
-func (c Client) PostPreferencesGrid(ctx context.Context, input PostPreferencesGridRequest) (result PostPreferencesGridOperationResponse, err error) {
+func (c Client) PostPreferencesGrid(ctx context.Context, input PostPreferencesGridRequest) (result PostPreferencesGridResponse, err error) {
+	result.PostPreferencesGridAnswer = &PostPreferencesGridAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostPreferencesGrid(ctx context.Context, input PostPreferencesGr
 		return
 	}
 
-	var model PostPreferencesGridResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostPreferencesGridAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostPreferencesGridAnswer = result.Answer
 
 	return
 }

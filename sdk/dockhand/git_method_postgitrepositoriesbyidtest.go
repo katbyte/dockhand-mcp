@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostGitRepositoriesByIdTestOperationResponse is the result of PostGitRepositoriesByIdTest.
-type PostGitRepositoriesByIdTestOperationResponse struct {
+// PostGitRepositoriesByIdTestResponse is the result of PostGitRepositoriesByIdTest.
+//
+// Answer is the PostGitRepositoriesByIdTestAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostGitRepositoriesByIdTestResponse struct {
 	HttpResponse *http.Response
-	Model        *PostGitRepositoriesByIdTestResponse
+	Answer       *PostGitRepositoriesByIdTestAnswer
+	*PostGitRepositoriesByIdTestAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostGitRepositoriesByIdTestResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostGitRepositoriesByIdTestAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostGitRepositoriesByIdTestResponse) Record() (PostGitRepositoriesByIdTestAnswer, error) {
+	if r.Answer == nil {
+		return PostGitRepositoriesByIdTestAnswer{}, errors.New("PostGitRepositoriesByIdTest answered no PostGitRepositoriesByIdTestAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostGitRepositoriesByIdTest calls POST /api/git/repositories/{id}/test. Test connectivity/authentication to a saved repository using its stored credential.
-func (c Client) PostGitRepositoriesByIdTest(ctx context.Context, id int) (result PostGitRepositoriesByIdTestOperationResponse, err error) {
+func (c Client) PostGitRepositoriesByIdTest(ctx context.Context, id GitRepositoryID) (result PostGitRepositoriesByIdTestResponse, err error) {
+	result.PostGitRepositoriesByIdTestAnswer = &PostGitRepositoriesByIdTestAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
-		Path:       fmt.Sprintf("/api/git/repositories/%d/test", id),
+		Path:       fmt.Sprintf("/api/git/repositories/%s/test", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) PostGitRepositoriesByIdTest(ctx context.Context, id int) (result
 		return
 	}
 
-	var model PostGitRepositoriesByIdTestResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostGitRepositoriesByIdTestAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostGitRepositoriesByIdTestAnswer = result.Answer
 
 	return
 }

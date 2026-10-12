@@ -81,9 +81,9 @@ type uncheckedUpdate struct {
 // hostUpdates is what one environment says of newer images: what it has noted, what a fresh check found when one was asked for, and the containers it
 // has now.
 type hostUpdates struct {
-	Noted   []dockhand.GetContainersPendingUpdatesResponsePendingUpdates
-	Checked *dockhand.PostContainersCheckUpdatesResponse
-	Has     map[string]dockhand.GetContainersResponse
+	Noted   []dockhand.GetContainersPendingUpdatesAnswerPendingUpdates
+	Checked *dockhand.PostContainersCheckUpdatesAnswer
+	Has     map[string]dockhand.GetContainersAnswer
 }
 
 // autoUpdate is one container's schedule for being updated by Dockhand itself.
@@ -127,19 +127,19 @@ func registerContainerUpdateTools(r *registry) {
 		out := containerUpdatesOut{Updates: []waitingUpdate{}}
 		var ids []located
 		for _, answer := range ask(ctx, envs, func(ctx context.Context, env environment) (hostUpdates, error) {
-			found := hostUpdates{Has: map[string]dockhand.GetContainersResponse{}}
+			found := hostUpdates{Has: map[string]dockhand.GetContainersAnswer{}}
 			if in.Check {
-				checked, failed := r.dock.PostContainersCheckUpdates(ctx, dockhand.PostContainersCheckUpdatesOperationOptions{Env: &env.ID})
+				checked, failed := r.dock.PostContainersCheckUpdates(ctx, dockhand.PostContainersCheckUpdatesOptions{Env: env.ID})
 				if failed != nil {
 					return found, fmt.Errorf("the registries could not be asked: %w", refusal(failed))
 				}
-				found.Checked = checked.Model
+				found.Checked = checked.Answer
 			}
-			noted, failed := r.dock.GetContainersPendingUpdates(ctx, dockhand.GetContainersPendingUpdatesOperationOptions{Env: &env.ID})
+			noted, failed := r.dock.GetContainersPendingUpdates(ctx, dockhand.GetContainersPendingUpdatesOptions{Env: env.ID})
 			if failed != nil {
 				return found, refusal(failed)
 			}
-			found.Noted = noted.Model.PendingUpdates
+			found.Noted = noted.Answer.PendingUpdates
 
 			containers, failed := r.containersOf(ctx, env)
 			if failed != nil {
@@ -164,7 +164,7 @@ func registerContainerUpdateTools(r *registry) {
 
 					continue
 				}
-				row := waitingUpdate{Env: answer.Env.Name, Container: n.ContainerName, Image: n.CurrentImage, NewerImage: yes(n.HasImageUpdate), CheckedAt: n.CheckedAt}
+				row := waitingUpdate{Env: answer.Env.Name, Container: n.ContainerName, Image: n.CurrentImage, NewerImage: n.HasImageUpdate, CheckedAt: when(n.CheckedAt)}
 				if newer := n.NewerVersion; newer != nil {
 					row.NewerTag, row.Step, row.Versions = newer.Tag, newer.Bump, newer.Skipped
 				}
@@ -176,7 +176,7 @@ func registerContainerUpdateTools(r *registry) {
 				for i := range checked.Results {
 					result := &checked.Results[i]
 					why := result.Error
-					if yes(result.UpdateDisabled) {
+					if result.UpdateDisabled {
 						why = "it carries the label " + labelUpdate + "=" + updateOff + ", which tells Dockhand to leave its image alone"
 					}
 					if why != "" {
@@ -198,21 +198,21 @@ func registerContainerUpdateTools(r *registry) {
 					continue
 				}
 				asked++
-				found, failed := r.dock.GetContainersByIdVersionNotes(ctx, ids[i].Container.Id, dockhand.GetContainersByIdVersionNotesOperationOptions{Env: &ids[i].Env.ID, Versions: strings.Join(row.Versions, ",")})
+				found, failed := r.dock.GetContainersByIdVersionNotes(ctx, ids[i].Container.Id, dockhand.GetContainersByIdVersionNotesOptions{Env: ids[i].Env.ID, Versions: strings.Join(row.Versions, ",")})
 				if failed != nil {
 					out.Note = note(out.Note, fmt.Sprintf("the release notes of %s could not be fetched: %s", row.Container, refusal(failed)))
 
 					continue
 				}
-				limited = limited || yes(found.Model.RateLimited)
-				row.Changelog = found.Model.ChangelogUrl
-				for j := range found.Model.Notes {
-					n := &found.Model.Notes[j]
+				limited = limited || found.Answer.RateLimited
+				row.Changelog = found.Answer.ChangelogUrl
+				for j := range found.Answer.Notes {
+					n := &found.Answer.Notes[j]
 					body := strings.TrimSpace(n.Body)
 					if utf8.RuneCountInString(body) > noteChars {
 						body = string([]rune(body)[:noteChars]) + " ..."
 					}
-					row.Notes = append(row.Notes, releaseNote{Version: n.Version, Name: n.Name, Published: n.PublishedAt, URL: n.Url, Body: body})
+					row.Notes = append(row.Notes, releaseNote{Version: n.Version, Name: n.Name, Published: when(n.PublishedAt), URL: n.Url, Body: body})
 				}
 			}
 			if limited {
@@ -259,21 +259,21 @@ func registerContainerUpdateTools(r *registry) {
 		}
 		out := updatesClearOut{Env: env.Name, Cleared: []string{}, DryRun: in.DryRun}
 
-		noted, err := r.dock.GetContainersPendingUpdates(ctx, dockhand.GetContainersPendingUpdatesOperationOptions{Env: &env.ID})
+		noted, err := r.dock.GetContainersPendingUpdates(ctx, dockhand.GetContainersPendingUpdatesOptions{Env: env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("what Dockhand has noted for %s could not be read, so nothing was cleared: %w", env.Name, refusal(err))
 		}
 		want := strings.TrimPrefix(strings.TrimSpace(in.Container), "/")
-		var forget []dockhand.GetContainersPendingUpdatesResponsePendingUpdates
-		for i := range noted.Model.PendingUpdates {
-			n := noted.Model.PendingUpdates[i]
+		var forget []dockhand.GetContainersPendingUpdatesAnswerPendingUpdates
+		for i := range noted.Answer.PendingUpdates {
+			n := noted.Answer.PendingUpdates[i]
 			if want == "" || n.ContainerName == want || (len(want) >= minIDPrefix && strings.HasPrefix(n.ContainerId, want)) {
 				forget = append(forget, n)
 				out.Cleared = append(out.Cleared, n.ContainerName)
 			}
 		}
 		slices.Sort(out.Cleared)
-		out.Left = len(noted.Model.PendingUpdates)
+		out.Left = len(noted.Answer.PendingUpdates)
 		switch {
 		case len(forget) == 0 && want != "":
 			out.Note = fmt.Sprintf("nothing was done: Dockhand has nothing noted for a container named %s on %s", want, env.Name)
@@ -289,10 +289,10 @@ func registerContainerUpdateTools(r *registry) {
 		}
 
 		if want == "" {
-			_, err = r.dock.DeleteContainersPendingUpdates(ctx, dockhand.DeleteContainersPendingUpdatesOperationOptions{Env: &env.ID})
+			_, err = r.dock.DeleteContainersPendingUpdates(ctx, dockhand.DeleteContainersPendingUpdatesOptions{Env: env.ID})
 		}
 		for i := 0; want != "" && err == nil && i < len(forget); i++ {
-			_, err = r.dock.DeleteContainersPendingUpdates(ctx, dockhand.DeleteContainersPendingUpdatesOperationOptions{Env: &env.ID, ContainerId: forget[i].ContainerId})
+			_, err = r.dock.DeleteContainersPendingUpdates(ctx, dockhand.DeleteContainersPendingUpdatesOptions{Env: env.ID, ContainerId: forget[i].ContainerId})
 		}
 		if err != nil {
 			out.Cleared = []string{}
@@ -300,13 +300,13 @@ func registerContainerUpdateTools(r *registry) {
 			return nil, out, fmt.Errorf("what Dockhand has noted for %s was not all cleared: %w", env.Name, refusal(err))
 		}
 
-		after, err := r.dock.GetContainersPendingUpdates(ctx, dockhand.GetContainersPendingUpdatesOperationOptions{Env: &env.ID})
+		after, err := r.dock.GetContainersPendingUpdates(ctx, dockhand.GetContainersPendingUpdatesOptions{Env: env.ID})
 		if err != nil {
 			out.Note = "what is left could not be read back: " + refusal(err).Error()
 
 			return nil, out, nil
 		}
-		out.Left = len(after.Model.PendingUpdates)
+		out.Left = len(after.Answer.PendingUpdates)
 
 		return nil, out, nil
 	})
@@ -333,18 +333,18 @@ func registerContainerUpdateTools(r *registry) {
 		want := strings.TrimPrefix(strings.TrimSpace(in.Container), "/")
 
 		type scheduled struct {
-			Kept map[string]dockhand.GetAutoUpdateResponse
-			Has  []dockhand.GetContainersResponse
+			Kept map[string]dockhand.GetAutoUpdateAnswer
+			Has  []dockhand.GetContainersAnswer
 		}
 		out := autoUpdateOut{Schedules: []autoUpdate{}}
 		for _, answer := range ask(ctx, envs, func(ctx context.Context, env environment) (scheduled, error) {
-			kept, failed := r.dock.GetAutoUpdate(ctx, dockhand.GetAutoUpdateOperationOptions{Env: &env.ID})
+			kept, failed := r.dock.GetAutoUpdate(ctx, dockhand.GetAutoUpdateOptions{Env: env.ID})
 			if failed != nil {
 				return scheduled{}, refusal(failed)
 			}
 			has, failed := r.containersOf(ctx, env)
 
-			return scheduled{Kept: kept.Model, Has: has}, failed
+			return scheduled{Kept: kept.Answer, Has: has}, failed
 		}) {
 			if answer.Err != nil {
 				out.Failed = append(out.Failed, envFailure{Env: answer.Env.Name, Error: answer.Err.Error()})
@@ -357,11 +357,11 @@ func registerContainerUpdateTools(r *registry) {
 				}
 				kept := answer.Value.Kept[name]
 				row := autoUpdate{Env: answer.Env.Name, Container: name, Cron: kept.CronExpression, Kind: kept.ScheduleType, HoldBack: kept.VulnerabilityCriteria}
-				row.Gone = !slices.ContainsFunc(answer.Value.Has, func(c dockhand.GetContainersResponse) bool { return c.Name == name })
+				row.Gone = !slices.ContainsFunc(answer.Value.Has, func(c dockhand.GetContainersAnswer) bool { return c.Name == name })
 				if want != "" {
 					// the list leaves out when the schedule last ran, which one container's own record has
-					if one, failed := r.dock.GetAutoUpdateByContainerName(ctx, name, dockhand.GetAutoUpdateByContainerNameOperationOptions{Env: &answer.Env.ID}); failed == nil {
-						row.LastChecked, row.LastUpdated = one.Model.LastChecked, one.Model.LastUpdated
+					if one, failed := r.dock.GetAutoUpdateByContainerName(ctx, name, dockhand.GetAutoUpdateByContainerNameOptions{Env: answer.Env.ID}); failed == nil {
+						row.LastChecked, row.LastUpdated = when(one.Answer.LastChecked), when(one.Answer.LastUpdated)
 					}
 				}
 				out.Schedules = append(out.Schedules, row)
@@ -430,20 +430,20 @@ func registerContainerUpdateTools(r *registry) {
 		out := autoUpdateSetOut{Env: env.Name, Container: name, Changes: []string{}, DryRun: in.DryRun}
 
 		// a container with no schedule answers what one would be by default, with enabled false
-		has, err := r.dock.GetAutoUpdateByContainerName(ctx, name, dockhand.GetAutoUpdateByContainerNameOperationOptions{Env: &env.ID})
+		has, err := r.dock.GetAutoUpdateByContainerName(ctx, name, dockhand.GetAutoUpdateByContainerNameOptions{Env: env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("the schedule of %s on %s could not be read, so nothing was changed: %w", name, env.Name, refusal(err))
 		}
-		was := has.Model
-		show := func(kept *dockhand.GetAutoUpdateByContainerNameResponse) {
-			if out.Enabled = yes(kept.Enabled); out.Enabled {
+		was := has.Answer
+		show := func(kept *dockhand.GetAutoUpdateByContainerNameAnswer) {
+			if out.Enabled = kept.Enabled; out.Enabled {
 				out.Cron, out.Kind, out.HoldBack = kept.CronExpression, kept.ScheduleType, kept.VulnerabilityCriteria
 			}
 		}
 		show(was)
 
 		if !in.Enabled {
-			if !yes(was.Enabled) {
+			if !was.Enabled {
 				out.Note = "nothing was done: Dockhand does not update it by itself"
 
 				return nil, out, nil
@@ -453,24 +453,24 @@ func registerContainerUpdateTools(r *registry) {
 
 				return nil, out, nil
 			}
-			if _, err := r.dock.DeleteAutoUpdateByContainerName(ctx, name, dockhand.DeleteAutoUpdateByContainerNameOperationOptions{Env: &env.ID}); err != nil {
+			if _, err := r.dock.DeleteAutoUpdateByContainerName(ctx, name, dockhand.DeleteAutoUpdateByContainerNameOptions{Env: env.ID}); err != nil {
 				return nil, out, fmt.Errorf("the schedule of %s on %s was not removed: %w", name, env.Name, refusal(err))
 			}
 			out.Changes = append(out.Changes, "stopped Dockhand updating "+name+" by itself and forgot its schedule, "+was.CronExpression)
 		} else {
 			// what is not given is kept from the schedule it has, and a new one gets the defaults
-			if cron == "" && yes(was.Enabled) {
+			if cron == "" && was.Enabled {
 				cron = was.CronExpression
 			}
 			cron = cmp.Or(cron, defaultCron)
-			if hold == "" && yes(was.Enabled) {
+			if hold == "" && was.Enabled {
 				hold = was.VulnerabilityCriteria
 			}
 			hold = cmp.Or(hold, holdNever)
 
 			var would, did string
 			switch {
-			case !yes(was.Enabled):
+			case !was.Enabled:
 				would, did = fmt.Sprintf("would set Dockhand to update %s by itself at %s, holding an update back: %s", name, cron, hold), fmt.Sprintf("set Dockhand to update %s by itself at %s, holding an update back: %s", name, cron, hold)
 			case cron != was.CronExpression || hold != was.VulnerabilityCriteria:
 				would, did = fmt.Sprintf("would change the schedule of %s from %s (holding back: %s) to %s (holding back: %s)", name, was.CronExpression, was.VulnerabilityCriteria, cron, hold), fmt.Sprintf("changed the schedule of %s from %s (holding back: %s) to %s (holding back: %s)", name, was.CronExpression, was.VulnerabilityCriteria, cron, hold)
@@ -487,20 +487,20 @@ func registerContainerUpdateTools(r *registry) {
 
 				return nil, out, nil
 			}
-			if _, err := r.dock.PostAutoUpdateByContainerName(ctx, name, dockhand.PostAutoUpdateByContainerNameRequest{Enabled: new(true), CronExpression: cron, VulnerabilityCriteria: hold}, dockhand.PostAutoUpdateByContainerNameOperationOptions{Env: &env.ID}); err != nil {
+			if _, err := r.dock.PostAutoUpdateByContainerName(ctx, name, dockhand.PostAutoUpdateByContainerNameRequest{Enabled: new(true), CronExpression: cron, VulnerabilityCriteria: hold}, dockhand.PostAutoUpdateByContainerNameOptions{Env: env.ID}); err != nil {
 				return nil, out, fmt.Errorf("the schedule of %s on %s was not saved: %w", name, env.Name, refusal(err))
 			}
 			out.Changes = append(out.Changes, did)
 		}
 
-		after, err := r.dock.GetAutoUpdateByContainerName(ctx, name, dockhand.GetAutoUpdateByContainerNameOperationOptions{Env: &env.ID})
+		after, err := r.dock.GetAutoUpdateByContainerName(ctx, name, dockhand.GetAutoUpdateByContainerNameOptions{Env: env.ID})
 		if err != nil {
 			out.Note = noted(out.Note, "the schedule as it is now could not be read back: "+refusal(err).Error())
 
 			return nil, out, nil
 		}
 		out.Cron, out.Kind, out.HoldBack = "", "", ""
-		show(after.Model)
+		show(after.Answer)
 		if out.Enabled != in.Enabled {
 			out.Note = noted(out.Note, "Dockhand took the change and the schedule read back is not as it was asked for")
 		}

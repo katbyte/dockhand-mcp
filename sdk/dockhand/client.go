@@ -32,7 +32,8 @@ func New(baseURL, token string, opts ...client.Option) (*Client, error) {
 	if token == "" {
 		return nil, errors.New("a token is required")
 	}
-	c, err := service.New(baseURL, client.Bearer(token), opts...)
+	// the credential is a secret whatever the authorizer makes of it, so no error repeats it
+	c, err := service.New(baseURL, client.Bearer(token), append(opts[:len(opts):len(opts)], client.WithSecrets(token))...)
 	if err != nil {
 		return nil, err
 	}

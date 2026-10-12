@@ -13,7 +13,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "RegistryID"
           }
         }
       ],
@@ -21,7 +22,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteRegistriesByIdResponse"
+          "ReferenceName": "DeleteRegistriesByIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -40,7 +41,7 @@
           "Type": "List",
           "NestedItem": {
             "Type": "Reference",
-            "ReferenceName": "GetRegistriesResponse"
+            "ReferenceName": "GetRegistriesAnswer"
           }
         }
       },
@@ -59,7 +60,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "RegistryID"
           }
         }
       ],
@@ -67,7 +69,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetRegistriesByIdResponse"
+          "ReferenceName": "GetRegistriesByIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -91,7 +93,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostRegistriesResponse"
+          "ReferenceName": "PostRegistriesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -109,7 +111,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "RegistryID"
           }
         }
       ],
@@ -117,7 +120,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostRegistriesByIdDefaultResponse"
+          "ReferenceName": "PostRegistriesByIdDefaultAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -141,7 +144,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostRegistriesTestResponse"
+          "ReferenceName": "PostRegistriesTestAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -159,7 +162,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "RegistryID"
           }
         }
       ],
@@ -174,7 +178,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PutRegistriesByIdResponse"
+          "ReferenceName": "PutRegistriesByIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -184,7 +188,7 @@
   ],
   "Models": [
     {
-      "Name": "DeleteRegistriesByIdResponse",
+      "Name": "DeleteRegistriesByIdAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -197,13 +201,13 @@
       ]
     },
     {
-      "Name": "GetRegistriesByIdResponse",
+      "Name": "GetRegistriesAnswer",
       "Fields": [
         {
           "Name": "CreatedAt",
           "JsonName": "createdAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -218,7 +222,8 @@
           "Name": "Id",
           "JsonName": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "RegistryID"
           },
           "Required": true
         },
@@ -241,7 +246,7 @@
           "Name": "UpdatedAt",
           "JsonName": "updatedAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -263,13 +268,13 @@
       ]
     },
     {
-      "Name": "GetRegistriesResponse",
+      "Name": "GetRegistriesByIdAnswer",
       "Fields": [
         {
           "Name": "CreatedAt",
           "JsonName": "createdAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -284,7 +289,8 @@
           "Name": "Id",
           "JsonName": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "RegistryID"
           },
           "Required": true
         },
@@ -307,7 +313,7 @@
           "Name": "UpdatedAt",
           "JsonName": "updatedAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -329,7 +335,74 @@
       ]
     },
     {
-      "Name": "PostRegistriesByIdDefaultResponse",
+      "Name": "PostRegistriesAnswer",
+      "Fields": [
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "HasCredentials",
+          "JsonName": "hasCredentials",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "RegistryID"
+          },
+          "Required": true
+        },
+        {
+          "Name": "IsDefault",
+          "JsonName": "isDefault",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Description": "the user name it signs in to the registry with; null for one with no credentials",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostRegistriesByIdDefaultAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -384,113 +457,15 @@
       ]
     },
     {
-      "Name": "PostRegistriesResponse",
-      "Fields": [
-        {
-          "Name": "CreatedAt",
-          "JsonName": "createdAt",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "HasCredentials",
-          "JsonName": "hasCredentials",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Id",
-          "JsonName": "id",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        },
-        {
-          "Name": "IsDefault",
-          "JsonName": "isDefault",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "Name",
-          "JsonName": "name",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "UpdatedAt",
-          "JsonName": "updatedAt",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Url",
-          "JsonName": "url",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Username",
-          "JsonName": "username",
-          "Description": "the user name it signs in to the registry with; null for one with no credentials",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostRegistriesTestRequest",
-      "Fields": [
-        {
-          "Name": "Password",
-          "JsonName": "password",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "RegistryId",
-          "JsonName": "registryId",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Url",
-          "JsonName": "url",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Username",
-          "JsonName": "username",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PostRegistriesTestResponse",
+      "Name": "PostRegistriesTestAnswer",
       "Fields": [
         {
           "Name": "Authenticated",
           "JsonName": "authenticated",
           "Type": {
             "Type": "Boolean"
-          }
+          },
+          "Nullable": true
         },
         {
           "Name": "Connectivity",
@@ -515,6 +490,107 @@
             "Type": "Boolean"
           },
           "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostRegistriesTestRequest",
+      "Fields": [
+        {
+          "Name": "Password",
+          "JsonName": "password",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "RegistryId",
+          "JsonName": "registryId",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "RegistryID"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutRegistriesByIdAnswer",
+      "Fields": [
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "HasCredentials",
+          "JsonName": "hasCredentials",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "RegistryID"
+          },
+          "Required": true
+        },
+        {
+          "Name": "IsDefault",
+          "JsonName": "isDefault",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Username",
+          "JsonName": "username",
+          "Description": "the user name it signs in to the registry with; null for one with no credentials",
+          "Type": {
+            "Type": "String"
+          }
         }
       ]
     },
@@ -552,72 +628,6 @@
         {
           "Name": "Username",
           "JsonName": "username",
-          "Type": {
-            "Type": "String"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "PutRegistriesByIdResponse",
-      "Fields": [
-        {
-          "Name": "CreatedAt",
-          "JsonName": "createdAt",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "HasCredentials",
-          "JsonName": "hasCredentials",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Id",
-          "JsonName": "id",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        },
-        {
-          "Name": "IsDefault",
-          "JsonName": "isDefault",
-          "Type": {
-            "Type": "Boolean"
-          }
-        },
-        {
-          "Name": "Name",
-          "JsonName": "name",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "UpdatedAt",
-          "JsonName": "updatedAt",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Url",
-          "JsonName": "url",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Username",
-          "JsonName": "username",
-          "Description": "the user name it signs in to the registry with; null for one with no credentials",
           "Type": {
             "Type": "String"
           }

@@ -4,32 +4,55 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetDebugMemoryOperationResponse is the result of GetDebugMemory.
-type GetDebugMemoryOperationResponse struct {
+// GetDebugMemoryResponse is the result of GetDebugMemory.
+//
+// Answer is the GetDebugMemoryAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetDebugMemoryResponse struct {
 	HttpResponse *http.Response
-	Model        *GetDebugMemoryResponse
+	Answer       *GetDebugMemoryAnswer
+	*GetDebugMemoryAnswer
 }
 
-// GetDebugMemoryOperationOptions holds the query and header parameters of GetDebugMemory.
-type GetDebugMemoryOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetDebugMemoryResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetDebugMemoryAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetDebugMemoryResponse) Record() (GetDebugMemoryAnswer, error) {
+	if r.Answer == nil {
+		return GetDebugMemoryAnswer{}, errors.New("GetDebugMemory answered no GetDebugMemoryAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetDebugMemoryOptions holds the query and header parameters of GetDebugMemory.
+type GetDebugMemoryOptions struct {
 	// Force garbage collection before reporting when true (requires Node started with --expose-gc)
 	Gc *bool
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetDebugMemoryOperationOptions) ToHeaders() *client.Headers {
+func (o GetDebugMemoryOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetDebugMemoryOperationOptions) ToQuery() *client.QueryParams {
+func (o GetDebugMemoryOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Gc != nil {
 		out.Append("gc", strconv.FormatBool(*o.Gc))
@@ -38,13 +61,23 @@ func (o GetDebugMemoryOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetDebugMemory calls GET /api/debug/memory. Return Node.js/V8 memory diagnostics; only enabled when MEMORY_MONITOR=true.
-func (c Client) GetDebugMemory(ctx context.Context, options GetDebugMemoryOperationOptions) (result GetDebugMemoryOperationResponse, err error) {
+func (c Client) GetDebugMemory(ctx context.Context, options ...GetDebugMemoryOptions) (result GetDebugMemoryResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetDebugMemory takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetDebugMemoryOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetDebugMemoryAnswer = &GetDebugMemoryAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/debug/memory",
 	}
 
@@ -62,11 +95,12 @@ func (c Client) GetDebugMemory(ctx context.Context, options GetDebugMemoryOperat
 		return
 	}
 
-	var model GetDebugMemoryResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetDebugMemoryAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetDebugMemoryAnswer = result.Answer
 
 	return
 }

@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostAuthLogoutOperationResponse is the result of PostAuthLogout.
-type PostAuthLogoutOperationResponse struct {
+// PostAuthLogoutResponse is the result of PostAuthLogout.
+//
+// Answer is the PostAuthLogoutAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostAuthLogoutResponse struct {
 	HttpResponse *http.Response
-	Model        *PostAuthLogoutResponse
+	Answer       *PostAuthLogoutAnswer
+	*PostAuthLogoutAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostAuthLogoutResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostAuthLogoutAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostAuthLogoutResponse) Record() (PostAuthLogoutAnswer, error) {
+	if r.Answer == nil {
+		return PostAuthLogoutAnswer{}, errors.New("PostAuthLogout answered no PostAuthLogoutAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostAuthLogout calls POST /api/auth/logout. Destroy the current session (clears the dockhand_session cookie).
-func (c Client) PostAuthLogout(ctx context.Context) (result PostAuthLogoutOperationResponse, err error) {
+func (c Client) PostAuthLogout(ctx context.Context) (result PostAuthLogoutResponse, err error) {
+	result.PostAuthLogoutAnswer = &PostAuthLogoutAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) PostAuthLogout(ctx context.Context) (result PostAuthLogoutOperat
 		return
 	}
 
-	var model PostAuthLogoutResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostAuthLogoutAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostAuthLogoutAnswer = result.Answer
 
 	return
 }

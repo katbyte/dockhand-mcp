@@ -4,22 +4,45 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetSettingsScannerOperationResponse is the result of GetSettingsScanner.
-type GetSettingsScannerOperationResponse struct {
+// GetSettingsScannerResponse is the result of GetSettingsScanner.
+//
+// Answer is the GetSettingsScannerAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetSettingsScannerResponse struct {
 	HttpResponse *http.Response
-	Model        *GetSettingsScannerResponse
+	Answer       *GetSettingsScannerAnswer
+	*GetSettingsScannerAnswer
 }
 
-// GetSettingsScannerOperationOptions holds the query and header parameters of GetSettingsScanner.
-type GetSettingsScannerOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetSettingsScannerResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetSettingsScannerAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetSettingsScannerResponse) Record() (GetSettingsScannerAnswer, error) {
+	if r.Answer == nil {
+		return GetSettingsScannerAnswer{}, errors.New("GetSettingsScanner answered no GetSettingsScannerAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetSettingsScannerOptions holds the query and header parameters of GetSettingsScanner.
+type GetSettingsScannerOptions struct {
 	// Environment id to read scanner settings for (falls back to global defaults) (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// When true, also check the scanner images for available updates (slower)
 	CheckUpdates *bool
@@ -32,16 +55,16 @@ type GetSettingsScannerOperationOptions struct {
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetSettingsScannerOperationOptions) ToHeaders() *client.Headers {
+func (o GetSettingsScannerOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetSettingsScannerOperationOptions) ToQuery() *client.QueryParams {
+func (o GetSettingsScannerOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	if o.CheckUpdates != nil {
 		out.Append("checkUpdates", strconv.FormatBool(*o.CheckUpdates))
@@ -56,13 +79,23 @@ func (o GetSettingsScannerOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetSettingsScanner calls GET /api/settings/scanner. Get the vulnerability-scanner settings for an environment, plus (unless settingsOnly) scanner availability, versions and optional update info.
-func (c Client) GetSettingsScanner(ctx context.Context, options GetSettingsScannerOperationOptions) (result GetSettingsScannerOperationResponse, err error) {
+func (c Client) GetSettingsScanner(ctx context.Context, options ...GetSettingsScannerOptions) (result GetSettingsScannerResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetSettingsScanner takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetSettingsScannerOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetSettingsScannerAnswer = &GetSettingsScannerAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/settings/scanner",
 	}
 
@@ -80,11 +113,12 @@ func (c Client) GetSettingsScanner(ctx context.Context, options GetSettingsScann
 		return
 	}
 
-	var model GetSettingsScannerResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetSettingsScannerAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetSettingsScannerAnswer = result.Answer
 
 	return
 }

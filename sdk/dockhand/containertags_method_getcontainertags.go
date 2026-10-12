@@ -4,47 +4,61 @@ package dockhand
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetContainerTagsOperationResponse is the result of GetContainerTags.
-type GetContainerTagsOperationResponse struct {
+// GetContainerTagsResponse is the result of GetContainerTags.
+type GetContainerTagsResponse struct {
 	HttpResponse *http.Response
-	Model        map[string][]int
+	Answer       map[string][]int
 }
 
-// GetContainerTagsOperationOptions holds the query and header parameters of GetContainerTags.
-type GetContainerTagsOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetContainerTagsResponse) Answered() bool { return r.Answer != nil }
+
+// GetContainerTagsOptions holds the query and header parameters of GetContainerTags.
+type GetContainerTagsOptions struct {
 	// Environment id
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetContainerTagsOperationOptions) ToHeaders() *client.Headers {
+func (o GetContainerTagsOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetContainerTagsOperationOptions) ToQuery() *client.QueryParams {
+func (o GetContainerTagsOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetContainerTags calls GET /api/container-tags. List all container tag assignments for an environment as a name -> tagIds map.
-func (c Client) GetContainerTags(ctx context.Context, options GetContainerTagsOperationOptions) (result GetContainerTagsOperationResponse, err error) {
+func (c Client) GetContainerTags(ctx context.Context, options ...GetContainerTagsOptions) (result GetContainerTagsResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetContainerTags takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetContainerTagsOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/container-tags",
 	}
 
@@ -62,7 +76,7 @@ func (c Client) GetContainerTags(ctx context.Context, options GetContainerTagsOp
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

@@ -83,7 +83,8 @@
           "In": "Query",
           "Description": "Optional environment id for an early enterprise access check; the authoritative gate resolves the snapshot's owning environment server-side (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -122,7 +123,8 @@
           "In": "Query",
           "Description": "Filter by environment id (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -212,7 +214,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetBackupInstanceResponse"
+          "ReferenceName": "GetBackupInstanceAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -304,7 +306,8 @@
           "In": "Query",
           "Description": "Environment context for access checks",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -485,7 +488,8 @@
           "In": "Query",
           "Description": "Environment ID the stack belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -522,7 +526,8 @@
           "In": "Query",
           "Description": "Environment ID the stack belongs to (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -864,7 +869,7 @@
   ],
   "Models": [
     {
-      "Name": "GetBackupInstanceResponse",
+      "Name": "GetBackupInstanceAnswer",
       "Fields": [
         {
           "Name": "InstanceId",
@@ -905,7 +910,8 @@
           "Name": "EnvironmentId",
           "JsonName": "environmentId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -1216,7 +1222,8 @@
           "Name": "EnvironmentId",
           "JsonName": "environmentId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -1259,7 +1266,8 @@
           "Name": "TargetEnvId",
           "JsonName": "targetEnvId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -1327,7 +1335,8 @@
           "Name": "EnvironmentId",
           "JsonName": "environmentId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -1419,7 +1428,8 @@
           "Name": "EnvironmentId",
           "JsonName": "environmentId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {

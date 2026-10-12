@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,35 +13,57 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetContainersByIdComposeOperationResponse is the result of GetContainersByIdCompose.
-type GetContainersByIdComposeOperationResponse struct {
+// GetContainersByIdComposeResponse is the result of GetContainersByIdCompose.
+//
+// Answer is the GetContainersByIdComposeAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetContainersByIdComposeResponse struct {
 	HttpResponse *http.Response
-	Model        *GetContainersByIdComposeResponse
+	Answer       *GetContainersByIdComposeAnswer
+	*GetContainersByIdComposeAnswer
 }
 
-// GetContainersByIdComposeOperationOptions holds the query and header parameters of GetContainersByIdCompose.
-type GetContainersByIdComposeOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetContainersByIdComposeResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetContainersByIdComposeAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetContainersByIdComposeResponse) Record() (GetContainersByIdComposeAnswer, error) {
+	if r.Answer == nil {
+		return GetContainersByIdComposeAnswer{}, errors.New("GetContainersByIdCompose answered no GetContainersByIdComposeAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetContainersByIdComposeOptions holds the query and header parameters of GetContainersByIdCompose.
+type GetContainersByIdComposeOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetContainersByIdComposeOperationOptions) ToHeaders() *client.Headers {
+func (o GetContainersByIdComposeOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetContainersByIdComposeOperationOptions) ToQuery() *client.QueryParams {
+func (o GetContainersByIdComposeOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetContainersByIdCompose calls GET /api/containers/{id}/compose. Generate a docker-compose service definition from a running container's inspect (requires the 'view' permission).
-func (c Client) GetContainersByIdCompose(ctx context.Context, id string, options GetContainersByIdComposeOperationOptions) (result GetContainersByIdComposeOperationResponse, err error) {
+func (c Client) GetContainersByIdCompose(ctx context.Context, id string, options GetContainersByIdComposeOptions) (result GetContainersByIdComposeResponse, err error) {
+	result.GetContainersByIdComposeAnswer = &GetContainersByIdComposeAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -64,11 +87,12 @@ func (c Client) GetContainersByIdCompose(ctx context.Context, id string, options
 		return
 	}
 
-	var model GetContainersByIdComposeResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetContainersByIdComposeAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetContainersByIdComposeAnswer = result.Answer
 
 	return
 }

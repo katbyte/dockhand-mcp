@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,41 +13,72 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetNetworksByIdOperationResponse is the result of GetNetworksById.
-type GetNetworksByIdOperationResponse struct {
+// GetNetworksByIdResponse is the result of GetNetworksById.
+//
+// Answer is the GetNetworksByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetNetworksByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *GetNetworksByIdResponse
+	Answer       *GetNetworksByIdAnswer
+	*GetNetworksByIdAnswer
 }
 
-// GetNetworksByIdOperationOptions holds the query and header parameters of GetNetworksById.
-type GetNetworksByIdOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetNetworksByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetNetworksByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetNetworksByIdResponse) Record() (GetNetworksByIdAnswer, error) {
+	if r.Answer == nil {
+		return GetNetworksByIdAnswer{}, errors.New("GetNetworksById answered no GetNetworksByIdAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetNetworksByIdOptions holds the query and header parameters of GetNetworksById.
+type GetNetworksByIdOptions struct {
 	// Environment the network belongs to (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetNetworksByIdOperationOptions) ToHeaders() *client.Headers {
+func (o GetNetworksByIdOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetNetworksByIdOperationOptions) ToQuery() *client.QueryParams {
+func (o GetNetworksByIdOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetNetworksById calls GET /api/networks/{id}. Inspect a Docker network by ID (a malformed ID is rejected with 400 by input validation).
-func (c Client) GetNetworksById(ctx context.Context, id string, options GetNetworksByIdOperationOptions) (result GetNetworksByIdOperationResponse, err error) {
+func (c Client) GetNetworksById(ctx context.Context, id string, options ...GetNetworksByIdOptions) (result GetNetworksByIdResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetNetworksById takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetNetworksByIdOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.GetNetworksByIdAnswer = &GetNetworksByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/networks/%s", url.PathEscape(id)),
 	}
 
@@ -64,11 +96,12 @@ func (c Client) GetNetworksById(ctx context.Context, id string, options GetNetwo
 		return
 	}
 
-	var model GetNetworksByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetNetworksByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetNetworksByIdAnswer = result.Answer
 
 	return
 }

@@ -51,9 +51,9 @@ func providersGone(t *testing.T, names ...string) {
 
 			return
 		}
-		for i := range listed.Model {
-			if slices.Contains(names, listed.Model[i].Name) {
-				_, _ = c.DeleteSecretProvidersById(ctx, listed.Model[i].Id)
+		for i := range listed.Answer {
+			if slices.Contains(names, listed.Answer[i].Name) {
+				_, _ = c.DeleteSecretProvidersById(ctx, listed.Answer[i].Id)
 			}
 		}
 		_, _ = c.PutSecretProvidersDefault(ctx, dockhand.PutSecretProvidersDefaultRequest{})
@@ -94,21 +94,21 @@ func TestSecretProvidersTriedSavedChangedAndRemoved(t *testing.T) {
 		"KeePass":                       {"keepass", map[string]any{}, "database path is empty"},
 		"Azure":                         {"azure-kv", map[string]any{}, "Azure Key Vault"},
 	} {
-		tried, err := c.PostSecretProvidersTest(ctx, dockhand.PostSecretProvidersTestRequest{Type: tc.kind, Config: tc.config})
-		if err != nil || yes(tried.Model.Ok) || !strings.Contains(tried.Model.Error, tc.want) {
-			t.Errorf("%s, tried = %+v, %v, want it refused with %q", what, tried.Model, err, tc.want)
+		tried, err := c.PostSecretProvidersTest(ctx, dockhand.PostSecretProvidersTestRequest{Type: dockhand.SecretProviderType(tc.kind), Config: tc.config})
+		if err != nil || tried.Answer.Ok || !strings.Contains(tried.Answer.Error, tc.want) {
+			t.Errorf("%s, tried = %+v, %v, want it refused with %q", what, tried.Answer, err, tc.want)
 		}
 	}
-	if tried, err := c.PostSecretProvidersTest(ctx, dockhand.PostSecretProvidersTestRequest{Type: "vault", Config: good}); err != nil || !yes(tried.Model.Ok) || tried.Model.Error != "" {
-		t.Fatalf("the secret store, tried = %+v, %v", tried.Model, err)
+	if tried, err := c.PostSecretProvidersTest(ctx, dockhand.PostSecretProvidersTestRequest{Type: "vault", Config: good}); err != nil || !tried.Answer.Ok || tried.Answer.Error != "" {
+		t.Fatalf("the secret store, tried = %+v, %v", tried.Answer, err)
 	}
 
 	// saved: answered with its number and when, and never with what it was saved with
 	made, err := c.PostSecretProviders(ctx, dockhand.PostSecretProvidersRequest{Name: " " + name + " ", Type: "vault", Config: good})
-	if err != nil || made.Model.Id == 0 || made.Model.Name != name || made.Model.Type != "vault" || made.Model.CreatedAt == "" || made.Model.UpdatedAt == "" {
-		t.Fatalf("a provider saved = %+v, %v", made.Model, err)
+	if err != nil || made.Answer.Id == 0 || made.Answer.Name != name || made.Answer.Type != "vault" || made.Answer.CreatedAt.IsZero() || made.Answer.UpdatedAt.IsZero() {
+		t.Fatalf("a provider saved = %+v, %v", made.Answer, err)
 	}
-	id := made.Model.Id
+	id := made.Answer.Id
 	for what, request := range map[string]dockhand.PostSecretProvidersRequest{
 		"the same name again":     {Name: name, Type: "vault", Config: good},
 		"no name":                 {Name: " ", Type: "vault", Config: good},
@@ -126,72 +126,72 @@ func TestSecretProvidersTriedSavedChangedAndRemoved(t *testing.T) {
 
 			continue
 		}
-		if _, err := c.DeleteSecretProvidersById(ctx, saved.Model.Id); err != nil {
+		if _, err := c.DeleteSecretProvidersById(ctx, saved.Answer.Id); err != nil {
 			t.Errorf("removing %s: %v", other.Name, err)
 		}
 	}
 
 	listed, err := c.GetSecretProviders(ctx)
-	isIt := func(p dockhand.GetSecretProvidersResponse) bool {
-		return p.Id == id && p.Name == name && p.Type == "vault" && p.CreatedAt != ""
+	isIt := func(p dockhand.GetSecretProvidersAnswer) bool {
+		return p.Id == id && p.Name == name && p.Type == "vault" && !p.CreatedAt.IsZero()
 	}
-	if err != nil || !slices.ContainsFunc(listed.Model, isIt) {
-		t.Errorf("the providers listed = %+v, %v", listed.Model, err)
+	if err != nil || !slices.ContainsFunc(listed.Answer, isIt) {
+		t.Errorf("the providers listed = %+v, %v", listed.Answer, err)
 	}
 	one, err := c.GetSecretProvidersById(ctx, id)
-	if err != nil || one.Model.Name != name || one.Model.Config["address"] != world.Vault || one.Model.Config["token"] != nil || len(one.Model.Config) != 1 || len(one.Model.StacksUsing) != 0 {
-		t.Fatalf("a provider read = %+v, %v, want its address and no token", one.Model, err)
+	if err != nil || one.Answer.Name != name || one.Answer.Config["address"] != world.Vault || one.Answer.Config["token"] != nil || len(one.Answer.Config) != 1 || len(one.Answer.StacksUsing) != 0 {
+		t.Fatalf("a provider read = %+v, %v, want its address and no token", one.Answer, err)
 	}
 
 	// tried as it is saved, and with other settings in place of the saved ones: an address that changed is not tried with the saved token
-	if tried, err := c.PostSecretProvidersByIdTest(ctx, id, dockhand.PostSecretProvidersByIdTestRequest{}); err != nil || !yes(tried.Model.Ok) {
-		t.Errorf("a saved provider tried = %+v, %v", tried.Model, err)
+	if tried, err := c.PostSecretProvidersByIdTest(ctx, id, dockhand.PostSecretProvidersByIdTestRequest{}); err != nil || !tried.Answer.Ok {
+		t.Errorf("a saved provider tried = %+v, %v", tried.Answer, err)
 	}
-	if tried, err := c.PostSecretProvidersByIdTest(ctx, id, dockhand.PostSecretProvidersByIdTestRequest{Config: map[string]any{"address": world.Vault, "mount": "it-nope"}}); err != nil || yes(tried.Model.Ok) || !strings.Contains(tried.Model.Error, "404") {
-		t.Errorf("a saved provider tried with a mount there is none of = %+v, %v, want the saved token used and the mount refused", tried.Model, err)
+	if tried, err := c.PostSecretProvidersByIdTest(ctx, id, dockhand.PostSecretProvidersByIdTestRequest{Config: map[string]any{"address": world.Vault, "mount": "it-nope"}}); err != nil || tried.Answer.Ok || !strings.Contains(tried.Answer.Error, "404") {
+		t.Errorf("a saved provider tried with a mount there is none of = %+v, %v, want the saved token used and the mount refused", tried.Answer, err)
 	}
-	if tried, err := c.PostSecretProvidersByIdTest(ctx, id, dockhand.PostSecretProvidersByIdTestRequest{Config: map[string]any{"address": world.VaultByName}}); err != nil || yes(tried.Model.Ok) || !strings.Contains(tried.Model.Error, "enter its credential") {
-		t.Errorf("a saved provider tried at another address = %+v, %v, want the saved token withheld", tried.Model, err)
+	if tried, err := c.PostSecretProvidersByIdTest(ctx, id, dockhand.PostSecretProvidersByIdTestRequest{Config: map[string]any{"address": world.VaultByName}}); err != nil || tried.Answer.Ok || !strings.Contains(tried.Answer.Error, "enter its credential") {
+		t.Errorf("a saved provider tried at another address = %+v, %v, want the saved token withheld", tried.Answer, err)
 	}
 
 	// asked what it holds at a path: the names, never the values
 	found, err := c.PostSecretProvidersByIdProbe(ctx, id, dockhand.PostSecretProvidersByIdProbeRequest{Selector: path})
-	if err != nil || !yes(found.Model.Ok) || !slices.Contains(found.Model.BulkKeys, "password") || !slices.Contains(found.Model.BulkKeys, "user") || len(found.Model.BulkKeys) != 2 {
-		t.Errorf("what the provider holds at %s = %+v, %v", path, found.Model, err)
+	if err != nil || !found.Answer.Ok || !slices.Contains(found.Answer.BulkKeys, "password") || !slices.Contains(found.Answer.BulkKeys, "user") || len(found.Answer.BulkKeys) != 2 {
+		t.Errorf("what the provider holds at %s = %+v, %v", path, found.Answer, err)
 	}
-	if none, err := c.PostSecretProvidersByIdProbe(ctx, id, dockhand.PostSecretProvidersByIdProbeRequest{Selector: "it/nothing-here"}); err != nil || yes(none.Model.Ok) || !strings.Contains(none.Model.Error, "path not found") {
-		t.Errorf("a path the provider has nothing at = %+v, %v", none.Model, err)
+	if none, err := c.PostSecretProvidersByIdProbe(ctx, id, dockhand.PostSecretProvidersByIdProbeRequest{Selector: "it/nothing-here"}); err != nil || none.Answer.Ok || !strings.Contains(none.Answer.Error, "path not found") {
+		t.Errorf("a path the provider has nothing at = %+v, %v", none.Answer, err)
 	}
-	if bare, err := c.PostSecretProvidersByIdProbe(ctx, id, dockhand.PostSecretProvidersByIdProbeRequest{}); err != nil || !yes(bare.Model.Ok) || len(bare.Model.BulkKeys) != 0 {
-		t.Errorf("a provider asked with no path = %+v, %v", bare.Model, err)
+	if bare, err := c.PostSecretProvidersByIdProbe(ctx, id, dockhand.PostSecretProvidersByIdProbeRequest{}); err != nil || !bare.Answer.Ok || len(bare.Answer.BulkKeys) != 0 {
+		t.Errorf("a provider asked with no path = %+v, %v", bare.Answer, err)
 	}
 
 	// changed: a name alone; settings whole, with the token kept when none is given, whatever address they name
-	if changed, err := c.PutSecretProvidersById(ctx, id, dockhand.PutSecretProvidersByIdRequest{Name: renamed}); err != nil || changed.Model.Name != renamed || changed.Model.Type != "vault" {
-		t.Fatalf("a provider renamed = %+v, %v", changed.Model, err)
+	if changed, err := c.PutSecretProvidersById(ctx, id, dockhand.PutSecretProvidersByIdRequest{Name: renamed}); err != nil || changed.Answer.Name != renamed || changed.Answer.Type != "vault" {
+		t.Fatalf("a provider renamed = %+v, %v", changed.Answer, err)
 	}
 	if _, err := c.PutSecretProvidersById(ctx, id, dockhand.PutSecretProvidersByIdRequest{Config: map[string]any{"address": world.Vault, "mount": "secret", "it-other": "kept"}}); err != nil {
 		t.Fatal(err)
 	}
-	if after, err := c.GetSecretProvidersById(ctx, id); err != nil || after.Model.Config["mount"] != "secret" || after.Model.Config["it-other"] != "kept" || after.Model.Name != renamed {
-		t.Errorf("a provider given other settings = %+v, %v, want them all kept", after.Model, err)
+	if after, err := c.GetSecretProvidersById(ctx, id); err != nil || after.Answer.Config["mount"] != "secret" || after.Answer.Config["it-other"] != "kept" || after.Answer.Name != renamed {
+		t.Errorf("a provider given other settings = %+v, %v, want them all kept", after.Answer, err)
 	}
-	if tried, err := c.PostSecretProvidersByIdTest(ctx, id, dockhand.PostSecretProvidersByIdTestRequest{}); err != nil || !yes(tried.Model.Ok) {
-		t.Errorf("a provider whose settings were saved with no token = %+v, %v, want the token it had kept", tried.Model, err)
+	if tried, err := c.PostSecretProvidersByIdTest(ctx, id, dockhand.PostSecretProvidersByIdTestRequest{}); err != nil || !tried.Answer.Ok {
+		t.Errorf("a provider whose settings were saved with no token = %+v, %v, want the token it had kept", tried.Answer, err)
 	}
 	// the same store by another address, with no token given: Dockhand saves it, keeps the token, and signs in to the new address with it
 	if _, err := c.PutSecretProvidersById(ctx, id, dockhand.PutSecretProvidersByIdRequest{Config: map[string]any{"address": world.VaultByName}}); err != nil {
 		t.Fatal(err)
 	}
-	if after, err := c.GetSecretProvidersById(ctx, id); err != nil || after.Model.Config["address"] != world.VaultByName || len(after.Model.Config) != 1 {
-		t.Errorf("a provider moved = %+v, %v, want the settings replaced whole", after.Model, err)
+	if after, err := c.GetSecretProvidersById(ctx, id); err != nil || after.Answer.Config["address"] != world.VaultByName || len(after.Answer.Config) != 1 {
+		t.Errorf("a provider moved = %+v, %v, want the settings replaced whole", after.Answer, err)
 	}
-	if tried, err := c.PostSecretProvidersByIdTest(ctx, id, dockhand.PostSecretProvidersByIdTestRequest{}); err != nil || !yes(tried.Model.Ok) {
-		t.Errorf("a provider moved with no token given = %+v, %v, want the saved token sent to the new address", tried.Model, err)
+	if tried, err := c.PostSecretProvidersByIdTest(ctx, id, dockhand.PostSecretProvidersByIdTestRequest{}); err != nil || !tried.Answer.Ok {
+		t.Errorf("a provider moved with no token given = %+v, %v, want the saved token sent to the new address", tried.Answer, err)
 	}
 	// its kind alone, to one its settings are none of, is saved; a kind there is none of, and no name, are not
-	if retyped, err := c.PutSecretProvidersById(ctx, id, dockhand.PutSecretProvidersByIdRequest{Type: "doppler"}); err != nil || retyped.Model.Type != "doppler" {
-		t.Errorf("a provider given another kind = %+v, %v", retyped.Model, err)
+	if retyped, err := c.PutSecretProvidersById(ctx, id, dockhand.PutSecretProvidersByIdRequest{Type: "doppler"}); err != nil || retyped.Answer.Type != "doppler" {
+		t.Errorf("a provider given another kind = %+v, %v", retyped.Answer, err)
 	}
 	if _, err := c.PutSecretProvidersById(ctx, id, dockhand.PutSecretProvidersByIdRequest{Type: "it-nothing"}); client.StatusCode(err) != http.StatusBadRequest {
 		t.Errorf("a provider given a kind there is none of = %v, want a 400", err)
@@ -199,22 +199,22 @@ func TestSecretProvidersTriedSavedChangedAndRemoved(t *testing.T) {
 	if _, err := c.PutSecretProvidersById(ctx, id, dockhand.PutSecretProvidersByIdRequest{Type: "vault", Config: good}); err != nil {
 		t.Fatal(err)
 	}
-	if same, err := c.PutSecretProvidersById(ctx, id, dockhand.PutSecretProvidersByIdRequest{}); err != nil || same.Model.Name != renamed {
-		t.Errorf("a provider changed with nothing = %+v, %v, want it as it was", same.Model, err)
+	if same, err := c.PutSecretProvidersById(ctx, id, dockhand.PutSecretProvidersByIdRequest{}); err != nil || same.Answer.Name != renamed {
+		t.Errorf("a provider changed with nothing = %+v, %v, want it as it was", same.Answer, err)
 	}
 
 	// the default: none as a server comes, one that is kept, none again, and never one there is none of
-	if standard, err := c.GetSecretProvidersDefault(ctx); err != nil || standard.Model.ProviderId != 0 {
-		t.Errorf("the default with none set = %+v, %v", standard.Model, err)
+	if standard, err := c.GetSecretProvidersDefault(ctx); err != nil || standard.Answer.ProviderId != 0 {
+		t.Errorf("the default with none set = %+v, %v", standard.Answer, err)
 	}
-	if set, err := c.PutSecretProvidersDefault(ctx, dockhand.PutSecretProvidersDefaultRequest{ProviderId: id}); err != nil || set.Model.ProviderId != id {
-		t.Errorf("the default set = %+v, %v", set.Model, err)
+	if set, err := c.PutSecretProvidersDefault(ctx, dockhand.PutSecretProvidersDefaultRequest{ProviderId: id}); err != nil || set.Answer.ProviderId != id {
+		t.Errorf("the default set = %+v, %v", set.Answer, err)
 	}
 	if _, err := c.PutSecretProvidersDefault(ctx, dockhand.PutSecretProvidersDefaultRequest{ProviderId: nobody}); client.StatusCode(err) != http.StatusBadRequest {
 		t.Errorf("the default set to a provider there is none of = %v, want a 400", err)
 	}
-	if standard, err := c.GetSecretProvidersDefault(ctx); err != nil || standard.Model.ProviderId != id {
-		t.Errorf("the default read back = %+v, %v", standard.Model, err)
+	if standard, err := c.GetSecretProvidersDefault(ctx); err != nil || standard.Answer.ProviderId != id {
+		t.Errorf("the default read back = %+v, %v", standard.Answer, err)
 	}
 
 	// one there is none of is a 404 whatever is asked of it
@@ -235,11 +235,11 @@ func TestSecretProvidersTriedSavedChangedAndRemoved(t *testing.T) {
 	}
 
 	// removed, and the default with it
-	if removed, err := c.DeleteSecretProvidersById(ctx, id); err != nil || !yes(removed.Model.Success) {
-		t.Fatalf("a provider removed = %+v, %v", removed.Model, err)
+	if removed, err := c.DeleteSecretProvidersById(ctx, id); err != nil || !removed.Answer.Success {
+		t.Fatalf("a provider removed = %+v, %v", removed.Answer, err)
 	}
-	if standard, err := c.GetSecretProvidersDefault(ctx); err != nil || standard.Model.ProviderId != 0 {
-		t.Errorf("the default once its provider is removed = %+v, %v, want none", standard.Model, err)
+	if standard, err := c.GetSecretProvidersDefault(ctx); err != nil || standard.Answer.ProviderId != 0 {
+		t.Errorf("the default once its provider is removed = %+v, %v, want none", standard.Answer, err)
 	}
 	if _, err := c.GetSecretProvidersById(ctx, id); !client.IsNotFound(err) {
 		t.Errorf("a provider read after it was removed = %v", err)
@@ -254,7 +254,7 @@ func TestAStackTakesItsSecretsFromAProvider(t *testing.T) {
 	c := dock(t)
 	ctx := t.Context()
 	env := world.Env(host)
-	at := dockhand.PutStacksByNameComposeOperationOptions{Env: &env}
+	at := dockhand.PutStacksByNameComposeOptions{Env: env}
 	stack, plain := named(t, "stack"), named(t, "plain")
 	container := stack + "-app-1"
 	file := "services:\n  app:\n    image: " + world.Image + "\n    command: [\"sleep\", \"100000\"]\n    stop_grace_period: 1s\n    environment:\n      DB_PASSWORD: ${password}\n      DB_USER: ${user}\n"
@@ -267,15 +267,15 @@ func TestAStackTakesItsSecretsFromAProvider(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	id := made.Model.Id
+	id := made.Answer.Id
 	// boundTo is the provider the stack is kept as bound to, 0 for none, and given is what its container was given for the two variables
 	boundTo := func() int {
-		sources, unread := c.GetStacksSources(ctx, dockhand.GetStacksSourcesOperationOptions{Env: &env})
+		sources, unread := c.GetStacksSources(ctx, dockhand.GetStacksSourcesOptions{Env: env})
 		if unread != nil {
 			t.Fatal(unread)
 		}
 
-		return sources.Model[stack].SecretProviderId
+		return int(sources.Answer[stack].SecretProviderId)
 	}
 	given := func() (password, user string) {
 		for _, variable := range givenTo(t, host, container) {
@@ -289,61 +289,61 @@ func TestAStackTakesItsSecretsFromAProvider(t *testing.T) {
 
 		return password, user
 	}
-	deploy := func() *dockhand.PostStacksByNameDeployResponse {
-		deployed, failed := c.PostStacksByNameDeploy(ctx, stack, dockhand.PostStacksByNameDeployRequest{}, dockhand.PostStacksByNameDeployOperationOptions{Env: &env})
+	deploy := func() *dockhand.PostStacksByNameDeployAnswer {
+		deployed, failed := c.PostStacksByNameDeploy(ctx, stack, dockhand.PostStacksByNameDeployRequest{}, dockhand.PostStacksByNameDeployOptions{Env: env})
 		if failed != nil {
 			t.Fatalf("deploying %s: %v", stack, failed)
 		}
 
-		return deployed.Model
+		return deployed.Answer
 	}
 
 	// made bound to the provider, the path a line of its .env file: the provider says the stack uses it, and nothing is loaded until a deploy
-	if created, err := c.PostStacks(ctx, dockhand.PostStacksRequest{Name: stack, Compose: file, RawEnvContent: "DOCKHAND_SECRET_SELECTOR=" + path + "\n", SecretProviderId: id, Start: new(false)}, dockhand.PostStacksOperationOptions{Env: &env}); err != nil || !yes(created.Model.Success) {
-		t.Fatalf("a stack made with a secret provider = %+v, %v", created.Model, err)
+	if created, err := c.PostStacks(ctx, dockhand.PostStacksRequest{Name: stack, Compose: file, RawEnvContent: "DOCKHAND_SECRET_SELECTOR=" + path + "\n", SecretProviderId: id, Start: new(false)}, dockhand.PostStacksOptions{Env: env}); err != nil || !created.Answer.Success {
+		t.Fatalf("a stack made with a secret provider = %+v, %v", created.Answer, err)
 	}
-	if boundTo() != id {
+	if boundTo() != int(id) {
 		t.Errorf("the stack is kept as bound to %d, want %d", boundTo(), id)
 	}
-	vars, err := c.GetStacksByNameEnv(ctx, stack, dockhand.GetStacksByNameEnvOperationOptions{Env: &env})
-	if err != nil || vars.Model.SecretProvider == nil || vars.Model.SecretProvider.Name != name || vars.Model.SecretProvider.Type != "vault" || len(vars.Model.InjectedSecretKeys) != 0 {
-		t.Errorf("the stack's variables before a deploy = %+v, %v, want the provider named and nothing loaded yet", vars.Model, err)
+	vars, err := c.GetStacksByNameEnv(ctx, stack, dockhand.GetStacksByNameEnvOptions{Env: env})
+	if err != nil || vars.Answer.SecretProvider == nil || vars.Answer.SecretProvider.Name != name || vars.Answer.SecretProvider.Type != "vault" || len(vars.Answer.InjectedSecretKeys) != 0 {
+		t.Errorf("the stack's variables before a deploy = %+v, %v, want the provider named and nothing loaded yet", vars.Answer, err)
 	}
-	if used, err := c.GetSecretProvidersById(ctx, id); err != nil || len(used.Model.StacksUsing) != 1 || used.Model.StacksUsing[0].StackName != stack || used.Model.StacksUsing[0].EnvironmentId != env {
-		t.Errorf("the stacks the provider says use it = %+v, %v", used.Model.StacksUsing, err)
+	if used, err := c.GetSecretProvidersById(ctx, id); err != nil || len(used.Answer.StacksUsing) != 1 || used.Answer.StacksUsing[0].StackName != stack || used.Answer.StacksUsing[0].EnvironmentId != env {
+		t.Errorf("the stacks the provider says use it = %+v, %v", used.Answer.StacksUsing, err)
 	}
 	// Dockhand's own check of the variables knows nothing of what the provider gives
-	if uses, err := c.PostStacksByNameEnvValidate(ctx, stack, dockhand.PostStacksByNameEnvValidateRequest{}, dockhand.PostStacksByNameEnvValidateOperationOptions{Env: &env}); err != nil || !slices.Contains(uses.Model.Missing, "password") {
-		t.Errorf("the variables Dockhand counts as missing = %+v, %v, want the provider's among them", uses.Model, err)
+	if uses, err := c.PostStacksByNameEnvValidate(ctx, stack, dockhand.PostStacksByNameEnvValidateRequest{}, dockhand.PostStacksByNameEnvValidateOptions{Env: env}); err != nil || !slices.Contains(uses.Answer.Missing, "password") {
+		t.Errorf("the variables Dockhand counts as missing = %+v, %v, want the provider's among them", uses.Answer, err)
 	}
 
 	// deployed: the container is given what the store holds, and the stack says which names it was given
-	if up := deploy(); !yes(up.Success) {
+	if up := deploy(); !up.Success {
 		t.Fatalf("a deploy with the provider reachable = %+v", up)
 	}
 	if password, user := given(); password != secretPassword || user != secretUser {
 		t.Errorf("what the container was given = a password of %d letters and the user %q, want the ones in the store", len(password), user)
 	}
-	if vars, err = c.GetStacksByNameEnv(ctx, stack, dockhand.GetStacksByNameEnvOperationOptions{Env: &env}); err != nil || !slices.Contains(vars.Model.InjectedSecretKeys, "password") || !slices.Contains(vars.Model.InjectedSecretKeys, "user") {
-		t.Errorf("the names the deploy was given = %+v, %v", vars.Model.InjectedSecretKeys, err)
+	if vars, err = c.GetStacksByNameEnv(ctx, stack, dockhand.GetStacksByNameEnvOptions{Env: env}); err != nil || !slices.Contains(vars.Answer.InjectedSecretKeys, "password") || !slices.Contains(vars.Answer.InjectedSecretKeys, "user") {
+		t.Errorf("the names the deploy was given = %+v, %v", vars.Answer.InjectedSecretKeys, err)
 	}
 
 	// the default is what the web interface offers and no more: a stack made with no provider named has none
 	if _, err := c.PutSecretProvidersDefault(ctx, dockhand.PutSecretProvidersDefaultRequest{ProviderId: id}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := c.PostStacks(ctx, dockhand.PostStacksRequest{Name: plain, Compose: file, Start: new(false)}, dockhand.PostStacksOperationOptions{Env: &env}); err != nil {
+	if _, err := c.PostStacks(ctx, dockhand.PostStacksRequest{Name: plain, Compose: file, Start: new(false)}, dockhand.PostStacksOptions{Env: env}); err != nil {
 		t.Fatal(err)
 	}
-	if sources, err := c.GetStacksSources(ctx, dockhand.GetStacksSourcesOperationOptions{Env: &env}); err != nil || sources.Model[plain].SecretProviderId != 0 {
-		t.Errorf("a stack made with no provider named, while there is a default = %+v, %v, want none", sources.Model[plain], err)
+	if sources, err := c.GetStacksSources(ctx, dockhand.GetStacksSourcesOptions{Env: env}); err != nil || sources.Answer[plain].SecretProviderId != 0 {
+		t.Errorf("a stack made with no provider named, while there is a default = %+v, %v, want none", sources.Answer[plain], err)
 	}
 
 	// a provider that cannot be reached: the deploy fails and the container is left as it was
 	if _, err := c.PutSecretProvidersById(ctx, id, dockhand.PutSecretProvidersByIdRequest{Config: map[string]any{"address": "http://nowhere.invalid:8200", "token": world.VaultToken}}); err != nil {
 		t.Fatal(err)
 	}
-	if down := deploy(); yes(down.Success) || !strings.Contains(down.Error, "Failed to deploy") {
+	if down := deploy(); down.Success || !strings.Contains(down.Error, "Failed to deploy") {
 		t.Errorf("a deploy with the provider out of reach = %+v, want it refused", down)
 	}
 	if password, _ := given(); password != secretPassword {
@@ -354,20 +354,20 @@ func TestAStackTakesItsSecretsFromAProvider(t *testing.T) {
 	}
 
 	// a save that names no provider keeps the one there is; one there is none of is a 500; a null takes the stack off it
-	if _, err := c.PutStacksByNameCompose(ctx, stack, dockhand.PutStacksByNameComposeRequest{Content: file}, at); err != nil || boundTo() != id {
+	if _, err := c.PutStacksByNameCompose(ctx, stack, dockhand.PutStacksByNameComposeRequest{Content: file}, at); err != nil || boundTo() != int(id) {
 		t.Errorf("a save with no provider named = %v, bound to %d, want %d kept", err, boundTo(), id)
 	}
 	if _, err := c.PutStacksByNameCompose(ctx, stack, dockhand.PutStacksByNameComposeRequest{Content: file, SecretProviderId: 987654}, at); client.StatusCode(err) != http.StatusInternalServerError || !strings.Contains(err.Error(), "FOREIGN KEY") {
 		t.Errorf("a save naming a provider there is none of = %v, want a 500", err)
 	}
-	if _, err := c.ForgetStackSecretProvider(ctx, stack, file, env); err != nil || boundTo() != 0 {
+	if _, err := c.ForgetStackSecretProvider(ctx, stack, file, int(env)); err != nil || boundTo() != 0 {
 		t.Errorf("a stack taken off its provider = %v, bound to %d", err, boundTo())
 	}
-	if vars, err = c.GetStacksByNameEnv(ctx, stack, dockhand.GetStacksByNameEnvOperationOptions{Env: &env}); err != nil || vars.Model.SecretProvider != nil {
-		t.Errorf("the variables of a stack taken off its provider = %+v, %v, want no provider", vars.Model, err)
+	if vars, err = c.GetStacksByNameEnv(ctx, stack, dockhand.GetStacksByNameEnvOptions{Env: env}); err != nil || vars.Answer.SecretProvider != nil {
+		t.Errorf("the variables of a stack taken off its provider = %+v, %v, want no provider", vars.Answer, err)
 	}
 	// with no provider and the path still named, a deploy succeeds and the variables are empty
-	if up := deploy(); !yes(up.Success) {
+	if up := deploy(); !up.Success {
 		t.Fatalf("a deploy with no provider = %+v", up)
 	}
 	if password, user := given(); password != "" || user != "" {
@@ -375,25 +375,25 @@ func TestAStackTakesItsSecretsFromAProvider(t *testing.T) {
 	}
 
 	// bound again by a save, and the provider removed from under it: Dockhand removes it, takes the stack off it, and says nothing
-	if _, err := c.PutStacksByNameCompose(ctx, stack, dockhand.PutStacksByNameComposeRequest{Content: file, SecretProviderId: id}, at); err != nil || boundTo() != id {
+	if _, err := c.PutStacksByNameCompose(ctx, stack, dockhand.PutStacksByNameComposeRequest{Content: file, SecretProviderId: id}, at); err != nil || boundTo() != int(id) {
 		t.Fatalf("a stack bound again = %v, bound to %d", err, boundTo())
 	}
-	if up := deploy(); !yes(up.Success) {
+	if up := deploy(); !up.Success {
 		t.Fatalf("a deploy once bound again = %+v", up)
 	}
 	if password, _ := given(); password != secretPassword {
 		t.Error("the container was not given its password once the stack was bound again")
 	}
-	if removed, err := c.DeleteSecretProvidersById(ctx, id); err != nil || !yes(removed.Model.Success) {
-		t.Fatalf("removing a provider a stack uses = %+v, %v, want it removed all the same", removed.Model, err)
+	if removed, err := c.DeleteSecretProvidersById(ctx, id); err != nil || !removed.Answer.Success {
+		t.Fatalf("removing a provider a stack uses = %+v, %v, want it removed all the same", removed.Answer, err)
 	}
 	if boundTo() != 0 {
 		t.Errorf("the stack is still bound to %d once its provider is removed", boundTo())
 	}
-	if standard, err := c.GetSecretProvidersDefault(ctx); err != nil || standard.Model.ProviderId != 0 {
-		t.Errorf("the default once its provider is removed = %+v, %v", standard.Model, err)
+	if standard, err := c.GetSecretProvidersDefault(ctx); err != nil || standard.Answer.ProviderId != 0 {
+		t.Errorf("the default once its provider is removed = %+v, %v", standard.Answer, err)
 	}
-	if up := deploy(); !yes(up.Success) {
+	if up := deploy(); !up.Success {
 		t.Fatalf("a deploy once the provider is removed = %+v", up)
 	}
 	if password, _ := given(); password != "" {

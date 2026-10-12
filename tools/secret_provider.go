@@ -45,18 +45,18 @@ type secretProviderRow struct {
 }
 
 // secretProviders is every secret provider the Dockhand keeps.
-func (r *registry) secretProviders(ctx context.Context) ([]dockhand.GetSecretProvidersResponse, error) {
+func (r *registry) secretProviders(ctx context.Context) ([]dockhand.GetSecretProvidersAnswer, error) {
 	listed, err := r.dock.GetSecretProviders(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("the secret providers could not be listed: %w", refusal(err))
 	}
 
-	return listed.Model, nil
+	return listed.Answer, nil
 }
 
 // secretProviderIn is the secret provider of a list a call names, by its number or by its name. Dockhand keeps two whose names differ only by case,
 // so a name is matched letter for letter first, and whatever its case only when that is one provider alone.
-func secretProviderIn(listed []dockhand.GetSecretProvidersResponse, given any, what string) (*dockhand.GetSecretProvidersResponse, error) {
+func secretProviderIn(listed []dockhand.GetSecretProvidersAnswer, given any, what string) (*dockhand.GetSecretProvidersAnswer, error) {
 	wanted, err := named(given, what)
 	if err != nil {
 		return nil, err
@@ -64,10 +64,10 @@ func secretProviderIn(listed []dockhand.GetSecretProvidersResponse, given any, w
 	if wanted == "" {
 		return nil, fmt.Errorf("%s is required: the secret provider's name or number", what)
 	}
-	var near []*dockhand.GetSecretProvidersResponse
+	var near []*dockhand.GetSecretProvidersAnswer
 	names := make([]string, 0, len(listed))
 	for i := range listed {
-		if strconv.Itoa(listed[i].Id) == wanted || listed[i].Name == wanted {
+		if strconv.Itoa(int(listed[i].Id)) == wanted || listed[i].Name == wanted {
 			return &listed[i], nil
 		}
 		if strings.EqualFold(listed[i].Name, wanted) {
@@ -83,7 +83,7 @@ func secretProviderIn(listed []dockhand.GetSecretProvidersResponse, given any, w
 	default:
 		numbers := make([]string, 0, len(near))
 		for _, p := range near {
-			numbers = append(numbers, p.Name+" ("+strconv.Itoa(p.Id)+")")
+			numbers = append(numbers, p.Name+" ("+strconv.Itoa(int(p.Id))+")")
 		}
 
 		return nil, fmt.Errorf("no secret provider is named %q letter for letter, and %d are but for their case: give the number of one, %s", wanted, len(near), strings.Join(numbers, " or "))
@@ -117,18 +117,18 @@ func providerSettings(config map[string]any) map[string]string {
 // secretProviderRowOf reads one provider in full: its settings, with a value whose name says it is a secret hidden unless asked for, and the stacks
 // that use it by the names of their environments.
 func (r *registry) secretProviderRowOf(ctx context.Context, id, standard int, envs []environment, reveal bool) (secretProviderRow, int, error) {
-	got, err := r.dock.GetSecretProvidersById(ctx, id)
+	got, err := r.dock.GetSecretProvidersById(ctx, dockhand.SecretProviderID(id))
 	if err != nil {
 		return secretProviderRow{}, 0, refusal(err)
 	}
-	row := secretProviderRow{ID: got.Model.Id, Name: got.Model.Name, Type: got.Model.Type, Default: got.Model.Id == standard, Created: got.Model.CreatedAt, Changed: got.Model.UpdatedAt}
-	settings, hidden := maskedLabels(providerSettings(got.Model.Config), reveal)
+	row := secretProviderRow{ID: int(got.Answer.Id), Name: got.Answer.Name, Type: string(got.Answer.Type), Default: int(got.Answer.Id) == standard, Created: when(got.Answer.CreatedAt), Changed: when(got.Answer.UpdatedAt)}
+	settings, hidden := maskedLabels(providerSettings(got.Answer.Config), reveal)
 	if len(settings) > 0 {
 		row.Settings = settings
 	}
-	for _, use := range got.Model.StacksUsing {
+	for _, use := range got.Answer.StacksUsing {
 		i := slices.IndexFunc(envs, func(e environment) bool { return e.ID == use.EnvironmentId })
-		row.Stacks = append(row.Stacks, secretProviderUse{Env: nameOr(i, use.EnvironmentId, func(i int) string { return envs[i].Name }), Stack: use.StackName})
+		row.Stacks = append(row.Stacks, secretProviderUse{Env: nameOr(i, int(use.EnvironmentId), func(i int) string { return envs[i].Name }), Stack: use.StackName})
 	}
 	slices.SortFunc(row.Stacks, byEnvThenStack)
 
@@ -142,7 +142,7 @@ func (r *registry) standardProvider(ctx context.Context) (int, error) {
 		return 0, fmt.Errorf("which secret provider is the default could not be read: %w", refusal(err))
 	}
 
-	return standard.Model.ProviderId, nil
+	return int(standard.Answer.ProviderId), nil
 }
 
 // reasonOf is why Dockhand could not use a provider, as it says it, to go in the middle of a sentence.
@@ -185,7 +185,7 @@ func registerSecretProviderTools(r *registry) {
 			if unknown != nil {
 				return nil, secretProviderListOut{}, unknown
 			}
-			listed = []dockhand.GetSecretProvidersResponse{*one}
+			listed = []dockhand.GetSecretProvidersAnswer{*one}
 		}
 		out := secretProviderListOut{Providers: make([]secretProviderRow, 0, len(listed))}
 		if len(listed) == 0 {
@@ -202,7 +202,7 @@ func registerSecretProviderTools(r *registry) {
 			return nil, out, err
 		}
 		for i := range listed {
-			row, hidden, err := r.secretProviderRowOf(ctx, listed[i].Id, standard, envs, in.RevealSecrets)
+			row, hidden, err := r.secretProviderRowOf(ctx, int(listed[i].Id), standard, envs, in.RevealSecrets)
 			if err != nil {
 				return nil, out, fmt.Errorf("the secret provider %s could not be read: %w", listed[i].Name, err)
 			}
@@ -243,12 +243,12 @@ func registerSecretProviderTools(r *registry) {
 				return nil, secretProviderTestOut{}, errors.New("settings is required with type: everything the provider would be saved with, as its address and its token")
 			default:
 			}
-			tried, err := r.dock.PostSecretProvidersTest(ctx, dockhand.PostSecretProvidersTestRequest{Type: kind, Config: in.Settings})
+			tried, err := r.dock.PostSecretProvidersTest(ctx, dockhand.PostSecretProvidersTestRequest{Type: dockhand.SecretProviderType(kind), Config: in.Settings})
 			if err != nil {
 				return nil, secretProviderTestOut{}, fmt.Errorf("the provider could not be tried: %w", refusal(err))
 			}
 
-			return nil, secretProviderTestOut{Type: kind, Reached: yes(tried.Model.Ok), Error: tried.Model.Error}, nil
+			return nil, secretProviderTestOut{Type: kind, Reached: tried.Answer.Ok, Error: tried.Answer.Error}, nil
 		}
 		if kind != "" {
 			return nil, secretProviderTestOut{}, errors.New("type is for a provider that is not saved: one the Dockhand keeps is tried as the kind it is")
@@ -265,7 +265,7 @@ func registerSecretProviderTools(r *registry) {
 		if err != nil {
 			return nil, secretProviderTestOut{}, fmt.Errorf("the provider %s could not be tried: %w", provider.Name, refusal(err))
 		}
-		out := secretProviderTestOut{Provider: provider.Name, Type: provider.Type, Reached: yes(tried.Model.Ok), Error: tried.Model.Error}
+		out := secretProviderTestOut{Provider: provider.Name, Type: string(provider.Type), Reached: tried.Answer.Ok, Error: tried.Answer.Error}
 		if len(in.Settings) > 0 {
 			out.Note = "tried with the settings given in place of the saved ones, which are as they were"
 		}
@@ -369,47 +369,47 @@ func registerSecretProviderTools(r *registry) {
 		if err != nil {
 			return nil, secretProviderOut{}, err
 		}
-		if slices.ContainsFunc(listed, func(p dockhand.GetSecretProvidersResponse) bool { return p.Name == name }) {
+		if slices.ContainsFunc(listed, func(p dockhand.GetSecretProvidersAnswer) bool { return p.Name == name }) {
 			return nil, secretProviderOut{}, fmt.Errorf("a secret provider is already named %s: secret_provider_edit changes it, and a new one takes a name of its own", name)
 		}
 		out := secretProviderOut{Changes: []string{}, DryRun: in.DryRun}
 
-		tried, err := r.dock.PostSecretProvidersTest(ctx, dockhand.PostSecretProvidersTestRequest{Type: kind, Config: in.Settings})
+		tried, err := r.dock.PostSecretProvidersTest(ctx, dockhand.PostSecretProvidersTestRequest{Type: dockhand.SecretProviderType(kind), Config: in.Settings})
 		if err != nil {
 			return nil, out, fmt.Errorf("the provider could not be tried, so nothing was saved: %w", refusal(err))
 		}
-		if !yes(tried.Model.Ok) {
+		if !tried.Answer.Ok {
 			if !in.SaveUnreachable {
-				return nil, out, fmt.Errorf("Dockhand could not use the provider, so nothing was saved: %s. save_unreachable saves it all the same", reasonOf(tried.Model.Error)) //nolint:staticcheck // ST1005: the sentence begins with the server's name
+				return nil, out, fmt.Errorf("Dockhand could not use the provider, so nothing was saved: %s. save_unreachable saves it all the same", reasonOf(tried.Answer.Error)) //nolint:staticcheck // ST1005: the sentence begins with the server's name
 			}
-			out.Note = "it was saved as save_unreachable asked though Dockhand could not use it: " + reasonOf(tried.Model.Error)
+			out.Note = "it was saved as save_unreachable asked though Dockhand could not use it: " + reasonOf(tried.Answer.Error)
 		}
 		if in.DryRun {
 			out.Changes = append(out.Changes, fmt.Sprintf("would save the %s provider %s", kind, name))
 			if in.Default {
 				out.Changes = append(out.Changes, "would make it the default")
 			}
-			if !yes(tried.Model.Ok) {
-				out.Note = "it would be saved as save_unreachable asks though Dockhand cannot use it: " + reasonOf(tried.Model.Error)
+			if !tried.Answer.Ok {
+				out.Note = "it would be saved as save_unreachable asks though Dockhand cannot use it: " + reasonOf(tried.Answer.Error)
 			}
 
 			return nil, out, nil
 		}
 
-		made, err := r.dock.PostSecretProviders(ctx, dockhand.PostSecretProvidersRequest{Name: name, Type: kind, Config: in.Settings})
+		made, err := r.dock.PostSecretProviders(ctx, dockhand.PostSecretProvidersRequest{Name: name, Type: dockhand.SecretProviderType(kind), Config: in.Settings})
 		if err != nil {
 			return nil, out, fmt.Errorf("the provider %s was not saved: %w", name, refusal(err))
 		}
 		out.Changes = append(out.Changes, fmt.Sprintf("saved the %s provider %s", kind, name))
 		if in.Default {
-			if _, err := r.dock.PutSecretProvidersDefault(ctx, dockhand.PutSecretProvidersDefaultRequest{ProviderId: made.Model.Id}); err != nil {
-				readBack(ctx, &out, made.Model.Id)
+			if _, err := r.dock.PutSecretProvidersDefault(ctx, dockhand.PutSecretProvidersDefaultRequest{ProviderId: made.Answer.Id}); err != nil {
+				readBack(ctx, &out, int(made.Answer.Id))
 
 				return nil, out, fmt.Errorf("the provider %s was saved and could not be made the default: %w", name, refusal(err))
 			}
 			out.Changes = append(out.Changes, "made it the default")
 		}
-		readBack(ctx, &out, made.Model.Id)
+		readBack(ctx, &out, int(made.Answer.Id))
 
 		return nil, out, nil
 	})
@@ -446,7 +446,7 @@ func registerSecretProviderTools(r *registry) {
 		if err != nil {
 			return nil, secretProviderOut{}, err
 		}
-		if name != provider.Name && slices.ContainsFunc(listed, func(p dockhand.GetSecretProvidersResponse) bool { return p.Name == name }) {
+		if name != provider.Name && slices.ContainsFunc(listed, func(p dockhand.GetSecretProvidersAnswer) bool { return p.Name == name }) {
 			return nil, secretProviderOut{}, fmt.Errorf("a secret provider is already named %s", name)
 		}
 		got, err := r.dock.GetSecretProvidersById(ctx, provider.Id)
@@ -468,8 +468,8 @@ func registerSecretProviderTools(r *registry) {
 
 		// the settings as they would be: what Dockhand gives back of the saved ones, with what is given over it and what is named taken out. A value
 		// given that Dockhand does not give back is a token or a key, which cannot be told from the one it keeps and so is always saved
-		saved := providerSettings(got.Model.Config)
-		whole := maps.Clone(got.Model.Config)
+		saved := providerSettings(got.Answer.Config)
+		whole := maps.Clone(got.Answer.Config)
 		if whole == nil {
 			whole = map[string]any{}
 		}
@@ -506,8 +506,8 @@ func registerSecretProviderTools(r *registry) {
 			request.Name = name
 			out.Changes = append(out.Changes, fmt.Sprintf("%s it from %s to %s", does("renamed", "would rename"), provider.Name, name))
 		}
-		if kind != "" && kind != provider.Type {
-			request.Type = kind
+		if kind != "" && kind != string(provider.Type) {
+			request.Type = dockhand.SecretProviderType(kind)
 			out.Changes = append(out.Changes, fmt.Sprintf("%s its kind from %s to %s", does("changed", "would change"), provider.Type, kind))
 		}
 		if len(set) > 0 || len(removed) > 0 {
@@ -522,27 +522,27 @@ func registerSecretProviderTools(r *registry) {
 			if err != nil {
 				return nil, secretProviderOut{Changes: []string{}, DryRun: in.DryRun}, fmt.Errorf("the new settings could not be tried, so nothing was changed: %w", refusal(err))
 			}
-			if !yes(tried.Model.Ok) {
+			if !tried.Answer.Ok {
 				if !in.SaveUnreachable {
-					return nil, secretProviderOut{Changes: []string{}, DryRun: in.DryRun}, fmt.Errorf("Dockhand could not use %s with the new settings, so nothing was changed: %s. save_unreachable saves them all the same", provider.Name, reasonOf(tried.Model.Error)) //nolint:staticcheck // ST1005: the sentence begins with the server's name
+					return nil, secretProviderOut{Changes: []string{}, DryRun: in.DryRun}, fmt.Errorf("Dockhand could not use %s with the new settings, so nothing was changed: %s. save_unreachable saves them all the same", provider.Name, reasonOf(tried.Answer.Error)) //nolint:staticcheck // ST1005: the sentence begins with the server's name
 				}
-				out.Note = does("the settings were saved", "the settings would be saved") + " as save_unreachable asks though Dockhand cannot use the provider with them: " + reasonOf(tried.Model.Error)
+				out.Note = does("the settings were saved", "the settings would be saved") + " as save_unreachable asks though Dockhand cannot use the provider with them: " + reasonOf(tried.Answer.Error)
 			}
 		}
 		changing := len(out.Changes) > 0
-		isStandard := standard == provider.Id
+		isStandard := standard == int(provider.Id)
 		if in.Default != nil && *in.Default != isStandard {
 			out.Changes = append(out.Changes, map[bool]string{true: does("made", "would make") + " it the default", false: does("had", "would have") + " it be the default no longer"}[*in.Default])
 		}
 
 		if len(out.Changes) == 0 {
 			out.Note = "nothing to do: it is that way already"
-			readBack(ctx, &out, provider.Id)
+			readBack(ctx, &out, int(provider.Id))
 
 			return nil, out, nil
 		}
 		if in.DryRun {
-			readBack(ctx, &out, provider.Id)
+			readBack(ctx, &out, int(provider.Id))
 
 			return nil, out, nil
 		}
@@ -558,12 +558,12 @@ func registerSecretProviderTools(r *registry) {
 			}
 			if _, err := r.dock.PutSecretProvidersDefault(ctx, to); err != nil {
 				out.Changes = out.Changes[:len(out.Changes)-1]
-				readBack(ctx, &out, provider.Id)
+				readBack(ctx, &out, int(provider.Id))
 
 				return nil, out, fmt.Errorf("which provider is the default was not changed: %w", refusal(err))
 			}
 		}
-		readBack(ctx, &out, provider.Id)
+		readBack(ctx, &out, int(provider.Id))
 
 		return nil, out, nil
 	})
@@ -601,7 +601,7 @@ func registerSecretProviderTools(r *registry) {
 		if err != nil {
 			return nil, secretProviderDeleteOut{}, err
 		}
-		row, _, err := r.secretProviderRowOf(ctx, provider.Id, standard, envs, false)
+		row, _, err := r.secretProviderRowOf(ctx, int(provider.Id), standard, envs, false)
 		if err != nil {
 			return nil, secretProviderDeleteOut{}, fmt.Errorf("the provider %s could not be read, so nothing was removed: %w", provider.Name, err)
 		}
@@ -633,7 +633,7 @@ func registerSecretProviderTools(r *registry) {
 		case err != nil:
 			out.Removed, out.WouldGo = true, nil
 			out.Note = "it was removed, and the providers could not be listed afterwards: " + err.Error()
-		case slices.ContainsFunc(after, func(p dockhand.GetSecretProvidersResponse) bool { return p.Id == provider.Id }):
+		case slices.ContainsFunc(after, func(p dockhand.GetSecretProvidersAnswer) bool { return p.Id == provider.Id }):
 			return nil, out, fmt.Errorf("Dockhand answered that %s was removed, and still lists it", provider.Name) //nolint:staticcheck // ST1005: the sentence begins with the server's name
 		default:
 			out.Removed, out.WouldGo = true, nil
@@ -648,17 +648,17 @@ func registerSecretProviderTools(r *registry) {
 
 // secretKeysAt is the names of the secrets a provider has at a path, in order, as Dockhand finds them now. A path the provider has nothing at, and a
 // provider that cannot be reached, are errors that say which.
-func (r *registry) secretKeysAt(ctx context.Context, provider *dockhand.GetSecretProvidersResponse, path string) ([]string, error) {
+func (r *registry) secretKeysAt(ctx context.Context, provider *dockhand.GetSecretProvidersAnswer, path string) ([]string, error) {
 	found, err := r.dock.PostSecretProvidersByIdProbe(ctx, provider.Id, dockhand.PostSecretProvidersByIdProbeRequest{Selector: path})
 	switch {
 	case client.IsNotFound(err):
 		return nil, fmt.Errorf("the provider %s is gone", provider.Name)
 	case err != nil:
 		return nil, fmt.Errorf("the provider %s could not be asked what it has at %s: %w", provider.Name, path, refusal(err))
-	case !yes(found.Model.Ok):
-		return nil, fmt.Errorf("the provider %s gave nothing for the path %s: Dockhand says %s", provider.Name, path, cmp.Or(found.Model.Error, "it could not look, and gives no reason"))
+	case !found.Answer.Ok:
+		return nil, fmt.Errorf("the provider %s gave nothing for the path %s: Dockhand says %s", provider.Name, path, cmp.Or(found.Answer.Error, "it could not look, and gives no reason"))
 	default:
-		keys := append([]string{}, found.Model.BulkKeys...)
+		keys := append([]string{}, found.Answer.BulkKeys...)
 		slices.Sort(keys)
 
 		return keys, nil

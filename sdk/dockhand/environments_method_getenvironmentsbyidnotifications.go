@@ -6,24 +6,30 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetEnvironmentsByIdNotificationsOperationResponse is the result of GetEnvironmentsByIdNotifications.
-type GetEnvironmentsByIdNotificationsOperationResponse struct {
+// GetEnvironmentsByIdNotificationsResponse is the result of GetEnvironmentsByIdNotifications.
+type GetEnvironmentsByIdNotificationsResponse struct {
 	HttpResponse *http.Response
-	Model        []GetEnvironmentsByIdNotificationsResponse
+	Answer       []GetEnvironmentsByIdNotificationsAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetEnvironmentsByIdNotificationsResponse) Answered() bool { return r.Answer != nil }
+
 // GetEnvironmentsByIdNotifications calls GET /api/environments/{id}/notifications. List notification channel configurations attached to an environment.
-func (c Client) GetEnvironmentsByIdNotifications(ctx context.Context, id int) (result GetEnvironmentsByIdNotificationsOperationResponse, err error) {
+func (c Client) GetEnvironmentsByIdNotifications(ctx context.Context, id EnvironmentID) (result GetEnvironmentsByIdNotificationsResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
-		Path:       fmt.Sprintf("/api/environments/%d/notifications", id),
+		Path:       fmt.Sprintf("/api/environments/%s/notifications", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,7 +46,7 @@ func (c Client) GetEnvironmentsByIdNotifications(ctx context.Context, id int) (r
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

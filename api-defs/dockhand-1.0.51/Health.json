@@ -12,7 +12,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetHealthResponse"
+          "ReferenceName": "GetHealthAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -29,7 +29,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetHealthDatabaseResponse"
+          "ReferenceName": "GetHealthDatabaseAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -39,7 +39,28 @@
   ],
   "Models": [
     {
-      "Name": "GetHealthDatabaseResponse",
+      "Name": "GetHealthAnswer",
+      "Fields": [
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Timestamp",
+          "JsonName": "timestamp",
+          "Type": {
+            "Type": "DateTime"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetHealthDatabaseAnswer",
       "Fields": [
         {
           "Name": "AppliedMigrations",
@@ -102,7 +123,7 @@
           "JsonName": "tables",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetHealthDatabaseResponseTables"
+            "ReferenceName": "GetHealthDatabaseAnswerTables"
           },
           "Required": true
         },
@@ -110,14 +131,14 @@
           "Name": "Timestamp",
           "JsonName": "timestamp",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           },
           "Required": true
         }
       ]
     },
     {
-      "Name": "GetHealthDatabaseResponseTables",
+      "Name": "GetHealthDatabaseAnswerTables",
       "Fields": [
         {
           "Name": "Expected",
@@ -142,27 +163,6 @@
               "Type": "String"
             }
           }
-        }
-      ]
-    },
-    {
-      "Name": "GetHealthResponse",
-      "Fields": [
-        {
-          "Name": "Status",
-          "JsonName": "status",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Timestamp",
-          "JsonName": "timestamp",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
         }
       ]
     }

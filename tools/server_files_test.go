@@ -32,7 +32,7 @@ func TestServerFiles(t *testing.T) {
 	if out["path"] != "/srv/stacks" || acctest.Num(t, out["total"], "total") != 3 || len(entries) != 3 || entries[0]["name"] != "api" || entries[1]["name"] != "web" || entries[2]["name"] != "readme.txt" || out["note"] != nil || dock.Last(browse).Query.Get("path") != "/srv/stacks" {
 		t.Fatalf("a directory = %v, asked with %v", out, dock.Last(browse).Query)
 	}
-	if file := entries[2]; file["type"] != "file" || acctest.Num(t, file["size"], "size") != 120 || file["mode"] != "644" || file["modified"] != "2026-10-10T10:00:00.000Z" {
+	if file := entries[2]; file["type"] != "file" || acctest.Num(t, file["size"], "size") != 120 || file["mode"] != "644" || file["modified"] != "2026-10-10T10:00:00Z" {
 		t.Errorf("a file in it = %v", file)
 	}
 
@@ -73,7 +73,7 @@ func TestServerRead(t *testing.T) {
 
 	// its text, with what is named a secret hidden unless asked for
 	out := suite.Call(t, "server_read", map[string]any{"path": "/srv/stacks/web/../web/.env"})
-	if out["path"] != "/srv/stacks/web/.env" || !strings.Contains(acctest.Str(out["content"]), "TAG=1.2") || strings.Contains(flat(out), "not-a-real-password") || acctest.Num(t, out["hidden"], "hidden") != 1 || out["modified"] != "2026-10-10T11:00:00.000Z" || !strings.Contains(acctest.Str(out["note"]), "hidden") || dock.Last(reads).Query.Get("path") != "/srv/stacks/web/.env" {
+	if out["path"] != "/srv/stacks/web/.env" || !strings.Contains(acctest.Str(out["content"]), "TAG=1.2") || strings.Contains(flat(out), "not-a-real-password") || acctest.Num(t, out["hidden"], "hidden") != 1 || out["modified"] != "2026-10-10T11:00:00Z" || !strings.Contains(acctest.Str(out["note"]), "hidden") || dock.Last(reads).Query.Get("path") != "/srv/stacks/web/.env" {
 		t.Errorf("a file with a secret in it = %v", out)
 	}
 	if out = suite.Call(t, "server_read", map[string]any{"path": "/srv/stacks/web/.env", "reveal_secrets": true}); !strings.Contains(acctest.Str(out["content"]), "not-a-real-password") || out["hidden"] != nil || out["note"] != nil {

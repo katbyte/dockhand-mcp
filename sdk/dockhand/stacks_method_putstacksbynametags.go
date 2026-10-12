@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,42 +13,73 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutStacksByNameTagsOperationResponse is the result of PutStacksByNameTags.
-type PutStacksByNameTagsOperationResponse struct {
+// PutStacksByNameTagsResponse is the result of PutStacksByNameTags.
+//
+// Answer is the PutStacksByNameTagsAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PutStacksByNameTagsResponse struct {
 	HttpResponse *http.Response
-	Model        *PutStacksByNameTagsResponse
+	Answer       *PutStacksByNameTagsAnswer
+	*PutStacksByNameTagsAnswer
 }
 
-// PutStacksByNameTagsOperationOptions holds the query and header parameters of PutStacksByNameTags.
-type PutStacksByNameTagsOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutStacksByNameTagsResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutStacksByNameTagsAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutStacksByNameTagsResponse) Record() (PutStacksByNameTagsAnswer, error) {
+	if r.Answer == nil {
+		return PutStacksByNameTagsAnswer{}, errors.New("PutStacksByNameTags answered no PutStacksByNameTagsAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PutStacksByNameTagsOptions holds the query and header parameters of PutStacksByNameTags.
+type PutStacksByNameTagsOptions struct {
 	// Environment id
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PutStacksByNameTagsOperationOptions) ToHeaders() *client.Headers {
+func (o PutStacksByNameTagsOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PutStacksByNameTagsOperationOptions) ToQuery() *client.QueryParams {
+func (o PutStacksByNameTagsOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PutStacksByNameTags calls PUT /api/stacks/{name}/tags. Replace the tag ids assigned to one stack (by name).
-func (c Client) PutStacksByNameTags(ctx context.Context, name string, input PutStacksByNameTagsRequest, options PutStacksByNameTagsOperationOptions) (result PutStacksByNameTagsOperationResponse, err error) {
+func (c Client) PutStacksByNameTags(ctx context.Context, name string, input PutStacksByNameTagsRequest, options ...PutStacksByNameTagsOptions) (result PutStacksByNameTagsResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PutStacksByNameTags takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PutStacksByNameTagsOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PutStacksByNameTagsAnswer = &PutStacksByNameTagsAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPut,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/tags", url.PathEscape(name)),
 	}
 
@@ -69,11 +101,12 @@ func (c Client) PutStacksByNameTags(ctx context.Context, name string, input PutS
 		return
 	}
 
-	var model PutStacksByNameTagsResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PutStacksByNameTagsAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PutStacksByNameTagsAnswer = result.Answer
 
 	return
 }

@@ -52,7 +52,7 @@ func TestContainerUpdates(t *testing.T) {
 	if acctest.Num(t, out["total"], "total") != 2 || len(rows) != 2 || acctest.Num(t, out["stale"], "stale") != 1 || out["checked"] != nil || !strings.Contains(acctest.Str(out["note"]), "1 more notes are for containers that are gone") || len(dock.Requests(check)) != 0 {
 		t.Fatalf("what is noted = %v", out)
 	}
-	if loose := rows[0]; loose["env"] != "alpha" || loose["container"] != "loose" || loose["image"] != "registry.example/tool:latest" || !acctest.IsBool(loose["newer_image"], true) || loose["newer_tag"] != nil || loose["checked_at"] != "2026-10-10T12:00:44.902Z" {
+	if loose := rows[0]; loose["env"] != "alpha" || loose["container"] != "loose" || loose["image"] != "registry.example/tool:latest" || !acctest.IsBool(loose["newer_image"], true) || loose["newer_tag"] != nil || loose["checked_at"] != "2026-10-10T12:00:44Z" {
 		t.Errorf("a container with another image under its tag = %v", loose)
 	}
 	if front := rows[1]; front["container"] != "web-front-1" || !acctest.IsBool(front["newer_image"], false) || front["newer_tag"] != "1.4" || front["step"] != "minor" || !reflect.DeepEqual(acctest.Strs(t, front["versions"], "versions"), []string{"1.3", "1.4"}) || front["notes"] != nil {
@@ -206,7 +206,7 @@ func TestContainerAutoupdate(t *testing.T) {
 
 	// one container's, with when it last ran
 	out = suite.Call(t, "container_autoupdate", map[string]any{"container": " /loose "})
-	if rows := acctest.Rows(t, out["schedules"], "schedules"); len(rows) != 1 || rows[0]["last_checked"] != "2026-10-10 03:00:00" || rows[0]["last_updated"] != "2026-10-03 03:00:07" || dock.Last("GET /api/auto-update/loose").Query.Get("env") != "1" {
+	if rows := acctest.Rows(t, out["schedules"], "schedules"); len(rows) != 1 || rows[0]["last_checked"] != "2026-10-10T03:00:00Z" || rows[0]["last_updated"] != "2026-10-03T03:00:07Z" || dock.Last("GET /api/auto-update/loose").Query.Get("env") != "1" {
 		t.Errorf("one container's schedule = %v", out)
 	}
 	if out = suite.Call(t, "container_autoupdate", map[string]any{"container": "web-back-1"}); acctest.Num(t, out["total"], "total") != 0 || !strings.Contains(acctest.Str(out["note"]), "no container named web-back-1 is updated on a schedule") {

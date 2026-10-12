@@ -95,11 +95,11 @@ func lastLine(printed string) string {
 }
 
 // deployOf is a deploy as the tools give one.
-func deployOf(run *dockhand.GetStacksByNameDeploysResponseRuns) stackDeploy {
-	out := stackDeploy{Run: run.Id, When: dockerTime(run.TriggeredAt), By: run.TriggeredBy, Status: run.Status, Seconds: float64(run.Duration) / 1000, Error: lastLine(run.ErrorMessage)}
+func deployOf(run *dockhand.GetStacksByNameDeploysAnswerRuns) stackDeploy {
+	out := stackDeploy{Run: run.Id, When: dockerTime(when(run.TriggeredAt)), By: run.TriggeredBy, Status: string(run.Status), Seconds: float64(run.Duration) / 1000, Error: lastLine(run.ErrorMessage)}
 	if details := run.Details; details != nil {
 		if o := details.Options; o != nil {
-			out.Pulled, out.Built, out.Recreated = yes(o.Pull), yes(o.Build), yes(o.ForceRecreate)
+			out.Pulled, out.Built, out.Recreated = o.Pull, o.Build, o.ForceRecreate
 		}
 		if s := details.Summary; s != nil {
 			out.Containers = s.ContainerNames
@@ -110,13 +110,13 @@ func deployOf(run *dockhand.GetStacksByNameDeploysResponseRuns) stackDeploy {
 }
 
 // deploysOf is every deploy Dockhand has a record of for a stack, the newest first.
-func (r *registry) deploysOf(ctx context.Context, env environment, stack string) ([]dockhand.GetStacksByNameDeploysResponseRuns, error) {
-	listed, err := r.dock.GetStacksByNameDeploys(ctx, stack, dockhand.GetStacksByNameDeploysOperationOptions{Env: &env.ID})
+func (r *registry) deploysOf(ctx context.Context, env environment, stack string) ([]dockhand.GetStacksByNameDeploysAnswerRuns, error) {
+	listed, err := r.dock.GetStacksByNameDeploys(ctx, stack, dockhand.GetStacksByNameDeploysOptions{Env: env.ID})
 	if err != nil {
 		return nil, refusal(err)
 	}
-	runs := listed.Model.Runs
-	slices.SortFunc(runs, func(a, b dockhand.GetStacksByNameDeploysResponseRuns) int { return cmp.Compare(b.Id, a.Id) })
+	runs := listed.Answer.Runs
+	slices.SortFunc(runs, func(a, b dockhand.GetStacksByNameDeploysAnswerRuns) int { return cmp.Compare(b.Id, a.Id) })
 
 	return runs, nil
 }
@@ -124,16 +124,16 @@ func (r *registry) deploysOf(ctx context.Context, env environment, stack string)
 // recordOf is how Dockhand keeps a stack: its record of where the stack's files are, or that it has none and only found the stack running, with the
 // number of the secret provider the stack's secrets are loaded from, 0 for none.
 func (r *registry) recordOf(ctx context.Context, env environment, stack string) (kept string, provider int, err error) {
-	sources, err := r.dock.GetStacksSources(ctx, dockhand.GetStacksSourcesOperationOptions{Env: &env.ID})
+	sources, err := r.dock.GetStacksSources(ctx, dockhand.GetStacksSourcesOptions{Env: env.ID})
 	if err != nil {
 		return "", 0, refusal(err)
 	}
-	source, has := sources.Model[stack]
+	source, has := sources.Answer[stack]
 	if !has {
 		return keptNowhere, 0, nil
 	}
 
-	return cmp.Or(source.SourceType, keptInternal), source.SecretProviderId, nil
+	return string(cmp.Or(source.SourceType, keptInternal)), int(source.SecretProviderId), nil
 }
 
 // keptAs is the first half of recordOf: how Dockhand keeps a stack.
@@ -179,7 +179,7 @@ func (r *registry) keysGivenBy(ctx context.Context, provider, path string) ([]st
 	if err != nil {
 		return nil, err
 	}
-	i := slices.IndexFunc(listed, func(p dockhand.GetSecretProvidersResponse) bool { return p.Name == provider })
+	i := slices.IndexFunc(listed, func(p dockhand.GetSecretProvidersAnswer) bool { return p.Name == provider })
 	if i < 0 {
 		return nil, fmt.Errorf("the Dockhand keeps no secret provider named %s", provider)
 	}
@@ -195,15 +195,15 @@ func (r *registry) boundTo(ctx context.Context, env environment, stack string) (
 }
 
 // composeOf is a stack's compose file as Dockhand keeps it, and false for a stack whose file Dockhand has not been shown.
-func (r *registry) composeOf(ctx context.Context, env environment, stack string) (*dockhand.GetStacksByNameComposeResponse, bool, error) {
-	file, err := r.dock.GetStacksByNameCompose(ctx, stack, dockhand.GetStacksByNameComposeOperationOptions{Env: &env.ID})
+func (r *registry) composeOf(ctx context.Context, env environment, stack string) (*dockhand.GetStacksByNameComposeAnswer, bool, error) {
+	file, err := r.dock.GetStacksByNameCompose(ctx, stack, dockhand.GetStacksByNameComposeOptions{Env: env.ID})
 	switch {
 	case client.IsNotFound(err):
 		return nil, false, nil
 	case err != nil:
 		return nil, false, refusal(err)
 	default:
-		return file.Model, true, nil
+		return file.Answer, true, nil
 	}
 }
 
@@ -259,8 +259,8 @@ func registerStackGetTools(r *registry) {
 			}
 		default:
 			// what the containers' own labels say of where the stack was brought up from
-			if hints, err := r.dock.GetStacksPathHints(ctx, dockhand.GetStacksPathHintsOperationOptions{Name: stack.Name, Env: &env.ID}); err == nil {
-				out.WorkingDir, out.ConfigFiles = hints.Model.WorkingDir, hints.Model.ConfigFiles
+			if hints, err := r.dock.GetStacksPathHints(ctx, dockhand.GetStacksPathHintsOptions{Name: stack.Name, Env: env.ID}); err == nil {
+				out.WorkingDir, out.ConfigFiles = hints.Answer.WorkingDir, hints.Answer.ConfigFiles
 			}
 			if out.Kept == keptGit {
 				out.Note = noted(out.Note, "Dockhand deploys this stack from a git repository and has no copy of its compose file: it was never fetched, or the git stack it was is gone and only this record is left. The git tools (--toolsets git) say which")
@@ -270,11 +270,11 @@ func registerStackGetTools(r *registry) {
 		}
 
 		if has {
-			if vars, err := r.dock.GetStacksByNameEnv(ctx, stack.Name, dockhand.GetStacksByNameEnvOperationOptions{Env: &env.ID}); err != nil {
+			if vars, err := r.dock.GetStacksByNameEnv(ctx, stack.Name, dockhand.GetStacksByNameEnvOptions{Env: env.ID}); err != nil {
 				out.Note = noted(out.Note, "its variables could not be read: "+refusal(err).Error())
 			} else {
-				for i := range vars.Model.Variables {
-					v := stackVariable{Name: vars.Model.Variables[i].Key, Value: vars.Model.Variables[i].Value, Secret: yes(vars.Model.Variables[i].IsSecret)}
+				for i := range vars.Answer.Variables {
+					v := stackVariable{Name: vars.Answer.Variables[i].Key, Value: vars.Answer.Variables[i].Value, Secret: vars.Answer.Variables[i].IsSecret}
 					// the path a stack's secrets are loaded from has a secret's name and is none
 					if !in.RevealSecrets && !v.Secret && v.Name != secretPathKey {
 						shown, wasHidden := maskValue(v.Name, v.Value)
@@ -284,12 +284,12 @@ func registerStackGetTools(r *registry) {
 					}
 					out.Variables = append(out.Variables, v)
 					if v.Name == secretPathKey {
-						out.SecretPath = vars.Model.Variables[i].Value
+						out.SecretPath = vars.Answer.Variables[i].Value
 					}
 				}
 				slices.SortFunc(out.Variables, func(a, b stackVariable) int { return cmp.Compare(a.Name, b.Name) })
-				out.SecretKeys = vars.Model.InjectedSecretKeys
-				if bound := vars.Model.SecretProvider; bound != nil {
+				out.SecretKeys = vars.Answer.InjectedSecretKeys
+				if bound := vars.Answer.SecretProvider; bound != nil {
 					out.SecretProvider = bound.Name
 				} else if out.SecretPath != "" {
 					out.Note = noted(out.Note, "the stack names a path its secrets are loaded from and has no secret provider, so nothing is loaded: the variables a provider gave are empty when it is deployed")
@@ -352,7 +352,7 @@ func registerStackGetTools(r *registry) {
 
 		var (
 			out   = stackValidateOut{Stack: name, Findings: []stackFinding{}}
-			env   *int
+			env   dockhand.EnvironmentID
 			body  = dockhand.PostStacksByNameValidateRequest{Compose: in.Compose}
 			gives = []string{}
 		)
@@ -363,7 +363,7 @@ func registerStackGetTools(r *registry) {
 				return nil, out, err
 			}
 			// the stack's own containers are no clash with the file that makes them
-			out.Env, env, body.Existing = at.Name, &at.ID, new(true)
+			out.Env, env, body.Existing = at.Name, at.ID, new(true)
 
 			if !given {
 				file, has, failed := r.composeOf(ctx, at, stack.Name)
@@ -378,26 +378,26 @@ func registerStackGetTools(r *registry) {
 
 			// the variables the stack gives a value, the ones in its .env file among them: left to itself, Dockhand's check counts only the ones it
 			// keeps itself
-			vars, err := r.dock.GetStacksByNameEnv(ctx, stack.Name, dockhand.GetStacksByNameEnvOperationOptions{Env: env})
+			vars, err := r.dock.GetStacksByNameEnv(ctx, stack.Name, dockhand.GetStacksByNameEnvOptions{Env: env})
 			if err != nil {
 				out.Note = "the stack's variables could not be read, so every variable the file needs is counted as missing: " + refusal(err).Error()
 			} else {
 				path := ""
-				for i := range vars.Model.Variables {
+				for i := range vars.Answer.Variables {
 					// the path the stack's secrets are loaded from is Dockhand's to read, and no variable of the file's
-					if vars.Model.Variables[i].Key == secretPathKey {
-						path = vars.Model.Variables[i].Value
+					if vars.Answer.Variables[i].Key == secretPathKey {
+						path = vars.Answer.Variables[i].Value
 
 						continue
 					}
-					gives = append(gives, vars.Model.Variables[i].Key)
+					gives = append(gives, vars.Answer.Variables[i].Key)
 				}
 				// and the ones its secret provider gives when it is deployed, which Dockhand's check knows nothing of: asked of the provider now, or
 				// failing that the ones the last deploy was given
-				if bound := vars.Model.SecretProvider; bound != nil && path != "" {
+				if bound := vars.Answer.SecretProvider; bound != nil && path != "" {
 					keys, unasked := r.keysGivenBy(ctx, bound.Name, path)
 					if unasked != nil {
-						keys = vars.Model.InjectedSecretKeys
+						keys = vars.Answer.InjectedSecretKeys
 						out.Note = fmt.Sprintf("what the stack's secret provider %s gives could not be asked, so the variables its last deploy was given are counted as given: %s", bound.Name, unasked.Error())
 					}
 					gives = append(gives, keys...)
@@ -408,17 +408,17 @@ func registerStackGetTools(r *registry) {
 			if err != nil {
 				return nil, out, err
 			}
-			out.Env, env = at.Name, &at.ID
+			out.Env, env = at.Name, at.ID
 		default:
 		}
 
-		checked, err := r.dock.PostStacksByNameValidate(ctx, cmp.Or(name, placeholderStack), body, dockhand.PostStacksByNameValidateOperationOptions{Env: env})
+		checked, err := r.dock.PostStacksByNameValidate(ctx, cmp.Or(name, placeholderStack), body, dockhand.PostStacksByNameValidateOptions{Env: env})
 		if err != nil {
 			return nil, out, fmt.Errorf("the compose file could not be checked: %w", refusal(err))
 		}
-		for i := range checked.Model.Findings {
-			f := &checked.Model.Findings[i]
-			out.Findings = append(out.Findings, stackFinding{Rule: f.RuleId, Severity: f.Severity, Service: f.Service, Line: f.Line, Message: f.Message, Hint: f.Hint})
+		for i := range checked.Answer.Findings {
+			f := &checked.Answer.Findings[i]
+			out.Findings = append(out.Findings, stackFinding{Rule: f.RuleId, Severity: string(f.Severity), Service: f.Service, Line: f.Line, Message: f.Message, Hint: f.Hint})
 			switch f.Severity {
 			case findingError:
 				out.Errors++
@@ -434,10 +434,10 @@ func registerStackGetTools(r *registry) {
 		out.Usable = out.Errors == 0
 
 		out.Variables = stackVariablesCheck{Required: []string{}, Optional: []string{}, Missing: []string{}, Unused: []string{}}
-		if vars, err := r.dock.PostStacksByNameEnvValidate(ctx, cmp.Or(name, placeholderStack), dockhand.PostStacksByNameEnvValidateRequest{Compose: body.Compose, Variables: gives}, dockhand.PostStacksByNameEnvValidateOperationOptions{Env: env}); err != nil {
+		if vars, err := r.dock.PostStacksByNameEnvValidate(ctx, cmp.Or(name, placeholderStack), dockhand.PostStacksByNameEnvValidateRequest{Compose: body.Compose, Variables: gives}, dockhand.PostStacksByNameEnvValidateOptions{Env: env}); err != nil {
 			out.Note = noted(out.Note, "the variables the file uses could not be listed: "+refusal(err).Error())
 		} else {
-			out.Variables = stackVariablesCheck{Required: orNone(vars.Model.Required), Optional: orNone(vars.Model.Optional), Missing: orNone(vars.Model.Missing), Unused: orNone(vars.Model.Unused)}
+			out.Variables = stackVariablesCheck{Required: orNone(vars.Answer.Required), Optional: orNone(vars.Answer.Optional), Missing: orNone(vars.Answer.Missing), Unused: orNone(vars.Answer.Unused)}
 		}
 		if missing := out.Variables.Missing; len(missing) > 0 && name != "" {
 			out.Note = noted(out.Note, fmt.Sprintf("%d of the variables the file needs are given no value by the stack, and compose fills them in with nothing: %s", len(missing), strings.Join(missing, ", ")))
@@ -498,7 +498,7 @@ func registerStackGetTools(r *registry) {
 			return nil, out, nil
 		}
 
-		at := slices.IndexFunc(runs, func(run dockhand.GetStacksByNameDeploysResponseRuns) bool { return run.Id == in.Run })
+		at := slices.IndexFunc(runs, func(run dockhand.GetStacksByNameDeploysAnswerRuns) bool { return run.Id == in.Run })
 		if at < 0 {
 			return nil, out, fmt.Errorf("%s has no deploy numbered %d: stack_deploys without run lists the ones it has", stack.Name, in.Run)
 		}

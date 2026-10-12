@@ -13,7 +13,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "TagID"
           }
         }
       ],
@@ -21,7 +22,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteTagsByIdResponse"
+          "ReferenceName": "DeleteTagsByIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -38,7 +39,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetTagsResponse"
+          "ReferenceName": "GetTagsAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -62,7 +63,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostTagsResponse"
+          "ReferenceName": "PostTagsAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -80,7 +81,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "TagID"
           }
         }
       ],
@@ -95,7 +97,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PutTagsByIdResponse"
+          "ReferenceName": "PutTagsByIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -105,7 +107,7 @@
   ],
   "Models": [
     {
-      "Name": "DeleteTagsByIdResponse",
+      "Name": "DeleteTagsByIdAnswer",
       "Fields": [
         {
           "Name": "Success",
@@ -118,7 +120,7 @@
       ]
     },
     {
-      "Name": "GetTagsResponse",
+      "Name": "GetTagsAnswer",
       "Fields": [
         {
           "Name": "Tags",
@@ -127,7 +129,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetTagsResponseTags"
+              "ReferenceName": "GetTagsAnswerTags"
             }
           },
           "Required": true
@@ -135,7 +137,7 @@
       ]
     },
     {
-      "Name": "GetTagsResponseTags",
+      "Name": "GetTagsAnswerTags",
       "Fields": [
         {
           "Name": "Color",
@@ -157,7 +159,45 @@
           "Name": "Id",
           "JsonName": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "TagID"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostTagsAnswer",
+      "Fields": [
+        {
+          "Name": "Color",
+          "JsonName": "color",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Icon",
+          "JsonName": "icon",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "TagID"
           },
           "Required": true
         },
@@ -199,36 +239,13 @@
       ]
     },
     {
-      "Name": "PostTagsResponse",
+      "Name": "PutTagsByIdAnswer",
       "Fields": [
         {
-          "Name": "Color",
-          "JsonName": "color",
+          "Name": "Success",
+          "JsonName": "success",
           "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Icon",
-          "JsonName": "icon",
-          "Type": {
-            "Type": "String"
-          }
-        },
-        {
-          "Name": "Id",
-          "JsonName": "id",
-          "Type": {
-            "Type": "Integer"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Name",
-          "JsonName": "name",
-          "Type": {
-            "Type": "String"
+            "Type": "Boolean"
           },
           "Required": true
         }
@@ -257,19 +274,6 @@
           "Type": {
             "Type": "String"
           }
-        }
-      ]
-    },
-    {
-      "Name": "PutTagsByIdResponse",
-      "Fields": [
-        {
-          "Name": "Success",
-          "JsonName": "success",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
         }
       ]
     }

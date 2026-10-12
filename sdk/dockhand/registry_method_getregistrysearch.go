@@ -10,14 +10,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetRegistrySearchOperationResponse is the result of GetRegistrySearch.
-type GetRegistrySearchOperationResponse struct {
+// GetRegistrySearchResponse is the result of GetRegistrySearch.
+type GetRegistrySearchResponse struct {
 	HttpResponse *http.Response
-	Model        []GetRegistrySearchResponse
+	Answer       []GetRegistrySearchAnswer
 }
 
-// GetRegistrySearchOperationOptions holds the query and header parameters of GetRegistrySearch.
-type GetRegistrySearchOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetRegistrySearchResponse) Answered() bool { return r.Answer != nil }
+
+// GetRegistrySearchOptions holds the query and header parameters of GetRegistrySearch.
+type GetRegistrySearchOptions struct {
 	// Search term / image name
 	Term string
 
@@ -25,17 +29,17 @@ type GetRegistrySearchOperationOptions struct {
 	Limit *int
 
 	// ID of the configured registry to search; omit to search Docker Hub (from GET /api/registries)
-	Registry *int
+	Registry RegistryID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetRegistrySearchOperationOptions) ToHeaders() *client.Headers {
+func (o GetRegistrySearchOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetRegistrySearchOperationOptions) ToQuery() *client.QueryParams {
+func (o GetRegistrySearchOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Term != "" {
 		out.Append("term", o.Term)
@@ -43,14 +47,14 @@ func (o GetRegistrySearchOperationOptions) ToQuery() *client.QueryParams {
 	if o.Limit != nil {
 		out.Append("limit", strconv.Itoa(*o.Limit))
 	}
-	if o.Registry != nil {
-		out.Append("registry", strconv.Itoa(*o.Registry))
+	if o.Registry != 0 {
+		out.Append("registry", strconv.Itoa(int(o.Registry)))
 	}
 	return &out
 }
 
 // GetRegistrySearch calls GET /api/registry/search. Search for images by name in Docker Hub or a configured private registry (direct + catalog fallback).
-func (c Client) GetRegistrySearch(ctx context.Context, options GetRegistrySearchOperationOptions) (result GetRegistrySearchOperationResponse, err error) {
+func (c Client) GetRegistrySearch(ctx context.Context, options GetRegistrySearchOptions) (result GetRegistrySearchResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -74,7 +78,7 @@ func (c Client) GetRegistrySearch(ctx context.Context, options GetRegistrySearch
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

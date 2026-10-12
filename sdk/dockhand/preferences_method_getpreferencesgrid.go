@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetPreferencesGridOperationResponse is the result of GetPreferencesGrid.
-type GetPreferencesGridOperationResponse struct {
+// GetPreferencesGridResponse is the result of GetPreferencesGrid.
+//
+// Answer is the GetPreferencesGridAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetPreferencesGridResponse struct {
 	HttpResponse *http.Response
-	Model        *GetPreferencesGridResponse
+	Answer       *GetPreferencesGridAnswer
+	*GetPreferencesGridAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetPreferencesGridResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetPreferencesGridAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetPreferencesGridResponse) Record() (GetPreferencesGridAnswer, error) {
+	if r.Answer == nil {
+		return GetPreferencesGridAnswer{}, errors.New("GetPreferencesGrid answered no GetPreferencesGridAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetPreferencesGrid calls GET /api/preferences/grid. Retrieve all saved data-grid column preferences (per-user when auth is enabled).
-func (c Client) GetPreferencesGrid(ctx context.Context) (result GetPreferencesGridOperationResponse, err error) {
+func (c Client) GetPreferencesGrid(ctx context.Context) (result GetPreferencesGridResponse, err error) {
+	result.GetPreferencesGridAnswer = &GetPreferencesGridAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) GetPreferencesGrid(ctx context.Context) (result GetPreferencesGr
 		return
 	}
 
-	var model GetPreferencesGridResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetPreferencesGridAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetPreferencesGridAnswer = result.Answer
 
 	return
 }

@@ -12,7 +12,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetDashboardPreferencesResponse"
+          "ReferenceName": "GetDashboardPreferencesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -31,7 +31,7 @@
           "Type": "List",
           "NestedItem": {
             "Type": "Reference",
-            "ReferenceName": "GetDashboardStatsResponse"
+            "ReferenceName": "GetDashboardStatsAnswer"
           }
         }
       },
@@ -72,7 +72,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostDashboardPreferencesResponse"
+          "ReferenceName": "PostDashboardPreferencesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -82,7 +82,7 @@
   ],
   "Models": [
     {
-      "Name": "GetDashboardPreferencesResponse",
+      "Name": "GetDashboardPreferencesAnswer",
       "Fields": [
         {
           "Name": "GridLayout",
@@ -116,7 +116,7 @@
       ]
     },
     {
-      "Name": "GetDashboardStatsResponse",
+      "Name": "GetDashboardStatsAnswer",
       "Fields": [
         {
           "Name": "Containers",
@@ -142,7 +142,8 @@
           "Name": "Id",
           "JsonName": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           },
           "Required": true
         },
@@ -214,6 +215,40 @@
       ]
     },
     {
+      "Name": "PostDashboardPreferencesAnswer",
+      "Fields": [
+        {
+          "Name": "GridLayout",
+          "JsonName": "gridLayout",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Dictionary",
+              "NestedItem": {
+                "Type": "Any"
+              }
+            }
+          }
+        },
+        {
+          "Name": "Locked",
+          "JsonName": "locked",
+          "Type": {
+            "Type": "Boolean"
+          },
+          "Required": true
+        },
+        {
+          "Name": "ViewMode",
+          "JsonName": "viewMode",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
       "Name": "PostDashboardPreferencesRequest",
       "Fields": [
         {
@@ -242,40 +277,6 @@
           "Type": {
             "Type": "String"
           }
-        }
-      ]
-    },
-    {
-      "Name": "PostDashboardPreferencesResponse",
-      "Fields": [
-        {
-          "Name": "GridLayout",
-          "JsonName": "gridLayout",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "Dictionary",
-              "NestedItem": {
-                "Type": "Any"
-              }
-            }
-          }
-        },
-        {
-          "Name": "Locked",
-          "JsonName": "locked",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
-        },
-        {
-          "Name": "ViewMode",
-          "JsonName": "viewMode",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
         }
       ]
     }

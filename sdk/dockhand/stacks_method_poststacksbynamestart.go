@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,23 +13,44 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostStacksByNameStartOperationResponse is the result of PostStacksByNameStart.
-type PostStacksByNameStartOperationResponse struct {
+// PostStacksByNameStartResponse is the result of PostStacksByNameStart.
+//
+// Answer is the PostStacksByNameStartAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostStacksByNameStartResponse struct {
 	HttpResponse *http.Response
-	Model        *PostStacksByNameStartResponse
+	Answer       *PostStacksByNameStartAnswer
+	*PostStacksByNameStartAnswer
 }
 
-// PostStacksByNameStartOperationOptions holds the query and header parameters of PostStacksByNameStart.
-type PostStacksByNameStartOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostStacksByNameStartResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostStacksByNameStartAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostStacksByNameStartResponse) Record() (PostStacksByNameStartAnswer, error) {
+	if r.Answer == nil {
+		return PostStacksByNameStartAnswer{}, errors.New("PostStacksByNameStart answered no PostStacksByNameStartAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostStacksByNameStartOptions holds the query and header parameters of PostStacksByNameStart.
+type PostStacksByNameStartOptions struct {
 	// Environment id (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once
 	Accept string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostStacksByNameStartOperationOptions) ToHeaders() *client.Headers {
+func (o PostStacksByNameStartOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	if o.Accept != "" {
 		out.Append("Accept", o.Accept)
@@ -37,22 +59,32 @@ func (o PostStacksByNameStartOperationOptions) ToHeaders() *client.Headers {
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostStacksByNameStartOperationOptions) ToQuery() *client.QueryParams {
+func (o PostStacksByNameStartOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostStacksByNameStart calls POST /api/stacks/{name}/start. Start a stack (docker compose start/up), asynchronously.
-func (c Client) PostStacksByNameStart(ctx context.Context, name string, options PostStacksByNameStartOperationOptions) (result PostStacksByNameStartOperationResponse, err error) {
+func (c Client) PostStacksByNameStart(ctx context.Context, name string, options ...PostStacksByNameStartOptions) (result PostStacksByNameStartResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostStacksByNameStart takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostStacksByNameStartOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostStacksByNameStartAnswer = &PostStacksByNameStartAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/start", url.PathEscape(name)),
 	}
 
@@ -70,11 +102,12 @@ func (c Client) PostStacksByNameStart(ctx context.Context, name string, options 
 		return
 	}
 
-	var model PostStacksByNameStartResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostStacksByNameStartAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostStacksByNameStartAnswer = result.Answer
 
 	return
 }

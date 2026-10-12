@@ -10,13 +10,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostBackupDestinationsByIdRotateKeyOperationResponse is the result of PostBackupDestinationsByIdRotateKey.
-type PostBackupDestinationsByIdRotateKeyOperationResponse struct {
+// PostBackupDestinationsByIdRotateKeyResponse is the result of PostBackupDestinationsByIdRotateKey.
+type PostBackupDestinationsByIdRotateKeyResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostBackupDestinationsByIdRotateKey calls POST /api/backup/destinations/{id}/rotate-key. Rotate the restic repository password for a destination and persist the new password.
-func (c Client) PostBackupDestinationsByIdRotateKey(ctx context.Context, id int, input PostBackupDestinationsByIdRotateKeyRequest) (result PostBackupDestinationsByIdRotateKeyOperationResponse, err error) {
+func (c Client) PostBackupDestinationsByIdRotateKey(ctx context.Context, id int, input PostBackupDestinationsByIdRotateKeyRequest) (result PostBackupDestinationsByIdRotateKeyResponse, err error) {
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{

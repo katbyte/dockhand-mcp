@@ -6,7 +6,7 @@ package dockhand
 type PostPreferencesFavoriteGroupsRequest struct {
 	Action        string                                       `json:"action"`
 	Containers    []string                                     `json:"containers,omitzero"`
-	EnvironmentId int                                          `json:"environmentId"`
+	EnvironmentId EnvironmentID                                `json:"environmentId"`
 	Groups        []PostPreferencesFavoriteGroupsRequestGroups `json:"groups,omitzero"`
 	Name          string                                       `json:"name,omitempty"`
 	NewName       string                                       `json:"newName,omitempty"`

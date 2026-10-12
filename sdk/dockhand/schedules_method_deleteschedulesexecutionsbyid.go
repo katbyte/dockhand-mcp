@@ -4,20 +4,43 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteSchedulesExecutionsByIdOperationResponse is the result of DeleteSchedulesExecutionsById.
-type DeleteSchedulesExecutionsByIdOperationResponse struct {
+// DeleteSchedulesExecutionsByIdResponse is the result of DeleteSchedulesExecutionsById.
+//
+// Answer is the DeleteSchedulesExecutionsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteSchedulesExecutionsByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteSchedulesExecutionsByIdResponse
+	Answer       *DeleteSchedulesExecutionsByIdAnswer
+	*DeleteSchedulesExecutionsByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteSchedulesExecutionsByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteSchedulesExecutionsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteSchedulesExecutionsByIdResponse) Record() (DeleteSchedulesExecutionsByIdAnswer, error) {
+	if r.Answer == nil {
+		return DeleteSchedulesExecutionsByIdAnswer{}, errors.New("DeleteSchedulesExecutionsById answered no DeleteSchedulesExecutionsByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // DeleteSchedulesExecutionsById calls DELETE /api/schedules/executions/{id}. Delete a single schedule execution record.
-func (c Client) DeleteSchedulesExecutionsById(ctx context.Context, id int) (result DeleteSchedulesExecutionsByIdOperationResponse, err error) {
+func (c Client) DeleteSchedulesExecutionsById(ctx context.Context, id int) (result DeleteSchedulesExecutionsByIdResponse, err error) {
+	result.DeleteSchedulesExecutionsByIdAnswer = &DeleteSchedulesExecutionsByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -40,11 +63,12 @@ func (c Client) DeleteSchedulesExecutionsById(ctx context.Context, id int) (resu
 		return
 	}
 
-	var model DeleteSchedulesExecutionsByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteSchedulesExecutionsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteSchedulesExecutionsByIdAnswer = result.Answer
 
 	return
 }

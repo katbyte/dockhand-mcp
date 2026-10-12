@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostTagsOperationResponse is the result of PostTags.
-type PostTagsOperationResponse struct {
+// PostTagsResponse is the result of PostTags.
+//
+// Answer is the PostTagsAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostTagsResponse struct {
 	HttpResponse *http.Response
-	Model        *PostTagsResponse
+	Answer       *PostTagsAnswer
+	*PostTagsAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostTagsResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostTagsAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostTagsResponse) Record() (PostTagsAnswer, error) {
+	if r.Answer == nil {
+		return PostTagsAnswer{}, errors.New("PostTags answered no PostTagsAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostTags calls POST /api/tags. Create a tag (or return the existing one with the same name) in the global catalog.
-func (c Client) PostTags(ctx context.Context, input PostTagsRequest) (result PostTagsOperationResponse, err error) {
+func (c Client) PostTags(ctx context.Context, input PostTagsRequest) (result PostTagsResponse, err error) {
+	result.PostTagsAnswer = &PostTagsAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostTags(ctx context.Context, input PostTagsRequest) (result Pos
 		return
 	}
 
-	var model PostTagsResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostTagsAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostTagsAnswer = result.Answer
 
 	return
 }

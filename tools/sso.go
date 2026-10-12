@@ -36,23 +36,23 @@ type ssoRow struct {
 	RoleMappingsClaim string `json:"role_mappings_claim,omitempty" jsonschema:"the claim the record names for roles, which Dockhand has only with a licence"`
 }
 
-func ssoRowOf(p *dockhand.GetAuthOidcResponse) ssoRow {
-	return ssoRow{ID: p.Id, Name: p.Name, Enabled: yes(p.Enabled), LoginID: "oidc:" + strconv.Itoa(p.Id), IssuerURL: p.IssuerUrl, ClientID: p.ClientId, RedirectURI: p.RedirectUri, Scopes: p.Scopes, UsernameClaim: p.UsernameClaim, EmailClaim: p.EmailClaim, DisplayNameClaim: p.DisplayNameClaim, AdminClaim: p.AdminClaim, AdminValue: p.AdminValue, RoleMappingsClaim: p.RoleMappingsClaim}
+func ssoRowOf(p *dockhand.GetAuthOidcAnswer) ssoRow {
+	return ssoRow{ID: p.Id, Name: p.Name, Enabled: p.Enabled, LoginID: "oidc:" + strconv.Itoa(p.Id), IssuerURL: p.IssuerUrl, ClientID: p.ClientId, RedirectURI: p.RedirectUri, Scopes: p.Scopes, UsernameClaim: p.UsernameClaim, EmailClaim: p.EmailClaim, DisplayNameClaim: p.DisplayNameClaim, AdminClaim: p.AdminClaim, AdminValue: p.AdminValue, RoleMappingsClaim: p.RoleMappingsClaim}
 }
 
 // ssoProviders is every single sign-on provider the Dockhand keeps.
-func (r *registry) ssoProviders(ctx context.Context) ([]dockhand.GetAuthOidcResponse, error) {
+func (r *registry) ssoProviders(ctx context.Context) ([]dockhand.GetAuthOidcAnswer, error) {
 	listed, err := r.dock.GetAuthOidc(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("the single sign-on providers could not be listed: %w", refusal(err))
 	}
 
-	return listed.Model, nil
+	return listed.Answer, nil
 }
 
 // ssoIn is the provider of a list a call names, by its name whatever its case or by its number. Dockhand lets two share a name, and a name two share
 // is refused with their numbers.
-func ssoIn(listed []dockhand.GetAuthOidcResponse, a ssoArg) (*dockhand.GetAuthOidcResponse, error) {
+func ssoIn(listed []dockhand.GetAuthOidcAnswer, a ssoArg) (*dockhand.GetAuthOidcAnswer, error) {
 	wanted, err := named(a.Provider, "provider")
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func ssoIn(listed []dockhand.GetAuthOidcResponse, a ssoArg) (*dockhand.GetAuthOi
 	if wanted == "" {
 		return nil, errors.New("provider is required: the single sign-on provider's name or number, as sso_list gives them")
 	}
-	var found []*dockhand.GetAuthOidcResponse
+	var found []*dockhand.GetAuthOidcAnswer
 	names := make([]string, 0, len(listed))
 	for i := range listed {
 		if strconv.Itoa(listed[i].Id) == wanted {
@@ -163,7 +163,7 @@ func registerSSOTools(r *registry) {
 		if err != nil {
 			return nil, ssoChangeOut{}, err
 		}
-		if slices.ContainsFunc(listed, func(p dockhand.GetAuthOidcResponse) bool { return strings.EqualFold(p.Name, name) }) {
+		if slices.ContainsFunc(listed, func(p dockhand.GetAuthOidcAnswer) bool { return strings.EqualFold(p.Name, name) }) {
 			return nil, ssoChangeOut{}, fmt.Errorf("a single sign-on provider is already named %q: sso_list gives it, and another name is needed for another", name)
 		}
 
@@ -180,10 +180,10 @@ func registerSSOTools(r *registry) {
 			return nil, out, fmt.Errorf("%s was not saved: %w", name, refusal(err))
 		}
 		out.Changes = append(out.Changes, "saved "+what)
-		if back, err := r.dock.GetAuthOidcById(ctx, made.Model.Id); err != nil {
+		if back, err := r.dock.GetAuthOidcById(ctx, made.Answer.Id); err != nil {
 			out.Note = "it was saved, and could not be read back: " + refusal(err).Error()
 		} else {
-			row := ssoRowOf(new(dockhand.GetAuthOidcResponse(*back.Model)))
+			row := ssoRowOf(new(dockhand.GetAuthOidcAnswer(*back.Answer)))
 			out.Provider = &row
 		}
 		if in.Enabled {
@@ -270,7 +270,7 @@ func registerSSOTools(r *registry) {
 		if name := strings.TrimSpace(in.Name); name != "" {
 			given++
 			if name != saved.Name {
-				if slices.ContainsFunc(listed, func(p dockhand.GetAuthOidcResponse) bool { return p.Id != saved.Id && strings.EqualFold(p.Name, name) }) {
+				if slices.ContainsFunc(listed, func(p dockhand.GetAuthOidcAnswer) bool { return p.Id != saved.Id && strings.EqualFold(p.Name, name) }) {
 					return nil, out, fmt.Errorf("another single sign-on provider is named %q, so %s is not renamed to it", name, saved.Name)
 				}
 				request.Name = name
@@ -295,7 +295,7 @@ func registerSSOTools(r *registry) {
 		}
 		if in.Enabled != nil {
 			given++
-			if *in.Enabled != yes(saved.Enabled) {
+			if *in.Enabled != saved.Enabled {
 				request.Enabled = in.Enabled
 				out.Changes = append(out.Changes, map[bool]string{true: done("switched", "would switch") + " it on", false: done("switched", "would switch") + " it off"}[*in.Enabled])
 			}
@@ -317,7 +317,7 @@ func registerSSOTools(r *registry) {
 			return nil, out, nil
 		}
 
-		var back *dockhand.PutAuthOidcByIdResponse
+		var back *dockhand.PutAuthOidcByIdAnswer
 		if sends {
 			changed, failed := r.dock.PutAuthOidcById(ctx, saved.Id, request)
 			if failed != nil {
@@ -325,16 +325,16 @@ func registerSSOTools(r *registry) {
 
 				return nil, out, fmt.Errorf("%s was not changed: %w", saved.Name, refusal(failed))
 			}
-			back = changed.Model
+			back = changed.Answer
 		}
 		if forget {
 			forgot, failed := r.dock.ForgetOidcAdminClaim(ctx, saved.Id)
 			if failed != nil {
 				return nil, out, fmt.Errorf("%s was changed in part, and the claim named for an administrator was not forgotten: %w", saved.Name, refusal(failed))
 			}
-			back = forgot.Model
+			back = forgot.Answer
 		}
-		row = ssoRowOf(new(dockhand.GetAuthOidcResponse(*back)))
+		row = ssoRowOf(new(dockhand.GetAuthOidcAnswer(*back)))
 		if request.Enabled != nil && *request.Enabled {
 			out.Note = "it is offered to whoever signs in from now on; " + neverTried
 		}
@@ -368,7 +368,7 @@ func registerSSOTools(r *registry) {
 		out := ssoDeleteOut{Provider: saved.Name}
 		isDefault := false
 		if settings, err := r.dock.GetAuthSettings(ctx); err == nil {
-			isDefault = settings.Model.DefaultProvider == "oidc:"+strconv.Itoa(saved.Id)
+			isDefault = settings.Answer.DefaultProvider == "oidc:"+strconv.Itoa(saved.Id)
 		}
 		if !in.Confirm {
 			out.WouldGo = []string{fmt.Sprintf("Dockhand's record of %s at %s, with the client id and secret kept for it", saved.Name, saved.IssuerUrl)}
@@ -384,7 +384,7 @@ func registerSSOTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("%s was not removed: %w", saved.Name, refusal(err))
 		}
-		if !yes(gone.Model.Success) {
+		if !gone.Answer.Success {
 			return nil, out, fmt.Errorf("the removal of %s was answered without its being said to have succeeded: sso_list says whether it is still there", saved.Name)
 		}
 		left, err := r.ssoProviders(ctx)
@@ -393,7 +393,7 @@ func registerSSOTools(r *registry) {
 
 			return nil, out, nil //nolint:nilerr // the removal went through: that it could not be read back is said in the answer
 		}
-		if slices.ContainsFunc(left, func(p dockhand.GetAuthOidcResponse) bool { return p.Id == saved.Id }) {
+		if slices.ContainsFunc(left, func(p dockhand.GetAuthOidcAnswer) bool { return p.Id == saved.Id }) {
 			return nil, out, fmt.Errorf("the removal of %s was answered as done, and it is still listed", saved.Name)
 		}
 		out.Removed = true

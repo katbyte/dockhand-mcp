@@ -84,7 +84,7 @@ func TestGitStackPieces(t *testing.T) {
 	}
 
 	// a git stack as any call answers one is read as the list's record
-	if s := gitStackOf(dockhand.PutGitStacksByIdResponse{Id: 5, StackName: "archive", Branch: "next", SyncedFiles: "x"}); s.Id != 5 || s.StackName != "archive" || s.Branch != "next" || s.SyncedFiles != "x" {
+	if s := gitStackOf(dockhand.PutGitStacksByIdAnswer{Id: 5, StackName: "archive", Branch: "next", SyncedFiles: "x"}); s.Id != 5 || s.StackName != "archive" || s.Branch != "next" || s.SyncedFiles != "x" {
 		t.Errorf("a git stack answered by a change, read as the list's = %+v", s)
 	}
 	if s := gitStackOf(func() {}); s.Id != 0 {
@@ -92,15 +92,15 @@ func TestGitStackPieces(t *testing.T) {
 	}
 
 	// what a deploy reported: a line said twice said once, one that says nothing left out, a secret hidden, and only the last few kept
-	lines := make([]dockhand.GetJobsByIdResponseLines, 0, 45)
+	lines := make([]dockhand.GetJobsByIdAnswerLines, 0, 45)
 	for _, said := range []map[string]any{{"message": "one"}, {"message": "one"}, {"status": "deploying"}, {"logLine": " API_TOKEN=made-up given "}, {"error": "two"}} {
-		lines = append(lines, dockhand.GetJobsByIdResponseLines{Data: said})
+		lines = append(lines, dockhand.GetJobsByIdAnswerLines{Data: said})
 	}
 	if got := strings.Join(gitReported(lines), "|"); got != "one|API_TOKEN=*** given|two" {
 		t.Errorf("what a deploy reported = %q", got)
 	}
 	for range 20 {
-		lines = append(lines, dockhand.GetJobsByIdResponseLines{Data: map[string]any{"message": "more"}}, dockhand.GetJobsByIdResponseLines{Data: map[string]any{"message": "and more"}})
+		lines = append(lines, dockhand.GetJobsByIdAnswerLines{Data: map[string]any{"message": "more"}}, dockhand.GetJobsByIdAnswerLines{Data: map[string]any{"message": "and more"}})
 	}
 	if got := gitReported(lines); len(got) != gitReportKept || got[len(got)-1] != "and more" {
 		t.Errorf("a long deploy's report = %d lines, ending %q", len(got), got[len(got)-1])
@@ -129,7 +129,7 @@ func TestGitStackList(t *testing.T) {
 	if len(rows) != 3 || rows[0]["stack"] != "lost" || rows[1]["stack"] != "archive" || rows[2]["stack"] != "shop" || acctest.Num(t, out["total"], "total") != 3 || acctest.Num(t, out["failed"], "failed") != 1 || out["behind"] != nil {
 		t.Fatalf("the git stacks = %v", out)
 	}
-	if got := flat(rows[1]); got != `{"auto_update":"0 4 * * *","branch":"main","commit":"11f65b2","compose_path":"compose.yaml","env":"alpha","fetched":"2026-10-11T05:26:11.447Z","id":5,"repository":"apps","stack":"archive","sync":"synced","webhook":true}` {
+	if got := flat(rows[1]); got != `{"auto_update":"0 4 * * *","branch":"main","commit":"11f65b2","compose_path":"compose.yaml","env":"alpha","fetched":"2026-10-11T05:26:11Z","id":5,"repository":"apps","stack":"archive","sync":"synced","webhook":true}` {
 		t.Errorf("a git stack that is fetched by itself = %s", got)
 	}
 	if got := flat(rows[2]); got != `{"branch":"next","compose_path":"deploy/compose.yaml","env":"beta","id":6,"repository":"apps","stack":"shop","sync":"error","sync_error":"Compose file not found: deploy/compose.yaml"}` {
@@ -181,7 +181,7 @@ func TestGitStackGet(t *testing.T) {
 
 	// one in full: behind its branch, with what Dockhand keeps for it, and every secret hidden
 	out := suite.Call(t, "git_stack_get", map[string]any{"stack": "archive"})
-	if got := flat(out); got != `{"auto_update":"0 4 * * *","behind":true,"branch":"main","commit":"11f65b2","compose_path":"compose.yaml","deployed":"11f65b2","env":"alpha","env_files":[".env","deploy/shop.env"],"fetched":"2026-10-11T05:26:11.447Z","hidden":2,"id":5,"newest":"d7da76e","note":"it runs from 11f65b2 and the newest commit on main is d7da76e: git_stack_deploy brings it up to date; 2 secrets are hidden, the webhook's, and values told by the names beside them: reveal_secrets shows them","repository":"apps","secret_path":"prod/db","secret_provider":"main","stack":"archive","status":"stopped","sync":"synced","variables":[{"name":"API_TOKEN","value":"***"},{"name":"DB_PASSWORD","secret":true,"value":"***"},{"name":"MODE","value":"live"}],"webhook":true,"webhook_path":"/api/git/stacks/5/webhook","webhook_secret":"***"}` {
+	if got := flat(out); got != `{"auto_update":"0 4 * * *","behind":true,"branch":"main","commit":"11f65b2","compose_path":"compose.yaml","deployed":"11f65b2","env":"alpha","env_files":[".env","deploy/shop.env"],"fetched":"2026-10-11T05:26:11Z","hidden":2,"id":5,"newest":"d7da76e","note":"it runs from 11f65b2 and the newest commit on main is d7da76e: git_stack_deploy brings it up to date; 2 secrets are hidden, the webhook's, and values told by the names beside them: reveal_secrets shows them","repository":"apps","secret_path":"prod/db","secret_provider":"main","stack":"archive","status":"stopped","sync":"synced","variables":[{"name":"API_TOKEN","value":"***"},{"name":"DB_PASSWORD","secret":true,"value":"***"},{"name":"MODE","value":"live"}],"webhook":true,"webhook_path":"/api/git/stacks/5/webhook","webhook_secret":"***"}` {
 		t.Errorf("a git stack in full = %s", got)
 	}
 

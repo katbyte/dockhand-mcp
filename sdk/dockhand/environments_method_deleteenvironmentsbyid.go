@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteEnvironmentsByIdOperationResponse is the result of DeleteEnvironmentsById.
-type DeleteEnvironmentsByIdOperationResponse struct {
+// DeleteEnvironmentsByIdResponse is the result of DeleteEnvironmentsById.
+//
+// Answer is the DeleteEnvironmentsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteEnvironmentsByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteEnvironmentsByIdResponse
+	Answer       *DeleteEnvironmentsByIdAnswer
+	*DeleteEnvironmentsByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteEnvironmentsByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteEnvironmentsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteEnvironmentsByIdResponse) Record() (DeleteEnvironmentsByIdAnswer, error) {
+	if r.Answer == nil {
+		return DeleteEnvironmentsByIdAnswer{}, errors.New("DeleteEnvironmentsById answered no DeleteEnvironmentsByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // DeleteEnvironmentsById calls DELETE /api/environments/{id}. Delete an environment and all its associated git stacks, schedules, icons, and on-disk directories.
-func (c Client) DeleteEnvironmentsById(ctx context.Context, id int) (result DeleteEnvironmentsByIdOperationResponse, err error) {
+func (c Client) DeleteEnvironmentsById(ctx context.Context, id EnvironmentID) (result DeleteEnvironmentsByIdResponse, err error) {
+	result.DeleteEnvironmentsByIdAnswer = &DeleteEnvironmentsByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
-		Path:       fmt.Sprintf("/api/environments/%d", id),
+		Path:       fmt.Sprintf("/api/environments/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) DeleteEnvironmentsById(ctx context.Context, id int) (result Dele
 		return
 	}
 
-	var model DeleteEnvironmentsByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteEnvironmentsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteEnvironmentsByIdAnswer = result.Answer
 
 	return
 }

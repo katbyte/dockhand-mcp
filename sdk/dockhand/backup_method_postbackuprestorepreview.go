@@ -9,13 +9,13 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostBackupRestorePreviewOperationResponse is the result of PostBackupRestorePreview.
-type PostBackupRestorePreviewOperationResponse struct {
+// PostBackupRestorePreviewResponse is the result of PostBackupRestorePreview.
+type PostBackupRestorePreviewResponse struct {
 	HttpResponse *http.Response
 }
 
 // PostBackupRestorePreview calls POST /api/backup/restore/preview. Preview what a restore would write (resolved targets + volume/stack contents).
-func (c Client) PostBackupRestorePreview(ctx context.Context, input PostBackupRestorePreviewRequest) (result PostBackupRestorePreviewOperationResponse, err error) {
+func (c Client) PostBackupRestorePreview(ctx context.Context, input PostBackupRestorePreviewRequest) (result PostBackupRestorePreviewResponse, err error) {
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{

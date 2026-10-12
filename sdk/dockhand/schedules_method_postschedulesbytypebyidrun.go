@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -11,14 +12,36 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostSchedulesByTypeByIdRunOperationResponse is the result of PostSchedulesByTypeByIdRun.
-type PostSchedulesByTypeByIdRunOperationResponse struct {
+// PostSchedulesByTypeByIdRunResponse is the result of PostSchedulesByTypeByIdRun.
+//
+// Answer is the PostSchedulesByTypeByIdRunAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostSchedulesByTypeByIdRunResponse struct {
 	HttpResponse *http.Response
-	Model        *PostSchedulesByTypeByIdRunResponse
+	Answer       *PostSchedulesByTypeByIdRunAnswer
+	*PostSchedulesByTypeByIdRunAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostSchedulesByTypeByIdRunResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostSchedulesByTypeByIdRunAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostSchedulesByTypeByIdRunResponse) Record() (PostSchedulesByTypeByIdRunAnswer, error) {
+	if r.Answer == nil {
+		return PostSchedulesByTypeByIdRunAnswer{}, errors.New("PostSchedulesByTypeByIdRun answered no PostSchedulesByTypeByIdRunAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostSchedulesByTypeByIdRun calls POST /api/schedules/{type}/{id}/run. Manually trigger a single run of a schedule (outside its cron), by type and id.
-func (c Client) PostSchedulesByTypeByIdRun(ctx context.Context, typeParam string, id int) (result PostSchedulesByTypeByIdRunOperationResponse, err error) {
+func (c Client) PostSchedulesByTypeByIdRun(ctx context.Context, typeParam string, id int) (result PostSchedulesByTypeByIdRunResponse, err error) {
+	result.PostSchedulesByTypeByIdRunAnswer = &PostSchedulesByTypeByIdRunAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -41,11 +64,12 @@ func (c Client) PostSchedulesByTypeByIdRun(ctx context.Context, typeParam string
 		return
 	}
 
-	var model PostSchedulesByTypeByIdRunResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostSchedulesByTypeByIdRunAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostSchedulesByTypeByIdRunAnswer = result.Answer
 
 	return
 }

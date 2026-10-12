@@ -59,7 +59,7 @@ type jobState struct {
 }
 
 // job is a job as Dockhand answers one.
-type job = dockhand.GetJobsByIdResponse
+type job = dockhand.GetJobsByIdAnswer
 
 // stateOfJob is what a tool says of a job: its id while it runs, and the last of what it reported.
 func stateOfJob(j *job) jobState {
@@ -73,7 +73,7 @@ func stateOfJob(j *job) jobState {
 
 // progressOf is the last few things a job reported, in words: a layer and what is being done with it for a pull, and whatever text a line carries for
 // anything else. A line that says the same as the one before it, as a layer's download does many times over, is said once.
-func progressOf(lines []dockhand.GetJobsByIdResponseLines) []string {
+func progressOf(lines []dockhand.GetJobsByIdAnswerLines) []string {
 	var said []string
 	for i := range lines {
 		if lines[i].Event == "result" {
@@ -127,11 +127,11 @@ func (r *registry) await(ctx context.Context, id string, patience time.Duration)
 		if err != nil {
 			return nil, fmt.Errorf("job %s could not be asked how it goes: %w", id, refusal(err))
 		}
-		if answer.Model.Status == "" {
+		if answer.Answer.Status == "" {
 			return nil, fmt.Errorf("job %s was asked how it goes and Dockhand answered nothing that says", id)
 		}
-		if answer.Model.Status != jobRunning || !time.Now().Add(r.poll()).Before(deadline) {
-			return answer.Model, nil
+		if answer.Answer.Status != jobRunning || !time.Now().Add(r.poll()).Before(deadline) {
+			return answer.Answer, nil
 		}
 
 		select {
@@ -245,7 +245,7 @@ func registerJobTools(r *registry) {
 			return nil, jobOut{}, err
 		}
 
-		out := jobOut{jobState: stateOfJob(j), ID: j.Id, Status: j.Status, Result: j.Result}
+		out := jobOut{jobState: stateOfJob(j), ID: j.Id, Status: string(j.Status), Result: j.Result}
 		switch {
 		case out.Running:
 			out.Note = "still running: ask again, with wait to hold the answer until it ends"
@@ -280,7 +280,7 @@ func registerJobTools(r *registry) {
 		if err != nil {
 			return nil, jobCancelOut{}, err
 		}
-		out := jobCancelOut{ID: id, Was: before.Status, Is: before.Status}
+		out := jobCancelOut{ID: id, Was: string(before.Status), Is: string(before.Status)}
 		if before.Status != jobRunning {
 			out.Note = "the job had already ended, so there was nothing to stop"
 
@@ -291,13 +291,13 @@ func registerJobTools(r *registry) {
 		if err != nil {
 			return nil, out, fmt.Errorf("job %s could not be asked to stop: %w", id, refusal(err))
 		}
-		out.Cancelled = yes(answer.Model.Cancelled)
+		out.Cancelled = answer.Answer.Cancelled
 
 		after, err := r.await(ctx, id, 0)
 		if err != nil {
 			return nil, out, err
 		}
-		if out.Is = after.Status; out.Is == jobRunning {
+		if out.Is = string(after.Status); out.Is == jobRunning {
 			out.Note = "asked to stop and still running: work Docker has already begun, a pull above all, is commonly finished all the same; job_get says how it ends"
 		}
 

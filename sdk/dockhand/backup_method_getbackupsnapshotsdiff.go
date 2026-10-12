@@ -5,20 +5,25 @@ package dockhand
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetBackupSnapshotsDiffOperationResponse is the result of GetBackupSnapshotsDiff.
-type GetBackupSnapshotsDiffOperationResponse struct {
+// GetBackupSnapshotsDiffResponse is the result of GetBackupSnapshotsDiff.
+type GetBackupSnapshotsDiffResponse struct {
 	HttpResponse *http.Response
-	Model        json.RawMessage
+	Answer       json.RawMessage
 }
 
-// GetBackupSnapshotsDiffOperationOptions holds the query and header parameters of GetBackupSnapshotsDiff.
-type GetBackupSnapshotsDiffOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetBackupSnapshotsDiffResponse) Answered() bool { return r.Answer != nil }
+
+// GetBackupSnapshotsDiffOptions holds the query and header parameters of GetBackupSnapshotsDiff.
+type GetBackupSnapshotsDiffOptions struct {
 	// Destination both snapshots live in
 	DestinationId *int
 
@@ -30,13 +35,13 @@ type GetBackupSnapshotsDiffOperationOptions struct {
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetBackupSnapshotsDiffOperationOptions) ToHeaders() *client.Headers {
+func (o GetBackupSnapshotsDiffOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetBackupSnapshotsDiffOperationOptions) ToQuery() *client.QueryParams {
+func (o GetBackupSnapshotsDiffOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.DestinationId != nil {
 		out.Append("destinationId", strconv.Itoa(*o.DestinationId))
@@ -51,13 +56,22 @@ func (o GetBackupSnapshotsDiffOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetBackupSnapshotsDiff calls GET /api/backup/snapshots/diff. Diff two snapshots' file trees (added/changed/removed) - job-polled.
-func (c Client) GetBackupSnapshotsDiff(ctx context.Context, options GetBackupSnapshotsDiffOperationOptions) (result GetBackupSnapshotsDiffOperationResponse, err error) {
+func (c Client) GetBackupSnapshotsDiff(ctx context.Context, options ...GetBackupSnapshotsDiffOptions) (result GetBackupSnapshotsDiffResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetBackupSnapshotsDiff takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetBackupSnapshotsDiffOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/backup/snapshots/diff",
 	}
 
@@ -75,7 +89,7 @@ func (c Client) GetBackupSnapshotsDiff(ctx context.Context, options GetBackupSna
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

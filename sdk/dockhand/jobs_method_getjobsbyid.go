@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -11,14 +12,36 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetJobsByIdOperationResponse is the result of GetJobsById.
-type GetJobsByIdOperationResponse struct {
+// GetJobsByIdResponse is the result of GetJobsById.
+//
+// Answer is the GetJobsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetJobsByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *GetJobsByIdResponse
+	Answer       *GetJobsByIdAnswer
+	*GetJobsByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetJobsByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetJobsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetJobsByIdResponse) Record() (GetJobsByIdAnswer, error) {
+	if r.Answer == nil {
+		return GetJobsByIdAnswer{}, errors.New("GetJobsById answered no GetJobsByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetJobsById calls GET /api/jobs/{id}. Poll a background job's status and accumulated output lines (owner or admin only).
-func (c Client) GetJobsById(ctx context.Context, id string) (result GetJobsByIdOperationResponse, err error) {
+func (c Client) GetJobsById(ctx context.Context, id string) (result GetJobsByIdResponse, err error) {
+	result.GetJobsByIdAnswer = &GetJobsByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -41,11 +64,12 @@ func (c Client) GetJobsById(ctx context.Context, id string) (result GetJobsByIdO
 		return
 	}
 
-	var model GetJobsByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetJobsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetJobsByIdAnswer = result.Answer
 
 	return
 }

@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetAuthSessionOperationResponse is the result of GetAuthSession.
-type GetAuthSessionOperationResponse struct {
+// GetAuthSessionResponse is the result of GetAuthSession.
+//
+// Answer is the GetAuthSessionAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetAuthSessionResponse struct {
 	HttpResponse *http.Response
-	Model        *GetAuthSessionResponse
+	Answer       *GetAuthSessionAnswer
+	*GetAuthSessionAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetAuthSessionResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetAuthSessionAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetAuthSessionResponse) Record() (GetAuthSessionAnswer, error) {
+	if r.Answer == nil {
+		return GetAuthSessionAnswer{}, errors.New("GetAuthSession answered no GetAuthSessionAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetAuthSession calls GET /api/auth/session. Get the current session (public — used by the frontend to bootstrap auth state).
-func (c Client) GetAuthSession(ctx context.Context) (result GetAuthSessionOperationResponse, err error) {
+func (c Client) GetAuthSession(ctx context.Context) (result GetAuthSessionResponse, err error) {
+	result.GetAuthSessionAnswer = &GetAuthSessionAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) GetAuthSession(ctx context.Context) (result GetAuthSessionOperat
 		return
 	}
 
-	var model GetAuthSessionResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetAuthSessionAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetAuthSessionAnswer = result.Answer
 
 	return
 }

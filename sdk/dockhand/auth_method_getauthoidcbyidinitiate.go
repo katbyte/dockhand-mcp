@@ -10,25 +10,25 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetAuthOidcByIdInitiateOperationResponse is the result of GetAuthOidcByIdInitiate.
-type GetAuthOidcByIdInitiateOperationResponse struct {
+// GetAuthOidcByIdInitiateResponse is the result of GetAuthOidcByIdInitiate.
+type GetAuthOidcByIdInitiateResponse struct {
 	HttpResponse *http.Response
 }
 
-// GetAuthOidcByIdInitiateOperationOptions holds the query and header parameters of GetAuthOidcByIdInitiate.
-type GetAuthOidcByIdInitiateOperationOptions struct {
+// GetAuthOidcByIdInitiateOptions holds the query and header parameters of GetAuthOidcByIdInitiate.
+type GetAuthOidcByIdInitiateOptions struct {
 	// Post-login destination path to return to (defaults to /)
 	Redirect string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetAuthOidcByIdInitiateOperationOptions) ToHeaders() *client.Headers {
+func (o GetAuthOidcByIdInitiateOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetAuthOidcByIdInitiateOperationOptions) ToQuery() *client.QueryParams {
+func (o GetAuthOidcByIdInitiateOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.Redirect != "" {
 		out.Append("redirect", o.Redirect)
@@ -37,13 +37,22 @@ func (o GetAuthOidcByIdInitiateOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetAuthOidcByIdInitiate calls GET /api/auth/oidc/{id}/initiate. Start the OIDC login flow for a provider — on success throws a 302 redirect to the IdP authorization URL.
-func (c Client) GetAuthOidcByIdInitiate(ctx context.Context, id int, options GetAuthOidcByIdInitiateOperationOptions) (result GetAuthOidcByIdInitiateOperationResponse, err error) {
+func (c Client) GetAuthOidcByIdInitiate(ctx context.Context, id int, options ...GetAuthOidcByIdInitiateOptions) (result GetAuthOidcByIdInitiateResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetAuthOidcByIdInitiate takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetAuthOidcByIdInitiateOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusFound,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/auth/oidc/%d/initiate", id),
 	}
 

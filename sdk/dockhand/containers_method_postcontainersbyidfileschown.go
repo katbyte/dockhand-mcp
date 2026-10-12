@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,35 +13,57 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostContainersByIdFilesChownOperationResponse is the result of PostContainersByIdFilesChown.
-type PostContainersByIdFilesChownOperationResponse struct {
+// PostContainersByIdFilesChownResponse is the result of PostContainersByIdFilesChown.
+//
+// Answer is the PostContainersByIdFilesChownAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostContainersByIdFilesChownResponse struct {
 	HttpResponse *http.Response
-	Model        *PostContainersByIdFilesChownResponse
+	Answer       *PostContainersByIdFilesChownAnswer
+	*PostContainersByIdFilesChownAnswer
 }
 
-// PostContainersByIdFilesChownOperationOptions holds the query and header parameters of PostContainersByIdFilesChown.
-type PostContainersByIdFilesChownOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostContainersByIdFilesChownResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostContainersByIdFilesChownAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostContainersByIdFilesChownResponse) Record() (PostContainersByIdFilesChownAnswer, error) {
+	if r.Answer == nil {
+		return PostContainersByIdFilesChownAnswer{}, errors.New("PostContainersByIdFilesChown answered no PostContainersByIdFilesChownAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostContainersByIdFilesChownOptions holds the query and header parameters of PostContainersByIdFilesChown.
+type PostContainersByIdFilesChownOptions struct {
 	// The target environment ID the container lives in (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostContainersByIdFilesChownOperationOptions) ToHeaders() *client.Headers {
+func (o PostContainersByIdFilesChownOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostContainersByIdFilesChownOperationOptions) ToQuery() *client.QueryParams {
+func (o PostContainersByIdFilesChownOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostContainersByIdFilesChown calls POST /api/containers/{id}/files/chown. Change the owner (and optional group) of a file or directory inside a container (requires the 'exec' permission).
-func (c Client) PostContainersByIdFilesChown(ctx context.Context, id string, input PostContainersByIdFilesChownRequest, options PostContainersByIdFilesChownOperationOptions) (result PostContainersByIdFilesChownOperationResponse, err error) {
+func (c Client) PostContainersByIdFilesChown(ctx context.Context, id string, input PostContainersByIdFilesChownRequest, options PostContainersByIdFilesChownOptions) (result PostContainersByIdFilesChownResponse, err error) {
+	result.PostContainersByIdFilesChownAnswer = &PostContainersByIdFilesChownAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -69,11 +92,12 @@ func (c Client) PostContainersByIdFilesChown(ctx context.Context, id string, inp
 		return
 	}
 
-	var model PostContainersByIdFilesChownResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostContainersByIdFilesChownAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostContainersByIdFilesChownAnswer = result.Answer
 
 	return
 }

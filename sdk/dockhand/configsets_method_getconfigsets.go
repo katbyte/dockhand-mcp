@@ -9,14 +9,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetConfigSetsOperationResponse is the result of GetConfigSets.
-type GetConfigSetsOperationResponse struct {
+// GetConfigSetsResponse is the result of GetConfigSets.
+type GetConfigSetsResponse struct {
 	HttpResponse *http.Response
-	Model        []GetConfigSetsResponse
+	Answer       []GetConfigSetsAnswer
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetConfigSetsResponse) Answered() bool { return r.Answer != nil }
+
 // GetConfigSets calls GET /api/config-sets. List all config sets (reusable bundles of env vars, labels, ports, volumes, and runtime defaults).
-func (c Client) GetConfigSets(ctx context.Context) (result GetConfigSetsOperationResponse, err error) {
+func (c Client) GetConfigSets(ctx context.Context) (result GetConfigSetsResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,7 +43,7 @@ func (c Client) GetConfigSets(ctx context.Context) (result GetConfigSetsOperatio
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

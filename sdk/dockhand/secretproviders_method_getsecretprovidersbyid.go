@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetSecretProvidersByIdOperationResponse is the result of GetSecretProvidersById.
-type GetSecretProvidersByIdOperationResponse struct {
+// GetSecretProvidersByIdResponse is the result of GetSecretProvidersById.
+//
+// Answer is the GetSecretProvidersByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetSecretProvidersByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *GetSecretProvidersByIdResponse
+	Answer       *GetSecretProvidersByIdAnswer
+	*GetSecretProvidersByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetSecretProvidersByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetSecretProvidersByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetSecretProvidersByIdResponse) Record() (GetSecretProvidersByIdAnswer, error) {
+	if r.Answer == nil {
+		return GetSecretProvidersByIdAnswer{}, errors.New("GetSecretProvidersById answered no GetSecretProvidersByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetSecretProvidersById calls GET /api/secret-providers/{id}. Get one secret provider with its non-secret config coordinates (the token is redacted out).
-func (c Client) GetSecretProvidersById(ctx context.Context, id int) (result GetSecretProvidersByIdOperationResponse, err error) {
+func (c Client) GetSecretProvidersById(ctx context.Context, id SecretProviderID) (result GetSecretProvidersByIdResponse, err error) {
+	result.GetSecretProvidersByIdAnswer = &GetSecretProvidersByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
-		Path:       fmt.Sprintf("/api/secret-providers/%d", id),
+		Path:       fmt.Sprintf("/api/secret-providers/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) GetSecretProvidersById(ctx context.Context, id int) (result GetS
 		return
 	}
 
-	var model GetSecretProvidersByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetSecretProvidersByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetSecretProvidersByIdAnswer = result.Answer
 
 	return
 }

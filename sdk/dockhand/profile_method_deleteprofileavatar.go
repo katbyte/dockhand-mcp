@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteProfileAvatarOperationResponse is the result of DeleteProfileAvatar.
-type DeleteProfileAvatarOperationResponse struct {
+// DeleteProfileAvatarResponse is the result of DeleteProfileAvatar.
+//
+// Answer is the DeleteProfileAvatarAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteProfileAvatarResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteProfileAvatarResponse
+	Answer       *DeleteProfileAvatarAnswer
+	*DeleteProfileAvatarAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteProfileAvatarResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteProfileAvatarAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteProfileAvatarResponse) Record() (DeleteProfileAvatarAnswer, error) {
+	if r.Answer == nil {
+		return DeleteProfileAvatarAnswer{}, errors.New("DeleteProfileAvatar answered no DeleteProfileAvatarAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // DeleteProfileAvatar calls DELETE /api/profile/avatar. Remove the authenticated user's avatar.
-func (c Client) DeleteProfileAvatar(ctx context.Context) (result DeleteProfileAvatarOperationResponse, err error) {
+func (c Client) DeleteProfileAvatar(ctx context.Context) (result DeleteProfileAvatarResponse, err error) {
+	result.DeleteProfileAvatarAnswer = &DeleteProfileAvatarAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) DeleteProfileAvatar(ctx context.Context) (result DeleteProfileAv
 		return
 	}
 
-	var model DeleteProfileAvatarResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteProfileAvatarAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteProfileAvatarAnswer = result.Answer
 
 	return
 }

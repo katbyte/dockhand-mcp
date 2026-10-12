@@ -120,7 +120,7 @@ func registerExportTools(r *registry) {
 		if info, statErr := os.Stat(to); statErr == nil && info.IsDir() {
 			to = filepath.Join(to, fileNameOf(cmp.Or(out.Recorded, out.ID))+".tar")
 		}
-		got, err := r.dock.GetImagesByIdExport(ctx, at.Image.Id, dockhand.GetImagesByIdExportOperationOptions{Env: &at.Env.ID, Tag: out.Recorded, Compress: new(isGzipped(to))})
+		got, err := r.dock.GetImagesByIdExport(ctx, at.Image.Id, dockhand.GetImagesByIdExportOptions{Env: at.Env.ID, Tag: out.Recorded, Compress: new(isGzipped(to))})
 		if got.HttpResponse != nil && got.HttpResponse.Body != nil {
 			defer func() { _ = got.HttpResponse.Body.Close() }()
 		}
@@ -180,7 +180,7 @@ func registerExportTools(r *registry) {
 			return nil, out, fmt.Errorf("the images of %s could not be listed, so nothing was loaded: %w", env.Name, err)
 		}
 		// has reports whether a host's images include one by a name, or for one with no name by its id
-		has := func(images []dockhand.GetImagesResponse, name string) bool {
+		has := func(images []dockhand.GetImagesAnswer, name string) bool {
 			for i := range images {
 				if images[i].Id == name || slices.Contains(tagsOf(&images[i]), name) {
 					return true
@@ -212,15 +212,15 @@ func registerExportTools(r *registry) {
 			return nil, out, fmt.Errorf("file could not be read here: %w", err)
 		}
 		defer func() { _ = archive.Close() }()
-		loaded, err := r.dock.PostImagesLoad(ctx, archive, "application/x-tar", dockhand.PostImagesLoadOperationOptions{Env: &env.ID})
+		loaded, err := r.dock.PostImagesLoad(ctx, archive, "application/x-tar", dockhand.PostImagesLoadOptions{Env: env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("the archive was not loaded on %s: %w", env.Name, refusal(err))
 		}
-		if !yes(loaded.Model.Success) {
+		if !loaded.Answer.Success {
 			return nil, out, fmt.Errorf("the archive was not loaded on %s, and Dockhand does not say why", env.Name)
 		}
 		// Docker says what it loaded a line at a time, an image with no name by its id
-		for line := range strings.SplitSeq(loaded.Model.Loaded, "\n") {
+		for line := range strings.SplitSeq(loaded.Answer.Loaded, "\n") {
 			if _, name, is := strings.Cut(line, ": "); is && strings.TrimSpace(name) != "" {
 				out.Images = append(out.Images, strings.TrimSpace(name))
 			}
@@ -280,7 +280,7 @@ func registerExportTools(r *registry) {
 		}
 
 		// always asked for gzipped, as the archives of a container's files are, and unpacked here when a plain tar is wanted
-		got, err := r.dock.GetVolumesByNameExport(ctx, at.Volume.Name, dockhand.GetVolumesByNameExportOperationOptions{Env: &at.Env.ID, Path: within, Format: gzipped})
+		got, err := r.dock.GetVolumesByNameExport(ctx, at.Volume.Name, dockhand.GetVolumesByNameExportOptions{Env: at.Env.ID, Path: within, Format: gzipped})
 		if got.HttpResponse != nil && got.HttpResponse.Body != nil {
 			defer func() { _ = got.HttpResponse.Body.Close() }()
 		}

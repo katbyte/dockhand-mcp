@@ -39,7 +39,7 @@
           "Type": "List",
           "NestedItem": {
             "Type": "Reference",
-            "ReferenceName": "GetIconsSelfhstManifestResponse"
+            "ReferenceName": "GetIconsSelfhstManifestAnswer"
           }
         }
       },
@@ -64,7 +64,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostIconsSelfhstBatchResponse"
+          "ReferenceName": "PostIconsSelfhstBatchAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -74,7 +74,7 @@
   ],
   "Models": [
     {
-      "Name": "GetIconsSelfhstManifestResponse",
+      "Name": "GetIconsSelfhstManifestAnswer",
       "Fields": [
         {
           "Name": "Category",
@@ -87,7 +87,7 @@
           "Name": "CreatedAt",
           "JsonName": "CreatedAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -153,13 +153,14 @@
       ]
     },
     {
-      "Name": "PostIconsSelfhstBatchRequest",
+      "Name": "PostIconsSelfhstBatchAnswer",
       "Fields": [
         {
-          "Name": "Refs",
-          "JsonName": "refs",
+          "Name": "Icons",
+          "JsonName": "icons",
+          "Description": "each icon that could be had as a data: address, by its reference; one that could not is left out",
           "Type": {
-            "Type": "List",
+            "Type": "Dictionary",
             "NestedItem": {
               "Type": "String"
             }
@@ -169,14 +170,13 @@
       ]
     },
     {
-      "Name": "PostIconsSelfhstBatchResponse",
+      "Name": "PostIconsSelfhstBatchRequest",
       "Fields": [
         {
-          "Name": "Icons",
-          "JsonName": "icons",
-          "Description": "each icon that could be had as a data: address, by its reference; one that could not is left out",
+          "Name": "Refs",
+          "JsonName": "refs",
           "Type": {
-            "Type": "Dictionary",
+            "Type": "List",
             "NestedItem": {
               "Type": "String"
             }

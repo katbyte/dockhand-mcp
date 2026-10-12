@@ -4,50 +4,94 @@ package dockhand
 
 import (
 	"context"
+	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetEventsOperationResponse is the result of GetEvents.
+// GetEventsResponse is the result of GetEvents.
 //
-// The operation answers text/event-stream, left unread in HttpResponse.Body, which
-// the caller must close.
-type GetEventsOperationResponse struct {
+// The operation answers text/event-stream, left open in HttpResponse.Body: Reader hands it
+// over for the caller to read event by event and close; it has no end to copy to.
+type GetEventsResponse struct {
 	HttpResponse *http.Response
 }
 
-// GetEventsOperationOptions holds the query and header parameters of GetEvents.
-type GetEventsOperationOptions struct {
+// Reader is the file's body, for the caller to read and close, and the content
+// type the server named it; an empty body and "" when the operation gave no
+// answer, so a deferred Close is always safe. The body stays readable after
+// the result goes out of scope, and has no size or time limit of the client's:
+// the caller's context is the one bound on a slow read.
+func (r GetEventsResponse) Reader() (io.ReadCloser, string) {
+	if r.HttpResponse == nil || r.HttpResponse.Body == nil {
+		return http.NoBody, ""
+	}
+
+	return r.HttpResponse.Body, r.HttpResponse.Header.Get("Content-Type")
+}
+
+// ContentLength is the file's length as the server named it, or -1 when it
+// did not, to refuse one too big before reading any of it.
+func (r GetEventsResponse) ContentLength() int64 {
+	if r.HttpResponse == nil {
+		return -1
+	}
+
+	return r.HttpResponse.ContentLength
+}
+
+// Filename is the name the server gave the file (Content-Disposition), or ""
+// when it gave none, for a caller saving it under the server's name.
+func (r GetEventsResponse) Filename() string {
+	if r.HttpResponse == nil {
+		return ""
+	}
+
+	return client.Filename(r.HttpResponse.Header)
+}
+
+// GetEventsOptions holds the query and header parameters of GetEvents.
+type GetEventsOptions struct {
 	// Environment id — without it, an "info" SSE message is sent and the stream ends (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetEventsOperationOptions) ToHeaders() *client.Headers {
+func (o GetEventsOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetEventsOperationOptions) ToQuery() *client.QueryParams {
+func (o GetEventsOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetEvents calls GET /api/events. Stream live Docker events (container/image/volume/network) for an environment via SSE, with periodic heartbeats.
-func (c Client) GetEvents(ctx context.Context, options GetEventsOperationOptions) (result GetEventsOperationResponse, err error) {
+func (c Client) GetEvents(ctx context.Context, options ...GetEventsOptions) (result GetEventsResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetEvents takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetEventsOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		Accept: "text/event-stream",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
-		OptionsObject:  options,
+		OptionsObject:  option,
 		Path:           "/api/events",
 		StreamResponse: true,
 	}

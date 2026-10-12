@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetSettingsSemverOperationResponse is the result of GetSettingsSemver.
-type GetSettingsSemverOperationResponse struct {
+// GetSettingsSemverResponse is the result of GetSettingsSemver.
+//
+// Answer is the GetSettingsSemverAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetSettingsSemverResponse struct {
 	HttpResponse *http.Response
-	Model        *GetSettingsSemverResponse
+	Answer       *GetSettingsSemverAnswer
+	*GetSettingsSemverAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetSettingsSemverResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetSettingsSemverAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetSettingsSemverResponse) Record() (GetSettingsSemverAnswer, error) {
+	if r.Answer == nil {
+		return GetSettingsSemverAnswer{}, errors.New("GetSettingsSemver answered no GetSettingsSemverAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetSettingsSemver calls GET /api/settings/semver. Get the global newer-version-tag (semver) detection config.
-func (c Client) GetSettingsSemver(ctx context.Context) (result GetSettingsSemverOperationResponse, err error) {
+func (c Client) GetSettingsSemver(ctx context.Context) (result GetSettingsSemverResponse, err error) {
+	result.GetSettingsSemverAnswer = &GetSettingsSemverAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) GetSettingsSemver(ctx context.Context) (result GetSettingsSemver
 		return
 	}
 
-	var model GetSettingsSemverResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetSettingsSemverAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetSettingsSemverAnswer = result.Answer
 
 	return
 }

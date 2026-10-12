@@ -11,14 +11,18 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetBackupDestinationsByIdOperationResponse is the result of GetBackupDestinationsById.
-type GetBackupDestinationsByIdOperationResponse struct {
+// GetBackupDestinationsByIdResponse is the result of GetBackupDestinationsById.
+type GetBackupDestinationsByIdResponse struct {
 	HttpResponse *http.Response
-	Model        json.RawMessage
+	Answer       json.RawMessage
 }
 
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetBackupDestinationsByIdResponse) Answered() bool { return r.Answer != nil }
+
 // GetBackupDestinationsById calls GET /api/backup/destinations/{id}. Fetch a single backup destination; decrypted cloud-credential env vars are only included for callers who can manage backups, and the password is always stripped.
-func (c Client) GetBackupDestinationsById(ctx context.Context, id int) (result GetBackupDestinationsByIdOperationResponse, err error) {
+func (c Client) GetBackupDestinationsById(ctx context.Context, id int) (result GetBackupDestinationsByIdResponse, err error) {
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -41,7 +45,7 @@ func (c Client) GetBackupDestinationsById(ctx context.Context, id int) (result G
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

@@ -1,0 +1,131 @@
+{
+  "Name": "Common",
+  "Constants": [
+    {
+      "Name": "ContainerHealth",
+      "SchemaName": "ContainerHealth",
+      "Values": [
+        {
+          "Name": "ContainerHealthHealthy",
+          "Value": "healthy"
+        },
+        {
+          "Name": "ContainerHealthUnhealthy",
+          "Value": "unhealthy"
+        },
+        {
+          "Name": "ContainerHealthStarting",
+          "Value": "starting"
+        }
+      ]
+    },
+    {
+      "Name": "ContainerState",
+      "SchemaName": "ContainerState",
+      "Values": [
+        {
+          "Name": "ContainerStateRunning",
+          "Value": "running"
+        },
+        {
+          "Name": "ContainerStateExited",
+          "Value": "exited"
+        },
+        {
+          "Name": "ContainerStatePaused",
+          "Value": "paused"
+        },
+        {
+          "Name": "ContainerStateRestarting",
+          "Value": "restarting"
+        },
+        {
+          "Name": "ContainerStateCreated",
+          "Value": "created"
+        },
+        {
+          "Name": "ContainerStateDead",
+          "Value": "dead"
+        },
+        {
+          "Name": "ContainerStateRemoving",
+          "Value": "removing"
+        }
+      ]
+    },
+    {
+      "Name": "FileType",
+      "SchemaName": "FileType",
+      "Values": [
+        {
+          "Name": "FileTypeFile",
+          "Value": "file"
+        },
+        {
+          "Name": "FileTypeDirectory",
+          "Value": "directory"
+        },
+        {
+          "Name": "FileTypeSymlink",
+          "Value": "symlink"
+        },
+        {
+          "Name": "FileTypeOther",
+          "Value": "other"
+        }
+      ]
+    },
+    {
+      "Name": "Scanner",
+      "SchemaName": "Scanner",
+      "Values": [
+        {
+          "Name": "ScannerNone",
+          "Value": "none"
+        },
+        {
+          "Name": "ScannerGrype",
+          "Value": "grype"
+        },
+        {
+          "Name": "ScannerTrivy",
+          "Value": "trivy"
+        },
+        {
+          "Name": "ScannerBoth",
+          "Value": "both"
+        }
+      ]
+    },
+    {
+      "Name": "Severity",
+      "SchemaName": "Severity",
+      "Values": [
+        {
+          "Name": "SeverityCritical",
+          "Value": "critical"
+        },
+        {
+          "Name": "SeverityHigh",
+          "Value": "high"
+        },
+        {
+          "Name": "SeverityMedium",
+          "Value": "medium"
+        },
+        {
+          "Name": "SeverityLow",
+          "Value": "low"
+        },
+        {
+          "Name": "SeverityNegligible",
+          "Value": "negligible"
+        },
+        {
+          "Name": "SeverityUnknown",
+          "Value": "unknown"
+        }
+      ]
+    }
+  ]
+}

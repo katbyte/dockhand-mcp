@@ -14,8 +14,8 @@ func TestOperationPostContainersBatchUpdateStream(t *testing.T) {
 	t.Parallel()
 
 	c, s := newOperationServer(t, 200, "", "")
-	result, err := c.PostContainersBatchUpdateStream(t.Context(), PostContainersBatchUpdateStreamRequest{}, PostContainersBatchUpdateStreamOperationOptions{
-		Env: new(7),
+	result, err := c.PostContainersBatchUpdateStream(t.Context(), PostContainersBatchUpdateStreamRequest{}, PostContainersBatchUpdateStreamOptions{
+		Env: EnvironmentID(7),
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -29,14 +29,17 @@ func TestOperationPostContainersBatchUpdateStream(t *testing.T) {
 	if !json.Valid([]byte(body)) {
 		t.Errorf("body = %q, want JSON", body)
 	}
+	if body != "{\"containerIds\":null}" {
+		t.Errorf("an empty record sent %q, want %q: a field never set went out", body, "{\"containerIds\":null}")
+	}
 	if result.HttpResponse == nil || result.HttpResponse.StatusCode != 200 {
 		t.Fatalf("HttpResponse = %+v", result.HttpResponse)
 	}
 
 	// a status the operation does not document is an error, with the response
 	c, _ = newOperationServer(t, 418, "text/plain", "no")
-	result, err = c.PostContainersBatchUpdateStream(t.Context(), PostContainersBatchUpdateStreamRequest{}, PostContainersBatchUpdateStreamOperationOptions{
-		Env: new(7),
+	result, err = c.PostContainersBatchUpdateStream(t.Context(), PostContainersBatchUpdateStreamRequest{}, PostContainersBatchUpdateStreamOptions{
+		Env: EnvironmentID(7),
 	})
 	if client.StatusCode(err) != 418 || result.HttpResponse == nil {
 		t.Errorf("an undocumented status = %v, %+v", err, result.HttpResponse)

@@ -89,27 +89,27 @@ func (r *registry) settingsOf(ctx context.Context, env environment) (kept hostSe
 	if zone, err := r.dock.GetEnvironmentsByIdTimezone(ctx, env.ID); err != nil {
 		unread = append(unread, "its timezone")
 	} else {
-		kept.Timezone = zone.Model.Timezone
+		kept.Timezone = zone.Answer.Timezone
 	}
-	if check, err := r.dock.GetEnvironmentsByIdUpdateCheck(ctx, env.ID); err != nil || check.Model.Settings == nil {
+	if check, err := r.dock.GetEnvironmentsByIdUpdateCheck(ctx, env.ID); err != nil || check.Answer.Settings == nil {
 		unread = append(unread, "its update check")
 	} else {
-		kept.UpdateCheck = &updateCheck{Enabled: yes(check.Model.Settings.Enabled), Cron: check.Model.Settings.Cron, AutoUpdate: yes(check.Model.Settings.AutoUpdate), HoldBack: check.Model.Settings.VulnerabilityCriteria}
+		kept.UpdateCheck = &updateCheck{Enabled: check.Answer.Settings.Enabled, Cron: check.Answer.Settings.Cron, AutoUpdate: check.Answer.Settings.AutoUpdate, HoldBack: check.Answer.Settings.VulnerabilityCriteria}
 	}
-	if prune, err := r.dock.GetEnvironmentsByIdImagePrune(ctx, env.ID); err != nil || prune.Model.Settings == nil {
+	if prune, err := r.dock.GetEnvironmentsByIdImagePrune(ctx, env.ID); err != nil || prune.Answer.Settings == nil {
 		unread = append(unread, "its image prune")
 	} else {
-		kept.ImagePrune = &pruneSchedule{Enabled: yes(prune.Model.Settings.Enabled), Cron: prune.Model.Settings.CronExpression, Mode: prune.Model.Settings.PruneMode}
+		kept.ImagePrune = &pruneSchedule{Enabled: prune.Answer.Settings.Enabled, Cron: prune.Answer.Settings.CronExpression, Mode: prune.Answer.Settings.PruneMode}
 	}
 	if warning, err := r.dock.GetEnvironmentsByIdDiskWarning(ctx, env.ID); err != nil {
 		unread = append(unread, "its disk warning")
 	} else {
-		kept.DiskWarning = &diskWarning{Enabled: yes(warning.Model.Enabled), Mode: warning.Model.Mode, Percent: warning.Model.Threshold, GB: warning.Model.ThresholdGb}
+		kept.DiskWarning = &diskWarning{Enabled: warning.Answer.Enabled, Mode: string(warning.Answer.Mode), Percent: warning.Answer.Threshold, GB: warning.Answer.ThresholdGb}
 	}
 	if dir, err := r.dock.GetEnvironmentsByIdRemoteStacksDir(ctx, env.ID); err != nil {
 		unread = append(unread, "its remote stacks folder")
 	} else {
-		kept.RemoteStacksDir = dir.Model.RemoteStacksDir
+		kept.RemoteStacksDir = dir.Answer.RemoteStacksDir
 	}
 	if len(unread) > 0 {
 		return kept, strings.Join(unread, ", ") + " could not be read"
@@ -154,8 +154,8 @@ func registerEnvironmentHostTools(r *registry) {
 		if err != nil {
 			return nil, envGetOut{}, fmt.Errorf("%s could not be read: %w", env.Name, refusal(err))
 		}
-		e := kept.Model
-		out := envGetOut{Env: e.Name, ID: e.Id, Connection: e.ConnectionType, SocketPath: e.SocketPath, Labels: orNone(e.Labels), PublicIP: e.PublicIp, CollectActivity: yes(e.CollectActivity), CollectMetrics: yes(e.CollectMetrics), Agent: e.HawserAgentName, AgentVersion: e.HawserVersion, AgentLastSeen: e.HawserLastSeen, HasAgentToken: yes(e.HasHawserToken), Created: e.CreatedAt}
+		e := kept.Answer
+		out := envGetOut{Env: e.Name, ID: int(e.Id), Connection: string(e.ConnectionType), SocketPath: e.SocketPath, Labels: orNone(e.Labels), PublicIP: e.PublicIp, CollectActivity: e.CollectActivity, CollectMetrics: e.CollectMetrics, Agent: e.HawserAgentName, AgentVersion: e.HawserVersion, AgentLastSeen: when(e.HawserLastSeen), HasAgentToken: e.HasHawserToken, Created: when(e.CreatedAt)}
 		if e.ConnectionType != connectionSocket && e.Host != "" {
 			out.Address = e.Host
 			if e.Port != 0 {
@@ -164,17 +164,17 @@ func registerEnvironmentHostTools(r *registry) {
 		}
 
 		// the machine answers for itself, and one that does not is said not to
-		host, err := r.dock.GetHost(ctx, dockhand.GetHostOperationOptions{Env: &env.ID})
+		host, err := r.dock.GetHost(ctx, dockhand.GetHostOptions{Env: env.ID})
 		if err != nil {
 			out.Note = "the host did not answer, so nothing is said of the machine: " + refusal(err).Error()
 		} else {
-			h := host.Model
+			h := host.Answer
 			out.Machine = &hostMachine{Hostname: h.Hostname, Address: h.IpAddress, OS: h.Platform, Arch: h.Arch, CPUs: h.Cpus, MemoryMB: megabytes(h.TotalMemory), UptimeHours: math.Round(h.Uptime/360) / 10, DockerVersion: h.DockerVersion, Containers: h.DockerContainers, Running: h.DockerContainersRunning, Images: h.DockerImages}
 			out.AgentVersion = cmp.Or(out.AgentVersion, word(h.Environment, "hawserVersion"))
 			// what Docker says of itself beyond that is another call, and the description stands without it
-			if system, failed := r.dock.GetSystem(ctx, dockhand.GetSystemOperationOptions{Env: &env.ID}); failed == nil {
-				out.Machine.Kernel, out.Machine.StorageDriver = word(system.Model.Docker, "kernelVersion"), word(system.Model.Host, "storageDriver")
-				out.Machine.Volumes, out.Machine.Networks, out.Machine.Stacks = count(system.Model.Stats, "volumes"), count(system.Model.Stats, "networks"), count(system.Model.Stats, "stacks")
+			if system, failed := r.dock.GetSystem(ctx, dockhand.GetSystemOptions{Env: env.ID}); failed == nil {
+				out.Machine.Kernel, out.Machine.StorageDriver = word(system.Answer.Docker, "kernelVersion"), word(system.Answer.Host, "storageDriver")
+				out.Machine.Volumes, out.Machine.Networks, out.Machine.Stacks = count(system.Answer.Stats, "volumes"), count(system.Answer.Stats, "networks"), count(system.Answer.Stats, "stacks")
 			}
 		}
 
@@ -224,12 +224,12 @@ func registerEnvironmentHostTools(r *registry) {
 		if err != nil {
 			return nil, envEditOut{}, err
 		}
-		out := envEditOut{Env: env.Name, ID: env.ID, Changes: []string{}, DryRun: in.DryRun}
+		out := envEditOut{Env: env.Name, ID: int(env.ID), Changes: []string{}, DryRun: in.DryRun}
 		kept, err := r.dock.GetEnvironmentsById(ctx, env.ID)
 		if err != nil {
 			return nil, out, fmt.Errorf("%s could not be read, so nothing was changed: %w", env.Name, refusal(err))
 		}
-		was := kept.Model
+		was := kept.Answer
 
 		request := dockhand.PutEnvironmentsByIdRequest{}
 		reached := false
@@ -255,11 +255,11 @@ func registerEnvironmentHostTools(r *registry) {
 			forget = request.PublicIp == ""
 			out.Changes = append(out.Changes, fmt.Sprintf("its public address, which was %q, is %q", was.PublicIp, request.PublicIp))
 		}
-		if in.CollectActivity != nil && *in.CollectActivity != yes(was.CollectActivity) {
+		if in.CollectActivity != nil && *in.CollectActivity != was.CollectActivity {
 			request.CollectActivity = in.CollectActivity
 			out.Changes = append(out.Changes, fmt.Sprintf("its containers' activity is collected: %t", *in.CollectActivity))
 		}
-		if in.CollectMetrics != nil && *in.CollectMetrics != yes(was.CollectMetrics) {
+		if in.CollectMetrics != nil && *in.CollectMetrics != was.CollectMetrics {
 			request.CollectMetrics = in.CollectMetrics
 			out.Changes = append(out.Changes, fmt.Sprintf("its metrics are collected: %t", *in.CollectMetrics))
 		}
@@ -271,9 +271,9 @@ func registerEnvironmentHostTools(r *registry) {
 			request.Port, reached = in.Port, true
 			out.Changes = append(out.Changes, fmt.Sprintf("it is reached on port %d, where it was %d", in.Port, was.Port))
 		}
-		if protocol != "" && protocol != was.Protocol {
-			request.Protocol, reached = protocol, true
-			out.Changes = append(out.Changes, "it is reached over "+protocol+", where it was "+was.Protocol)
+		if protocol != "" && protocol != string(was.Protocol) {
+			request.Protocol, reached = dockhand.EnvironmentProtocol(protocol), true
+			out.Changes = append(out.Changes, "it is reached over "+protocol+", where it was "+string(was.Protocol))
 		}
 		if socket := strings.TrimSpace(in.SocketPath); socket != "" && socket != was.SocketPath {
 			request.SocketPath, reached = socket, true
@@ -302,9 +302,9 @@ func registerEnvironmentHostTools(r *registry) {
 
 			return nil, out, fmt.Errorf("%s was not changed: %w", env.Name, refusal(err))
 		}
-		out.Env = saved.Model.Name
+		out.Env = saved.Answer.Name
 		if forget {
-			if _, err := r.dock.ForgetEnvironmentPublicIP(ctx, env.ID); err != nil {
+			if _, err := r.dock.ForgetEnvironmentPublicIP(ctx, int(env.ID)); err != nil {
 				return nil, out, fmt.Errorf("%s was changed, and its public address was not forgotten: %w", env.Name, refusal(err))
 			}
 		}
@@ -314,9 +314,9 @@ func registerEnvironmentHostTools(r *registry) {
 			switch {
 			case failed != nil:
 				out.Note = "whether Dockhand reaches the host the new way could not be tried: " + refusal(failed).Error()
-			case !yes(tried.Model.Success):
+			case !tried.Answer.Success:
 				out.Reachable = new(false)
-				out.Note = "Dockhand does not reach the host the new way: " + cmp.Or(tried.Model.Error, "it gives no reason") + ". Its containers cannot be seen or managed until how it is reached is put right"
+				out.Note = "Dockhand does not reach the host the new way: " + cmp.Or(tried.Answer.Error, "it gives no reason") + ". Its containers cannot be seen or managed until how it is reached is put right"
 			default:
 				out.Reachable = new(true)
 			}
@@ -445,7 +445,7 @@ func registerEnvironmentHostTools(r *registry) {
 		if warning != *was.DiskWarning {
 			out.Changes = append(out.Changes, fmt.Sprintf("its disk warning, which was %s, is %s", saidOfWarning(was.DiskWarning), saidOfWarning(&warning)))
 			todo = append(todo, func() error {
-				_, failed := r.dock.PostEnvironmentsByIdDiskWarning(ctx, env.ID, dockhand.PostEnvironmentsByIdDiskWarningRequest{Enabled: new(warning.Enabled), Mode: warning.Mode, Threshold: warning.Percent, ThresholdGb: warning.GB})
+				_, failed := r.dock.PostEnvironmentsByIdDiskWarning(ctx, env.ID, dockhand.PostEnvironmentsByIdDiskWarningRequest{Enabled: new(warning.Enabled), Mode: dockhand.DiskWarningMode(warning.Mode), Threshold: warning.Percent, ThresholdGb: warning.GB})
 
 				return failed
 			})

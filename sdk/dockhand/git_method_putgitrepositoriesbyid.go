@@ -4,27 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutGitRepositoriesByIdOperationResponse is the result of PutGitRepositoriesById.
-type PutGitRepositoriesByIdOperationResponse struct {
+// PutGitRepositoriesByIdResponse is the result of PutGitRepositoriesById.
+//
+// Answer is the PutGitRepositoriesByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PutGitRepositoriesByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *PutGitRepositoriesByIdResponse
+	Answer       *PutGitRepositoriesByIdAnswer
+	*PutGitRepositoriesByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutGitRepositoriesByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutGitRepositoriesByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutGitRepositoriesByIdResponse) Record() (PutGitRepositoriesByIdAnswer, error) {
+	if r.Answer == nil {
+		return PutGitRepositoriesByIdAnswer{}, errors.New("PutGitRepositoriesById answered no PutGitRepositoriesByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PutGitRepositoriesById calls PUT /api/git/repositories/{id}. Update a git repository's basic fields (name/url/branch/credential).
-func (c Client) PutGitRepositoriesById(ctx context.Context, id int, input PutGitRepositoriesByIdRequest) (result PutGitRepositoriesByIdOperationResponse, err error) {
+func (c Client) PutGitRepositoriesById(ctx context.Context, id GitRepositoryID, input PutGitRepositoriesByIdRequest) (result PutGitRepositoriesByIdResponse, err error) {
+	result.PutGitRepositoriesByIdAnswer = &PutGitRepositoriesByIdAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
-		Path:       fmt.Sprintf("/api/git/repositories/%d", id),
+		Path:       fmt.Sprintf("/api/git/repositories/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -45,11 +70,12 @@ func (c Client) PutGitRepositoriesById(ctx context.Context, id int, input PutGit
 		return
 	}
 
-	var model PutGitRepositoriesByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PutGitRepositoriesByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PutGitRepositoriesByIdAnswer = result.Answer
 
 	return
 }

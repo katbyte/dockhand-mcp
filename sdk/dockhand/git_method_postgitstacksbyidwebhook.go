@@ -4,26 +4,51 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostGitStacksByIdWebhookOperationResponse is the result of PostGitStacksByIdWebhook.
-type PostGitStacksByIdWebhookOperationResponse struct {
+// PostGitStacksByIdWebhookResponse is the result of PostGitStacksByIdWebhook.
+//
+// Answer is the PostGitStacksByIdWebhookAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostGitStacksByIdWebhookResponse struct {
 	HttpResponse *http.Response
-	Model        *PostGitStacksByIdWebhookResponse
+	Answer       *PostGitStacksByIdWebhookAnswer
+	*PostGitStacksByIdWebhookAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostGitStacksByIdWebhookResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostGitStacksByIdWebhookAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostGitStacksByIdWebhookResponse) Record() (PostGitStacksByIdWebhookAnswer, error) {
+	if r.Answer == nil {
+		return PostGitStacksByIdWebhookAnswer{}, errors.New("PostGitStacksByIdWebhook answered no PostGitStacksByIdWebhookAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostGitStacksByIdWebhook calls POST /api/git/stacks/{id}/webhook. Webhook trigger (GitHub/GitLab) that deploys a git stack when its signature/token verifies.
-func (c Client) PostGitStacksByIdWebhook(ctx context.Context, id int) (result PostGitStacksByIdWebhookOperationResponse, err error) {
+func (c Client) PostGitStacksByIdWebhook(ctx context.Context, id GitStackID) (result PostGitStacksByIdWebhookResponse, err error) {
+	result.PostGitStacksByIdWebhookAnswer = &PostGitStacksByIdWebhookAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
-		Path:       fmt.Sprintf("/api/git/stacks/%d/webhook", id),
+		Path:       fmt.Sprintf("/api/git/stacks/%s/webhook", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -40,11 +65,12 @@ func (c Client) PostGitStacksByIdWebhook(ctx context.Context, id int) (result Po
 		return
 	}
 
-	var model PostGitStacksByIdWebhookResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostGitStacksByIdWebhookAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostGitStacksByIdWebhookAnswer = result.Answer
 
 	return
 }

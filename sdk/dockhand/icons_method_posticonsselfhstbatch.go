@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostIconsSelfhstBatchOperationResponse is the result of PostIconsSelfhstBatch.
-type PostIconsSelfhstBatchOperationResponse struct {
+// PostIconsSelfhstBatchResponse is the result of PostIconsSelfhstBatch.
+//
+// Answer is the PostIconsSelfhstBatchAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostIconsSelfhstBatchResponse struct {
 	HttpResponse *http.Response
-	Model        *PostIconsSelfhstBatchResponse
+	Answer       *PostIconsSelfhstBatchAnswer
+	*PostIconsSelfhstBatchAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostIconsSelfhstBatchResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostIconsSelfhstBatchAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostIconsSelfhstBatchResponse) Record() (PostIconsSelfhstBatchAnswer, error) {
+	if r.Answer == nil {
+		return PostIconsSelfhstBatchAnswer{}, errors.New("PostIconsSelfhstBatch answered no PostIconsSelfhstBatchAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostIconsSelfhstBatch calls POST /api/icons/selfhst/batch. Resolve multiple selfh.st app icons in one request (avoids per-icon requests a WAF flags as crawling).
-func (c Client) PostIconsSelfhstBatch(ctx context.Context, input PostIconsSelfhstBatchRequest) (result PostIconsSelfhstBatchOperationResponse, err error) {
+func (c Client) PostIconsSelfhstBatch(ctx context.Context, input PostIconsSelfhstBatchRequest) (result PostIconsSelfhstBatchResponse, err error) {
+	result.PostIconsSelfhstBatchAnswer = &PostIconsSelfhstBatchAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostIconsSelfhstBatch(ctx context.Context, input PostIconsSelfhs
 		return
 	}
 
-	var model PostIconsSelfhstBatchResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostIconsSelfhstBatchAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostIconsSelfhstBatchAnswer = result.Answer
 
 	return
 }

@@ -4,8 +4,8 @@ package dockhand
 
 // PutRolesByIdRequest is an object the document declares inline.
 type PutRolesByIdRequest struct {
-	Description    string         `json:"description,omitempty"`
-	EnvironmentIds []int          `json:"environmentIds,omitzero"`
-	Name           string         `json:"name,omitempty"`
-	Permissions    map[string]any `json:"permissions,omitzero"`
+	Description    string          `json:"description,omitempty"`
+	EnvironmentIds []EnvironmentID `json:"environmentIds,omitzero"`
+	Name           string          `json:"name,omitempty"`
+	Permissions    map[string]any  `json:"permissions,omitzero"`
 }

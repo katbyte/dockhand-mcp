@@ -24,7 +24,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "DeleteTemplatesSourcesResponse"
+          "ReferenceName": "DeleteTemplatesSourcesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -43,7 +43,7 @@
           "Type": "List",
           "NestedItem": {
             "Type": "Reference",
-            "ReferenceName": "GetTemplatesResponse"
+            "ReferenceName": "GetTemplatesAnswer"
           }
         }
       },
@@ -63,7 +63,7 @@
           "Type": "List",
           "NestedItem": {
             "Type": "Reference",
-            "ReferenceName": "GetTemplatesSourcesResponse"
+            "ReferenceName": "GetTemplatesSourcesAnswer"
           }
         }
       },
@@ -88,7 +88,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostTemplatesComposeResponse"
+          "ReferenceName": "PostTemplatesComposeAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -112,7 +112,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostTemplatesSourcesResponse"
+          "ReferenceName": "PostTemplatesSourcesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -136,7 +136,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PutTemplatesSourcesResponse"
+          "ReferenceName": "PutTemplatesSourcesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -146,7 +146,7 @@
   ],
   "Models": [
     {
-      "Name": "DeleteTemplatesSourcesResponse",
+      "Name": "DeleteTemplatesSourcesAnswer",
       "Fields": [
         {
           "Name": "Ok",
@@ -159,7 +159,7 @@
       ]
     },
     {
-      "Name": "GetTemplatesResponse",
+      "Name": "GetTemplatesAnswer",
       "Fields": [
         {
           "Name": "Categories",
@@ -194,7 +194,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetTemplatesResponseEnv"
+              "ReferenceName": "GetTemplatesAnswerEnv"
             }
           }
         },
@@ -257,14 +257,15 @@
           "JsonName": "repository",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetTemplatesResponseRepository"
+            "ReferenceName": "GetTemplatesAnswerRepository"
           }
         },
         {
           "Name": "RestartPolicy",
           "JsonName": "restartPolicy",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "RestartPolicy"
           }
         },
         {
@@ -287,7 +288,8 @@
           "Name": "Type",
           "JsonName": "type",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "TemplateType"
           },
           "Required": true
         },
@@ -298,14 +300,14 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetTemplatesResponseVolumes"
+              "ReferenceName": "GetTemplatesAnswerVolumes"
             }
           }
         }
       ]
     },
     {
-      "Name": "GetTemplatesResponseEnv",
+      "Name": "GetTemplatesAnswerEnv",
       "Fields": [
         {
           "Name": "Default",
@@ -331,7 +333,7 @@
       ]
     },
     {
-      "Name": "GetTemplatesResponseRepository",
+      "Name": "GetTemplatesAnswerRepository",
       "Fields": [
         {
           "Name": "Stackfile",
@@ -350,7 +352,7 @@
       ]
     },
     {
-      "Name": "GetTemplatesResponseVolumes",
+      "Name": "GetTemplatesAnswerVolumes",
       "Fields": [
         {
           "Name": "Bind",
@@ -370,7 +372,7 @@
       ]
     },
     {
-      "Name": "GetTemplatesSourcesResponse",
+      "Name": "GetTemplatesSourcesAnswer",
       "Fields": [
         {
           "Name": "Builtin",
@@ -392,7 +394,8 @@
           "Name": "Id",
           "JsonName": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "TemplateSourceID"
           },
           "Required": true
         },
@@ -422,6 +425,19 @@
         {
           "Name": "Url",
           "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostTemplatesComposeAnswer",
+      "Fields": [
+        {
+          "Name": "Compose",
+          "JsonName": "compose",
           "Type": {
             "Type": "String"
           },
@@ -596,41 +612,7 @@
       ]
     },
     {
-      "Name": "PostTemplatesComposeResponse",
-      "Fields": [
-        {
-          "Name": "Compose",
-          "JsonName": "compose",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostTemplatesSourcesRequest",
-      "Fields": [
-        {
-          "Name": "Name",
-          "JsonName": "name",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        },
-        {
-          "Name": "Url",
-          "JsonName": "url",
-          "Type": {
-            "Type": "String"
-          },
-          "Required": true
-        }
-      ]
-    },
-    {
-      "Name": "PostTemplatesSourcesResponse",
+      "Name": "PostTemplatesSourcesAnswer",
       "Fields": [
         {
           "Name": "Builtin",
@@ -652,7 +634,8 @@
           "Name": "Id",
           "JsonName": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "TemplateSourceID"
           },
           "Required": true
         },
@@ -684,6 +667,40 @@
           "JsonName": "url",
           "Type": {
             "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostTemplatesSourcesRequest",
+      "Fields": [
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        },
+        {
+          "Name": "Url",
+          "JsonName": "url",
+          "Type": {
+            "Type": "String"
+          },
+          "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PutTemplatesSourcesAnswer",
+      "Fields": [
+        {
+          "Name": "Ok",
+          "JsonName": "ok",
+          "Type": {
+            "Type": "Boolean"
           },
           "Required": true
         }
@@ -722,17 +739,42 @@
           }
         }
       ]
+    }
+  ],
+  "Constants": [
+    {
+      "Name": "RestartPolicy",
+      "SchemaName": "RestartPolicy",
+      "Values": [
+        {
+          "Name": "RestartPolicyNo",
+          "Value": "no"
+        },
+        {
+          "Name": "RestartPolicyAlways",
+          "Value": "always"
+        },
+        {
+          "Name": "RestartPolicyUnlessStopped",
+          "Value": "unless-stopped"
+        },
+        {
+          "Name": "RestartPolicyOnFailure",
+          "Value": "on-failure"
+        }
+      ]
     },
     {
-      "Name": "PutTemplatesSourcesResponse",
-      "Fields": [
+      "Name": "TemplateType",
+      "SchemaName": "TemplateType",
+      "Values": [
         {
-          "Name": "Ok",
-          "JsonName": "ok",
-          "Type": {
-            "Type": "Boolean"
-          },
-          "Required": true
+          "Name": "TemplateTypeContainer",
+          "Value": "container"
+        },
+        {
+          "Name": "TemplateTypeStack",
+          "Value": "stack"
         }
       ]
     }

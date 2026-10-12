@@ -4,47 +4,61 @@ package dockhand
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetStacksOperationResponse is the result of GetStacks.
-type GetStacksOperationResponse struct {
+// GetStacksResponse is the result of GetStacks.
+type GetStacksResponse struct {
 	HttpResponse *http.Response
-	Model        []GetStacksResponse
+	Answer       []GetStacksAnswer
 }
 
-// GetStacksOperationOptions holds the query and header parameters of GetStacks.
-type GetStacksOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetStacksResponse) Answered() bool { return r.Answer != nil }
+
+// GetStacksOptions holds the query and header parameters of GetStacks.
+type GetStacksOptions struct {
 	// Environment id
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetStacksOperationOptions) ToHeaders() *client.Headers {
+func (o GetStacksOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetStacksOperationOptions) ToQuery() *client.QueryParams {
+func (o GetStacksOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // GetStacks calls GET /api/stacks. List compose stacks for one environment (internal, external, and git).
-func (c Client) GetStacks(ctx context.Context, options GetStacksOperationOptions) (result GetStacksOperationResponse, err error) {
+func (c Client) GetStacks(ctx context.Context, options ...GetStacksOptions) (result GetStacksResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetStacks takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetStacksOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/stacks",
 	}
 
@@ -62,7 +76,7 @@ func (c Client) GetStacks(ctx context.Context, options GetStacksOperationOptions
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

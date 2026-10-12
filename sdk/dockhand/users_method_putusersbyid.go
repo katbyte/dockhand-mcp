@@ -4,27 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutUsersByIdOperationResponse is the result of PutUsersById.
-type PutUsersByIdOperationResponse struct {
+// PutUsersByIdResponse is the result of PutUsersById.
+//
+// Answer is the PutUsersByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PutUsersByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *PutUsersByIdResponse
+	Answer       *PutUsersByIdAnswer
+	*PutUsersByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutUsersByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutUsersByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutUsersByIdResponse) Record() (PutUsersByIdAnswer, error) {
+	if r.Answer == nil {
+		return PutUsersByIdAnswer{}, errors.New("PutUsersById answered no PutUsersByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PutUsersById calls PUT /api/users/{id}. Update a user (self-edit is always allowed; admin/active changes require admin; demoting or deactivating the last admin needs confirmDisableAuth).
-func (c Client) PutUsersById(ctx context.Context, id int, input PutUsersByIdRequest) (result PutUsersByIdOperationResponse, err error) {
+func (c Client) PutUsersById(ctx context.Context, id UserID, input PutUsersByIdRequest) (result PutUsersByIdResponse, err error) {
+	result.PutUsersByIdAnswer = &PutUsersByIdAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
-		Path:       fmt.Sprintf("/api/users/%d", id),
+		Path:       fmt.Sprintf("/api/users/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -45,11 +70,12 @@ func (c Client) PutUsersById(ctx context.Context, id int, input PutUsersByIdRequ
 		return
 	}
 
-	var model PutUsersByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PutUsersByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PutUsersByIdAnswer = result.Answer
 
 	return
 }

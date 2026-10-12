@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostStacksValidatePathOperationResponse is the result of PostStacksValidatePath.
-type PostStacksValidatePathOperationResponse struct {
+// PostStacksValidatePathResponse is the result of PostStacksValidatePath.
+//
+// Answer is the PostStacksValidatePathAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostStacksValidatePathResponse struct {
 	HttpResponse *http.Response
-	Model        *PostStacksValidatePathResponse
+	Answer       *PostStacksValidatePathAnswer
+	*PostStacksValidatePathAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostStacksValidatePathResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostStacksValidatePathAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostStacksValidatePathResponse) Record() (PostStacksValidatePathAnswer, error) {
+	if r.Answer == nil {
+		return PostStacksValidatePathAnswer{}, errors.New("PostStacksValidatePath answered no PostStacksValidatePathAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostStacksValidatePath calls POST /api/stacks/validate-path. Validate a candidate external stack path (exists, is a directory, no overlap with already-configured paths); validation failures are returned as 200 with valid=false.
-func (c Client) PostStacksValidatePath(ctx context.Context, input PostStacksValidatePathRequest) (result PostStacksValidatePathOperationResponse, err error) {
+func (c Client) PostStacksValidatePath(ctx context.Context, input PostStacksValidatePathRequest) (result PostStacksValidatePathResponse, err error) {
+	result.PostStacksValidatePathAnswer = &PostStacksValidatePathAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostStacksValidatePath(ctx context.Context, input PostStacksVali
 		return
 	}
 
-	var model PostStacksValidatePathResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostStacksValidatePathAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostStacksValidatePathAnswer = result.Answer
 
 	return
 }

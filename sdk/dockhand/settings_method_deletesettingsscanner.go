@@ -4,59 +4,92 @@ package dockhand
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// DeleteSettingsScannerOperationResponse is the result of DeleteSettingsScanner.
-type DeleteSettingsScannerOperationResponse struct {
+// DeleteSettingsScannerResponse is the result of DeleteSettingsScanner.
+//
+// Answer is the DeleteSettingsScannerAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type DeleteSettingsScannerResponse struct {
 	HttpResponse *http.Response
-	Model        *DeleteSettingsScannerResponse
+	Answer       *DeleteSettingsScannerAnswer
+	*DeleteSettingsScannerAnswer
 }
 
-// DeleteSettingsScannerOperationOptions holds the query and header parameters of DeleteSettingsScanner.
-type DeleteSettingsScannerOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteSettingsScannerResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteSettingsScannerAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteSettingsScannerResponse) Record() (DeleteSettingsScannerAnswer, error) {
+	if r.Answer == nil {
+		return DeleteSettingsScannerAnswer{}, errors.New("DeleteSettingsScanner answered no DeleteSettingsScannerAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// DeleteSettingsScannerOptions holds the query and header parameters of DeleteSettingsScanner.
+type DeleteSettingsScannerOptions struct {
 	// Must be true to actually perform the removal (required)
 	RemoveImages *bool
 
 	// Which scanner image to remove (grype or trivy); omit to remove both
-	Scanner string
+	Scanner Scanner
 
 	// Environment id whose scanner images should be removed (required) (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o DeleteSettingsScannerOperationOptions) ToHeaders() *client.Headers {
+func (o DeleteSettingsScannerOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o DeleteSettingsScannerOperationOptions) ToQuery() *client.QueryParams {
+func (o DeleteSettingsScannerOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
 	if o.RemoveImages != nil {
 		out.Append("removeImages", strconv.FormatBool(*o.RemoveImages))
 	}
 	if o.Scanner != "" {
-		out.Append("scanner", o.Scanner)
+		out.Append("scanner", string(o.Scanner))
 	}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // DeleteSettingsScanner calls DELETE /api/settings/scanner. Remove the scanner images (grype/trivy) and clean up scanner database volumes for an environment.
-func (c Client) DeleteSettingsScanner(ctx context.Context, options DeleteSettingsScannerOperationOptions) (result DeleteSettingsScannerOperationResponse, err error) {
+func (c Client) DeleteSettingsScanner(ctx context.Context, options ...DeleteSettingsScannerOptions) (result DeleteSettingsScannerResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("DeleteSettingsScanner takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option DeleteSettingsScannerOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.DeleteSettingsScannerAnswer = &DeleteSettingsScannerAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/settings/scanner",
 	}
 
@@ -74,11 +107,12 @@ func (c Client) DeleteSettingsScanner(ctx context.Context, options DeleteSetting
 		return
 	}
 
-	var model DeleteSettingsScannerResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer DeleteSettingsScannerAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.DeleteSettingsScannerAnswer = result.Answer
 
 	return
 }

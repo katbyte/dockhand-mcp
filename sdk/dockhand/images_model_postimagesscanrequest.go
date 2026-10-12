@@ -4,6 +4,6 @@ package dockhand
 
 // PostImagesScanRequest is an object the document declares inline.
 type PostImagesScanRequest struct {
-	ImageName string `json:"imageName"`
-	Scanner   string `json:"scanner,omitempty"`
+	ImageName string  `json:"imageName"`
+	Scanner   Scanner `json:"scanner,omitempty"`
 }

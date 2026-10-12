@@ -21,7 +21,7 @@ type PostGitStacksRequest struct {
 	ContextDir string `json:"contextDir,omitempty"`
 
 	// with url: the credential to fetch it with
-	CredentialId int `json:"credentialId,omitempty"`
+	CredentialId GitCredentialID `json:"credentialId,omitempty"`
 
 	// deploy it at once, and answer the stack with how that went as deployResult
 	DeployNow *bool `json:"deployNow,omitempty"`
@@ -31,16 +31,16 @@ type PostGitStacksRequest struct {
 
 	// the variables Dockhand keeps for the stack, whole: the ones left out are removed, and an empty list removes them all
 	EnvVars       []PostGitStacksRequestEnvVars `json:"envVars,omitzero"`
-	EnvironmentId int                           `json:"environmentId,omitempty"`
+	EnvironmentId EnvironmentID                 `json:"environmentId,omitempty"`
 	ForceRedeploy *bool                         `json:"forceRedeploy,omitempty"`
 	NoBuildCache  *bool                         `json:"noBuildCache,omitempty"`
 
 	// with url: what to call the repository; the stack's name unless said
-	RepoName         string `json:"repoName,omitempty"`
-	RepositoryId     int    `json:"repositoryId,omitempty"`
-	RepullImages     *bool  `json:"repullImages,omitempty"`
-	SecretProviderId int    `json:"secretProviderId,omitempty"`
-	StackName        string `json:"stackName"`
+	RepoName         string           `json:"repoName,omitempty"`
+	RepositoryId     GitRepositoryID  `json:"repositoryId,omitempty"`
+	RepullImages     *bool            `json:"repullImages,omitempty"`
+	SecretProviderId SecretProviderID `json:"secretProviderId,omitempty"`
+	StackName        string           `json:"stackName"`
 
 	// in place of repositoryId: the address of a repository to save with the stack
 	Url            string `json:"url,omitempty"`

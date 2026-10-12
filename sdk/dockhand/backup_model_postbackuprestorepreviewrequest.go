@@ -5,13 +5,13 @@ package dockhand
 // PostBackupRestorePreviewRequest is an object the document declares inline.
 type PostBackupRestorePreviewRequest struct {
 	DestinationId      int            `json:"destinationId"`
-	EnvironmentId      int            `json:"environmentId,omitempty"`
+	EnvironmentId      EnvironmentID  `json:"environmentId,omitempty"`
 	IncludeTargets     *bool          `json:"includeTargets,omitempty"`
 	MergeStackFiles    *bool          `json:"mergeStackFiles,omitempty"`
 	Mode               string         `json:"mode,omitempty"`
 	SkipStackFiles     *bool          `json:"skipStackFiles,omitempty"`
 	SnapshotId         string         `json:"snapshotId"`
-	TargetEnvId        int            `json:"targetEnvId,omitempty"`
+	TargetEnvId        EnvironmentID  `json:"targetEnvId,omitempty"`
 	TargetName         string         `json:"targetName,omitempty"`
 	TargetPath         string         `json:"targetPath,omitempty"`
 	TargetType         string         `json:"targetType,omitempty"`

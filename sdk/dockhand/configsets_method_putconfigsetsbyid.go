@@ -4,27 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutConfigSetsByIdOperationResponse is the result of PutConfigSetsById.
-type PutConfigSetsByIdOperationResponse struct {
+// PutConfigSetsByIdResponse is the result of PutConfigSetsById.
+//
+// Answer is the PutConfigSetsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PutConfigSetsByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *PutConfigSetsByIdResponse
+	Answer       *PutConfigSetsByIdAnswer
+	*PutConfigSetsByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutConfigSetsByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutConfigSetsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutConfigSetsByIdResponse) Record() (PutConfigSetsByIdAnswer, error) {
+	if r.Answer == nil {
+		return PutConfigSetsByIdAnswer{}, errors.New("PutConfigSetsById answered no PutConfigSetsByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PutConfigSetsById calls PUT /api/config-sets/{id}. Update an existing config set by ID.
-func (c Client) PutConfigSetsById(ctx context.Context, id int, input PutConfigSetsByIdRequest) (result PutConfigSetsByIdOperationResponse, err error) {
+func (c Client) PutConfigSetsById(ctx context.Context, id ConfigSetID, input PutConfigSetsByIdRequest) (result PutConfigSetsByIdResponse, err error) {
+	result.PutConfigSetsByIdAnswer = &PutConfigSetsByIdAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
-		Path:       fmt.Sprintf("/api/config-sets/%d", id),
+		Path:       fmt.Sprintf("/api/config-sets/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -45,11 +70,12 @@ func (c Client) PutConfigSetsById(ctx context.Context, id int, input PutConfigSe
 		return
 	}
 
-	var model PutConfigSetsByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PutConfigSetsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PutConfigSetsByIdAnswer = result.Answer
 
 	return
 }

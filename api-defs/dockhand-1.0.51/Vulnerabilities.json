@@ -15,7 +15,8 @@
           "In": "Query",
           "Description": "the environment whose findings are asked for: with none, nothing is found",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -104,7 +105,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetVulnerabilitiesResponse"
+          "ReferenceName": "GetVulnerabilitiesAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -124,7 +125,8 @@
           "In": "Query",
           "Description": "the environment whose findings are asked for: with none, nothing is found",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         }
       ],
@@ -132,7 +134,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "GetVulnerabilitiesCountResponse"
+          "ReferenceName": "GetVulnerabilitiesCountAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -161,7 +163,8 @@
           "In": "Query",
           "Description": "the environment whose findings are asked for: with none, nothing is found",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -251,7 +254,8 @@
           "In": "Query",
           "Description": "ID of the environment whose images to scan (from GET /api/environments)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
           }
         },
         {
@@ -268,7 +272,7 @@
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
-          "ReferenceName": "PostVulnerabilitiesScanAllResponse"
+          "ReferenceName": "PostVulnerabilitiesScanAllAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -278,130 +282,7 @@
   ],
   "Models": [
     {
-      "Name": "GetVulnerabilitiesCountResponse",
-      "Fields": [
-        {
-          "Name": "Options",
-          "JsonName": "options",
-          "Description": "what the findings can be narrowed to",
-          "Type": {
-            "Type": "Reference",
-            "ReferenceName": "GetVulnerabilitiesCountResponseOptions"
-          }
-        },
-        {
-          "Name": "Summary",
-          "JsonName": "summary",
-          "Description": "the findings counted by how grave, of the ones that matched",
-          "Type": {
-            "Type": "Reference",
-            "ReferenceName": "GetVulnerabilitiesCountResponseSummary"
-          }
-        },
-        {
-          "Name": "Total",
-          "JsonName": "total",
-          "Type": {
-            "Type": "Integer"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetVulnerabilitiesCountResponseOptions",
-      "Description": "what the findings can be narrowed to",
-      "Fields": [
-        {
-          "Name": "Containers",
-          "JsonName": "containers",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Images",
-          "JsonName": "images",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        },
-        {
-          "Name": "Stacks",
-          "JsonName": "stacks",
-          "Type": {
-            "Type": "List",
-            "NestedItem": {
-              "Type": "String"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetVulnerabilitiesCountResponseSummary",
-      "Description": "the findings counted by how grave, of the ones that matched",
-      "Fields": [
-        {
-          "Name": "Critical",
-          "JsonName": "critical",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "High",
-          "JsonName": "high",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "ImagesScanned",
-          "JsonName": "imagesScanned",
-          "Description": "how many of the images the host has were scanned",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Low",
-          "JsonName": "low",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Medium",
-          "JsonName": "medium",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "Total",
-          "JsonName": "total",
-          "Type": {
-            "Type": "Integer"
-          }
-        },
-        {
-          "Name": "TotalImages",
-          "JsonName": "totalImages",
-          "Description": "how many images the host has",
-          "Type": {
-            "Type": "Integer"
-          }
-        }
-      ]
-    },
-    {
-      "Name": "GetVulnerabilitiesResponse",
+      "Name": "GetVulnerabilitiesAnswer",
       "Fields": [
         {
           "Name": "Findings",
@@ -410,7 +291,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetVulnerabilitiesResponseFindings"
+              "ReferenceName": "GetVulnerabilitiesAnswerFindings"
             }
           },
           "Required": true
@@ -421,7 +302,7 @@
           "Description": "the findings counted by how grave, of the ones that matched",
           "Type": {
             "Type": "Reference",
-            "ReferenceName": "GetVulnerabilitiesResponseSummary"
+            "ReferenceName": "GetVulnerabilitiesAnswerSummary"
           }
         },
         {
@@ -435,7 +316,7 @@
       ]
     },
     {
-      "Name": "GetVulnerabilitiesResponseFindings",
+      "Name": "GetVulnerabilitiesAnswerFindings",
       "Fields": [
         {
           "Name": "Containers",
@@ -445,7 +326,7 @@
             "Type": "List",
             "NestedItem": {
               "Type": "Reference",
-              "ReferenceName": "GetVulnerabilitiesResponseFindingsContainers"
+              "ReferenceName": "GetVulnerabilitiesAnswerFindingsContainers"
             }
           }
         },
@@ -517,7 +398,7 @@
           "Name": "ScannedAt",
           "JsonName": "scannedAt",
           "Type": {
-            "Type": "String"
+            "Type": "DateTime"
           }
         },
         {
@@ -525,7 +406,8 @@
           "JsonName": "severity",
           "Description": "critical, high, medium, low, negligible or unknown",
           "Type": {
-            "Type": "String"
+            "Type": "Reference",
+            "ReferenceName": "Severity"
           }
         },
         {
@@ -542,7 +424,7 @@
       ]
     },
     {
-      "Name": "GetVulnerabilitiesResponseFindingsContainers",
+      "Name": "GetVulnerabilitiesAnswerFindingsContainers",
       "Fields": [
         {
           "Name": "Id",
@@ -561,7 +443,7 @@
       ]
     },
     {
-      "Name": "GetVulnerabilitiesResponseSummary",
+      "Name": "GetVulnerabilitiesAnswerSummary",
       "Description": "the findings counted by how grave, of the ones that matched",
       "Fields": [
         {
@@ -618,7 +500,130 @@
       ]
     },
     {
-      "Name": "PostVulnerabilitiesScanAllResponse",
+      "Name": "GetVulnerabilitiesCountAnswer",
+      "Fields": [
+        {
+          "Name": "Options",
+          "JsonName": "options",
+          "Description": "what the findings can be narrowed to",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetVulnerabilitiesCountAnswerOptions"
+          }
+        },
+        {
+          "Name": "Summary",
+          "JsonName": "summary",
+          "Description": "the findings counted by how grave, of the ones that matched",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetVulnerabilitiesCountAnswerSummary"
+          }
+        },
+        {
+          "Name": "Total",
+          "JsonName": "total",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetVulnerabilitiesCountAnswerOptions",
+      "Description": "what the findings can be narrowed to",
+      "Fields": [
+        {
+          "Name": "Containers",
+          "JsonName": "containers",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Images",
+          "JsonName": "images",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Stacks",
+          "JsonName": "stacks",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetVulnerabilitiesCountAnswerSummary",
+      "Description": "the findings counted by how grave, of the ones that matched",
+      "Fields": [
+        {
+          "Name": "Critical",
+          "JsonName": "critical",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "High",
+          "JsonName": "high",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "ImagesScanned",
+          "JsonName": "imagesScanned",
+          "Description": "how many of the images the host has were scanned",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Low",
+          "JsonName": "low",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Medium",
+          "JsonName": "medium",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Total",
+          "JsonName": "total",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "TotalImages",
+          "JsonName": "totalImages",
+          "Description": "how many images the host has",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostVulnerabilitiesScanAllAnswer",
       "Fields": [
         {
           "Name": "Cancelled",

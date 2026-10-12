@@ -5,5 +5,5 @@ package dockhand
 // PostPreferencesGridRequestColumns is an object the document declares inline.
 type PostPreferencesGridRequestColumns struct {
 	Id      string `json:"id"`
-	Visible *bool  `json:"visible"`
+	Visible bool   `json:"visible"`
 }

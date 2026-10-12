@@ -4,38 +4,43 @@ package dockhand
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetContainersOperationResponse is the result of GetContainers.
-type GetContainersOperationResponse struct {
+// GetContainersResponse is the result of GetContainers.
+type GetContainersResponse struct {
 	HttpResponse *http.Response
-	Model        []GetContainersResponse
+	Answer       []GetContainersAnswer
 }
 
-// GetContainersOperationOptions holds the query and header parameters of GetContainers.
-type GetContainersOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetContainersResponse) Answered() bool { return r.Answer != nil }
+
+// GetContainersOptions holds the query and header parameters of GetContainers.
+type GetContainersOptions struct {
 	// Environment id — an empty array is returned if omitted (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 
 	// Include stopped containers (default true; pass "false" to only show running ones)
 	All *bool
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetContainersOperationOptions) ToHeaders() *client.Headers {
+func (o GetContainersOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetContainersOperationOptions) ToQuery() *client.QueryParams {
+func (o GetContainersOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	if o.All != nil {
 		out.Append("all", strconv.FormatBool(*o.All))
@@ -44,13 +49,22 @@ func (o GetContainersOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetContainers calls GET /api/containers. List containers for one environment (dockhand.hidden=true label is filtered out).
-func (c Client) GetContainers(ctx context.Context, options GetContainersOperationOptions) (result GetContainersOperationResponse, err error) {
+func (c Client) GetContainers(ctx context.Context, options ...GetContainersOptions) (result GetContainersResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetContainers takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetContainersOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/containers",
 	}
 
@@ -68,7 +82,7 @@ func (c Client) GetContainers(ctx context.Context, options GetContainersOperatio
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

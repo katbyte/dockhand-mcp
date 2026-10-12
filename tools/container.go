@@ -90,7 +90,7 @@ func problemOf(state, health, status string, restarts int) string {
 }
 
 // publishedPorts is a container's ports as a person writes them, each once: a port published on every address is listed by Docker once for each.
-func publishedPorts(ports []dockhand.GetContainersResponsePorts) []string {
+func publishedPorts(ports []dockhand.GetContainersAnswerPorts) []string {
 	out := make([]string, 0, len(ports))
 	for _, p := range ports {
 		port := strconv.Itoa(p.PrivatePort) + "/" + p.Type
@@ -107,8 +107,8 @@ func publishedPorts(ports []dockhand.GetContainersResponsePorts) []string {
 }
 
 // containerRowOf is a container of an environment as the tools give one.
-func containerRowOf(env string, c *dockhand.GetContainersResponse) containerRow {
-	row := containerRow{Env: env, Name: c.Name, ID: c.Id, Image: c.Image, State: c.State, Status: c.Status, Health: c.Health, Restarts: c.RestartCount, Stack: c.Labels[labelStack], Service: c.Labels[labelService], Ports: publishedPorts(c.Ports), Problem: problemOf(c.State, c.Health, c.Status, c.RestartCount)}
+func containerRowOf(env string, c *dockhand.GetContainersAnswer) containerRow {
+	row := containerRow{Env: env, Name: c.Name, ID: c.Id, Image: c.Image, State: string(c.State), Status: c.Status, Health: string(c.Health), Restarts: c.RestartCount, Stack: c.Labels[labelStack], Service: c.Labels[labelService], Ports: publishedPorts(c.Ports), Problem: problemOf(string(c.State), string(c.Health), c.Status, c.RestartCount)}
 	if len(row.ID) > shortID {
 		row.ID = row.ID[:shortID]
 	}
@@ -120,13 +120,13 @@ func containerRowOf(env string, c *dockhand.GetContainersResponse) containerRow 
 }
 
 // containersOf is every container on an environment, running or not.
-func (r *registry) containersOf(ctx context.Context, env environment) ([]dockhand.GetContainersResponse, error) {
-	listed, err := r.dock.GetContainers(ctx, dockhand.GetContainersOperationOptions{Env: &env.ID, All: new(true)})
+func (r *registry) containersOf(ctx context.Context, env environment) ([]dockhand.GetContainersAnswer, error) {
+	listed, err := r.dock.GetContainers(ctx, dockhand.GetContainersOptions{Env: env.ID, All: new(true)})
 	if err != nil {
 		return nil, refusal(err)
 	}
 
-	return listed.Model, nil
+	return listed.Answer, nil
 }
 
 func registerContainerTools(r *registry) {

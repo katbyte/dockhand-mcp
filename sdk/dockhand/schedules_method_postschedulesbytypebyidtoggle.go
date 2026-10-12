@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -11,14 +12,36 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostSchedulesByTypeByIdToggleOperationResponse is the result of PostSchedulesByTypeByIdToggle.
-type PostSchedulesByTypeByIdToggleOperationResponse struct {
+// PostSchedulesByTypeByIdToggleResponse is the result of PostSchedulesByTypeByIdToggle.
+//
+// Answer is the PostSchedulesByTypeByIdToggleAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostSchedulesByTypeByIdToggleResponse struct {
 	HttpResponse *http.Response
-	Model        *PostSchedulesByTypeByIdToggleResponse
+	Answer       *PostSchedulesByTypeByIdToggleAnswer
+	*PostSchedulesByTypeByIdToggleAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostSchedulesByTypeByIdToggleResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostSchedulesByTypeByIdToggleAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostSchedulesByTypeByIdToggleResponse) Record() (PostSchedulesByTypeByIdToggleAnswer, error) {
+	if r.Answer == nil {
+		return PostSchedulesByTypeByIdToggleAnswer{}, errors.New("PostSchedulesByTypeByIdToggle answered no PostSchedulesByTypeByIdToggleAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostSchedulesByTypeByIdToggle calls POST /api/schedules/{type}/{id}/toggle. Toggle a schedule's enabled/disabled state (registers/unregisters the croner job accordingly).
-func (c Client) PostSchedulesByTypeByIdToggle(ctx context.Context, typeParam string, id int) (result PostSchedulesByTypeByIdToggleOperationResponse, err error) {
+func (c Client) PostSchedulesByTypeByIdToggle(ctx context.Context, typeParam string, id int) (result PostSchedulesByTypeByIdToggleResponse, err error) {
+	result.PostSchedulesByTypeByIdToggleAnswer = &PostSchedulesByTypeByIdToggleAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -41,11 +64,12 @@ func (c Client) PostSchedulesByTypeByIdToggle(ctx context.Context, typeParam str
 		return
 	}
 
-	var model PostSchedulesByTypeByIdToggleResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostSchedulesByTypeByIdToggleAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostSchedulesByTypeByIdToggleAnswer = result.Answer
 
 	return
 }

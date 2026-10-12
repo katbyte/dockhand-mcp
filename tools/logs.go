@@ -92,12 +92,12 @@ func stamped(at time.Time, text string) string {
 
 // logOf reads the end of one container's log, within the bounds asked for.
 func (r *registry) logOf(ctx context.Context, env environment, id string, tail int, since, until string) ([]logLine, error) {
-	answer, err := r.dock.GetContainersByIdLogs(ctx, id, dockhand.GetContainersByIdLogsOperationOptions{Env: &env.ID, Tail: &tail, Since: since, Until: until})
+	answer, err := r.dock.GetContainersByIdLogs(ctx, id, dockhand.GetContainersByIdLogsOptions{Env: env.ID, Tail: &tail, Since: since, Until: until})
 	if err != nil {
 		return nil, refusal(err)
 	}
 
-	return logLines(answer.Model.Logs), nil
+	return logLines(answer.Answer.Logs), nil
 }
 
 // bounds checks how much of a log is asked for, and gives it as the API takes it.
@@ -162,7 +162,7 @@ func registerLogTools(r *registry) {
 			return nil, containerLogsOut{}, fmt.Errorf("the log of %s on %s could not be read: %w", at.Container.Name, at.Env.Name, err)
 		}
 
-		out := containerLogsOut{Env: at.Env.Name, Container: at.Container.Name, State: at.Container.State}
+		out := containerLogsOut{Env: at.Env.Name, Container: at.Container.Name, State: string(at.Container.State)}
 		shown := make([]string, 0, len(lines))
 		for i := range lines {
 			if text, hidden, ok := in.kept(&lines[i]); ok {
@@ -272,7 +272,7 @@ func registerLogTools(r *registry) {
 		failed := 0
 		for i := range members {
 			service := cmp.Or(members[i].Container.Labels[labelService], members[i].Container.Name)
-			source := stackLogSource{Service: service, Container: members[i].Container.Name, State: members[i].Container.State}
+			source := stackLogSource{Service: service, Container: members[i].Container.Name, State: string(members[i].Container.State)}
 			if read[i].err != nil {
 				source.Error = read[i].err.Error()
 				failed++

@@ -4,38 +4,60 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetRegistryCatalogOperationResponse is the result of GetRegistryCatalog.
-type GetRegistryCatalogOperationResponse struct {
+// GetRegistryCatalogResponse is the result of GetRegistryCatalog.
+//
+// Answer is the GetRegistryCatalogAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetRegistryCatalogResponse struct {
 	HttpResponse *http.Response
-	Model        *GetRegistryCatalogResponse
+	Answer       *GetRegistryCatalogAnswer
+	*GetRegistryCatalogAnswer
 }
 
-// GetRegistryCatalogOperationOptions holds the query and header parameters of GetRegistryCatalog.
-type GetRegistryCatalogOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetRegistryCatalogResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetRegistryCatalogAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetRegistryCatalogResponse) Record() (GetRegistryCatalogAnswer, error) {
+	if r.Answer == nil {
+		return GetRegistryCatalogAnswer{}, errors.New("GetRegistryCatalog answered no GetRegistryCatalogAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// GetRegistryCatalogOptions holds the query and header parameters of GetRegistryCatalog.
+type GetRegistryCatalogOptions struct {
 	// ID of the configured registry to query (from GET /api/registries)
-	Registry *int
+	Registry RegistryID
 
 	// Opaque pagination cursor from a previous page's nextLast
 	Last string
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetRegistryCatalogOperationOptions) ToHeaders() *client.Headers {
+func (o GetRegistryCatalogOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetRegistryCatalogOperationOptions) ToQuery() *client.QueryParams {
+func (o GetRegistryCatalogOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Registry != nil {
-		out.Append("registry", strconv.Itoa(*o.Registry))
+	if o.Registry != 0 {
+		out.Append("registry", strconv.Itoa(int(o.Registry)))
 	}
 	if o.Last != "" {
 		out.Append("last", o.Last)
@@ -44,7 +66,8 @@ func (o GetRegistryCatalogOperationOptions) ToQuery() *client.QueryParams {
 }
 
 // GetRegistryCatalog calls GET /api/registry/catalog. List repositories in a registry's V2 catalog (with Harbor project-API fallback), paginated.
-func (c Client) GetRegistryCatalog(ctx context.Context, options GetRegistryCatalogOperationOptions) (result GetRegistryCatalogOperationResponse, err error) {
+func (c Client) GetRegistryCatalog(ctx context.Context, options GetRegistryCatalogOptions) (result GetRegistryCatalogResponse, err error) {
+	result.GetRegistryCatalogAnswer = &GetRegistryCatalogAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -68,11 +91,12 @@ func (c Client) GetRegistryCatalog(ctx context.Context, options GetRegistryCatal
 		return
 	}
 
-	var model GetRegistryCatalogResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetRegistryCatalogAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetRegistryCatalogAnswer = result.Answer
 
 	return
 }

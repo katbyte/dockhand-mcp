@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetAuthProvidersOperationResponse is the result of GetAuthProviders.
-type GetAuthProvidersOperationResponse struct {
+// GetAuthProvidersResponse is the result of GetAuthProviders.
+//
+// Answer is the GetAuthProvidersAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetAuthProvidersResponse struct {
 	HttpResponse *http.Response
-	Model        *GetAuthProvidersResponse
+	Answer       *GetAuthProvidersAnswer
+	*GetAuthProvidersAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetAuthProvidersResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetAuthProvidersAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetAuthProvidersResponse) Record() (GetAuthProvidersAnswer, error) {
+	if r.Answer == nil {
+		return GetAuthProvidersAnswer{}, errors.New("GetAuthProviders answered no GetAuthProvidersAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetAuthProviders calls GET /api/auth/providers. List the authentication providers offered on the login page (local, LDAP, OIDC), plus the default provider.
-func (c Client) GetAuthProviders(ctx context.Context) (result GetAuthProvidersOperationResponse, err error) {
+func (c Client) GetAuthProviders(ctx context.Context) (result GetAuthProvidersResponse, err error) {
+	result.GetAuthProvidersAnswer = &GetAuthProvidersAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) GetAuthProviders(ctx context.Context) (result GetAuthProvidersOp
 		return
 	}
 
-	var model GetAuthProvidersResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetAuthProvidersAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetAuthProvidersAnswer = result.Answer
 
 	return
 }

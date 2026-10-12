@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostAuthTokensOperationResponse is the result of PostAuthTokens.
-type PostAuthTokensOperationResponse struct {
+// PostAuthTokensResponse is the result of PostAuthTokens.
+//
+// Answer is the PostAuthTokensAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostAuthTokensResponse struct {
 	HttpResponse *http.Response
-	Model        *PostAuthTokensResponse
+	Answer       *PostAuthTokensAnswer
+	*PostAuthTokensAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostAuthTokensResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostAuthTokensAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostAuthTokensResponse) Record() (PostAuthTokensAnswer, error) {
+	if r.Answer == nil {
+		return PostAuthTokensAnswer{}, errors.New("PostAuthTokens answered no PostAuthTokensAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostAuthTokens calls POST /api/auth/tokens. Create a new API token for the authenticated user (requires a session, not a Bearer token).
-func (c Client) PostAuthTokens(ctx context.Context, input PostAuthTokensRequest) (result PostAuthTokensOperationResponse, err error) {
+func (c Client) PostAuthTokens(ctx context.Context, input PostAuthTokensRequest) (result PostAuthTokensResponse, err error) {
+	result.PostAuthTokensAnswer = &PostAuthTokensAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -44,11 +67,12 @@ func (c Client) PostAuthTokens(ctx context.Context, input PostAuthTokensRequest)
 		return
 	}
 
-	var model PostAuthTokensResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostAuthTokensAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostAuthTokensAnswer = result.Answer
 
 	return
 }

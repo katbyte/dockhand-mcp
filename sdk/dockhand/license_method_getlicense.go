@@ -4,19 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetLicenseOperationResponse is the result of GetLicense.
-type GetLicenseOperationResponse struct {
+// GetLicenseResponse is the result of GetLicense.
+//
+// Answer is the GetLicenseAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type GetLicenseResponse struct {
 	HttpResponse *http.Response
-	Model        *GetLicenseResponse
+	Answer       *GetLicenseAnswer
+	*GetLicenseAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetLicenseResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetLicenseAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetLicenseResponse) Record() (GetLicenseAnswer, error) {
+	if r.Answer == nil {
+		return GetLicenseAnswer{}, errors.New("GetLicense answered no GetLicenseAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // GetLicense calls GET /api/license. Get the current license status plus the server hostname the license is bound to.
-func (c Client) GetLicense(ctx context.Context) (result GetLicenseOperationResponse, err error) {
+func (c Client) GetLicense(ctx context.Context) (result GetLicenseResponse, err error) {
+	result.GetLicenseAnswer = &GetLicenseAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -39,11 +62,12 @@ func (c Client) GetLicense(ctx context.Context) (result GetLicenseOperationRespo
 		return
 	}
 
-	var model GetLicenseResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer GetLicenseAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetLicenseAnswer = result.Answer
 
 	return
 }

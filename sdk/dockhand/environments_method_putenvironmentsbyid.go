@@ -4,27 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutEnvironmentsByIdOperationResponse is the result of PutEnvironmentsById.
-type PutEnvironmentsByIdOperationResponse struct {
+// PutEnvironmentsByIdResponse is the result of PutEnvironmentsById.
+//
+// Answer is the PutEnvironmentsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PutEnvironmentsByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *PutEnvironmentsByIdResponse
+	Answer       *PutEnvironmentsByIdAnswer
+	*PutEnvironmentsByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutEnvironmentsByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutEnvironmentsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutEnvironmentsByIdResponse) Record() (PutEnvironmentsByIdAnswer, error) {
+	if r.Answer == nil {
+		return PutEnvironmentsByIdAnswer{}, errors.New("PutEnvironmentsById answered no PutEnvironmentsByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PutEnvironmentsById calls PUT /api/environments/{id}. Update an environment; renaming also renames its on-disk stacks/git-repos directories.
-func (c Client) PutEnvironmentsById(ctx context.Context, id int, input PutEnvironmentsByIdRequest) (result PutEnvironmentsByIdOperationResponse, err error) {
+func (c Client) PutEnvironmentsById(ctx context.Context, id EnvironmentID, input PutEnvironmentsByIdRequest) (result PutEnvironmentsByIdResponse, err error) {
+	result.PutEnvironmentsByIdAnswer = &PutEnvironmentsByIdAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
-		Path:       fmt.Sprintf("/api/environments/%d", id),
+		Path:       fmt.Sprintf("/api/environments/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -45,11 +70,12 @@ func (c Client) PutEnvironmentsById(ctx context.Context, id int, input PutEnviro
 		return
 	}
 
-	var model PutEnvironmentsByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PutEnvironmentsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PutEnvironmentsByIdAnswer = result.Answer
 
 	return
 }

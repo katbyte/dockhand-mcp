@@ -4,20 +4,43 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PutAuthOidcByIdOperationResponse is the result of PutAuthOidcById.
-type PutAuthOidcByIdOperationResponse struct {
+// PutAuthOidcByIdResponse is the result of PutAuthOidcById.
+//
+// Answer is the PutAuthOidcByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PutAuthOidcByIdResponse struct {
 	HttpResponse *http.Response
-	Model        *PutAuthOidcByIdResponse
+	Answer       *PutAuthOidcByIdAnswer
+	*PutAuthOidcByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutAuthOidcByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutAuthOidcByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutAuthOidcByIdResponse) Record() (PutAuthOidcByIdAnswer, error) {
+	if r.Answer == nil {
+		return PutAuthOidcByIdAnswer{}, errors.New("PutAuthOidcById answered no PutAuthOidcByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PutAuthOidcById calls PUT /api/auth/oidc/{id}. Update an existing OIDC provider configuration (only supplied fields change; a masked clientSecret is ignored).
-func (c Client) PutAuthOidcById(ctx context.Context, id int, input PutAuthOidcByIdRequest) (result PutAuthOidcByIdOperationResponse, err error) {
+func (c Client) PutAuthOidcById(ctx context.Context, id int, input PutAuthOidcByIdRequest) (result PutAuthOidcByIdResponse, err error) {
+	result.PutAuthOidcByIdAnswer = &PutAuthOidcByIdAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -45,11 +68,12 @@ func (c Client) PutAuthOidcById(ctx context.Context, id int, input PutAuthOidcBy
 		return
 	}
 
-	var model PutAuthOidcByIdResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PutAuthOidcByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PutAuthOidcByIdAnswer = result.Answer
 
 	return
 }

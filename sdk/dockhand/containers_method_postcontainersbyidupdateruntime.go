@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -12,42 +13,73 @@ import (
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostContainersByIdUpdateRuntimeOperationResponse is the result of PostContainersByIdUpdateRuntime.
-type PostContainersByIdUpdateRuntimeOperationResponse struct {
+// PostContainersByIdUpdateRuntimeResponse is the result of PostContainersByIdUpdateRuntime.
+//
+// Answer is the PostContainersByIdUpdateRuntimeAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostContainersByIdUpdateRuntimeResponse struct {
 	HttpResponse *http.Response
-	Model        *PostContainersByIdUpdateRuntimeResponse
+	Answer       *PostContainersByIdUpdateRuntimeAnswer
+	*PostContainersByIdUpdateRuntimeAnswer
 }
 
-// PostContainersByIdUpdateRuntimeOperationOptions holds the query and header parameters of PostContainersByIdUpdateRuntime.
-type PostContainersByIdUpdateRuntimeOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostContainersByIdUpdateRuntimeResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostContainersByIdUpdateRuntimeAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostContainersByIdUpdateRuntimeResponse) Record() (PostContainersByIdUpdateRuntimeAnswer, error) {
+	if r.Answer == nil {
+		return PostContainersByIdUpdateRuntimeAnswer{}, errors.New("PostContainersByIdUpdateRuntime answered no PostContainersByIdUpdateRuntimeAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostContainersByIdUpdateRuntimeOptions holds the query and header parameters of PostContainersByIdUpdateRuntime.
+type PostContainersByIdUpdateRuntimeOptions struct {
 	// Environment id (from GET /api/environments)
-	Env *int
+	Env EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o PostContainersByIdUpdateRuntimeOperationOptions) ToHeaders() *client.Headers {
+func (o PostContainersByIdUpdateRuntimeOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o PostContainersByIdUpdateRuntimeOperationOptions) ToQuery() *client.QueryParams {
+func (o PostContainersByIdUpdateRuntimeOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.Env != nil {
-		out.Append("env", strconv.Itoa(*o.Env))
+	if o.Env != 0 {
+		out.Append("env", strconv.Itoa(int(o.Env)))
 	}
 	return &out
 }
 
 // PostContainersByIdUpdateRuntime calls POST /api/containers/{id}/update-runtime. Update a running container's restart policy and/or CPU/memory/blkio/pids limits in-place (no recreate).
-func (c Client) PostContainersByIdUpdateRuntime(ctx context.Context, id string, input PostContainersByIdUpdateRuntimeRequest, options PostContainersByIdUpdateRuntimeOperationOptions) (result PostContainersByIdUpdateRuntimeOperationResponse, err error) {
+func (c Client) PostContainersByIdUpdateRuntime(ctx context.Context, id string, input PostContainersByIdUpdateRuntimeRequest, options ...PostContainersByIdUpdateRuntimeOptions) (result PostContainersByIdUpdateRuntimeResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostContainersByIdUpdateRuntime takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostContainersByIdUpdateRuntimeOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostContainersByIdUpdateRuntimeAnswer = &PostContainersByIdUpdateRuntimeAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/containers/%s/update-runtime", url.PathEscape(id)),
 	}
 
@@ -69,11 +101,12 @@ func (c Client) PostContainersByIdUpdateRuntime(ctx context.Context, id string, 
 		return
 	}
 
-	var model PostContainersByIdUpdateRuntimeResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostContainersByIdUpdateRuntimeAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostContainersByIdUpdateRuntimeAnswer = result.Answer
 
 	return
 }

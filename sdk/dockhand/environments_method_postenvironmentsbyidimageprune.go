@@ -4,27 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// PostEnvironmentsByIdImagePruneOperationResponse is the result of PostEnvironmentsByIdImagePrune.
-type PostEnvironmentsByIdImagePruneOperationResponse struct {
+// PostEnvironmentsByIdImagePruneResponse is the result of PostEnvironmentsByIdImagePrune.
+//
+// Answer is the PostEnvironmentsByIdImagePruneAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
+type PostEnvironmentsByIdImagePruneResponse struct {
 	HttpResponse *http.Response
-	Model        *PostEnvironmentsByIdImagePruneResponse
+	Answer       *PostEnvironmentsByIdImagePruneAnswer
+	*PostEnvironmentsByIdImagePruneAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostEnvironmentsByIdImagePruneResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostEnvironmentsByIdImagePruneAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostEnvironmentsByIdImagePruneResponse) Record() (PostEnvironmentsByIdImagePruneAnswer, error) {
+	if r.Answer == nil {
+		return PostEnvironmentsByIdImagePruneAnswer{}, errors.New("PostEnvironmentsByIdImagePrune answered no PostEnvironmentsByIdImagePruneAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostEnvironmentsByIdImagePrune calls POST /api/environments/{id}/image-prune. Save the automatic image-prune schedule for an environment (registers/unregisters the croner job).
-func (c Client) PostEnvironmentsByIdImagePrune(ctx context.Context, id int, input PostEnvironmentsByIdImagePruneRequest) (result PostEnvironmentsByIdImagePruneOperationResponse, err error) {
+func (c Client) PostEnvironmentsByIdImagePrune(ctx context.Context, id EnvironmentID, input PostEnvironmentsByIdImagePruneRequest) (result PostEnvironmentsByIdImagePruneResponse, err error) {
+	result.PostEnvironmentsByIdImagePruneAnswer = &PostEnvironmentsByIdImagePruneAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
-		Path:       fmt.Sprintf("/api/environments/%d/image-prune", id),
+		Path:       fmt.Sprintf("/api/environments/%s/image-prune", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -45,11 +70,12 @@ func (c Client) PostEnvironmentsByIdImagePrune(ctx context.Context, id int, inpu
 		return
 	}
 
-	var model PostEnvironmentsByIdImagePruneResponse
-	result.Model = &model
-	if err = resp.Unmarshal(result.Model); err != nil {
+	var answer PostEnvironmentsByIdImagePruneAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.PostEnvironmentsByIdImagePruneAnswer = result.Answer
 
 	return
 }

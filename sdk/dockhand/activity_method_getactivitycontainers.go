@@ -4,47 +4,61 @@ package dockhand
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
-// GetActivityContainersOperationResponse is the result of GetActivityContainers.
-type GetActivityContainersOperationResponse struct {
+// GetActivityContainersResponse is the result of GetActivityContainers.
+type GetActivityContainersResponse struct {
 	HttpResponse *http.Response
-	Model        []string
+	Answer       []string
 }
 
-// GetActivityContainersOperationOptions holds the query and header parameters of GetActivityContainers.
-type GetActivityContainersOperationOptions struct {
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r GetActivityContainersResponse) Answered() bool { return r.Answer != nil }
+
+// GetActivityContainersOptions holds the query and header parameters of GetActivityContainers.
+type GetActivityContainersOptions struct {
 	// Filter to a single environment (from GET /api/environments)
-	EnvironmentId *int
+	EnvironmentId EnvironmentID
 }
 
 // ToHeaders returns the header parameters the options set.
-func (o GetActivityContainersOperationOptions) ToHeaders() *client.Headers {
+func (o GetActivityContainersOptions) ToHeaders() *client.Headers {
 	out := client.Headers{}
 	return &out
 }
 
 // ToQuery returns the query parameters the options set.
-func (o GetActivityContainersOperationOptions) ToQuery() *client.QueryParams {
+func (o GetActivityContainersOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.EnvironmentId != nil {
-		out.Append("environment_id", strconv.Itoa(*o.EnvironmentId))
+	if o.EnvironmentId != 0 {
+		out.Append("environment_id", strconv.Itoa(int(o.EnvironmentId)))
 	}
 	return &out
 }
 
 // GetActivityContainers calls GET /api/activity/containers. List distinct container names that appear in the activity log, for filter dropdowns.
-func (c Client) GetActivityContainers(ctx context.Context, options GetActivityContainersOperationOptions) (result GetActivityContainersOperationResponse, err error) {
+func (c Client) GetActivityContainers(ctx context.Context, options ...GetActivityContainersOptions) (result GetActivityContainersResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("GetActivityContainers takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option GetActivityContainersOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
-		OptionsObject: options,
+		OptionsObject: option,
 		Path:          "/api/activity/containers",
 	}
 
@@ -62,7 +76,7 @@ func (c Client) GetActivityContainers(ctx context.Context, options GetActivityCo
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Model); err != nil {
+	if err = resp.Unmarshal(&result.Answer); err != nil {
 		return
 	}
 

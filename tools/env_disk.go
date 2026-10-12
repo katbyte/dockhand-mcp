@@ -87,11 +87,11 @@ func registerEnvironmentDiskTools(r *registry) {
 		}
 		out := envDiskOut{Env: env.Name}
 
-		answer, err := r.dock.GetSystemDisk(ctx, dockhand.GetSystemDiskOperationOptions{Env: &env.ID})
+		answer, err := r.dock.GetSystemDisk(ctx, dockhand.GetSystemDiskOptions{Env: env.ID})
 		if err != nil {
 			return nil, out, fmt.Errorf("what the disk of %s holds could not be read: %w", env.Name, refusal(err))
 		}
-		disk := answer.Model.DiskUsage
+		disk := answer.Answer.DiskUsage
 		if disk == nil {
 			return nil, out, fmt.Errorf("Dockhand gave no account of the disk of %s: it gives none when the host's Docker does not answer it in time, or cannot be reached at all, which env_test tells", env.Name) //nolint:staticcheck // ST1005: the sentence begins with the server's name
 		}
@@ -122,8 +122,8 @@ func registerEnvironmentDiskTools(r *registry) {
 		}
 		for i := range disk.BuildCache {
 			// a shared piece is counted with the piece it is shared from, as docker counts it
-			if b := &disk.BuildCache[i]; !yes(b.Shared) {
-				out.BuildCache.measured(cmp.Or(b.Description, b.Type, b.ID), b.Size, yes(b.InUse))
+			if b := &disk.BuildCache[i]; !b.Shared {
+				out.BuildCache.measured(cmp.Or(b.Description, b.Type, b.ID), b.Size, b.InUse)
 			}
 		}
 
