@@ -215,6 +215,10 @@ func TestJourneyAContainerBehindItsTagFoundUpdatedAndScheduled(t *testing.T) {
 		if found == nil || !acctest.IsBool(found["newer_image"], true) || found["image"] != behindImage || found["env"] != host || found["checked_at"] == "" {
 			t.Fatalf("%s: what a check found = %v", host, found)
 		}
+		// and the audit, which asks no registry, finds what the check noted
+		if behind, _ := audited(t, "audit_updates", map[string]any{"env": host}); behind[name+"/newer_image"] == nil || behind[name+"/newer_image"]["image"] != behindImage || behind[name+"/newer_image"]["kind"] != "container" {
+			t.Errorf("%s: the audit of updates = %v", host, behind)
+		}
 
 		// the note forgotten: said first, then done, and a fresh check finds it again
 		if dry := call(t, "container_updates_clear", map[string]any{"env": host, "container": name, "dry_run": true}); !slices.Contains(acctest.Strs(t, dry["cleared"], "cleared"), name) || waiting(false) == nil {
@@ -249,6 +253,9 @@ func TestJourneyAContainerBehindItsTagFoundUpdatedAndScheduled(t *testing.T) {
 		}
 		if noted := waiting(true); noted != nil {
 			t.Errorf("%s: found behind again after the update = %v", host, noted)
+		}
+		if behind, _ := audited(t, "audit_updates", map[string]any{"env": host}); behind[name+"/newer_image"] != nil {
+			t.Errorf("%s: the audit of updates after the update = %v", host, behind)
 		}
 
 		// with nothing newer nothing is touched, unless it is asked for

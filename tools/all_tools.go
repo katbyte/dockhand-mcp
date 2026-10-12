@@ -58,6 +58,11 @@ var Toolsets = map[string][]string{
 	mcpregistry.Core: {
 		"server_info", "env_list", "container_list", "container_get", "container_logs", "stack_list", "stack_logs", "job_get",
 	},
+	// what is wrong, looked for: every host, stack and container gone over for what is broken now, what will break and what is only untidy, each
+	// audit one kind of fault, and audit_all every one of them counted in a single call. They only read
+	"audit": {
+		"audit_all", "audit_health", "audit_hosts", "audit_stacks", "audit_healthcheck", "audit_restart_policy", "audit_updates", "audit_vulnerabilities", "audit_security", "audit_image_tags", "audit_limits", "audit_stopped", "audit_unused",
+	},
 	// start, stop and restart what is there, and ask work left running to stop: every tool here needs --enable-write
 	"manage": {
 		"container_start", "container_stop", "container_restart", "stack_start", "stack_stop", "stack_restart", "job_cancel",
@@ -175,7 +180,7 @@ var Toolsets = map[string][]string{
 }
 
 // ToolsetOrder is the order a listing shows the sets in: the base first.
-var ToolsetOrder = []string{mcpregistry.Core, "manage", "containers", "files", "updates", "stacks", "resources", "setup", "schedules", "registries", "notifications", "vulnerabilities", "users", "settings", "secrets", "git", "templates", "tags"}
+var ToolsetOrder = []string{mcpregistry.Core, "audit", "manage", "containers", "files", "updates", "stacks", "resources", "setup", "schedules", "registries", "notifications", "vulnerabilities", "users", "settings", "secrets", "git", "templates", "tags"}
 
 // EssentialTools is the curated preset selected by --allow-tools essential: enough to see what the Dockhand is, which hosts it manages, what runs on
 // them and what a container has written.
@@ -447,6 +452,7 @@ func queueTools(r *registry) {
 	registerServerTools(r)
 	registerServerFileTools(r)
 	registerServerAboutTools(r)
+	registerAuditTools(r)
 	registerEnvironmentTools(r)
 	registerEnvironmentWriteTools(r)
 	registerEnvironmentHostTools(r)

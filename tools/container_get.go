@@ -45,6 +45,10 @@ type inspected struct {
 		Env    []string          `json:"Env"`
 		Labels map[string]string `json:"Labels"`
 		User   string            `json:"User"`
+		// Healthcheck is the check the container was given, by its image or when it was made; none is a container nothing checks
+		Healthcheck *struct {
+			Test []string `json:"Test"`
+		} `json:"Healthcheck"`
 	} `json:"Config"`
 	HostConfig struct {
 		RestartPolicy struct {
@@ -54,6 +58,8 @@ type inspected struct {
 		NanoCpus     int64    `json:"NanoCpus"`
 		Privileged   bool     `json:"Privileged"`
 		NetworkMode  string   `json:"NetworkMode"`
+		PidMode      string   `json:"PidMode"`
+		CapAdd       []string `json:"CapAdd"`
 		Binds        []string `json:"Binds"`
 		PortBindings map[string][]struct {
 			HostIP   string `json:"HostIp"`
