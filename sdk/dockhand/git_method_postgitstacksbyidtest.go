@@ -48,6 +48,7 @@ func (c Client) PostGitStacksByIdTest(ctx context.Context, id GitStackID) (resul
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostGitStacksByIdTest",
 		Path:       fmt.Sprintf("/api/git/stacks/%s/test", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

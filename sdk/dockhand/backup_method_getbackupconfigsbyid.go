@@ -28,6 +28,7 @@ func (c Client) GetBackupConfigsById(ctx context.Context, id int) (result GetBac
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetBackupConfigsById",
 		Path:       fmt.Sprintf("/api/backup/configs/%d", id),
 	}
 

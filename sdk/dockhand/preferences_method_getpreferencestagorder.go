@@ -45,6 +45,7 @@ func (c Client) GetPreferencesTagOrder(ctx context.Context) (result GetPreferenc
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetPreferencesTagOrder",
 		Path:       "/api/preferences/tag-order",
 	}
 

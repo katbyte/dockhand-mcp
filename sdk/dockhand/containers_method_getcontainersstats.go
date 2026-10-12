@@ -54,6 +54,7 @@ func (c Client) GetContainersStats(ctx context.Context, options GetContainersSta
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetContainersStats",
 		OptionsObject: options,
 		Path:          "/api/containers/stats",
 	}

@@ -1,3 +1,17 @@
+## v0.8.2 (2026-10-12)
+
+- **A name in both `Names` and `Joined` imports.** Prowlarr's `tags` is a joined string parameter and a field of fifteen models; v0.8.1 claimed the parameter by name first and then refused the `Joined` entry as reaching nothing, and without the entry refused the parameter as a string. The parameter is claimed as joined before it is claimed by name.
+
+## v0.8.1 (2026-10-11)
+
+- **`doc.go` carries no generated header after all.** A linter skips a file marked generated and then misses the package comment, and flags the hand-written file beside it as lacking one, which sonarr's move found; the comment's first line says what wrote it, and every check knows that form.
+- **A test naming a method is not a tool wrapping it.** `check` counts only non-test files, and `-callers` with it.
+- **`KeepNull` names a field of an inline record by the model's name** (`PostRegistriesTestAnswer.authenticated`), where it took only the document's schema name and a document with no components could name nothing. Dockhand's one answered boolean where absent is not false.
+- **A command's wait says which way it ended.** `WaitForCommand` wraps `client.ErrCommandFailed` for a command the server failed and `client.ErrCommandRunning` for one still running when the wait ran out, so a caller that takes the second as an answer tests `errors.Is` rather than reading the status; the failure names the command and carries its exception beside its message where the answer has them. A command model's comment no longer says the method twice. Radarr's move, 16 commands declared.
+- **`Joined` reaches parameters alone and says when it reaches none.** A field of the same name is no longer claimed by it, where prowlarr's `indexers` needed an `Except`, and an entry written as a place rather than a name is refused saying so.
+- **The sweep's closing lines say what a place is**: "32 places in what a GET answers", so a reader does not take the fields no GET can answer for missing. Embyfin's note.
+- **`NeverCalled` counts a call for the one operation it was for.** A generated method names its operation on the request, so no path matching is needed; a hand-written call goes to the most literal template it fits, where a lookup beside a by-id path used to count for both; and an excused operation the run called after all is reported, so the list cannot go stale. Sonarr read both against the lines it replaces.
+
 ## v0.8.0 (2026-10-11)
 
 - **For a server that queues work by name.** `Commands` declares each command and its fields once, and the client gets a method per command, an `AndWait` form that queues it and waits until the server says it finished, and `WaitForCommand` for one queued the plain way. The hand-written maps and poll loops in the three *arr repositories go.
@@ -8,7 +22,7 @@
 
 - **A 200 that says no.** `Outcome` on a service names the field and the values that mean the call failed, and such a call is an error with the answer still decoded.
 
-- **Every generated file carries the header**, `doc.go` included; the old form is still recognised, so the first generation after upgrading replaces it.
+- **Every generated file carries the header**, `doc.go` included; the old form is still recognised, so the first generation after upgrading replaces it. (Undone in the next release: see above.)
 
 ## v0.7.0 (2026-10-11)
 

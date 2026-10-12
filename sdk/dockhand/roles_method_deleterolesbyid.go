@@ -48,6 +48,7 @@ func (c Client) DeleteRolesById(ctx context.Context, id RoleID) (result DeleteRo
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteRolesById",
 		Path:       fmt.Sprintf("/api/roles/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

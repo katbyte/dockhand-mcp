@@ -71,6 +71,7 @@ func (c Client) GetBackupSnapshotsDiff(ctx context.Context, options ...GetBackup
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetBackupSnapshotsDiff",
 		OptionsObject: option,
 		Path:          "/api/backup/snapshots/diff",
 	}

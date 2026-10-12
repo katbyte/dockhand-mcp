@@ -46,6 +46,7 @@ func (c Client) PostGitCredentials(ctx context.Context, input PostGitCredentials
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostGitCredentials",
 		Path:       "/api/git/credentials",
 	}
 

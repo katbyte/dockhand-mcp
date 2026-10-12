@@ -47,6 +47,7 @@ func (c Client) DeleteJobsById(ctx context.Context, id string) (result DeleteJob
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteJobsById",
 		Path:       fmt.Sprintf("/api/jobs/%s", url.PathEscape(id)),
 	}
 

@@ -47,6 +47,7 @@ func (c Client) PutAuthOidcById(ctx context.Context, id int, input PutAuthOidcBy
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutAuthOidcById",
 		Path:       fmt.Sprintf("/api/auth/oidc/%d", id),
 	}
 

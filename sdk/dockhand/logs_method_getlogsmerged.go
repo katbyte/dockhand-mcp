@@ -105,6 +105,7 @@ func (c Client) GetLogsMerged(ctx context.Context, options GetLogsMergedOptions)
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetLogsMerged",
 		OptionsObject:  options,
 		Path:           "/api/logs/merged",
 		StreamResponse: true,

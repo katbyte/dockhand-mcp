@@ -125,6 +125,7 @@ func (c Client) GetActivity(ctx context.Context, options ...GetActivityOptions) 
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetActivity",
 		OptionsObject: option,
 		Path:          "/api/activity",
 	}

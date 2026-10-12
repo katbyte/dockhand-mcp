@@ -45,6 +45,7 @@ func (c Client) GetPreferencesGrid(ctx context.Context) (result GetPreferencesGr
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetPreferencesGrid",
 		Path:       "/api/preferences/grid",
 	}
 

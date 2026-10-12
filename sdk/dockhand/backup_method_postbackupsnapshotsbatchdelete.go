@@ -22,6 +22,7 @@ func (c Client) PostBackupSnapshotsBatchDelete(ctx context.Context, input PostBa
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostBackupSnapshotsBatchDelete",
 		Path:       "/api/backup/snapshots/batch-delete",
 	}
 

@@ -46,6 +46,7 @@ func (c Client) PostSettingsGeneral(ctx context.Context, input PostSettingsGener
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostSettingsGeneral",
 		Path:       "/api/settings/general",
 	}
 

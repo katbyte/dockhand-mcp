@@ -49,6 +49,7 @@ func (c Client) PostEnvironmentsByIdDiskWarning(ctx context.Context, id Environm
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostEnvironmentsByIdDiskWarning",
 		Path:       fmt.Sprintf("/api/environments/%s/disk-warning", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

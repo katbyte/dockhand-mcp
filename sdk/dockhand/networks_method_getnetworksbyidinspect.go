@@ -78,6 +78,7 @@ func (c Client) GetNetworksByIdInspect(ctx context.Context, id string, options .
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetNetworksByIdInspect",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/networks/%s/inspect", url.PathEscape(id)),
 	}

@@ -104,6 +104,7 @@ func (c Client) GetAuditOutsideApi(ctx context.Context, options ...GetAuditOutsi
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetAuditOutsideApi",
 		OptionsObject: option,
 		Path:          "/audit",
 	}

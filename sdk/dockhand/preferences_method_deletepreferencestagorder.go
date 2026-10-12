@@ -45,6 +45,7 @@ func (c Client) DeletePreferencesTagOrder(ctx context.Context) (result DeletePre
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeletePreferencesTagOrder",
 		Path:       "/api/preferences/tag-order",
 	}
 

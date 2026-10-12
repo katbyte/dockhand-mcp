@@ -49,6 +49,7 @@ func (c Client) PutEnvironmentsById(ctx context.Context, id EnvironmentID, input
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutEnvironmentsById",
 		Path:       fmt.Sprintf("/api/environments/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

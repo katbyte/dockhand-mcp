@@ -45,6 +45,7 @@ func (c Client) GetNotificationsTriggerTest(ctx context.Context) (result GetNoti
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetNotificationsTriggerTest",
 		Path:       "/api/notifications/trigger-test",
 	}
 

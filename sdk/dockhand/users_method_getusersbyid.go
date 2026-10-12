@@ -48,6 +48,7 @@ func (c Client) GetUsersById(ctx context.Context, id UserID) (result GetUsersByI
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetUsersById",
 		Path:       fmt.Sprintf("/api/users/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

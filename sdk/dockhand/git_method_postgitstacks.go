@@ -46,6 +46,7 @@ func (c Client) PostGitStacks(ctx context.Context, input PostGitStacksRequest) (
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostGitStacks",
 		Path:       "/api/git/stacks",
 	}
 

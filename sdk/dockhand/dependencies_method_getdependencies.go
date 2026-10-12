@@ -26,6 +26,7 @@ func (c Client) GetDependencies(ctx context.Context) (result GetDependenciesResp
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetDependencies",
 		Path:       "/api/dependencies",
 	}
 

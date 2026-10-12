@@ -354,9 +354,12 @@ func (s Service) New(baseURL string, authorizer Authorizer, opts ...Option) (*Cl
 	return &Client{BaseURL: strings.TrimRight(baseURL, "/"), HTTPClient: retries.Client, Authorizer: authorizer, service: s, calls: cfg.calls, secrets: secrets, retries: retries, redirects: retries.CheckRedirect, follow: follow}, nil
 }
 
-// Call is one request a client sent: its method and the path it went to.
+// Call is one request a client sent: its method, the path it went to, and
+// the Go name of the operation it was for when a generated method sent it,
+// empty for one written by hand.
 type Call struct {
 	Method, Path string
+	Operation    string
 }
 
 // Calls records every request a client sends, for a live suite to ask at
@@ -375,13 +378,13 @@ func (c *Calls) Seen() []Call {
 	return slices.Clone(c.seen)
 }
 
-func (c *Calls) record(method, path string) {
+func (c *Calls) record(method, path, operation string) {
 	if c == nil {
 		return
 	}
 	c.mu.Lock()
 	defer c.mu.Unlock()
-	c.seen = append(c.seen, Call{Method: method, Path: path})
+	c.seen = append(c.seen, Call{Method: method, Path: path, Operation: operation})
 }
 
 // WithCalls has the client record every request it sends in calls, whether
@@ -541,3 +544,12 @@ func textAt(top map[string]json.RawMessage, field string) (string, bool) {
 
 	return text, ok
 }
+
+// ErrCommandFailed and ErrCommandRunning are what a generated WaitForCommand
+// wraps its two refusals in, for errors.Is: the server said the command
+// failed, or it was still running when the wait ran out, which a caller may
+// treat as an answer rather than a failure.
+var (
+	ErrCommandFailed  = errors.New("the command failed")
+	ErrCommandRunning = errors.New("the command is still running")
+)

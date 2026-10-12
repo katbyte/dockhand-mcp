@@ -71,6 +71,10 @@ type RequestOptions struct {
 	// other is a *StatusError.
 	ExpectedStatusCodes []int
 	HTTPMethod          string
+	// Operation is the Go name of the operation the request is for, which a
+	// generated method sets so that a record of calls (WithCalls) names it
+	// without matching paths; empty for a request written by hand.
+	Operation string
 	// OptionsObject supplies query parameters and headers; nil for none.
 	OptionsObject Options
 	// Path is the escaped path below BaseURL.
@@ -89,6 +93,7 @@ type Request struct {
 
 	client      *Client
 	contentType string
+	operation   string
 	// credentialed is whether the authorizer put anything on the request
 	credentialed bool
 }
@@ -122,7 +127,7 @@ func (c *Client) NewRequest(ctx context.Context, input RequestOptions) (*Request
 	credentialed := len(req.Header) != plain || req.URL.RawQuery != query || (c.HTTPClient.Jar != nil && len(c.HTTPClient.Jar.Cookies(req.URL)) > 0)
 	maps.Copy(req.Header, headers)
 
-	return &Request{Request: req, ExpectedStatusCodes: input.ExpectedStatusCodes, StreamResponse: input.StreamResponse, client: c, contentType: input.ContentType, credentialed: credentialed}, nil
+	return &Request{Request: req, ExpectedStatusCodes: input.ExpectedStatusCodes, StreamResponse: input.StreamResponse, client: c, contentType: input.ContentType, operation: input.Operation, credentialed: credentialed}, nil
 }
 
 // accept is the Accept header of an operation documented to answer
@@ -192,7 +197,7 @@ func (r *Request) Execute(ctx context.Context) (*Response, error) {
 		return r.stream(req)
 	}
 	service := r.client.service
-	r.client.calls.record(r.Method, r.URL.Path)
+	r.client.calls.record(r.Method, r.URL.Path, r.operation)
 
 	// the whole answer, asked for again if it stops part way, through whatever HTTPClient is now: a test puts its own there
 	whole := *r.client.retries
@@ -225,7 +230,7 @@ func (r *Request) Execute(ctx context.Context) (*Response, error) {
 // back unread, and has as long as its context gives it rather than the time
 // one answer read whole gets.
 func (r *Request) stream(req *http.Request) (*Response, error) {
-	r.client.calls.record(r.Method, r.URL.Path)
+	r.client.calls.record(r.Method, r.URL.Path, r.operation)
 	httpResp, err := r.sender(0).Do(req)
 	if err != nil {
 		return nil, r.client.redactErr(fmt.Errorf("%s %s: %w", r.Method, r.URL.Path, chttp.RedactError(err)))

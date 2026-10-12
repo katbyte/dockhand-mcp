@@ -96,6 +96,7 @@ func (c Client) DeleteStacksByName(ctx context.Context, name string, options ...
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
+		Operation:     "DeleteStacksByName",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s", url.PathEscape(name)),
 	}

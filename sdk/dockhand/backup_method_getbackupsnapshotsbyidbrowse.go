@@ -72,6 +72,7 @@ func (c Client) GetBackupSnapshotsByIdBrowse(ctx context.Context, id string, opt
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetBackupSnapshotsByIdBrowse",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/backup/snapshots/%s/browse", url.PathEscape(id)),
 	}

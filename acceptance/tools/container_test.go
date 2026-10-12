@@ -80,6 +80,11 @@ func TestContainerTop(t *testing.T) {
 }
 
 func TestContainerFilesAndRead(t *testing.T) {
+	const tooLarge = "/tmp/acc-too-large"
+	if world == nil {
+		t.Skip(testenv.NotConfigured)
+	}
+
 	for host, container := range map[string]string{testenv.Alpha: webFront, testenv.Beta: solo} {
 		root := call(t, "container_files", map[string]any{"container": container})
 		entries := named(acctest.Rows(t, root["entries"], "entries"), "name")
@@ -99,7 +104,14 @@ func TestContainerFilesAndRead(t *testing.T) {
 		if name["path"] != "/etc/hostname" || len(strings.TrimSpace(acctest.Str(name["content"]))) != 12 || acctest.Num(t, name["chars"], "chars") != 13 {
 			t.Errorf("the hostname file of %s = %v", container, name)
 		}
-		for path, want := range map[string]string{"/bin/busybox": "larger than the 1 MB", "/etc": "is a directory", "/nothing-by-this-name": "has no file"} {
+		// a file over the megabyte that is read is written for it: the image's own files are under that on some machines
+		if _, err := world.Docker(t.Context(), host, "exec", container, "sh", "-c", "head -c 1200000 /dev/zero > "+tooLarge); err != nil {
+			t.Fatal(err)
+		}
+		ctx := context.WithoutCancel(t.Context())
+		t.Cleanup(func() { _, _ = world.Docker(ctx, host, "exec", container, "rm", "-f", tooLarge) })
+
+		for path, want := range map[string]string{tooLarge: "larger than the 1 MB", "/etc": "is a directory", "/nothing-by-this-name": "has no file"} {
 			if msg := refused(t, "container_read", map[string]any{"container": container, "path": path}); !strings.Contains(msg, want) {
 				t.Errorf("reading %s in %s = %q, want %q", path, container, msg, want)
 			}

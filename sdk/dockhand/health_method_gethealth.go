@@ -45,6 +45,7 @@ func (c Client) GetHealth(ctx context.Context) (result GetHealthResponse, err er
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetHealth",
 		Path:       "/api/health",
 	}
 

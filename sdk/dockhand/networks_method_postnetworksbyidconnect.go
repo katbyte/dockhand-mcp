@@ -79,6 +79,7 @@ func (c Client) PostNetworksByIdConnect(ctx context.Context, id string, input Po
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostNetworksByIdConnect",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/networks/%s/connect", url.PathEscape(id)),
 	}

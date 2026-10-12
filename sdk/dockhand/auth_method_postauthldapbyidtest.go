@@ -22,6 +22,7 @@ func (c Client) PostAuthLdapByIdTest(ctx context.Context, id int) (result PostAu
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostAuthLdapByIdTest",
 		Path:       fmt.Sprintf("/api/auth/ldap/%d/test", id),
 	}
 

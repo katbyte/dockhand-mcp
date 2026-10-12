@@ -46,6 +46,7 @@ func (c Client) PostGitBranches(ctx context.Context, input PostGitBranchesReques
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostGitBranches",
 		Path:       "/api/git/branches",
 	}
 

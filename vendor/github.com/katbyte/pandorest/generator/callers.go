@@ -13,10 +13,11 @@ import (
 	"github.com/katbyte/pandorest/definitions"
 )
 
-// Uncalled lists the generated methods of a service that no Go file under root names, with how many methods there are: what the
-// repository's own code and tests never reach, for a reader deciding what the live tests have not proven. A name counts wherever it
-// is used as a selector, so a tool calling c.Items.GetItems and a test naming it both count, and a method of the same name on another
-// type counts too, since the parse does not resolve types. Generated files, by their header, are left out, as is what is under skip.
+// Uncalled lists the generated methods of a service that no hand-written Go file under root names, with how many methods there
+// are: what the repository's own code never reaches, for a reader deciding what no tool wraps. A name counts wherever it is used
+// as a selector, so a tool calling c.Items.GetItems counts, and a method of the same name on another type counts too, since the
+// parse does not resolve types; a test file does not count, since a test naming a method is not a tool wrapping it. Generated
+// files, by their header, are left out, as is what is under skip.
 func Uncalled(svc *definitions.Service, root string, skip ...string) (uncalled []string, total int, err error) {
 	used, err := selectorNames(root, skip)
 	if err != nil {
@@ -60,7 +61,7 @@ func selectorNames(root string, skip []string) (map[string]bool, error) {
 
 			return nil
 		}
-		if filepath.Ext(path) != ".go" {
+		if filepath.Ext(path) != ".go" || strings.HasSuffix(path, "_test.go") {
 			return nil
 		}
 		src, err := os.ReadFile(path) //nolint:gosec // the repository's own files

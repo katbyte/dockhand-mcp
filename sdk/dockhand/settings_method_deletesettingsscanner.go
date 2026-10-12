@@ -89,6 +89,7 @@ func (c Client) DeleteSettingsScanner(ctx context.Context, options ...DeleteSett
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
+		Operation:     "DeleteSettingsScanner",
 		OptionsObject: option,
 		Path:          "/api/settings/scanner",
 	}

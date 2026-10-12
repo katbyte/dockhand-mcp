@@ -71,6 +71,7 @@ func (c Client) GetBackupConfigs(ctx context.Context, options ...GetBackupConfig
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetBackupConfigs",
 		OptionsObject: option,
 		Path:          "/api/backup/configs",
 	}

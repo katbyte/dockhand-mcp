@@ -46,6 +46,7 @@ func (c Client) PostPreferencesFavoriteGroups(ctx context.Context, input PostPre
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostPreferencesFavoriteGroups",
 		Path:       "/api/preferences/favorite-groups",
 	}
 

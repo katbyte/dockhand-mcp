@@ -46,6 +46,7 @@ func (c Client) PostTemplatesCompose(ctx context.Context, input PostTemplatesCom
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostTemplatesCompose",
 		Path:       "/api/templates/compose",
 	}
 

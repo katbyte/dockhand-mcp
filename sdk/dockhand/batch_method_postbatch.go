@@ -54,6 +54,7 @@ func (c Client) PostBatch(ctx context.Context, input PostBatchRequest, options .
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostBatch",
 		OptionsObject: option,
 		Path:          "/api/batch",
 	}

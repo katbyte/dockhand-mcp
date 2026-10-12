@@ -78,6 +78,7 @@ func (c Client) GetStacksByNameTags(ctx context.Context, name string, options ..
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetStacksByNameTags",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/tags", url.PathEscape(name)),
 	}

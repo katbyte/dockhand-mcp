@@ -46,6 +46,7 @@ func (c Client) GetSchedulesExecutionsById(ctx context.Context, id int) (result 
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetSchedulesExecutionsById",
 		Path:       fmt.Sprintf("/api/schedules/executions/%d", id),
 	}
 

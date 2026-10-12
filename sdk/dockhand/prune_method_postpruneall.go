@@ -77,6 +77,7 @@ func (c Client) PostPruneAll(ctx context.Context, options ...PostPruneAllOptions
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostPruneAll",
 		OptionsObject: option,
 		Path:          "/api/prune/all",
 	}

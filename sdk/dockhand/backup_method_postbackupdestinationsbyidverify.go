@@ -23,6 +23,7 @@ func (c Client) PostBackupDestinationsByIdVerify(ctx context.Context, id int, in
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostBackupDestinationsByIdVerify",
 		Path:       fmt.Sprintf("/api/backup/destinations/%d/verify", id),
 	}
 

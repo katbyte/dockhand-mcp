@@ -46,6 +46,7 @@ func (c Client) PostAuthLdap(ctx context.Context, input PostAuthLdapRequest) (re
 			http.StatusCreated,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostAuthLdap",
 		Path:       "/api/auth/ldap",
 	}
 

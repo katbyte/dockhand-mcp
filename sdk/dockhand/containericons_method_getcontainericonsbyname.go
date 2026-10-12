@@ -117,6 +117,7 @@ func (c Client) GetContainerIconsByName(ctx context.Context, name string, option
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetContainerIconsByName",
 		OptionsObject:  option,
 		Path:           fmt.Sprintf("/api/container-icons/%s", url.PathEscape(name)),
 		StreamResponse: true,

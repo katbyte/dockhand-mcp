@@ -95,6 +95,7 @@ func (c Client) GetSettingsScanner(ctx context.Context, options ...GetSettingsSc
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetSettingsScanner",
 		OptionsObject: option,
 		Path:          "/api/settings/scanner",
 	}

@@ -79,6 +79,7 @@ func (c Client) PostVolumesByNameClone(ctx context.Context, name string, input P
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostVolumesByNameClone",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/volumes/%s/clone", url.PathEscape(name)),
 	}

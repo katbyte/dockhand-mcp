@@ -48,6 +48,7 @@ func (c Client) GetGitCredentialsById(ctx context.Context, id GitCredentialID) (
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetGitCredentialsById",
 		Path:       fmt.Sprintf("/api/git/credentials/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

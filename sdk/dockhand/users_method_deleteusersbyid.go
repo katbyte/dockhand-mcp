@@ -78,6 +78,7 @@ func (c Client) DeleteUsersById(ctx context.Context, id UserID, options ...Delet
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
+		Operation:     "DeleteUsersById",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/users/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}

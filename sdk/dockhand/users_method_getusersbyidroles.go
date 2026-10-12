@@ -29,6 +29,7 @@ func (c Client) GetUsersByIdRoles(ctx context.Context, id UserID) (result GetUse
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetUsersByIdRoles",
 		Path:       fmt.Sprintf("/api/users/%s/roles", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

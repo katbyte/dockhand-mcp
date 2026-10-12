@@ -46,6 +46,7 @@ func (c Client) PostConfigSets(ctx context.Context, input PostConfigSetsRequest)
 			http.StatusCreated,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostConfigSets",
 		Path:       "/api/config-sets",
 	}
 

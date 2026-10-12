@@ -75,6 +75,7 @@ func (c Client) GetContainersByIdFilesContent(ctx context.Context, id string, op
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetContainersByIdFilesContent",
 		OptionsObject: options,
 		Path:          fmt.Sprintf("/api/containers/%s/files/content", url.PathEscape(id)),
 	}

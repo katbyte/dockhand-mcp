@@ -26,6 +26,7 @@ func (c Client) GetAuthTokens(ctx context.Context) (result GetAuthTokensResponse
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetAuthTokens",
 		Path:       "/api/auth/tokens",
 	}
 

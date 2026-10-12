@@ -59,6 +59,7 @@ func (c Client) GetSchedulesStream(ctx context.Context) (result GetSchedulesStre
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetSchedulesStream",
 		Path:           "/api/schedules/stream",
 		StreamResponse: true,
 	}

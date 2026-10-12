@@ -84,6 +84,7 @@ func (c Client) GetMetrics(ctx context.Context) (result GetMetricsResponse, err 
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetMetrics",
 		Path:           "/metrics",
 		StreamResponse: true,
 	}

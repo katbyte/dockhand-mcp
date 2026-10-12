@@ -22,6 +22,7 @@ func (c Client) PostBackupRestorePreview(ctx context.Context, input PostBackupRe
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostBackupRestorePreview",
 		Path:       "/api/backup/restore/preview",
 	}
 

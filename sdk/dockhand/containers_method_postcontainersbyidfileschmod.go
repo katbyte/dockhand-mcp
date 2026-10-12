@@ -70,6 +70,7 @@ func (c Client) PostContainersByIdFilesChmod(ctx context.Context, id string, inp
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostContainersByIdFilesChmod",
 		OptionsObject: options,
 		Path:          fmt.Sprintf("/api/containers/%s/files/chmod", url.PathEscape(id)),
 	}

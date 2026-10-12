@@ -49,6 +49,7 @@ func (c Client) PostEnvironmentsByIdIcon(ctx context.Context, id EnvironmentID, 
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostEnvironmentsByIdIcon",
 		Path:       fmt.Sprintf("/api/environments/%s/icon", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

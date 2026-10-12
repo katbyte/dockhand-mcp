@@ -46,6 +46,7 @@ func (c Client) DeleteAuthLdapById(ctx context.Context, id int) (result DeleteAu
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteAuthLdapById",
 		Path:       fmt.Sprintf("/api/auth/ldap/%d", id),
 	}
 

@@ -48,6 +48,7 @@ func (c Client) GetEnvironmentsByIdRemoteStacksDir(ctx context.Context, id Envir
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetEnvironmentsByIdRemoteStacksDir",
 		Path:       fmt.Sprintf("/api/environments/%s/remote-stacks-dir", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

@@ -58,6 +58,7 @@ func (c Client) GetStacks(ctx context.Context, options ...GetStacksOptions) (res
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetStacks",
 		OptionsObject: option,
 		Path:          "/api/stacks",
 	}

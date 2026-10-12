@@ -45,6 +45,7 @@ func (c Client) GetLicense(ctx context.Context) (result GetLicenseResponse, err 
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetLicense",
 		Path:       "/api/license",
 	}
 

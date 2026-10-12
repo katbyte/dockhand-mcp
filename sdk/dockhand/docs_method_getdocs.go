@@ -28,6 +28,7 @@ func (c Client) GetDocs(ctx context.Context) (result GetDocsResponse, err error)
 			http.StatusNotModified,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetDocs",
 		Path:       "/api/docs",
 	}
 

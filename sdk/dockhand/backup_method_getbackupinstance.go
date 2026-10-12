@@ -45,6 +45,7 @@ func (c Client) GetBackupInstance(ctx context.Context) (result GetBackupInstance
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetBackupInstance",
 		Path:       "/api/backup/instance",
 	}
 

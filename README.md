@@ -42,7 +42,7 @@ All options can be passed as command-line flags, environment variables, or via a
 | `DOCKHAND_ENABLE_WRITE` | `--enable-write` | register the tools that change something; without it every tool only reads |
 | `DOCKHAND_ENABLE_DELETE` | `--enable-delete` | register the tools that delete as well; needs `--enable-write` |
 | `DOCKHAND_READ_ONLY` | `--read-only` | register only tools that never change anything: the default, said out loud, and refused beside `--enable-write` |
-| `DOCKHAND_TOOLSETS` | `--toolsets` | groups of tools to register, default `core`: `all`, `core`, `manage`, `containers`, `files`, `updates`, `stacks`, `resources`, `setup`, `schedules`, `registries`, `notifications`, `vulnerabilities`, or a resource family like `container` (`core` is always included) |
+| `DOCKHAND_TOOLSETS` | `--toolsets` | groups of tools to register, default `core,audit`: `all`, `core`, `audit`, `manage`, `containers`, `files`, `updates`, `stacks`, `resources`, `setup`, `schedules`, `registries`, `notifications`, `vulnerabilities`, or a resource family like `container` (`core` is always included) |
 | `DOCKHAND_ALLOW_TOOLS` | `--allow-tools` | register these tools as well as the toolsets asked for, or only these when no toolset is (names, `container_*` globs, or `essential`) |
 | `DOCKHAND_DENY_TOOLS` | `--deny-tools` | never register these tools, whatever asked for them (names or globs such as `*_stop`) |
 | `DOCKHAND_LOG` | | log level (`WARN` default; `DEBUG`, `TRACE`, ...) |
@@ -210,12 +210,12 @@ The tools that change something are only registered when `--enable-write` / `DOC
 
 ### Choosing which tools load
 
-**The default is `core`: eight read-only tools, about 2,600 tokens.** Every tool's definition is spent from a client's context before anyone asks a question, so `--toolsets` / `DOCKHAND_TOOLSETS` loads the groups a session needs, and `core` comes along with whatever else is asked for, because nothing else can say which hosts there are.
+**The default is `core` and `audit`: 21 read-only tools, about 6,000 tokens,** enough to see what runs where and to look for what is wrong. Every tool's definition is spent from a client's context before anyone asks a question, so `--toolsets` / `DOCKHAND_TOOLSETS` loads the groups a session needs, and `core` comes along with whatever else is asked for, because nothing else can say which hosts there are.
 
 | toolset | tools | with core | ~tokens |
 |---|---|---|---|
 | `core` *(default)* | 8 | 8 | 2,600 |
-| `audit` | 13 | 21 | 6,000 |
+| `audit` *(default)* | 13 | 21 | 6,000 |
 | `manage` | 7 | 15 | 4,100 |
 | `containers` | 15 | 23 | 8,300 |
 | `files` | 9 | 17 | 5,900 |
@@ -280,7 +280,7 @@ DOCKHAND_ENABLE_WRITE=true DOCKHAND_TOOLSETS=manage DOCKHAND_DENY_TOOLS=*_stop  
 
 ### Finding what is not right
 
-The audits look for it, and need `--toolsets audit`. They only read.
+The audits look for it. They load by default and only read.
 
 ```text
 audit_all                             every audit over every host, counted: where to look
@@ -289,7 +289,7 @@ audit_healthcheck                     what could never be found unhealthy, becau
 audit_security env=<host>             what was given more of its host than a container needs
 ```
 
-And with `core` alone:
+And one container looked into, with `core`:
 
 ```text
 container_list problems=true          every container that is unhealthy, restarting or exited with an error, on every host

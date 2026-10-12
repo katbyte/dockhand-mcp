@@ -24,6 +24,7 @@ func (c Client) DeleteUsersByIdMfa(ctx context.Context, id UserID) (result Delet
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteUsersByIdMfa",
 		Path:       fmt.Sprintf("/api/users/%s/mfa", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

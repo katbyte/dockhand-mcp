@@ -48,6 +48,7 @@ func (c Client) DeleteEnvironmentsById(ctx context.Context, id EnvironmentID) (r
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteEnvironmentsById",
 		Path:       fmt.Sprintf("/api/environments/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

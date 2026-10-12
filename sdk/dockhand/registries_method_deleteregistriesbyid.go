@@ -48,6 +48,7 @@ func (c Client) DeleteRegistriesById(ctx context.Context, id RegistryID) (result
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteRegistriesById",
 		Path:       fmt.Sprintf("/api/registries/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

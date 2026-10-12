@@ -50,6 +50,7 @@ func (c Client) DeleteEnvironmentsByIdNotificationsByNotificationId(ctx context.
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteEnvironmentsByIdNotificationsByNotificationId",
 		Path:       fmt.Sprintf("/api/environments/%s/notifications/%s", url.PathEscape(strconv.Itoa(int(id))), url.PathEscape(strconv.Itoa(int(notificationId)))),
 	}
 

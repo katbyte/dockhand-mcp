@@ -45,6 +45,7 @@ func (c Client) GetProfile(ctx context.Context) (result GetProfileResponse, err 
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetProfile",
 		Path:       "/api/profile",
 	}
 

@@ -50,6 +50,7 @@ func (c Client) GetEnvironmentsByIdNotificationsByNotificationId(ctx context.Con
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetEnvironmentsByIdNotificationsByNotificationId",
 		Path:       fmt.Sprintf("/api/environments/%s/notifications/%s", url.PathEscape(strconv.Itoa(int(id))), url.PathEscape(strconv.Itoa(int(notificationId)))),
 	}
 

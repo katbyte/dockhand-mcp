@@ -49,6 +49,7 @@ func (c Client) PutRegistriesById(ctx context.Context, id RegistryID, input PutR
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutRegistriesById",
 		Path:       fmt.Sprintf("/api/registries/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

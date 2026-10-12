@@ -48,6 +48,7 @@ func (c Client) PostNotificationsByIdTest(ctx context.Context, id NotificationID
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostNotificationsByIdTest",
 		Path:       fmt.Sprintf("/api/notifications/%s/test", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

@@ -58,6 +58,7 @@ func (c Client) GetVolumes(ctx context.Context, options ...GetVolumesOptions) (r
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetVolumes",
 		OptionsObject: option,
 		Path:          "/api/volumes",
 	}

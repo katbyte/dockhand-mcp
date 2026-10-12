@@ -84,6 +84,7 @@ func (c Client) PostStacks(ctx context.Context, input PostStacksRequest, options
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostStacks",
 		OptionsObject: option,
 		Path:          "/api/stacks",
 	}

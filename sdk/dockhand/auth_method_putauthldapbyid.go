@@ -47,6 +47,7 @@ func (c Client) PutAuthLdapById(ctx context.Context, id int, input PutAuthLdapBy
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutAuthLdapById",
 		Path:       fmt.Sprintf("/api/auth/ldap/%d", id),
 	}
 

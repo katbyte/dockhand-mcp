@@ -76,6 +76,7 @@ func (c Client) GetLegalPrivacy(ctx context.Context, options ...GetLegalPrivacyO
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetLegalPrivacy",
 		OptionsObject: option,
 		Path:          "/api/legal/privacy",
 	}

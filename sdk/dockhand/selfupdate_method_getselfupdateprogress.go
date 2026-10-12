@@ -66,6 +66,7 @@ func (c Client) GetSelfUpdateProgress(ctx context.Context, options GetSelfUpdate
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetSelfUpdateProgress",
 		OptionsObject: options,
 		Path:          "/api/self-update/progress",
 	}

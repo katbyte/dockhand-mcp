@@ -46,6 +46,7 @@ func (c Client) PostStacksAdopt(ctx context.Context, input PostStacksAdoptReques
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostStacksAdopt",
 		Path:       "/api/stacks/adopt",
 	}
 

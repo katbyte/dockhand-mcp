@@ -79,6 +79,7 @@ func (c Client) DeleteRegistryImage(ctx context.Context, options DeleteRegistryI
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
+		Operation:     "DeleteRegistryImage",
 		OptionsObject: options,
 		Path:          "/api/registry/image",
 	}

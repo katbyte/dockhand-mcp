@@ -23,6 +23,7 @@ func (c Client) PostBackupDestinationsByIdRotateKey(ctx context.Context, id int,
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostBackupDestinationsByIdRotateKey",
 		Path:       fmt.Sprintf("/api/backup/destinations/%d/rotate-key", id),
 	}
 

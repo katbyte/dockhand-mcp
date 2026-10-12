@@ -59,6 +59,7 @@ func (c Client) GetAuditEvents(ctx context.Context) (result GetAuditEventsRespon
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetAuditEvents",
 		Path:           "/api/audit/events",
 		StreamResponse: true,
 	}

@@ -58,6 +58,7 @@ func (c Client) GetGitStacks(ctx context.Context, options ...GetGitStacksOptions
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetGitStacks",
 		OptionsObject: option,
 		Path:          "/api/git/stacks",
 	}

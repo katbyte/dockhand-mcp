@@ -27,6 +27,7 @@ func (c Client) GetProfilePreferences(ctx context.Context) (result GetProfilePre
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetProfilePreferences",
 		Path:       "/api/profile/preferences",
 	}
 

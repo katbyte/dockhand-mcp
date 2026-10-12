@@ -71,6 +71,7 @@ func (c Client) GetBackupSnapshots(ctx context.Context, options ...GetBackupSnap
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetBackupSnapshots",
 		OptionsObject: option,
 		Path:          "/api/backup/snapshots",
 	}

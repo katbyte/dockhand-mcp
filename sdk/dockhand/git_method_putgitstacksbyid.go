@@ -49,6 +49,7 @@ func (c Client) PutGitStacksById(ctx context.Context, id GitStackID, input PutGi
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutGitStacksById",
 		Path:       fmt.Sprintf("/api/git/stacks/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

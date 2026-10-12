@@ -131,6 +131,7 @@ func (c Client) GetVulnerabilities(ctx context.Context, options ...GetVulnerabil
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetVulnerabilities",
 		OptionsObject: option,
 		Path:          "/api/vulnerabilities",
 	}

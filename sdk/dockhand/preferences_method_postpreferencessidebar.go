@@ -46,6 +46,7 @@ func (c Client) PostPreferencesSidebar(ctx context.Context, input PostPreference
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostPreferencesSidebar",
 		Path:       "/api/preferences/sidebar",
 	}
 

@@ -46,6 +46,7 @@ func (c Client) PostDashboardPreferences(ctx context.Context, input PostDashboar
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostDashboardPreferences",
 		Path:       "/api/dashboard/preferences",
 	}
 

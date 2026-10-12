@@ -78,6 +78,7 @@ func (c Client) PostNetworks(ctx context.Context, input PostNetworksRequest, opt
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostNetworks",
 		OptionsObject: option,
 		Path:          "/api/networks",
 	}

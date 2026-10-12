@@ -143,6 +143,7 @@ func (c Client) GetAudit(ctx context.Context, options ...GetAuditOptions) (resul
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetAudit",
 		OptionsObject: option,
 		Path:          "/api/audit",
 	}

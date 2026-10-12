@@ -26,6 +26,7 @@ func (c Client) GetGitRepositories(ctx context.Context) (result GetGitRepositori
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetGitRepositories",
 		Path:       "/api/git/repositories",
 	}
 

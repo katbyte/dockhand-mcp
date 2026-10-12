@@ -85,6 +85,7 @@ func (c Client) PutStacksByNameCompose(ctx context.Context, name string, input P
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPut,
+		Operation:     "PutStacksByNameCompose",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/compose", url.PathEscape(name)),
 	}

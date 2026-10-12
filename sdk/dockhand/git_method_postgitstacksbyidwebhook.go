@@ -48,6 +48,7 @@ func (c Client) PostGitStacksByIdWebhook(ctx context.Context, id GitStackID) (re
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostGitStacksByIdWebhook",
 		Path:       fmt.Sprintf("/api/git/stacks/%s/webhook", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

@@ -48,6 +48,7 @@ func (c Client) GetEnvironmentsByIdUpdateCheck(ctx context.Context, id Environme
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetEnvironmentsByIdUpdateCheck",
 		Path:       fmt.Sprintf("/api/environments/%s/update-check", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

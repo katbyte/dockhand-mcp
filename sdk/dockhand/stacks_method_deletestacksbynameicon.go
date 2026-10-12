@@ -78,6 +78,7 @@ func (c Client) DeleteStacksByNameIcon(ctx context.Context, name string, options
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
+		Operation:     "DeleteStacksByNameIcon",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/icon", url.PathEscape(name)),
 	}

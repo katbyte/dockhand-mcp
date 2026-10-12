@@ -86,6 +86,7 @@ func (c Client) GetStacksByNameDeploysByRunIdLog(ctx context.Context, name strin
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetStacksByNameDeploysByRunIdLog",
 		Path:           fmt.Sprintf("/api/stacks/%s/deploys/%d/log", url.PathEscape(name), runId),
 		StreamResponse: true,
 	}

@@ -27,6 +27,7 @@ func (c Client) GetSettingsTheme(ctx context.Context) (result GetSettingsThemeRe
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetSettingsTheme",
 		Path:       "/api/settings/theme",
 	}
 

@@ -45,6 +45,7 @@ func (c Client) DeletePreferencesSidebar(ctx context.Context) (result DeletePref
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeletePreferencesSidebar",
 		Path:       "/api/preferences/sidebar",
 	}
 

@@ -164,6 +164,7 @@ func (c Client) GetVulnerabilitiesExport(ctx context.Context, options ...GetVuln
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetVulnerabilitiesExport",
 		OptionsObject:  option,
 		Path:           "/api/vulnerabilities/export",
 		StreamResponse: true,

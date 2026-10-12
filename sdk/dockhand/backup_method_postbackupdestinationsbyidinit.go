@@ -22,6 +22,7 @@ func (c Client) PostBackupDestinationsByIdInit(ctx context.Context, id int) (res
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostBackupDestinationsByIdInit",
 		Path:       fmt.Sprintf("/api/backup/destinations/%d/init", id),
 	}
 

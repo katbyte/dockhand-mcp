@@ -77,6 +77,7 @@ func (c Client) GetDebugMemory(ctx context.Context, options ...GetDebugMemoryOpt
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetDebugMemory",
 		OptionsObject: option,
 		Path:          "/api/debug/memory",
 	}

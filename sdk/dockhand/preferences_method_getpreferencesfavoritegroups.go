@@ -67,6 +67,7 @@ func (c Client) GetPreferencesFavoriteGroups(ctx context.Context, options GetPre
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetPreferencesFavoriteGroups",
 		OptionsObject: options,
 		Path:          "/api/preferences/favorite-groups",
 	}

@@ -46,6 +46,7 @@ func (c Client) PostSecretProviders(ctx context.Context, input PostSecretProvide
 			http.StatusCreated,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostSecretProviders",
 		Path:       "/api/secret-providers",
 	}
 

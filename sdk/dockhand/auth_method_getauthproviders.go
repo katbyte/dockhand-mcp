@@ -45,6 +45,7 @@ func (c Client) GetAuthProviders(ctx context.Context) (result GetAuthProvidersRe
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetAuthProviders",
 		Path:       "/api/auth/providers",
 	}
 

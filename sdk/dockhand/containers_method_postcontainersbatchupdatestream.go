@@ -44,6 +44,7 @@ func (c Client) PostContainersBatchUpdateStream(ctx context.Context, input PostC
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostContainersBatchUpdateStream",
 		OptionsObject: options,
 		Path:          "/api/containers/batch-update-stream",
 	}

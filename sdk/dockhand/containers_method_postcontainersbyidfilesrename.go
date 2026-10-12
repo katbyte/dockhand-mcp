@@ -70,6 +70,7 @@ func (c Client) PostContainersByIdFilesRename(ctx context.Context, id string, in
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostContainersByIdFilesRename",
 		OptionsObject: options,
 		Path:          fmt.Sprintf("/api/containers/%s/files/rename", url.PathEscape(id)),
 	}

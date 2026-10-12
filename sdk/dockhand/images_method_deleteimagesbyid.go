@@ -84,6 +84,7 @@ func (c Client) DeleteImagesById(ctx context.Context, id string, options ...Dele
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
+		Operation:     "DeleteImagesById",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/images/%s", url.PathEscape(id)),
 	}

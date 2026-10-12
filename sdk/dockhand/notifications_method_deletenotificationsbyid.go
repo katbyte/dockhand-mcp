@@ -48,6 +48,7 @@ func (c Client) DeleteNotificationsById(ctx context.Context, id NotificationID) 
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteNotificationsById",
 		Path:       fmt.Sprintf("/api/notifications/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

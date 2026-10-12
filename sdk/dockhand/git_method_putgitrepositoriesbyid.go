@@ -49,6 +49,7 @@ func (c Client) PutGitRepositoriesById(ctx context.Context, id GitRepositoryID, 
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutGitRepositoriesById",
 		Path:       fmt.Sprintf("/api/git/repositories/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

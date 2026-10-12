@@ -78,6 +78,7 @@ func (c Client) DeleteContainerIconsByName(ctx context.Context, name string, opt
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
+		Operation:     "DeleteContainerIconsByName",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/container-icons/%s", url.PathEscape(name)),
 	}

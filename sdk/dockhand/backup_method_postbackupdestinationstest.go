@@ -22,6 +22,7 @@ func (c Client) PostBackupDestinationsTest(ctx context.Context, input PostBackup
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostBackupDestinationsTest",
 		Path:       "/api/backup/destinations/test",
 	}
 

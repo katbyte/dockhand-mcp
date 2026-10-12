@@ -22,6 +22,7 @@ func (c Client) PostBackupConfigsByIdRun(ctx context.Context, id int) (result Po
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostBackupConfigsByIdRun",
 		Path:       fmt.Sprintf("/api/backup/configs/%d/run", id),
 	}
 

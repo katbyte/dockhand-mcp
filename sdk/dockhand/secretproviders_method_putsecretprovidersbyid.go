@@ -49,6 +49,7 @@ func (c Client) PutSecretProvidersById(ctx context.Context, id SecretProviderID,
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutSecretProvidersById",
 		Path:       fmt.Sprintf("/api/secret-providers/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

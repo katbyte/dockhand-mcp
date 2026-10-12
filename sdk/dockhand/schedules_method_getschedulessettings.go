@@ -45,6 +45,7 @@ func (c Client) GetSchedulesSettings(ctx context.Context) (result GetSchedulesSe
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetSchedulesSettings",
 		Path:       "/api/schedules/settings",
 	}
 

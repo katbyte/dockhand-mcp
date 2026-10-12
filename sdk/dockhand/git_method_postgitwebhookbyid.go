@@ -47,6 +47,7 @@ func (c Client) PostGitWebhookById(ctx context.Context, id int, input PostGitWeb
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostGitWebhookById",
 		Path:       fmt.Sprintf("/api/git/webhook/%d", id),
 	}
 

@@ -46,6 +46,7 @@ func (c Client) PostSystemFiles(ctx context.Context, input PostSystemFilesReques
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostSystemFiles",
 		Path:       "/api/system/files",
 	}
 

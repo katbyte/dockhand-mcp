@@ -46,6 +46,7 @@ func (c Client) PostLabels(ctx context.Context, input PostLabelsRequest) (result
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostLabels",
 		Path:       "/api/labels",
 	}
 

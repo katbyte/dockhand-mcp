@@ -48,6 +48,7 @@ func (c Client) DeleteEnvironmentsByIdIcon(ctx context.Context, id EnvironmentID
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteEnvironmentsByIdIcon",
 		Path:       fmt.Sprintf("/api/environments/%s/icon", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

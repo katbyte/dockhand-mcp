@@ -45,6 +45,7 @@ func (c Client) DeleteLicense(ctx context.Context) (result DeleteLicenseResponse
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteLicense",
 		Path:       "/api/license",
 	}
 

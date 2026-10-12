@@ -78,6 +78,7 @@ func (c Client) DeleteAutoUpdateByContainerName(ctx context.Context, containerNa
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
+		Operation:     "DeleteAutoUpdateByContainerName",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/auto-update/%s", url.PathEscape(containerName)),
 	}

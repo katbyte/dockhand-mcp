@@ -46,6 +46,7 @@ func (c Client) PutSecretProvidersDefault(ctx context.Context, input PutSecretPr
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutSecretProvidersDefault",
 		Path:       "/api/secret-providers/default",
 	}
 

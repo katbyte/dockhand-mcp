@@ -58,6 +58,7 @@ func (c Client) GetNetworks(ctx context.Context, options ...GetNetworksOptions) 
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetNetworks",
 		OptionsObject: option,
 		Path:          "/api/networks",
 	}

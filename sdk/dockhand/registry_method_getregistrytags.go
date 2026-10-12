@@ -85,6 +85,7 @@ func (c Client) GetRegistryTags(ctx context.Context, options GetRegistryTagsOpti
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetRegistryTags",
 		OptionsObject: options,
 		Path:          "/api/registry/tags",
 	}

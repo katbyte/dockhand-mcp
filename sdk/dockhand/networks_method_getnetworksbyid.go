@@ -78,6 +78,7 @@ func (c Client) GetNetworksById(ctx context.Context, id string, options ...GetNe
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetNetworksById",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/networks/%s", url.PathEscape(id)),
 	}

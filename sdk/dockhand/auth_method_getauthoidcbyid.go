@@ -46,6 +46,7 @@ func (c Client) GetAuthOidcById(ctx context.Context, id int) (result GetAuthOidc
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetAuthOidcById",
 		Path:       fmt.Sprintf("/api/auth/oidc/%d", id),
 	}
 

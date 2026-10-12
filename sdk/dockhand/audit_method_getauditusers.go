@@ -26,6 +26,7 @@ func (c Client) GetAuditUsers(ctx context.Context) (result GetAuditUsersResponse
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetAuditUsers",
 		Path:       "/api/audit/users",
 	}
 

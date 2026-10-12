@@ -48,6 +48,7 @@ func (c Client) GetGitStacksById(ctx context.Context, id GitStackID) (result Get
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetGitStacksById",
 		Path:       fmt.Sprintf("/api/git/stacks/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

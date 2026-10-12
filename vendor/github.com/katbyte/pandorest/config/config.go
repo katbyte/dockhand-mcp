@@ -45,9 +45,11 @@ const (
 // (seriesId, seriesIds, tags), matched without regard to case. In names the
 // places the inference cannot settle, in the form a workaround's In takes
 // ("GET /api/v3/series/{id} id", "SeriesResource .parentId"), and Except
-// the places of a Name that are something else there. Joined names the
-// parameters that take the kind as one comma-joined string (Emby's Ids),
-// held in Go as a list of the kind. A typed id on a path the document types
+// the places of a Name that are something else there. Joined names, by
+// name and not by place, the query parameters that take the kind as one
+// comma-joined string (Emby's Ids), held in Go as a list of the kind; it
+// reaches parameters alone, so a field of the name is not claimed by it,
+// and an entry that reaches none is refused. A typed id on a path the document types
 // as text is formatted by the method, so the caller passes the kind. Shape
 // is a regular expression every value of the kind matches, over its text
 // (Emby's "^[0-9a-f]{32}$"): a method refuses a path parameter or an option
@@ -257,7 +259,9 @@ type Service struct {
 	// left out as null, which is not the value that was read. A name the
 	// document does not have fails the import.
 	WrittenWhole []string
-	// KeepNull names the model fields, as Schema.property, whose zero is
+	// KeepNull names the model fields, as Schema.property, or as
+	// Model.property for a record the document declares inline and the
+	// importer names (Dockhand's PostRegistriesTestAnswer), whose zero is
 	// not their absence, which the SDK holds as pointers where it holds
 	// every other number and string by value. A number: season 0 is the
 	// specials and a parental limit of 0 is the strictest, so a season or a

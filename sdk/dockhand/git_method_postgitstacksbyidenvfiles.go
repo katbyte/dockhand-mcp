@@ -49,6 +49,7 @@ func (c Client) PostGitStacksByIdEnvFiles(ctx context.Context, id GitStackID, in
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostGitStacksByIdEnvFiles",
 		Path:       fmt.Sprintf("/api/git/stacks/%s/env-files", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

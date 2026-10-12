@@ -46,6 +46,7 @@ func (c Client) PostAuthOidc(ctx context.Context, input PostAuthOidcRequest) (re
 			http.StatusCreated,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostAuthOidc",
 		Path:       "/api/auth/oidc",
 	}
 

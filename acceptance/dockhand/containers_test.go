@@ -145,7 +145,11 @@ func TestContainerMeasuredLookedIntoChangedAndRemoved(t *testing.T) {
 		if _, err := c.GetContainersByIdFilesContent(t.Context(), id, at("/tmp")); client.StatusCode(err) != 400 {
 			t.Errorf("%s: reading a directory = %v", host, err)
 		}
-		if _, err := c.GetContainersByIdFilesContent(t.Context(), id, at("/bin/busybox")); client.StatusCode(err) != 413 {
+		// a file over the megabyte that is read is written for it: the image's own files are under that on some machines
+		if wrote, err := c.PostContainersByIdExecRun(t.Context(), id, dockhand.PostContainersByIdExecRunRequest{Cmd: []string{"sh", "-c", "head -c 1200000 /dev/zero > /tmp/too-large"}}, dockhand.PostContainersByIdExecRunOptions{EnvId: env}); err != nil || wrote.Answer.ExitCode != 0 {
+			t.Fatalf("%s: writing a file over 1 MB = %+v, %v", host, wrote.Answer, err)
+		}
+		if _, err := c.GetContainersByIdFilesContent(t.Context(), id, at("/tmp/too-large")); client.StatusCode(err) != 413 {
 			t.Errorf("%s: reading a file over 1 MB = %v", host, err)
 		}
 		if _, err := c.GetContainersByIdFiles(t.Context(), id, dockhand.GetContainersByIdFilesOptions{Env: env, Path: "/tmp/it"}); client.StatusCode(err) != 500 {

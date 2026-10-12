@@ -152,6 +152,7 @@ func (c Client) GetAuditExport(ctx context.Context, options ...GetAuditExportOpt
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetAuditExport",
 		OptionsObject:  option,
 		Path:           "/api/audit/export",
 		StreamResponse: true,

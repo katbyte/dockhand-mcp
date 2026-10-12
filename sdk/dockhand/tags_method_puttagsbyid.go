@@ -49,6 +49,7 @@ func (c Client) PutTagsById(ctx context.Context, id TagID, input PutTagsByIdRequ
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutTagsById",
 		Path:       fmt.Sprintf("/api/tags/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

@@ -45,6 +45,7 @@ func (c Client) GetAuthSettings(ctx context.Context) (result GetAuthSettingsResp
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetAuthSettings",
 		Path:       "/api/auth/settings",
 	}
 

@@ -85,6 +85,7 @@ func (c Client) PostStacksByNameDeploy(ctx context.Context, name string, input P
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostStacksByNameDeploy",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/deploy", url.PathEscape(name)),
 	}

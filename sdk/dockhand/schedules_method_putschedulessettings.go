@@ -46,6 +46,7 @@ func (c Client) PutSchedulesSettings(ctx context.Context, input PutSchedulesSett
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutSchedulesSettings",
 		Path:       "/api/schedules/settings",
 	}
 

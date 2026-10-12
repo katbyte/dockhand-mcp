@@ -25,6 +25,7 @@ func (c Client) PostUsersByIdMfa(ctx context.Context, id UserID, input PostUsers
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostUsersByIdMfa",
 		Path:       fmt.Sprintf("/api/users/%s/mfa", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

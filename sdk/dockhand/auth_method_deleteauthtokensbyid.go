@@ -46,6 +46,7 @@ func (c Client) DeleteAuthTokensById(ctx context.Context, id int) (result Delete
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteAuthTokensById",
 		Path:       fmt.Sprintf("/api/auth/tokens/%d", id),
 	}
 

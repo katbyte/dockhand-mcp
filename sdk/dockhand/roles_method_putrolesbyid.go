@@ -25,6 +25,7 @@ func (c Client) PutRolesById(ctx context.Context, id RoleID, input PutRolesByIdR
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutRolesById",
 		Path:       fmt.Sprintf("/api/roles/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

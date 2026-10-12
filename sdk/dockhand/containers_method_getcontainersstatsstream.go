@@ -91,6 +91,7 @@ func (c Client) GetContainersStatsStream(ctx context.Context, options ...GetCont
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetContainersStatsStream",
 		OptionsObject:  option,
 		Path:           "/api/containers/stats/stream",
 		StreamResponse: true,

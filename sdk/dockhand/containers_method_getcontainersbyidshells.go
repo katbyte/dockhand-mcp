@@ -69,6 +69,7 @@ func (c Client) GetContainersByIdShells(ctx context.Context, id string, options 
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetContainersByIdShells",
 		OptionsObject: options,
 		Path:          fmt.Sprintf("/api/containers/%s/shells", url.PathEscape(id)),
 	}

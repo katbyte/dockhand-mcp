@@ -22,6 +22,7 @@ func (c Client) PostAuthOidcByIdTest(ctx context.Context, id int) (result PostAu
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostAuthOidcByIdTest",
 		Path:       fmt.Sprintf("/api/auth/oidc/%d/test", id),
 	}
 

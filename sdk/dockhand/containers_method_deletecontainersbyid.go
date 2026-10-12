@@ -75,6 +75,7 @@ func (c Client) DeleteContainersById(ctx context.Context, id string, options Del
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
+		Operation:     "DeleteContainersById",
 		OptionsObject: options,
 		Path:          fmt.Sprintf("/api/containers/%s", url.PathEscape(id)),
 	}

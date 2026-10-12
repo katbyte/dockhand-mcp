@@ -78,6 +78,7 @@ func (c Client) PostVolumes(ctx context.Context, input PostVolumesRequest, optio
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostVolumes",
 		OptionsObject: option,
 		Path:          "/api/volumes",
 	}

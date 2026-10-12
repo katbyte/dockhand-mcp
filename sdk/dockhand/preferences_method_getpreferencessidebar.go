@@ -45,6 +45,7 @@ func (c Client) GetPreferencesSidebar(ctx context.Context) (result GetPreference
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetPreferencesSidebar",
 		Path:       "/api/preferences/sidebar",
 	}
 

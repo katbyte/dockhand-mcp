@@ -48,6 +48,7 @@ func (c Client) GetRegistriesById(ctx context.Context, id RegistryID) (result Ge
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetRegistriesById",
 		Path:       fmt.Sprintf("/api/registries/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

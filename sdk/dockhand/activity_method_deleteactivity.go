@@ -45,6 +45,7 @@ func (c Client) DeleteActivity(ctx context.Context) (result DeleteActivityRespon
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteActivity",
 		Path:       "/api/activity",
 	}
 

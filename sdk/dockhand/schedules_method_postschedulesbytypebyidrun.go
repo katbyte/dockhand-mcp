@@ -47,6 +47,7 @@ func (c Client) PostSchedulesByTypeByIdRun(ctx context.Context, typeParam string
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostSchedulesByTypeByIdRun",
 		Path:       fmt.Sprintf("/api/schedules/%s/%d/run", url.PathEscape(typeParam), id),
 	}
 

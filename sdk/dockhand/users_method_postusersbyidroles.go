@@ -25,6 +25,7 @@ func (c Client) PostUsersByIdRoles(ctx context.Context, id UserID, input PostUse
 			http.StatusCreated,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostUsersByIdRoles",
 		Path:       fmt.Sprintf("/api/users/%s/roles", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

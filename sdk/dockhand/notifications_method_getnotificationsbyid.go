@@ -48,6 +48,7 @@ func (c Client) GetNotificationsById(ctx context.Context, id NotificationID) (re
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetNotificationsById",
 		Path:       fmt.Sprintf("/api/notifications/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

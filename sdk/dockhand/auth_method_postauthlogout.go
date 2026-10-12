@@ -45,6 +45,7 @@ func (c Client) PostAuthLogout(ctx context.Context) (result PostAuthLogoutRespon
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostAuthLogout",
 		Path:       "/api/auth/logout",
 	}
 

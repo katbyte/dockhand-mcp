@@ -45,6 +45,7 @@ func (c Client) DeleteProfileAvatar(ctx context.Context) (result DeleteProfileAv
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteProfileAvatar",
 		Path:       "/api/profile/avatar",
 	}
 

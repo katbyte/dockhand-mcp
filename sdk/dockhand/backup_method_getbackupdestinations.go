@@ -27,6 +27,7 @@ func (c Client) GetBackupDestinations(ctx context.Context) (result GetBackupDest
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetBackupDestinations",
 		Path:       "/api/backup/destinations",
 	}
 

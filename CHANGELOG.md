@@ -1,12 +1,12 @@
 # Changelog
 
-## 0.1.0 (2026-10-11)
+## 0.1.0 (2026-10-12)
 
 First release: an MCP server, a command-line tool and a Go client for Dockhand.
 
 ### Added
 
-- 203 tools for everything a Dockhand manages; only the 86 that read are on unless writing and deleting are switched on
+- 203 tools for everything a Dockhand manages; the 21 that show what runs where and audit it load by default, and nothing that writes or deletes is on until switched on
 - audits that look for problems across every host: what is broken now, what nothing checks, what would not come back after a reboot, what has updates or known vulnerabilities, what was given too much of its host, and what is left over; one call counts them all
 - see every Docker host and every container on it, find the ones that are not right, and read their logs
 - start, stop, restart, make, change and remove containers, and look inside them: files, processes, what they use

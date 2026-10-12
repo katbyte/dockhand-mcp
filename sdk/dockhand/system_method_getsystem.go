@@ -77,6 +77,7 @@ func (c Client) GetSystem(ctx context.Context, options ...GetSystemOptions) (res
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetSystem",
 		OptionsObject: option,
 		Path:          "/api/system",
 	}

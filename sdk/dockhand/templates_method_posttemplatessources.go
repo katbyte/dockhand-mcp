@@ -46,6 +46,7 @@ func (c Client) PostTemplatesSources(ctx context.Context, input PostTemplatesSou
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostTemplatesSources",
 		Path:       "/api/templates/sources",
 	}
 

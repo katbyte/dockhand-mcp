@@ -46,6 +46,7 @@ func (c Client) PostStacksScan(ctx context.Context, input PostStacksScanRequest)
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostStacksScan",
 		Path:       "/api/stacks/scan",
 	}
 

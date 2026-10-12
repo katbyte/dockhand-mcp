@@ -45,6 +45,7 @@ func (c Client) GetSettingsSemver(ctx context.Context) (result GetSettingsSemver
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetSettingsSemver",
 		Path:       "/api/settings/semver",
 	}
 

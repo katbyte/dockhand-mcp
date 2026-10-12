@@ -77,6 +77,7 @@ func (c Client) GetActivityStats(ctx context.Context, options ...GetActivityStat
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetActivityStats",
 		OptionsObject: option,
 		Path:          "/api/activity/stats",
 	}

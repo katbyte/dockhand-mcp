@@ -84,6 +84,7 @@ func (c Client) DeleteVolumesByName(ctx context.Context, name string, options ..
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
+		Operation:     "DeleteVolumesByName",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/volumes/%s", url.PathEscape(name)),
 	}

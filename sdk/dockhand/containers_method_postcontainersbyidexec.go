@@ -70,6 +70,7 @@ func (c Client) PostContainersByIdExec(ctx context.Context, id string, input Pos
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostContainersByIdExec",
 		OptionsObject: options,
 		Path:          fmt.Sprintf("/api/containers/%s/exec", url.PathEscape(id)),
 	}

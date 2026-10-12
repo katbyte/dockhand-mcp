@@ -79,6 +79,7 @@ func (c Client) GetImagesScan(ctx context.Context, options GetImagesScanOptions)
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetImagesScan",
 		OptionsObject: options,
 		Path:          "/api/images/scan",
 	}

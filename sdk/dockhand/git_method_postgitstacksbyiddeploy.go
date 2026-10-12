@@ -48,6 +48,7 @@ func (c Client) PostGitStacksByIdDeploy(ctx context.Context, id GitStackID) (res
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostGitStacksByIdDeploy",
 		Path:       fmt.Sprintf("/api/git/stacks/%s/deploy", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

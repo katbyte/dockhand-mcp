@@ -48,6 +48,7 @@ func (c Client) GetGitRepositoriesById(ctx context.Context, id GitRepositoryID) 
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetGitRepositoriesById",
 		Path:       fmt.Sprintf("/api/git/repositories/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

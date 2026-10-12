@@ -77,6 +77,7 @@ func (c Client) PostPruneContainers(ctx context.Context, options ...PostPruneCon
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostPruneContainers",
 		OptionsObject: option,
 		Path:          "/api/prune/containers",
 	}

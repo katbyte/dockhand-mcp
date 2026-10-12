@@ -79,6 +79,7 @@ func (c Client) PostStacksByNameEnvValidate(ctx context.Context, name string, in
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostStacksByNameEnvValidate",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/env/validate", url.PathEscape(name)),
 	}

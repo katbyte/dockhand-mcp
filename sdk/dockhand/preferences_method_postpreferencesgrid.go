@@ -46,6 +46,7 @@ func (c Client) PostPreferencesGrid(ctx context.Context, input PostPreferencesGr
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostPreferencesGrid",
 		Path:       "/api/preferences/grid",
 	}
 

@@ -60,6 +60,7 @@ func (c Client) GetRegistrySearch(ctx context.Context, options GetRegistrySearch
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetRegistrySearch",
 		OptionsObject: options,
 		Path:          "/api/registry/search",
 	}

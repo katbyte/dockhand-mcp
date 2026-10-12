@@ -86,6 +86,7 @@ func (c Client) GetIconsSelfhstByRef(ctx context.Context, ref string) (result Ge
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetIconsSelfhstByRef",
 		Path:           fmt.Sprintf("/api/icons/selfhst/%s", url.PathEscape(ref)),
 		StreamResponse: true,
 	}

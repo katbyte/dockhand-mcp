@@ -129,6 +129,7 @@ func (c Client) GetImagesByIdExport(ctx context.Context, id string, options ...G
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetImagesByIdExport",
 		OptionsObject:  option,
 		Path:           fmt.Sprintf("/api/images/%s/export", url.PathEscape(id)),
 		StreamResponse: true,

@@ -78,6 +78,7 @@ func (c Client) DeleteNetworksById(ctx context.Context, id string, options ...De
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
+		Operation:     "DeleteNetworksById",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/networks/%s", url.PathEscape(id)),
 	}

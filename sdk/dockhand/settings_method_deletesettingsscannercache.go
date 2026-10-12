@@ -45,6 +45,7 @@ func (c Client) DeleteSettingsScannerCache(ctx context.Context) (result DeleteSe
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteSettingsScannerCache",
 		Path:       "/api/settings/scanner/cache",
 	}
 

@@ -49,6 +49,7 @@ func (c Client) PostEnvironmentsByIdTimezone(ctx context.Context, id Environment
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostEnvironmentsByIdTimezone",
 		Path:       fmt.Sprintf("/api/environments/%s/timezone", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

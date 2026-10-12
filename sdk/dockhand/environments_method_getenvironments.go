@@ -26,6 +26,7 @@ func (c Client) GetEnvironments(ctx context.Context) (result GetEnvironmentsResp
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetEnvironments",
 		Path:       "/api/environments",
 	}
 

@@ -26,6 +26,7 @@ func (c Client) GetTemplates(ctx context.Context) (result GetTemplatesResponse, 
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetTemplates",
 		Path:       "/api/templates",
 	}
 

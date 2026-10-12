@@ -77,6 +77,7 @@ func (c Client) GetHost(ctx context.Context, options ...GetHostOptions) (result 
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetHost",
 		OptionsObject: option,
 		Path:          "/api/host",
 	}

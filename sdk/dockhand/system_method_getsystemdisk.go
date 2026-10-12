@@ -67,6 +67,7 @@ func (c Client) GetSystemDisk(ctx context.Context, options GetSystemDiskOptions)
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetSystemDisk",
 		OptionsObject: options,
 		Path:          "/api/system/disk",
 	}

@@ -265,7 +265,7 @@ func TestBinaryRegistersWhatTheFlagsAsk(t *testing.T) {
 		want     []string // tools that must be registered
 		unwanted []string // tools that must not be
 	}{
-		{name: "the default set is core", want: []string{"server_info", "env_list", "container_list", "container_get", "container_logs", "stack_list", "stack_logs", "job_get"}, unwanted: []string{"container_restart", "env_test", "env_create", "image_list", "job_cancel"}},
+		{name: "the default set is core and the audits", want: []string{"server_info", "env_list", "container_list", "container_get", "container_logs", "stack_list", "stack_logs", "job_get", "audit_all", "audit_health", "audit_unused"}, unwanted: []string{"container_restart", "env_test", "env_create", "image_list", "job_cancel"}},
 		{name: "a toolset from the environment", env: []string{"DOCKHAND_TOOLSETS=setup"}, want: []string{"env_test", "env_list"}, unwanted: []string{"env_create", "env_delete", "container_restart"}},
 		{name: "nothing writes unless it is said to", args: []string{"--toolsets", "all"}, want: []string{"env_test", "container_logs", "stack_list"}, unwanted: []string{"container_start", "container_stop", "container_restart", "stack_restart", "env_create", "env_delete"}},
 		{name: "--read-only says the same out loud", args: []string{"--toolsets", "all", "--read-only"}, want: []string{"env_test"}, unwanted: []string{"container_restart", "env_create", "env_delete"}},

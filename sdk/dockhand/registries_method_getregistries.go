@@ -26,6 +26,7 @@ func (c Client) GetRegistries(ctx context.Context) (result GetRegistriesResponse
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetRegistries",
 		Path:       "/api/registries",
 	}
 

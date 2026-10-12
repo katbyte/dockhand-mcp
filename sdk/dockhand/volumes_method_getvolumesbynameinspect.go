@@ -78,6 +78,7 @@ func (c Client) GetVolumesByNameInspect(ctx context.Context, name string, option
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetVolumesByNameInspect",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/volumes/%s/inspect", url.PathEscape(name)),
 	}

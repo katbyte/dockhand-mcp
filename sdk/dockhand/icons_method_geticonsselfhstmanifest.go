@@ -26,6 +26,7 @@ func (c Client) GetIconsSelfhstManifest(ctx context.Context) (result GetIconsSel
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetIconsSelfhstManifest",
 		Path:       "/api/icons/selfhst-manifest",
 	}
 

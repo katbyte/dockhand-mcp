@@ -64,6 +64,7 @@ func (c Client) GetContainers(ctx context.Context, options ...GetContainersOptio
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetContainers",
 		OptionsObject: option,
 		Path:          "/api/containers",
 	}

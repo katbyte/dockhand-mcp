@@ -53,6 +53,7 @@ func (c Client) DeleteBackupConfigsById(ctx context.Context, id int, options ...
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
+		Operation:     "DeleteBackupConfigsById",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/backup/configs/%d", id),
 	}

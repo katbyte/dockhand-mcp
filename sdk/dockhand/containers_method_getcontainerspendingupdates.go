@@ -67,6 +67,7 @@ func (c Client) GetContainersPendingUpdates(ctx context.Context, options GetCont
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetContainersPendingUpdates",
 		OptionsObject: options,
 		Path:          "/api/containers/pending-updates",
 	}

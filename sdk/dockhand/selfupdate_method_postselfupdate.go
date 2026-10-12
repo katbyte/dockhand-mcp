@@ -22,6 +22,7 @@ func (c Client) PostSelfUpdate(ctx context.Context, input PostSelfUpdateRequest)
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostSelfUpdate",
 		Path:       "/api/self-update",
 	}
 

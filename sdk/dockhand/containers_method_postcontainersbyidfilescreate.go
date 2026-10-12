@@ -70,6 +70,7 @@ func (c Client) PostContainersByIdFilesCreate(ctx context.Context, id string, in
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostContainersByIdFilesCreate",
 		OptionsObject: options,
 		Path:          fmt.Sprintf("/api/containers/%s/files/create", url.PathEscape(id)),
 	}

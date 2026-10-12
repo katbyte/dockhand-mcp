@@ -26,6 +26,7 @@ func (c Client) GetAuthLdap(ctx context.Context) (result GetAuthLdapResponse, er
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetAuthLdap",
 		Path:       "/api/auth/ldap",
 	}
 

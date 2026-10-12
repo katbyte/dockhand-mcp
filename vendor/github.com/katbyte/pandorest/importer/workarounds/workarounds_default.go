@@ -1031,7 +1031,7 @@ func Commands(about About, set CommandSet) Workaround {
 				}
 				properties[field] = s
 			}
-			spec.Components.Schemas[name+"Command"] = &openapi.Schema{Type: openapi.TypeObject, Description: "The " + name + " command, as POST " + set.Post + " queues it.", Properties: properties}
+			spec.Components.Schemas[name+"Command"] = &openapi.Schema{Type: openapi.TypeObject, Description: "The " + name + " command, as " + set.Post + " queues it.", Properties: properties}
 			schemas[name] = name + "Command"
 		}
 		post.Commands = &openapi.CommandSet{Get: set.Get, Status: set.Status, Finished: set.Finished, Failed: set.Failed, Commands: schemas}

@@ -120,6 +120,7 @@ func (c Client) GetContainersByIdFilesDownload(ctx context.Context, id string, o
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetContainersByIdFilesDownload",
 		OptionsObject:  options,
 		Path:           fmt.Sprintf("/api/containers/%s/files/download", url.PathEscape(id)),
 		StreamResponse: true,

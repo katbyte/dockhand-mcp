@@ -73,6 +73,7 @@ func (c Client) GetRegistryCatalog(ctx context.Context, options GetRegistryCatal
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetRegistryCatalog",
 		OptionsObject: options,
 		Path:          "/api/registry/catalog",
 	}

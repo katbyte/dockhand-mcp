@@ -49,6 +49,7 @@ func (c Client) PutNotificationsById(ctx context.Context, id NotificationID, inp
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutNotificationsById",
 		Path:       fmt.Sprintf("/api/notifications/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

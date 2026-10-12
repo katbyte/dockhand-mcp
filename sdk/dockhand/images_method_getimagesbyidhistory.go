@@ -59,6 +59,7 @@ func (c Client) GetImagesByIdHistory(ctx context.Context, id string, options ...
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetImagesByIdHistory",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/images/%s/history", url.PathEscape(id)),
 	}

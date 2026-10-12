@@ -78,6 +78,7 @@ func (c Client) GetStacksByNameEnvRaw(ctx context.Context, name string, options 
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetStacksByNameEnvRaw",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/env/raw", url.PathEscape(name)),
 	}

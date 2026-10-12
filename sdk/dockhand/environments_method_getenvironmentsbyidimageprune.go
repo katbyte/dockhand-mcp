@@ -48,6 +48,7 @@ func (c Client) GetEnvironmentsByIdImagePrune(ctx context.Context, id Environmen
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetEnvironmentsByIdImagePrune",
 		Path:       fmt.Sprintf("/api/environments/%s/image-prune", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

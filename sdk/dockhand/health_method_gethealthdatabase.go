@@ -45,6 +45,7 @@ func (c Client) GetHealthDatabase(ctx context.Context) (result GetHealthDatabase
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetHealthDatabase",
 		Path:       "/api/health/database",
 	}
 

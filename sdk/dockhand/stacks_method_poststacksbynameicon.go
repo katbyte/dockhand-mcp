@@ -79,6 +79,7 @@ func (c Client) PostStacksByNameIcon(ctx context.Context, name string, input Pos
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostStacksByNameIcon",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/icon", url.PathEscape(name)),
 	}

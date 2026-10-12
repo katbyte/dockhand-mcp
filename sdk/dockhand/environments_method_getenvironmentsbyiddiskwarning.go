@@ -48,6 +48,7 @@ func (c Client) GetEnvironmentsByIdDiskWarning(ctx context.Context, id Environme
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetEnvironmentsByIdDiskWarning",
 		Path:       fmt.Sprintf("/api/environments/%s/disk-warning", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

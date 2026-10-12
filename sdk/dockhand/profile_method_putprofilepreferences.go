@@ -22,6 +22,7 @@ func (c Client) PutProfilePreferences(ctx context.Context, input PutProfilePrefe
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutProfilePreferences",
 		Path:       "/api/profile/preferences",
 	}
 

@@ -79,6 +79,7 @@ func (c Client) PostContainersByIdUpdateRuntime(ctx context.Context, id string, 
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostContainersByIdUpdateRuntime",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/containers/%s/update-runtime", url.PathEscape(id)),
 	}

@@ -46,6 +46,7 @@ func (c Client) PostNotificationsTest(ctx context.Context, input PostNotificatio
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostNotificationsTest",
 		Path:       "/api/notifications/test",
 	}
 

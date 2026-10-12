@@ -58,6 +58,7 @@ func (c Client) GetContainerIcons(ctx context.Context, options ...GetContainerIc
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetContainerIcons",
 		OptionsObject: option,
 		Path:          "/api/container-icons",
 	}

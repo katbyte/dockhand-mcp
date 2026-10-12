@@ -46,6 +46,7 @@ func (c Client) PutProfile(ctx context.Context, input PutProfileRequest) (result
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutProfile",
 		Path:       "/api/profile",
 	}
 

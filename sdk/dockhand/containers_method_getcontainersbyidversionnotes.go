@@ -75,6 +75,7 @@ func (c Client) GetContainersByIdVersionNotes(ctx context.Context, id string, op
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetContainersByIdVersionNotes",
 		OptionsObject: options,
 		Path:          fmt.Sprintf("/api/containers/%s/version-notes", url.PathEscape(id)),
 	}

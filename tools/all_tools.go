@@ -44,7 +44,7 @@ type Options struct {
 // Toolsets group the tools by the job someone is doing, so a client can load a working subset instead of all of them: every tool's definition (name,
 // description, input schema) is spent from a client's context before anyone has asked a question.
 //
-// "all" is every tool, which is what the library does when no toolset is asked for; the dockhand-mcp binary defaults to core instead (see
+// "all" is every tool, which is what the library does when no toolset is asked for; the dockhand-mcp binary defaults to core and audit instead (see
 // cli.FlagData.ToolOptions).
 //
 // --toolsets also takes a resource family - server, env, container, stack - which is every tool with that prefix. Those are derived from the

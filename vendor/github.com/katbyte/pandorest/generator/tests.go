@@ -872,11 +872,11 @@ func (g *gen) andWaitTest(o *definitions.Operation) string {
 	fmt.Fprintf(&b, "\tif got := s.requests[0]; got.Method != http.MethodPost || !strings.Contains(s.bodies[0], %q) {\n\t\tt.Errorf(\"the command went as %%s %%s\", got.Method, s.bodies[0])\n\t}\n", `"name":"`+o.Command+`"`)
 	if len(set.Failed) > 0 {
 		b.WriteString("\n" + strings.Replace(server(set.Failed[0]), "c, s :=", "c, s =", 1))
-		fmt.Fprintf(&b, "\tif _, err := c.%sAndWait(t.Context(), %s{}, time.Second); err == nil || !strings.Contains(err.Error(), %q) {\n\t\tt.Errorf(\"a failed command = %%v\", err)\n\t}\n", o.Name, g.goType(o.Request.Type), set.Failed[0])
+		fmt.Fprintf(&b, "\tif _, err := c.%sAndWait(t.Context(), %s{}, time.Second); !errors.Is(err, client.ErrCommandFailed) || !strings.Contains(err.Error(), %q) {\n\t\tt.Errorf(\"a failed command = %%v\", err)\n\t}\n", o.Name, g.goType(o.Request.Type), set.Failed[0])
 	}
 	b.WriteString("\n\t// a command still running when the wait ends is an error saying so\n")
 	b.WriteString(strings.Replace(server("running"), "c, s :=", "c, s =", 1))
-	fmt.Fprintf(&b, "\tif _, err := c.%sAndWait(t.Context(), %s{}, 0); err == nil || !strings.Contains(err.Error(), \"still running\") {\n\t\tt.Errorf(\"a command the wait gave up on = %%v\", err)\n\t}\n}\n", o.Name, g.goType(o.Request.Type))
+	fmt.Fprintf(&b, "\tif _, err := c.%sAndWait(t.Context(), %s{}, 0); !errors.Is(err, client.ErrCommandRunning) || !strings.Contains(err.Error(), \"still running\") {\n\t\tt.Errorf(\"a command the wait gave up on = %%v\", err)\n\t}\n}\n", o.Name, g.goType(o.Request.Type))
 
 	return b.String()
 }

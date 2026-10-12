@@ -52,6 +52,7 @@ func (c Client) GetAuthOidcByIdInitiate(ctx context.Context, id int, options ...
 			http.StatusFound,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetAuthOidcByIdInitiate",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/auth/oidc/%d/initiate", id),
 	}

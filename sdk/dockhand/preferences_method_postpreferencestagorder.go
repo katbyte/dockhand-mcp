@@ -46,6 +46,7 @@ func (c Client) PostPreferencesTagOrder(ctx context.Context, input PostPreferenc
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostPreferencesTagOrder",
 		Path:       "/api/preferences/tag-order",
 	}
 

@@ -73,6 +73,7 @@ func (c Client) GetStacksPathHints(ctx context.Context, options GetStacksPathHin
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetStacksPathHints",
 		OptionsObject: options,
 		Path:          "/api/stacks/path-hints",
 	}

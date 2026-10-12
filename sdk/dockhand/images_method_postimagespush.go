@@ -84,6 +84,7 @@ func (c Client) PostImagesPush(ctx context.Context, input PostImagesPushRequest,
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostImagesPush",
 		OptionsObject: option,
 		Path:          "/api/images/push",
 	}

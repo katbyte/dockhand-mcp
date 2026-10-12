@@ -45,6 +45,7 @@ func (c Client) GetHawserConnect(ctx context.Context) (result GetHawserConnectRe
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetHawserConnect",
 		Path:       "/api/hawser/connect",
 	}
 

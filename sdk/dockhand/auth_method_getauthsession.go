@@ -45,6 +45,7 @@ func (c Client) GetAuthSession(ctx context.Context) (result GetAuthSessionRespon
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetAuthSession",
 		Path:       "/api/auth/session",
 	}
 

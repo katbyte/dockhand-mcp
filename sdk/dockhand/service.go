@@ -1,4 +1,4 @@
-package dockhand //nolint:revive // the package comment is in doc.go, which pandorest generates and a linter therefore passes over
+package dockhand
 
 import (
 	"bytes"

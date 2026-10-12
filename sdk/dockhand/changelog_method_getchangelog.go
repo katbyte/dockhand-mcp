@@ -26,6 +26,7 @@ func (c Client) GetChangelog(ctx context.Context) (result GetChangelogResponse, 
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetChangelog",
 		Path:       "/api/changelog",
 	}
 

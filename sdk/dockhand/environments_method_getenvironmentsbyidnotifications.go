@@ -29,6 +29,7 @@ func (c Client) GetEnvironmentsByIdNotifications(ctx context.Context, id Environ
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetEnvironmentsByIdNotifications",
 		Path:       fmt.Sprintf("/api/environments/%s/notifications", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

@@ -70,6 +70,7 @@ func (c Client) PostContainersByIdFilesChown(ctx context.Context, id string, inp
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostContainersByIdFilesChown",
 		OptionsObject: options,
 		Path:          fmt.Sprintf("/api/containers/%s/files/chown", url.PathEscape(id)),
 	}

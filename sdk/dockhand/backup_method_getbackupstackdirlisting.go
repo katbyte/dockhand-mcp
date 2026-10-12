@@ -55,6 +55,7 @@ func (c Client) GetBackupStackDirListing(ctx context.Context, options GetBackupS
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetBackupStackDirListing",
 		OptionsObject: options,
 		Path:          "/api/backup/stack-dir-listing",
 	}

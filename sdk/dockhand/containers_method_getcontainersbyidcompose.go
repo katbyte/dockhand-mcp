@@ -69,6 +69,7 @@ func (c Client) GetContainersByIdCompose(ctx context.Context, id string, options
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetContainersByIdCompose",
 		OptionsObject: options,
 		Path:          fmt.Sprintf("/api/containers/%s/compose", url.PathEscape(id)),
 	}

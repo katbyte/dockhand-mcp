@@ -78,6 +78,7 @@ func (c Client) GetStacksByNameDeploys(ctx context.Context, name string, options
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetStacksByNameDeploys",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/deploys", url.PathEscape(name)),
 	}

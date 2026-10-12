@@ -48,6 +48,7 @@ func (c Client) PostGitRepositoriesByIdTest(ctx context.Context, id GitRepositor
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostGitRepositoriesByIdTest",
 		Path:       fmt.Sprintf("/api/git/repositories/%s/test", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

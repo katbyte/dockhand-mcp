@@ -49,6 +49,7 @@ func (c Client) PutConfigSetsById(ctx context.Context, id ConfigSetID, input Put
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutConfigSetsById",
 		Path:       fmt.Sprintf("/api/config-sets/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

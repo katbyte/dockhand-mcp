@@ -26,6 +26,7 @@ func (c Client) GetAuthOidc(ctx context.Context) (result GetAuthOidcResponse, er
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetAuthOidc",
 		Path:       "/api/auth/oidc",
 	}
 

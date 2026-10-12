@@ -79,6 +79,7 @@ func (c Client) PostImagesByIdTag(ctx context.Context, id string, input PostImag
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostImagesByIdTag",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/images/%s/tag", url.PathEscape(id)),
 	}

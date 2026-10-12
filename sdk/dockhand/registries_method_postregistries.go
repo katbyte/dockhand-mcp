@@ -46,6 +46,7 @@ func (c Client) PostRegistries(ctx context.Context, input PostRegistriesRequest)
 			http.StatusCreated,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostRegistries",
 		Path:       "/api/registries",
 	}
 

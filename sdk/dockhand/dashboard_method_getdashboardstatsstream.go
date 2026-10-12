@@ -59,6 +59,7 @@ func (c Client) GetDashboardStatsStream(ctx context.Context) (result GetDashboar
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetDashboardStatsStream",
 		Path:           "/api/dashboard/stats/stream",
 		StreamResponse: true,
 	}

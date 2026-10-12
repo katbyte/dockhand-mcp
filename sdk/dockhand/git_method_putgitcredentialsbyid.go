@@ -49,6 +49,7 @@ func (c Client) PutGitCredentialsById(ctx context.Context, id GitCredentialID, i
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutGitCredentialsById",
 		Path:       fmt.Sprintf("/api/git/credentials/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

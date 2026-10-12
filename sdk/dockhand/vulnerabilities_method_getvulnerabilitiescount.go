@@ -77,6 +77,7 @@ func (c Client) GetVulnerabilitiesCount(ctx context.Context, options ...GetVulne
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetVulnerabilitiesCount",
 		OptionsObject: option,
 		Path:          "/api/vulnerabilities/count",
 	}

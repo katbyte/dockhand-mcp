@@ -47,6 +47,7 @@ func (c Client) PostAuthOidcByIdInitiate(ctx context.Context, id int, input Post
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostAuthOidcByIdInitiate",
 		Path:       fmt.Sprintf("/api/auth/oidc/%d/initiate", id),
 	}
 

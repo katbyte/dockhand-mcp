@@ -124,6 +124,7 @@ func (c Client) GetImagesScanExport(ctx context.Context, options GetImagesScanEx
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetImagesScanExport",
 		OptionsObject:  options,
 		Path:           "/api/images/scan/export",
 		StreamResponse: true,

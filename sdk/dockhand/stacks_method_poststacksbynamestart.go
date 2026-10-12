@@ -84,6 +84,7 @@ func (c Client) PostStacksByNameStart(ctx context.Context, name string, options 
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostStacksByNameStart",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/start", url.PathEscape(name)),
 	}

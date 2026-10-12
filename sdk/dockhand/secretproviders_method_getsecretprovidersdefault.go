@@ -45,6 +45,7 @@ func (c Client) GetSecretProvidersDefault(ctx context.Context) (result GetSecret
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetSecretProvidersDefault",
 		Path:       "/api/secret-providers/default",
 	}
 

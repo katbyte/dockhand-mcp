@@ -22,6 +22,7 @@ func (c Client) PostRoles(ctx context.Context, input PostRolesRequest) (result P
 			http.StatusCreated,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostRoles",
 		Path:       "/api/roles",
 	}
 

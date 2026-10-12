@@ -46,6 +46,7 @@ func (c Client) PostSchedulesSystemByIdToggle(ctx context.Context, id int) (resu
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostSchedulesSystemByIdToggle",
 		Path:       fmt.Sprintf("/api/schedules/system/%d/toggle", id),
 	}
 

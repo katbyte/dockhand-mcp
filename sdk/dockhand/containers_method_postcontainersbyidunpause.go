@@ -69,6 +69,7 @@ func (c Client) PostContainersByIdUnpause(ctx context.Context, id string, option
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostContainersByIdUnpause",
 		OptionsObject: options,
 		Path:          fmt.Sprintf("/api/containers/%s/unpause", url.PathEscape(id)),
 	}

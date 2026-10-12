@@ -73,6 +73,7 @@ func (c Client) DeleteContainersPendingUpdates(ctx context.Context, options Dele
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
+		Operation:     "DeleteContainersPendingUpdates",
 		OptionsObject: options,
 		Path:          "/api/containers/pending-updates",
 	}

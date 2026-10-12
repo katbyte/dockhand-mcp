@@ -46,6 +46,7 @@ func (c Client) PostSettingsSemver(ctx context.Context, input PostSettingsSemver
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostSettingsSemver",
 		Path:       "/api/settings/semver",
 	}
 

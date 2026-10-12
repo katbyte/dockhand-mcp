@@ -45,6 +45,7 @@ func (c Client) DeletePreferencesEnvironmentOrder(ctx context.Context) (result D
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeletePreferencesEnvironmentOrder",
 		Path:       "/api/preferences/environment-order",
 	}
 

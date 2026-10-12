@@ -76,6 +76,7 @@ func (c Client) PutContainersByIdFilesContent(ctx context.Context, id string, in
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPut,
+		Operation:     "PutContainersByIdFilesContent",
 		OptionsObject: options,
 		Path:          fmt.Sprintf("/api/containers/%s/files/content", url.PathEscape(id)),
 	}

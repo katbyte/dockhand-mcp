@@ -79,6 +79,7 @@ func (c Client) PutContainerTagsByName(ctx context.Context, name string, input P
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPut,
+		Operation:     "PutContainerTagsByName",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/container-tags/%s", url.PathEscape(name)),
 	}

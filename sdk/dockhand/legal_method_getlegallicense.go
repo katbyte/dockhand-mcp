@@ -76,6 +76,7 @@ func (c Client) GetLegalLicense(ctx context.Context, options ...GetLegalLicenseO
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetLegalLicense",
 		OptionsObject: option,
 		Path:          "/api/legal/license",
 	}

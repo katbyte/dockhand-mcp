@@ -22,6 +22,7 @@ func (c Client) DeleteBackupDestinationsById(ctx context.Context, id int) (resul
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteBackupDestinationsById",
 		Path:       fmt.Sprintf("/api/backup/destinations/%d", id),
 	}
 

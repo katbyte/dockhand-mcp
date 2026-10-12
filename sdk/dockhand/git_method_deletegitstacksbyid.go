@@ -48,6 +48,7 @@ func (c Client) DeleteGitStacksById(ctx context.Context, id GitStackID) (result 
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteGitStacksById",
 		Path:       fmt.Sprintf("/api/git/stacks/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

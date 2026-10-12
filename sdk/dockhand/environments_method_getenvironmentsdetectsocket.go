@@ -45,6 +45,7 @@ func (c Client) GetEnvironmentsDetectSocket(ctx context.Context) (result GetEnvi
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetEnvironmentsDetectSocket",
 		Path:       "/api/environments/detect-socket",
 	}
 

@@ -26,6 +26,7 @@ func (c Client) GetUsers(ctx context.Context) (result GetUsersResponse, err erro
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetUsers",
 		Path:       "/api/users",
 	}
 

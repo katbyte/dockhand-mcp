@@ -67,6 +67,7 @@ func (c Client) GetContainersCheckUpdates(ctx context.Context, options GetContai
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetContainersCheckUpdates",
 		OptionsObject: options,
 		Path:          "/api/containers/check-updates",
 	}

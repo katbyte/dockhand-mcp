@@ -76,6 +76,7 @@ func (c Client) DeletePreferencesGrid(ctx context.Context, options ...DeletePref
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
+		Operation:     "DeletePreferencesGrid",
 		OptionsObject: option,
 		Path:          "/api/preferences/grid",
 	}

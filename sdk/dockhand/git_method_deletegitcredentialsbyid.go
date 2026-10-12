@@ -48,6 +48,7 @@ func (c Client) DeleteGitCredentialsById(ctx context.Context, id GitCredentialID
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteGitCredentialsById",
 		Path:       fmt.Sprintf("/api/git/credentials/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

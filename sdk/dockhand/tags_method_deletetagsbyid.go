@@ -48,6 +48,7 @@ func (c Client) DeleteTagsById(ctx context.Context, id TagID) (result DeleteTags
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteTagsById",
 		Path:       fmt.Sprintf("/api/tags/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

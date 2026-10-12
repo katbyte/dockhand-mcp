@@ -69,6 +69,7 @@ func (c Client) PostContainersByIdRestart(ctx context.Context, id string, option
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostContainersByIdRestart",
 		OptionsObject: options,
 		Path:          fmt.Sprintf("/api/containers/%s/restart", url.PathEscape(id)),
 	}

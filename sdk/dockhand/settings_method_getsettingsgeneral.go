@@ -45,6 +45,7 @@ func (c Client) GetSettingsGeneral(ctx context.Context) (result GetSettingsGener
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetSettingsGeneral",
 		Path:       "/api/settings/general",
 	}
 

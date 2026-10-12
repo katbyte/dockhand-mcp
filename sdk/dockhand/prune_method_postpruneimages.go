@@ -89,6 +89,7 @@ func (c Client) PostPruneImages(ctx context.Context, options ...PostPruneImagesO
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostPruneImages",
 		OptionsObject: option,
 		Path:          "/api/prune/images",
 	}

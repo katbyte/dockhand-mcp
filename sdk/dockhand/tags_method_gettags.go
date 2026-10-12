@@ -45,6 +45,7 @@ func (c Client) GetTags(ctx context.Context) (result GetTagsResponse, err error)
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetTags",
 		Path:       "/api/tags",
 	}
 

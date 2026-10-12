@@ -45,6 +45,7 @@ func (c Client) GetPreferencesEnvironmentOrder(ctx context.Context) (result GetP
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetPreferencesEnvironmentOrder",
 		Path:       "/api/preferences/environment-order",
 	}
 

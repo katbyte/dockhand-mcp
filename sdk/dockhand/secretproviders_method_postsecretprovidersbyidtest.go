@@ -49,6 +49,7 @@ func (c Client) PostSecretProvidersByIdTest(ctx context.Context, id SecretProvid
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostSecretProvidersByIdTest",
 		Path:       fmt.Sprintf("/api/secret-providers/%s/test", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

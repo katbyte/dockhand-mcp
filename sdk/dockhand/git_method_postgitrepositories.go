@@ -46,6 +46,7 @@ func (c Client) PostGitRepositories(ctx context.Context, input PostGitRepositori
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostGitRepositories",
 		Path:       "/api/git/repositories",
 	}
 

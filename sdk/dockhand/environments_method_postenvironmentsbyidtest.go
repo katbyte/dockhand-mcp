@@ -48,6 +48,7 @@ func (c Client) PostEnvironmentsByIdTest(ctx context.Context, id EnvironmentID) 
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostEnvironmentsByIdTest",
 		Path:       fmt.Sprintf("/api/environments/%s/test", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

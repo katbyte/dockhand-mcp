@@ -46,6 +46,7 @@ func (c Client) PutAuthSettings(ctx context.Context, input PutAuthSettingsReques
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutAuthSettings",
 		Path:       "/api/auth/settings",
 	}
 

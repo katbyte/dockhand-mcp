@@ -26,6 +26,7 @@ func (c Client) GetConfigSets(ctx context.Context) (result GetConfigSetsResponse
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetConfigSets",
 		Path:       "/api/config-sets",
 	}
 

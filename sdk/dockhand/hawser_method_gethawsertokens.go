@@ -26,6 +26,7 @@ func (c Client) GetHawserTokens(ctx context.Context) (result GetHawserTokensResp
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetHawserTokens",
 		Path:       "/api/hawser/tokens",
 	}
 

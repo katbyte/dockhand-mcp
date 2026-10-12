@@ -76,6 +76,7 @@ func (c Client) GetGitWebhookById(ctx context.Context, id int, options ...GetGit
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetGitWebhookById",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/git/webhook/%d", id),
 	}

@@ -46,6 +46,7 @@ func (c Client) DeleteAuthOidcById(ctx context.Context, id int) (result DeleteAu
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteAuthOidcById",
 		Path:       fmt.Sprintf("/api/auth/oidc/%d", id),
 	}
 

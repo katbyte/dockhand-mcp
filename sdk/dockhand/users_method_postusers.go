@@ -46,6 +46,7 @@ func (c Client) PostUsers(ctx context.Context, input PostUsersRequest) (result P
 			http.StatusCreated,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostUsers",
 		Path:       "/api/users",
 	}
 

@@ -84,6 +84,7 @@ func (c Client) PostImagesPull(ctx context.Context, input PostImagesPullRequest,
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostImagesPull",
 		OptionsObject: option,
 		Path:          "/api/images/pull",
 	}

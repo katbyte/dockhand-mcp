@@ -117,6 +117,7 @@ func (c Client) GetStacksByNameIcon(ctx context.Context, name string, options ..
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetStacksByNameIcon",
 		OptionsObject:  option,
 		Path:           fmt.Sprintf("/api/stacks/%s/icon", url.PathEscape(name)),
 		StreamResponse: true,

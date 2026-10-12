@@ -26,6 +26,7 @@ func (c Client) GetGitCredentials(ctx context.Context) (result GetGitCredentials
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetGitCredentials",
 		Path:       "/api/git/credentials",
 	}
 

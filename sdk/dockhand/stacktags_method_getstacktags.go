@@ -58,6 +58,7 @@ func (c Client) GetStackTags(ctx context.Context, options ...GetStackTagsOptions
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetStackTags",
 		OptionsObject: option,
 		Path:          "/api/stack-tags",
 	}

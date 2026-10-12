@@ -51,6 +51,7 @@ func (c Client) GetContainersById(ctx context.Context, id string, options GetCon
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetContainersById",
 		OptionsObject: options,
 		Path:          fmt.Sprintf("/api/containers/%s", url.PathEscape(id)),
 	}

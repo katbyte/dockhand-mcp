@@ -22,6 +22,7 @@ func (c Client) PostBackupConfigs(ctx context.Context, input PostBackupConfigsRe
 			http.StatusCreated,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostBackupConfigs",
 		Path:       "/api/backup/configs",
 	}
 

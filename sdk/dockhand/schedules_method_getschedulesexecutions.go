@@ -131,6 +131,7 @@ func (c Client) GetSchedulesExecutions(ctx context.Context, options ...GetSchedu
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetSchedulesExecutions",
 		OptionsObject: option,
 		Path:          "/api/schedules/executions",
 	}

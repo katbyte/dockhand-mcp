@@ -23,6 +23,7 @@ func (c Client) PutBackupConfigsById(ctx context.Context, id int, input PutBacku
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutBackupConfigsById",
 		Path:       fmt.Sprintf("/api/backup/configs/%d", id),
 	}
 

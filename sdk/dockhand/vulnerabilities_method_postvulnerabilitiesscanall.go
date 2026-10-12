@@ -83,6 +83,7 @@ func (c Client) PostVulnerabilitiesScanAll(ctx context.Context, options ...PostV
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostVulnerabilitiesScanAll",
 		OptionsObject: option,
 		Path:          "/api/vulnerabilities/scan-all",
 	}

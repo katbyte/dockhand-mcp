@@ -46,6 +46,7 @@ func (c Client) PostEnvironments(ctx context.Context, input PostEnvironmentsRequ
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostEnvironments",
 		Path:       "/api/environments",
 	}
 

@@ -90,6 +90,7 @@ func (c Client) PostStacksByNameRestart(ctx context.Context, name string, option
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostStacksByNameRestart",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/restart", url.PathEscape(name)),
 	}

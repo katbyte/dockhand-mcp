@@ -45,6 +45,7 @@ func (c Client) GetDashboardPreferences(ctx context.Context) (result GetDashboar
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetDashboardPreferences",
 		Path:       "/api/dashboard/preferences",
 	}
 

@@ -51,6 +51,7 @@ func (c Client) DeleteBackupSnapshotsById(ctx context.Context, id string, option
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
+		Operation:     "DeleteBackupSnapshotsById",
 		OptionsObject: options,
 		Path:          fmt.Sprintf("/api/backup/snapshots/%s", url.PathEscape(id)),
 	}

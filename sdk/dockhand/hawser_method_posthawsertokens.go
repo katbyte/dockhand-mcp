@@ -46,6 +46,7 @@ func (c Client) PostHawserTokens(ctx context.Context, input PostHawserTokensRequ
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostHawserTokens",
 		Path:       "/api/hawser/tokens",
 	}
 

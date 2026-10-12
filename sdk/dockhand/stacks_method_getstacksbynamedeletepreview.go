@@ -78,6 +78,7 @@ func (c Client) GetStacksByNameDeletePreview(ctx context.Context, name string, o
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetStacksByNameDeletePreview",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/delete-preview", url.PathEscape(name)),
 	}

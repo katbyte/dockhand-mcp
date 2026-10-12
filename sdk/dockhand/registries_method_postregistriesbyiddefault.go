@@ -48,6 +48,7 @@ func (c Client) PostRegistriesByIdDefault(ctx context.Context, id RegistryID) (r
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostRegistriesByIdDefault",
 		Path:       fmt.Sprintf("/api/registries/%s/default", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

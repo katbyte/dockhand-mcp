@@ -537,20 +537,28 @@ func (g *gen) writeWaitForCommand(b *strings.Builder, o *definitions.Operation) 
 	message := g.fieldFor(answer, "message")
 	b.WriteString("\n// CommandPoll is how often WaitForCommand asks after a command.\nvar CommandPoll = 2 * time.Second\n\n")
 	fmt.Fprintf(b, "// WaitForCommand asks after the command every CommandPoll until the server says it finished (%s), or ctx ends, or wait\n", strings.Join(set.Finished, ", "))
-	b.WriteString("// runs out, and answers it as it stands: a command that failed is an error carrying what the server said, and one still running\n// when wait ran out is an error too. For a command queued by its own method, <Name>AndWait does both at once.\n")
+	b.WriteString("// runs out, and answers it as it stands: a command that failed is an error carrying what the server said, wrapping\n// client.ErrCommandFailed, and one still running when wait ran out wraps client.ErrCommandRunning, for a caller that takes\n// that as an answer. For a command queued by its own method, <Name>AndWait does both at once.\n")
 	fmt.Fprintf(b, "func (c Client) WaitForCommand(ctx context.Context, id %s, wait time.Duration) (result %s, err error) {\n", g.goType(get.PathParameters[0].Type), g.typeName(get.Name+"Response"))
 	b.WriteString("\tdeadline := time.Now().Add(wait)\n\tfor {\n")
 	fmt.Fprintf(b, "\t\tresult, err = c.%s(ctx, id)\n\t\tif err != nil || result.Answer == nil {\n\t\t\treturn\n\t\t}\n", get.Name)
 	fmt.Fprintf(b, "\t\tstatus := string(result.Answer.%s)\n", g.fieldFor(answer, set.Status))
 	if len(set.Failed) > 0 {
+		// what the server said of it: its message, and its exception where the answer has one, since a server may put the useful part there
 		said := `""`
 		if message != "" {
 			said = "string(result.Answer." + message + ")"
 		}
-		fmt.Fprintf(b, "\t\tif slices.Contains(%s, status) {\n\t\t\terr = fmt.Errorf(\"the command %%v %%s: %%s\", id, status, %s)\n\t\t\treturn\n\t\t}\n", goStrings(set.Failed), said)
+		if exception := g.fieldFor(answer, "exception"); exception != "" {
+			said = "strings.TrimSpace(strings.Join([]string{" + said + ", string(result.Answer." + exception + ")}, \" \"))"
+		}
+		format, args := "the command %v %s: %s: %w", "id, status, "+said
+		if name := g.fieldFor(answer, "name"); name != "" {
+			format, args = "the command %v %s %s: %s: %w", "id, string(result.Answer."+name+"), status, "+said
+		}
+		fmt.Fprintf(b, "\t\tif slices.Contains(%s, status) {\n\t\t\terr = fmt.Errorf(%q, %s, client.ErrCommandFailed)\n\t\t\treturn\n\t\t}\n", goStrings(set.Failed), format, args)
 	}
 	fmt.Fprintf(b, "\t\tif slices.Contains(%s, status) {\n\t\t\treturn\n\t\t}\n", goStrings(set.Finished))
-	b.WriteString("\t\tif time.Now().After(deadline) {\n\t\t\terr = fmt.Errorf(\"the command %v is still %s after %s\", id, status, wait)\n\t\t\treturn\n\t\t}\n")
+	b.WriteString("\t\tif time.Now().After(deadline) {\n\t\t\terr = fmt.Errorf(\"the command %v is still %s after %s: %w\", id, status, wait, client.ErrCommandRunning)\n\t\t\treturn\n\t\t}\n")
 	b.WriteString("\t\tselect {\n\t\tcase <-ctx.Done():\n\t\t\terr = ctx.Err()\n\t\t\treturn\n\t\tcase <-time.After(CommandPoll):\n\t\t}\n\t}\n}\n")
 }
 
@@ -721,6 +729,7 @@ func (g *gen) writeMethod(b *strings.Builder, o *definitions.Operation, response
 	}
 	b.WriteString("\t\t},\n")
 	fmt.Fprintf(b, "\t\tHTTPMethod: %s,\n", httpMethods[o.Method])
+	fmt.Fprintf(b, "\t\tOperation: %q,\n", o.Name)
 	if len(o.Options) > 0 {
 		fmt.Fprintf(b, "\t\tOptionsObject: %s,\n", g.optionsVar(o))
 	}

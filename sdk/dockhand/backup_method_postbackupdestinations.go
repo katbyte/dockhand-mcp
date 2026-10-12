@@ -22,6 +22,7 @@ func (c Client) PostBackupDestinations(ctx context.Context, input PostBackupDest
 			http.StatusCreated,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostBackupDestinations",
 		Path:       "/api/backup/destinations",
 	}
 

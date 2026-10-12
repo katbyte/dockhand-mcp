@@ -78,6 +78,7 @@ func (c Client) GetContainerTagsByName(ctx context.Context, name string, options
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetContainerTagsByName",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/container-tags/%s", url.PathEscape(name)),
 	}

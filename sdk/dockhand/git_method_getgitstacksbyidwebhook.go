@@ -78,6 +78,7 @@ func (c Client) GetGitStacksByIdWebhook(ctx context.Context, id GitStackID, opti
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetGitStacksByIdWebhook",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/git/stacks/%s/webhook", url.PathEscape(strconv.Itoa(int(id)))),
 	}

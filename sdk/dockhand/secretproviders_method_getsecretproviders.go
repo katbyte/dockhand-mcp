@@ -26,6 +26,7 @@ func (c Client) GetSecretProviders(ctx context.Context) (result GetSecretProvide
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetSecretProviders",
 		Path:       "/api/secret-providers",
 	}
 

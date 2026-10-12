@@ -48,6 +48,7 @@ func (c Client) DeleteGitRepositoriesById(ctx context.Context, id GitRepositoryI
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteGitRepositoriesById",
 		Path:       fmt.Sprintf("/api/git/repositories/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

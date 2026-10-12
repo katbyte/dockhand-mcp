@@ -78,6 +78,7 @@ func (c Client) GetAutoUpdateByContainerName(ctx context.Context, containerName 
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetAutoUpdateByContainerName",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/auto-update/%s", url.PathEscape(containerName)),
 	}

@@ -48,6 +48,7 @@ func (c Client) DeleteConfigSetsById(ctx context.Context, id ConfigSetID) (resul
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteConfigSetsById",
 		Path:       fmt.Sprintf("/api/config-sets/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

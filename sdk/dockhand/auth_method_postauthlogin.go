@@ -46,6 +46,7 @@ func (c Client) PostAuthLogin(ctx context.Context, input PostAuthLoginRequest) (
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostAuthLogin",
 		Path:       "/api/auth/login",
 	}
 

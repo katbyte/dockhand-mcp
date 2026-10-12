@@ -46,6 +46,7 @@ func (c Client) PostAuthTokens(ctx context.Context, input PostAuthTokensRequest)
 			http.StatusCreated,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostAuthTokens",
 		Path:       "/api/auth/tokens",
 	}
 

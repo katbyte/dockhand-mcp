@@ -46,6 +46,7 @@ func (c Client) PostNotifications(ctx context.Context, input PostNotificationsRe
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostNotifications",
 		Path:       "/api/notifications",
 	}
 

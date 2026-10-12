@@ -135,6 +135,7 @@ func (c Client) GetBackupSnapshotsByIdDump(ctx context.Context, id string, optio
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetBackupSnapshotsByIdDump",
 		OptionsObject:  option,
 		Path:           fmt.Sprintf("/api/backup/snapshots/%s/dump", url.PathEscape(id)),
 		StreamResponse: true,

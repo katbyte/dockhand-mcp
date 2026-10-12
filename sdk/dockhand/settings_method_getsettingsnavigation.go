@@ -45,6 +45,7 @@ func (c Client) GetSettingsNavigation(ctx context.Context) (result GetSettingsNa
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetSettingsNavigation",
 		Path:       "/api/settings/navigation",
 	}
 

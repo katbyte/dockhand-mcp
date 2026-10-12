@@ -79,6 +79,7 @@ func (c Client) PostContainerIconsByName(ctx context.Context, name string, input
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostContainerIconsByName",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/container-icons/%s", url.PathEscape(name)),
 	}

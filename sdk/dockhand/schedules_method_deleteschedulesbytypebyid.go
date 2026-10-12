@@ -47,6 +47,7 @@ func (c Client) DeleteSchedulesByTypeById(ctx context.Context, typeParam string,
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteSchedulesByTypeById",
 		Path:       fmt.Sprintf("/api/schedules/%s/%d", url.PathEscape(typeParam), id),
 	}
 

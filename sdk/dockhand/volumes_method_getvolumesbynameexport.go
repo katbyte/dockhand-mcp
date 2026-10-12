@@ -129,6 +129,7 @@ func (c Client) GetVolumesByNameExport(ctx context.Context, name string, options
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetVolumesByNameExport",
 		OptionsObject:  option,
 		Path:           fmt.Sprintf("/api/volumes/%s/export", url.PathEscape(name)),
 		StreamResponse: true,

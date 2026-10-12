@@ -79,6 +79,7 @@ func (c Client) PutStacksByNameEnvRaw(ctx context.Context, name string, input Pu
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPut,
+		Operation:     "PutStacksByNameEnvRaw",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/env/raw", url.PathEscape(name)),
 	}

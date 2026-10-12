@@ -46,6 +46,7 @@ func (c Client) PostGitPreviewEnv(ctx context.Context, input PostGitPreviewEnvRe
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostGitPreviewEnv",
 		Path:       "/api/git/preview-env",
 	}
 

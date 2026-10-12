@@ -79,6 +79,7 @@ func (c Client) PostNetworksByIdDisconnect(ctx context.Context, id string, input
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostNetworksByIdDisconnect",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/networks/%s/disconnect", url.PathEscape(id)),
 	}

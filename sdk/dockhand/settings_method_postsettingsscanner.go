@@ -46,6 +46,7 @@ func (c Client) PostSettingsScanner(ctx context.Context, input PostSettingsScann
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostSettingsScanner",
 		Path:       "/api/settings/scanner",
 	}
 

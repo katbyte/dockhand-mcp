@@ -60,6 +60,7 @@ func (c Client) GetBackupSnapshotsByIdMetadata(ctx context.Context, id string, o
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetBackupSnapshotsByIdMetadata",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/backup/snapshots/%s/metadata", url.PathEscape(id)),
 	}

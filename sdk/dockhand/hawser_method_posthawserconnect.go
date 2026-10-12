@@ -21,6 +21,7 @@ func (c Client) PostHawserConnect(ctx context.Context) (result PostHawserConnect
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostHawserConnect",
 		Path:       "/api/hawser/connect",
 	}
 

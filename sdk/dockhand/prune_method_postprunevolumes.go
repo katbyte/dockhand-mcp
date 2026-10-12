@@ -77,6 +77,7 @@ func (c Client) PostPruneVolumes(ctx context.Context, options ...PostPruneVolume
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostPruneVolumes",
 		OptionsObject: option,
 		Path:          "/api/prune/volumes",
 	}

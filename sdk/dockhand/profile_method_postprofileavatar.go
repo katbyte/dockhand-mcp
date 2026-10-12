@@ -46,6 +46,7 @@ func (c Client) PostProfileAvatar(ctx context.Context, input PostProfileAvatarRe
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostProfileAvatar",
 		Path:       "/api/profile/avatar",
 	}
 

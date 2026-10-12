@@ -26,6 +26,7 @@ func (c Client) GetNotifications(ctx context.Context) (result GetNotificationsRe
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetNotifications",
 		Path:       "/api/notifications",
 	}
 

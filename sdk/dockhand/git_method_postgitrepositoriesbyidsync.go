@@ -48,6 +48,7 @@ func (c Client) PostGitRepositoriesByIdSync(ctx context.Context, id GitRepositor
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostGitRepositoriesByIdSync",
 		Path:       fmt.Sprintf("/api/git/repositories/%s/sync", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

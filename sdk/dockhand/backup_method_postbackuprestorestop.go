@@ -22,6 +22,7 @@ func (c Client) PostBackupRestoreStop(ctx context.Context, input PostBackupResto
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostBackupRestoreStop",
 		Path:       "/api/backup/restore/stop",
 	}
 

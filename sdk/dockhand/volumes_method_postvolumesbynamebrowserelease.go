@@ -78,6 +78,7 @@ func (c Client) PostVolumesByNameBrowseRelease(ctx context.Context, name string,
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostVolumesByNameBrowseRelease",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/volumes/%s/browse/release", url.PathEscape(name)),
 	}

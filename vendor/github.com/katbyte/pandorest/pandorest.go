@@ -113,8 +113,8 @@ func Run(cfg Config, args []string, stdout, stderr io.Writer) error {
 	var exitCode, uncalled *bool
 	var callers *string
 	if cmd == cmdCheck {
-		uncalled = fs.Bool("uncalled", false, "list the generated methods no hand-written file names")
-		callers = fs.String("callers", ".", "the directory whose hand-written files count as naming a method, relative to the root (default the whole repository)")
+		uncalled = fs.Bool("uncalled", false, "list the generated methods no hand-written file names (tests do not count)")
+		callers = fs.String("callers", ".", "the directory whose hand-written files count as naming a method, tests left out, relative to the root (default the whole repository)")
 	}
 	if cmd == cmdDiff {
 		oldDir = fs.String("old", "", "definitions directory to compare from (default: the checked-in definitions)")

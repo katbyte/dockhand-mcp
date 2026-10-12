@@ -79,6 +79,7 @@ func (c Client) PostStacksByNameValidate(ctx context.Context, name string, input
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostStacksByNameValidate",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/validate", url.PathEscape(name)),
 	}

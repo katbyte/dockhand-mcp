@@ -78,6 +78,7 @@ func (c Client) GetStacksByNameEnv(ctx context.Context, name string, options ...
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetStacksByNameEnv",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/env", url.PathEscape(name)),
 	}

@@ -84,6 +84,7 @@ func (c Client) PostImagesScan(ctx context.Context, input PostImagesScanRequest,
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostImagesScan",
 		OptionsObject: option,
 		Path:          "/api/images/scan",
 	}

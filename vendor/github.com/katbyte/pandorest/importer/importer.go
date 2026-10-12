@@ -133,7 +133,8 @@ func (im *importer) keepNull() {
 		schema, prop, ok := strings.Cut(name, ".")
 		var field *definitions.Field
 		for _, m := range im.models {
-			if ok && m.SchemaName == schema {
+			// by the document's schema name, or by the model's own name for a record the document declares inline and the importer named
+			if ok && (m.SchemaName == schema || m.Name == schema) {
 				field = fieldNamed(m.Fields, prop)
 			}
 		}

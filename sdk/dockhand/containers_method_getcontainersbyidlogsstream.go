@@ -101,6 +101,7 @@ func (c Client) GetContainersByIdLogsStream(ctx context.Context, id string, opti
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetContainersByIdLogsStream",
 		OptionsObject:  options,
 		Path:           fmt.Sprintf("/api/containers/%s/logs/stream", url.PathEscape(id)),
 		StreamResponse: true,

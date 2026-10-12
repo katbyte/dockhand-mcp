@@ -79,6 +79,7 @@ func (c Client) PostStacksByNameCheckPathChange(ctx context.Context, name string
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostStacksByNameCheckPathChange",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/check-path-change", url.PathEscape(name)),
 	}

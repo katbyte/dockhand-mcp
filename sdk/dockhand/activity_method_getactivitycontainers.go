@@ -58,6 +58,7 @@ func (c Client) GetActivityContainers(ctx context.Context, options ...GetActivit
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetActivityContainers",
 		OptionsObject: option,
 		Path:          "/api/activity/containers",
 	}

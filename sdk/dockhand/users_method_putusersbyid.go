@@ -49,6 +49,7 @@ func (c Client) PutUsersById(ctx context.Context, id UserID, input PutUsersByIdR
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutUsersById",
 		Path:       fmt.Sprintf("/api/users/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

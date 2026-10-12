@@ -46,6 +46,7 @@ func (c Client) PutTemplatesSources(ctx context.Context, input PutTemplatesSourc
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPut,
+		Operation:  "PutTemplatesSources",
 		Path:       "/api/templates/sources",
 	}
 

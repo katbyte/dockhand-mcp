@@ -67,6 +67,7 @@ func (c Client) DeleteHawserTokens(ctx context.Context, options DeleteHawserToke
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
+		Operation:     "DeleteHawserTokens",
 		OptionsObject: options,
 		Path:          "/api/hawser/tokens",
 	}

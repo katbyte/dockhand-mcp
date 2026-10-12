@@ -67,6 +67,7 @@ func (c Client) DeleteTemplatesSources(ctx context.Context, options DeleteTempla
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodDelete,
+		Operation:     "DeleteTemplatesSources",
 		OptionsObject: options,
 		Path:          "/api/templates/sources",
 	}

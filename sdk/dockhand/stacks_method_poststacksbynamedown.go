@@ -85,6 +85,7 @@ func (c Client) PostStacksByNameDown(ctx context.Context, name string, input Pos
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostStacksByNameDown",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/down", url.PathEscape(name)),
 	}

@@ -48,6 +48,7 @@ func (c Client) GetEnvironmentsById(ctx context.Context, id EnvironmentID) (resu
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetEnvironmentsById",
 		Path:       fmt.Sprintf("/api/environments/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

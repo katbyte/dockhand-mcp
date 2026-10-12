@@ -46,6 +46,7 @@ func (c Client) PostStacksValidatePath(ctx context.Context, input PostStacksVali
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostStacksValidatePath",
 		Path:       "/api/stacks/validate-path",
 	}
 

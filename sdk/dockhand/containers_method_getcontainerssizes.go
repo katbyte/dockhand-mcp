@@ -48,6 +48,7 @@ func (c Client) GetContainersSizes(ctx context.Context, options GetContainersSiz
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetContainersSizes",
 		OptionsObject: options,
 		Path:          "/api/containers/sizes",
 	}

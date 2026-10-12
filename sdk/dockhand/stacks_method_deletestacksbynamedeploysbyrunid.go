@@ -47,6 +47,7 @@ func (c Client) DeleteStacksByNameDeploysByRunId(ctx context.Context, name strin
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteStacksByNameDeploysByRunId",
 		Path:       fmt.Sprintf("/api/stacks/%s/deploys/%d", url.PathEscape(name), runId),
 	}
 

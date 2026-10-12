@@ -79,6 +79,7 @@ func (c Client) GetStacksDefaultPath(ctx context.Context, options GetStacksDefau
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetStacksDefaultPath",
 		OptionsObject: options,
 		Path:          "/api/stacks/default-path",
 	}

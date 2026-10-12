@@ -77,6 +77,7 @@ func (c Client) PostPruneNetworks(ctx context.Context, options ...PostPruneNetwo
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostPruneNetworks",
 		OptionsObject: option,
 		Path:          "/api/prune/networks",
 	}

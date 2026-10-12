@@ -46,6 +46,7 @@ func (c Client) PostLicense(ctx context.Context, input PostLicenseRequest) (resu
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostLicense",
 		Path:       "/api/license",
 	}
 

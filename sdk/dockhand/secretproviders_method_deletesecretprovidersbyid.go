@@ -48,6 +48,7 @@ func (c Client) DeleteSecretProvidersById(ctx context.Context, id SecretProvider
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteSecretProvidersById",
 		Path:       fmt.Sprintf("/api/secret-providers/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

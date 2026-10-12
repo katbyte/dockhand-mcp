@@ -69,6 +69,7 @@ func (c Client) GetContainersByIdStats(ctx context.Context, id string, options G
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetContainersByIdStats",
 		OptionsObject: options,
 		Path:          fmt.Sprintf("/api/containers/%s/stats", url.PathEscape(id)),
 	}

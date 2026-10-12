@@ -58,6 +58,7 @@ func (c Client) GetAutoUpdate(ctx context.Context, options ...GetAutoUpdateOptio
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetAutoUpdate",
 		OptionsObject: option,
 		Path:          "/api/auto-update",
 	}

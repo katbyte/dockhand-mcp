@@ -58,6 +58,7 @@ func (c Client) GetContainerTags(ctx context.Context, options ...GetContainerTag
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetContainerTags",
 		OptionsObject: option,
 		Path:          "/api/container-tags",
 	}

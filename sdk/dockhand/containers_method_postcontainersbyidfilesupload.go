@@ -79,6 +79,7 @@ func (c Client) PostContainersByIdFilesUpload(ctx context.Context, id string, in
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostContainersByIdFilesUpload",
 		OptionsObject: options,
 		Path:          fmt.Sprintf("/api/containers/%s/files/upload", url.PathEscape(id)),
 	}

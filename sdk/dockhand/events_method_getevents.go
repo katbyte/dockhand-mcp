@@ -91,6 +91,7 @@ func (c Client) GetEvents(ctx context.Context, options ...GetEventsOptions) (res
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetEvents",
 		OptionsObject:  option,
 		Path:           "/api/events",
 		StreamResponse: true,

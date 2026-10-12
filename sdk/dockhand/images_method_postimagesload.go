@@ -81,6 +81,7 @@ func (c Client) PostImagesLoad(ctx context.Context, input io.Reader, contentType
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostImagesLoad",
 		OptionsObject: option,
 		Path:          "/api/images/load",
 	}

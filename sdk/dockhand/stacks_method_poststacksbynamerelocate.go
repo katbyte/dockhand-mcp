@@ -79,6 +79,7 @@ func (c Client) PostStacksByNameRelocate(ctx context.Context, name string, input
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostStacksByNameRelocate",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/relocate", url.PathEscape(name)),
 	}

@@ -70,6 +70,7 @@ func (c Client) GetAuthOidcCallback(ctx context.Context, options ...GetAuthOidcC
 			http.StatusFound,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetAuthOidcCallback",
 		OptionsObject: option,
 		Path:          "/api/auth/oidc/callback",
 	}

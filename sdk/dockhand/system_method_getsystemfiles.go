@@ -76,6 +76,7 @@ func (c Client) GetSystemFiles(ctx context.Context, options ...GetSystemFilesOpt
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetSystemFiles",
 		OptionsObject: option,
 		Path:          "/api/system/files",
 	}

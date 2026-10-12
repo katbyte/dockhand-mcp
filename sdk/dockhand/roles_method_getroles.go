@@ -26,6 +26,7 @@ func (c Client) GetRoles(ctx context.Context) (result GetRolesResponse, err erro
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetRoles",
 		Path:       "/api/roles",
 	}
 

@@ -26,6 +26,7 @@ func (c Client) GetDashboardStats(ctx context.Context) (result GetDashboardStats
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetDashboardStats",
 		Path:       "/api/dashboard/stats",
 	}
 

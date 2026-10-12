@@ -48,6 +48,7 @@ func (c Client) GetSecretProvidersById(ctx context.Context, id SecretProviderID)
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetSecretProvidersById",
 		Path:       fmt.Sprintf("/api/secret-providers/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

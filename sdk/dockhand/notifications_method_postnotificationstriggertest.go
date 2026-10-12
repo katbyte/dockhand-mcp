@@ -46,6 +46,7 @@ func (c Client) PostNotificationsTriggerTest(ctx context.Context, input PostNoti
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostNotificationsTriggerTest",
 		Path:       "/api/notifications/trigger-test",
 	}
 

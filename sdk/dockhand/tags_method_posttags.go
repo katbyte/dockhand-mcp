@@ -46,6 +46,7 @@ func (c Client) PostTags(ctx context.Context, input PostTagsRequest) (result Pos
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostTags",
 		Path:       "/api/tags",
 	}
 

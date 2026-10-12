@@ -45,6 +45,7 @@ func (c Client) GetSelfUpdateCheck(ctx context.Context) (result GetSelfUpdateChe
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetSelfUpdateCheck",
 		Path:       "/api/self-update/check",
 	}
 

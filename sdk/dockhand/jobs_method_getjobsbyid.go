@@ -47,6 +47,7 @@ func (c Client) GetJobsById(ctx context.Context, id string) (result GetJobsByIdR
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetJobsById",
 		Path:       fmt.Sprintf("/api/jobs/%s", url.PathEscape(id)),
 	}
 

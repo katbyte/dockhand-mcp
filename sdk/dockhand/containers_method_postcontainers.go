@@ -78,6 +78,7 @@ func (c Client) PostContainers(ctx context.Context, input PostContainersRequest,
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostContainers",
 		OptionsObject: option,
 		Path:          "/api/containers",
 	}

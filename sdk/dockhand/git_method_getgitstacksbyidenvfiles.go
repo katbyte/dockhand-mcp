@@ -48,6 +48,7 @@ func (c Client) GetGitStacksByIdEnvFiles(ctx context.Context, id GitStackID) (re
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetGitStacksByIdEnvFiles",
 		Path:       fmt.Sprintf("/api/git/stacks/%s/env-files", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

@@ -169,9 +169,10 @@ func TestToolsCommand(t *testing.T) {
 		t.Fatalf("tools: %v", err)
 	}
 
-	// the default is core, so its tools are listed, every one a read, and counted
-	core := tools.Toolsets["core"]
-	for _, want := range append([]string{fmt.Sprintf("core (%d)", len(core)), fmt.Sprintf("%d tools: %d read, 0 write, 0 delete", len(core), len(core))}, core...) {
+	// the default is core and the audits, so their tools are listed, every one a read, and counted
+	core, audits := tools.Toolsets["core"], tools.Toolsets["audit"]
+	listed := len(core) + len(audits)
+	for _, want := range slices.Concat([]string{fmt.Sprintf("core (%d)", len(core)), fmt.Sprintf("audit (%d)", len(audits)), fmt.Sprintf("%d tools: %d read, 0 write, 0 delete", listed, listed)}, core, audits) {
 		if !strings.Contains(out, want) {
 			t.Errorf("%q missing from `tools`:\n%s", want, out)
 		}

@@ -58,6 +58,7 @@ func (c Client) GetImages(ctx context.Context, options ...GetImagesOptions) (res
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetImages",
 		OptionsObject: option,
 		Path:          "/api/images",
 	}

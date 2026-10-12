@@ -77,6 +77,7 @@ func (c Client) GetStacksBasePath(ctx context.Context, options ...GetStacksBaseP
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetStacksBasePath",
 		OptionsObject: option,
 		Path:          "/api/stacks/base-path",
 	}

@@ -77,6 +77,7 @@ func (c Client) PutSettingsNavigation(ctx context.Context, input PutSettingsNavi
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPut,
+		Operation:     "PutSettingsNavigation",
 		OptionsObject: option,
 		Path:          "/api/settings/navigation",
 	}

@@ -48,6 +48,7 @@ func (c Client) GetRolesById(ctx context.Context, id RoleID) (result GetRolesByI
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetRolesById",
 		Path:       fmt.Sprintf("/api/roles/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

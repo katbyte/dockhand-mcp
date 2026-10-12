@@ -46,6 +46,7 @@ func (c Client) PostPreferencesEnvironmentOrder(ctx context.Context, input PostP
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostPreferencesEnvironmentOrder",
 		Path:       "/api/preferences/environment-order",
 	}
 

@@ -46,6 +46,7 @@ func (c Client) PostRegistriesTest(ctx context.Context, input PostRegistriesTest
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostRegistriesTest",
 		Path:       "/api/registries/test",
 	}
 

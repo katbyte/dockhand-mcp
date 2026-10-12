@@ -70,6 +70,7 @@ func (c Client) PostContainersByIdUpdate(ctx context.Context, id string, input P
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPost,
+		Operation:     "PostContainersByIdUpdate",
 		OptionsObject: options,
 		Path:          fmt.Sprintf("/api/containers/%s/update", url.PathEscape(id)),
 	}

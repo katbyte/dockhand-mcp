@@ -59,6 +59,7 @@ func (c Client) GetActivityEvents(ctx context.Context) (result GetActivityEvents
 			http.StatusOK,
 		},
 		HTTPMethod:     http.MethodGet,
+		Operation:      "GetActivityEvents",
 		Path:           "/api/activity/events",
 		StreamResponse: true,
 	}

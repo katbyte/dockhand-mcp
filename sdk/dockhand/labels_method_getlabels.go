@@ -45,6 +45,7 @@ func (c Client) GetLabels(ctx context.Context) (result GetLabelsResponse, err er
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetLabels",
 		Path:       "/api/labels",
 	}
 

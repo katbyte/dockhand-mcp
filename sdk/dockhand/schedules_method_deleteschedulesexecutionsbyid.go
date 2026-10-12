@@ -46,6 +46,7 @@ func (c Client) DeleteSchedulesExecutionsById(ctx context.Context, id int) (resu
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
+		Operation:  "DeleteSchedulesExecutionsById",
 		Path:       fmt.Sprintf("/api/schedules/executions/%d", id),
 	}
 

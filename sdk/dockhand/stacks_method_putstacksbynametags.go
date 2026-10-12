@@ -79,6 +79,7 @@ func (c Client) PutStacksByNameTags(ctx context.Context, name string, input PutS
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodPut,
+		Operation:     "PutStacksByNameTags",
 		OptionsObject: option,
 		Path:          fmt.Sprintf("/api/stacks/%s/tags", url.PathEscape(name)),
 	}

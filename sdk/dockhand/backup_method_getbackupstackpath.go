@@ -55,6 +55,7 @@ func (c Client) GetBackupStackPath(ctx context.Context, options GetBackupStackPa
 			http.StatusOK,
 		},
 		HTTPMethod:    http.MethodGet,
+		Operation:     "GetBackupStackPath",
 		OptionsObject: options,
 		Path:          "/api/backup/stack-path",
 	}

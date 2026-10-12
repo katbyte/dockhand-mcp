@@ -26,6 +26,7 @@ func (c Client) GetAuditUsersOutsideApi(ctx context.Context) (result GetAuditUse
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetAuditUsersOutsideApi",
 		Path:       "/audit/users",
 	}
 

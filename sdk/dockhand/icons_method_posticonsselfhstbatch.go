@@ -46,6 +46,7 @@ func (c Client) PostIconsSelfhstBatch(ctx context.Context, input PostIconsSelfhs
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
+		Operation:  "PostIconsSelfhstBatch",
 		Path:       "/api/icons/selfhst/batch",
 	}
 

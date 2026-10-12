@@ -31,6 +31,8 @@ type idKind struct {
 	fromOf int
 	byName int
 	byIn   int
+	// joinedUsed is each Joined entry that reached a parameter, so one that reached none is refused
+	joinedUsed map[string]bool
 }
 
 // applyIDs types every place a kind of id sits (config.Service.IDs) and
@@ -138,6 +140,11 @@ func (im *importer) applyIDs(groups map[string]*definitions.Group) []definitions
 		for _, entry := range k.cfg.Except {
 			if !exceptUsed[k.cfg.Name+" "+entry] {
 				im.fail(fmt.Sprintf("%s: Except %q leaves nothing alone", k.cfg.Name, entry))
+			}
+		}
+		for _, entry := range k.cfg.Joined {
+			if !k.joinedUsed[strings.ToLower(entry)] {
+				im.fail(fmt.Sprintf("%s: Joined %q matches no string parameter: it takes a parameter's name, not a place", k.cfg.Name, entry))
 			}
 		}
 		im.log(fmt.Sprintf("%s: ids: %s in %s (%d from Of, %d by name, %d by In)", im.cfg.Name, k.cfg.Name, placesWord(total), k.fromOf, k.byName, k.byIn))
@@ -263,7 +270,15 @@ func claims(k *idKind, p *place, groups map[string]*definitions.Group, inUsed, e
 	}
 	inferred := ""
 	switch {
-	case slices.ContainsFunc(k.cfg.Names, func(n string) bool { return strings.EqualFold(n, p.name) }) || slices.ContainsFunc(k.cfg.Joined, func(n string) bool { return strings.EqualFold(n, p.name) }):
+	case p.option != nil && slices.ContainsFunc(k.cfg.Joined, func(n string) bool { return strings.EqualFold(n, p.name) }):
+		// a joined string is a parameter's shape alone, so a field of the name is not claimed by it; this goes before Names so a name in
+		// both lists (prowlarr's tags, a joined parameter and fifteen fields) still counts the parameter as the Joined entry's use
+		if k.joinedUsed == nil {
+			k.joinedUsed = map[string]bool{}
+		}
+		k.joinedUsed[strings.ToLower(p.name)] = true
+		inferred = "name"
+	case slices.ContainsFunc(k.cfg.Names, func(n string) bool { return strings.EqualFold(n, p.name) }):
 		inferred = "name"
 	case strings.EqualFold(p.name, "id") && p.model != "" && slices.ContainsFunc(k.cfg.Of, func(n string) bool { return typeName(n) == p.model }):
 		inferred = "Of"

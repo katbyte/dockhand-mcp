@@ -146,9 +146,9 @@ func (f *FlagData) NewClient() (*dockhand.Client, error) {
 }
 
 // DefaultToolsets is what the binary registers when neither --toolsets nor --allow-tools is given: enough to see what the Dockhand is and what runs
-// on its hosts, and nothing that writes. Every tool's definition is spent from a client's context before a question is asked, which is a poor thing
-// to spend it on by default. Ask for more with --toolsets, or --toolsets all for everything.
-var DefaultToolsets = []string{"core"}
+// on its hosts, and the audits that look for what is wrong there, which is what the server is for; nothing that writes. Every tool's definition is
+// spent from a client's context before a question is asked, so the rest is asked for with --toolsets, or --toolsets all for everything.
+var DefaultToolsets = []string{"core", "audit"}
 
 // ToolOptions maps the flags onto the tool registration options. An allow list with no --toolsets is the whole choice: it already says which tools to
 // load, so the default set is not added to it. Beside --toolsets it adds its tools to the sets.

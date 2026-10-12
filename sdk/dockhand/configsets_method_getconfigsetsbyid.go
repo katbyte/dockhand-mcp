@@ -48,6 +48,7 @@ func (c Client) GetConfigSetsById(ctx context.Context, id ConfigSetID) (result G
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
+		Operation:  "GetConfigSetsById",
 		Path:       fmt.Sprintf("/api/config-sets/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 

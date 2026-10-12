@@ -261,7 +261,7 @@ define live
 		done
 endef
 
-testacc-sdk: ## SDK tests against a throwaway server and Docker hosts: open, then with its login on
+testacc-sdk: spec ## SDK tests against a throwaway server and Docker hosts: open, then with its login on
 	$(call live,sdk,dockhand)
 
 testacc-tools: ## Tool tests against a throwaway server and Docker hosts: open, then with its login on
