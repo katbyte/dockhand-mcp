@@ -4,7 +4,7 @@ package dockhand
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -12,14 +12,31 @@ import (
 )
 
 // GetBackupStackPathResponse is the result of GetBackupStackPath.
+//
+// Answer is the GetBackupStackPathAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type GetBackupStackPathResponse struct {
 	HttpResponse *http.Response
-	Answer       json.RawMessage
+	Answer       *GetBackupStackPathAnswer
+	*GetBackupStackPathAnswer
 }
 
 // Answered reports whether the server answered with a body that was decoded:
 // false for a 204, or a call that failed before one came.
 func (r GetBackupStackPathResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetBackupStackPathAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetBackupStackPathResponse) Record() (GetBackupStackPathAnswer, error) {
+	if r.Answer == nil {
+		return GetBackupStackPathAnswer{}, errors.New("GetBackupStackPath answered no GetBackupStackPathAnswer")
+	}
+
+	return *r.Answer, nil
+}
 
 // GetBackupStackPathOptions holds the query and header parameters of GetBackupStackPath.
 type GetBackupStackPathOptions struct {
@@ -50,6 +67,7 @@ func (o GetBackupStackPathOptions) ToQuery() *client.QueryParams {
 
 // GetBackupStackPath calls GET /api/backup/stack-path. Preview where a stack's directory will be captured from on the host, without running a backup.
 func (c Client) GetBackupStackPath(ctx context.Context, options GetBackupStackPathOptions) (result GetBackupStackPathResponse, err error) {
+	result.GetBackupStackPathAnswer = &GetBackupStackPathAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -74,9 +92,12 @@ func (c Client) GetBackupStackPath(ctx context.Context, options GetBackupStackPa
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Answer); err != nil {
+	var answer GetBackupStackPathAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetBackupStackPathAnswer = result.Answer
 
 	return
 }

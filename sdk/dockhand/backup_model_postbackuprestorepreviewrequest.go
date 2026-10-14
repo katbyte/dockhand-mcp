@@ -4,17 +4,19 @@ package dockhand
 
 // PostBackupRestorePreviewRequest is an object the document declares inline.
 type PostBackupRestorePreviewRequest struct {
-	DestinationId      int            `json:"destinationId"`
-	EnvironmentId      EnvironmentID  `json:"environmentId,omitempty"`
-	IncludeTargets     *bool          `json:"includeTargets,omitempty"`
-	MergeStackFiles    *bool          `json:"mergeStackFiles,omitempty"`
-	Mode               string         `json:"mode,omitempty"`
-	SkipStackFiles     *bool          `json:"skipStackFiles,omitempty"`
-	SnapshotId         string         `json:"snapshotId"`
-	TargetEnvId        EnvironmentID  `json:"targetEnvId,omitempty"`
-	TargetName         string         `json:"targetName,omitempty"`
-	TargetPath         string         `json:"targetPath,omitempty"`
-	TargetType         string         `json:"targetType,omitempty"`
-	VolumeDestinations map[string]any `json:"volumeDestinations,omitzero"`
-	Volumes            []string       `json:"volumes,omitzero"`
+	DestinationId   BackupDestinationID `json:"destinationId"`
+	EnvironmentId   EnvironmentID       `json:"environmentId,omitempty"`
+	IncludeTargets  *bool               `json:"includeTargets,omitempty"`
+	MergeStackFiles *bool               `json:"mergeStackFiles,omitempty"`
+	Mode            string              `json:"mode,omitempty"`
+	SkipStackFiles  *bool               `json:"skipStackFiles,omitempty"`
+	SnapshotId      string              `json:"snapshotId"`
+	TargetEnvId     EnvironmentID       `json:"targetEnvId,omitempty"`
+	TargetName      string              `json:"targetName,omitempty"`
+	TargetPath      string              `json:"targetPath,omitempty"`
+	TargetType      string              `json:"targetType,omitempty"`
+
+	// where a volume of the snapshot is to go: the volume as the snapshot names it, and the volume or the path on the host to put it in
+	VolumeDestinations []PostBackupRestorePreviewRequestVolumeDestinations `json:"volumeDestinations,omitzero"`
+	Volumes            []string                                            `json:"volumes,omitzero"`
 }

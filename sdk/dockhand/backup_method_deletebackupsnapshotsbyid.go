@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -13,14 +14,36 @@ import (
 )
 
 // DeleteBackupSnapshotsByIdResponse is the result of DeleteBackupSnapshotsById.
+//
+// Answer is the DeleteBackupSnapshotsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type DeleteBackupSnapshotsByIdResponse struct {
 	HttpResponse *http.Response
+	Answer       *DeleteBackupSnapshotsByIdAnswer
+	*DeleteBackupSnapshotsByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteBackupSnapshotsByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteBackupSnapshotsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteBackupSnapshotsByIdResponse) Record() (DeleteBackupSnapshotsByIdAnswer, error) {
+	if r.Answer == nil {
+		return DeleteBackupSnapshotsByIdAnswer{}, errors.New("DeleteBackupSnapshotsById answered no DeleteBackupSnapshotsByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // DeleteBackupSnapshotsByIdOptions holds the query and header parameters of DeleteBackupSnapshotsById.
 type DeleteBackupSnapshotsByIdOptions struct {
 	// Destination holding the snapshot (required) (from GET /api/backup/destinations)
-	DestinationId *int
+	DestinationId BackupDestinationID
 
 	// Optional environment id for an early enterprise access check; the authoritative gate resolves the snapshot's owning environment server-side (from GET /api/environments)
 	Env EnvironmentID
@@ -35,8 +58,8 @@ func (o DeleteBackupSnapshotsByIdOptions) ToHeaders() *client.Headers {
 // ToQuery returns the query parameters the options set.
 func (o DeleteBackupSnapshotsByIdOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.DestinationId != nil {
-		out.Append("destinationId", strconv.Itoa(*o.DestinationId))
+	if o.DestinationId != 0 {
+		out.Append("destinationId", strconv.Itoa(int(o.DestinationId)))
 	}
 	if o.Env != 0 {
 		out.Append("env", strconv.Itoa(int(o.Env)))
@@ -46,6 +69,7 @@ func (o DeleteBackupSnapshotsByIdOptions) ToQuery() *client.QueryParams {
 
 // DeleteBackupSnapshotsById calls DELETE /api/backup/snapshots/{id}. Forget and prune a single snapshot from a destination (destructive restic forget --prune), with a server-authoritative environment access gate.
 func (c Client) DeleteBackupSnapshotsById(ctx context.Context, id string, options DeleteBackupSnapshotsByIdOptions) (result DeleteBackupSnapshotsByIdResponse, err error) {
+	result.DeleteBackupSnapshotsByIdAnswer = &DeleteBackupSnapshotsByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -69,6 +93,13 @@ func (c Client) DeleteBackupSnapshotsById(ctx context.Context, id string, option
 	if err != nil {
 		return
 	}
+
+	var answer DeleteBackupSnapshotsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
+		return
+	}
+	result.DeleteBackupSnapshotsByIdAnswer = result.Answer
 
 	return
 }

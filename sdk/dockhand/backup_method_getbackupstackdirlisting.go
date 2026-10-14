@@ -4,7 +4,7 @@ package dockhand
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -12,14 +12,31 @@ import (
 )
 
 // GetBackupStackDirListingResponse is the result of GetBackupStackDirListing.
+//
+// Answer is the GetBackupStackDirListingAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type GetBackupStackDirListingResponse struct {
 	HttpResponse *http.Response
-	Answer       json.RawMessage
+	Answer       *GetBackupStackDirListingAnswer
+	*GetBackupStackDirListingAnswer
 }
 
 // Answered reports whether the server answered with a body that was decoded:
 // false for a 204, or a call that failed before one came.
 func (r GetBackupStackDirListingResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the GetBackupStackDirListingAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetBackupStackDirListingResponse) Record() (GetBackupStackDirListingAnswer, error) {
+	if r.Answer == nil {
+		return GetBackupStackDirListingAnswer{}, errors.New("GetBackupStackDirListing answered no GetBackupStackDirListingAnswer")
+	}
+
+	return *r.Answer, nil
+}
 
 // GetBackupStackDirListingOptions holds the query and header parameters of GetBackupStackDirListing.
 type GetBackupStackDirListingOptions struct {
@@ -50,6 +67,7 @@ func (o GetBackupStackDirListingOptions) ToQuery() *client.QueryParams {
 
 // GetBackupStackDirListing calls GET /api/backup/stack-dir-listing. Probe the target host and list the actual contents of a stack's directory, for the backup create/edit dialog's file picker.
 func (c Client) GetBackupStackDirListing(ctx context.Context, options GetBackupStackDirListingOptions) (result GetBackupStackDirListingResponse, err error) {
+	result.GetBackupStackDirListingAnswer = &GetBackupStackDirListingAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -74,9 +92,12 @@ func (c Client) GetBackupStackDirListing(ctx context.Context, options GetBackupS
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Answer); err != nil {
+	var answer GetBackupStackDirListingAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetBackupStackDirListingAnswer = result.Answer
 
 	return
 }

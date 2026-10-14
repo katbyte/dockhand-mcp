@@ -4,32 +4,52 @@ package dockhand
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
 // GetBackupConfigsByIdResponse is the result of GetBackupConfigsById.
+//
+// Answer is the GetBackupConfigsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type GetBackupConfigsByIdResponse struct {
 	HttpResponse *http.Response
-	Answer       json.RawMessage
+	Answer       *GetBackupConfigsByIdAnswer
+	*GetBackupConfigsByIdAnswer
 }
 
 // Answered reports whether the server answered with a body that was decoded:
 // false for a 204, or a call that failed before one came.
 func (r GetBackupConfigsByIdResponse) Answered() bool { return r.Answer != nil }
 
+// Record is the GetBackupConfigsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetBackupConfigsByIdResponse) Record() (GetBackupConfigsByIdAnswer, error) {
+	if r.Answer == nil {
+		return GetBackupConfigsByIdAnswer{}, errors.New("GetBackupConfigsById answered no GetBackupConfigsByIdAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
 // GetBackupConfigsById calls GET /api/backup/configs/{id}. Fetch a single backup configuration by id, enforcing environment-scoped access.
-func (c Client) GetBackupConfigsById(ctx context.Context, id int) (result GetBackupConfigsByIdResponse, err error) {
+func (c Client) GetBackupConfigsById(ctx context.Context, id BackupConfigID) (result GetBackupConfigsByIdResponse, err error) {
+	result.GetBackupConfigsByIdAnswer = &GetBackupConfigsByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
 		Operation:  "GetBackupConfigsById",
-		Path:       fmt.Sprintf("/api/backup/configs/%d", id),
+		Path:       fmt.Sprintf("/api/backup/configs/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -46,9 +66,12 @@ func (c Client) GetBackupConfigsById(ctx context.Context, id int) (result GetBac
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Answer); err != nil {
+	var answer GetBackupConfigsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetBackupConfigsByIdAnswer = result.Answer
 
 	return
 }

@@ -621,3 +621,68 @@ func TestForgetGitRepositoryCredential(t *testing.T) {
 		t.Errorf("a repository there is none of = %v", err)
 	}
 }
+
+func TestForgetBackupConfigSchedule(t *testing.T) {
+	t.Parallel()
+
+	var method, path, body string
+	srv := answering(t, func(w http.ResponseWriter, r *http.Request) {
+		sent, _ := io.ReadAll(r.Body)
+		method, path, body = r.Method, r.URL.EscapedPath(), string(sent)
+		if strings.HasSuffix(path, "/9") {
+			w.WriteHeader(http.StatusNotFound)
+			_, _ = w.Write([]byte(`{"error":"Config not found"}`))
+
+			return
+		}
+		_, _ = w.Write([]byte(`{"id":4,"type":"container","targetName":"web","schedule":"","retention":"{\"keepLast\":3}"}`))
+	})
+	c, err := NewWithoutLogin(srv.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// the schedule is sent empty, which the generated call leaves out, with what is still to be kept beside it
+	saved, err := c.ForgetBackupConfigSchedule(context.Background(), 4, &PutBackupConfigsByIdRequestRetention{KeepLast: 3})
+	if err != nil || method != http.MethodPut || path != "/api/backup/configs/4" || body != `{"retention":{"keepLast":3},"schedule":""}` || saved.Answer.TargetName != "web" || saved.Answer.Schedule != "" || saved.Answer.Retention != `{"keepLast":3}` {
+		t.Errorf("clearing a backup's schedule sent %s %s %s and answered %+v, %v", method, path, body, saved.Answer, err)
+	}
+
+	// with nothing to keep, that is said too, which is what has Dockhand keep every snapshot whether or not there was a schedule to clear
+	if _, err = c.ForgetBackupConfigSchedule(context.Background(), 4, nil); err != nil || body != `{"retention":null,"schedule":""}` {
+		t.Errorf("clearing a backup's schedule and what it keeps sent %s, %v", body, err)
+	}
+	if _, err = c.ForgetBackupConfigSchedule(context.Background(), 9, nil); err == nil || !strings.Contains(err.Error(), "Config not found") {
+		t.Errorf("a backup configuration there is none of = %v", err)
+	}
+}
+
+func TestForgetBackupDestinationFlags(t *testing.T) {
+	t.Parallel()
+
+	var method, path, body string
+	srv := answering(t, func(w http.ResponseWriter, r *http.Request) {
+		sent, _ := io.ReadAll(r.Body)
+		method, path, body = r.Method, r.URL.EscapedPath(), string(sent)
+		if strings.HasSuffix(path, "/9") {
+			w.WriteHeader(http.StatusNotFound)
+			_, _ = w.Write([]byte(`{"error":"Destination not found"}`))
+
+			return
+		}
+		_, _ = w.Write([]byte(`{"id":2,"name":"offsite","repository":"s3:s3.example/backups","flags":"{\"backup\":\"\",\"restore\":\"--verify\"}","backupFlags":"","restoreFlags":"--verify"}`))
+	})
+	c, err := NewWithoutLogin(srv.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// the flags named are sent empty, which the generated call leaves out, and the ones not named are not sent at all
+	saved, err := c.ForgetBackupDestinationFlags(context.Background(), 2, BackupDestinationFlags{Backup: true})
+	if err != nil || method != http.MethodPut || path != "/api/backup/destinations/2" || body != `{"backupFlags":""}` || saved.Answer.Name != "offsite" || saved.Answer.BackupFlags != "" || saved.Answer.RestoreFlags != "--verify" {
+		t.Errorf("clearing a destination's flags sent %s %s %s and answered %+v, %v", method, path, body, saved.Answer, err)
+	}
+	if _, err = c.ForgetBackupDestinationFlags(context.Background(), 9, BackupDestinationFlags{Restore: true}); err == nil || !strings.Contains(err.Error(), "Destination not found") || body != `{"restoreFlags":""}` {
+		t.Errorf("a destination there is none of = %v, having sent %s", err, body)
+	}
+}

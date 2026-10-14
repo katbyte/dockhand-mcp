@@ -82,7 +82,7 @@ func (r GetBackupSnapshotsByIdDumpResponse) Bytes(max int64) ([]byte, error) {
 // GetBackupSnapshotsByIdDumpOptions holds the query and header parameters of GetBackupSnapshotsByIdDump.
 type GetBackupSnapshotsByIdDumpOptions struct {
 	// Destination the snapshot lives in
-	DestinationId *int
+	DestinationId BackupDestinationID
 
 	// Path inside the snapshot (must resolve under /volumes or /metadata)
 	Path string
@@ -103,8 +103,8 @@ func (o GetBackupSnapshotsByIdDumpOptions) ToHeaders() *client.Headers {
 // ToQuery returns the query parameters the options set.
 func (o GetBackupSnapshotsByIdDumpOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.DestinationId != nil {
-		out.Append("destinationId", strconv.Itoa(*o.DestinationId))
+	if o.DestinationId != 0 {
+		out.Append("destinationId", strconv.Itoa(int(o.DestinationId)))
 	}
 	if o.Path != "" {
 		out.Append("path", o.Path)

@@ -4,10 +4,10 @@ package dockhand
 
 // PostBackupDestinationsTestRequest is an object the document declares inline.
 type PostBackupDestinationsTestRequest struct {
-	Cacert        string         `json:"cacert,omitempty"`
-	DestinationId int            `json:"destinationId,omitempty"`
-	EnvVars       map[string]any `json:"envVars,omitzero"`
-	Password      string         `json:"password,omitempty"`
-	Repository    string         `json:"repository,omitempty"`
-	TlsClientCert string         `json:"tlsClientCert,omitempty"`
+	Cacert        string              `json:"cacert,omitempty"`
+	DestinationId BackupDestinationID `json:"destinationId,omitempty"`
+	EnvVars       map[string]any      `json:"envVars,omitzero"`
+	Password      string              `json:"password,omitempty"`
+	Repository    string              `json:"repository,omitempty"`
+	TlsClientCert string              `json:"tlsClientCert,omitempty"`
 }

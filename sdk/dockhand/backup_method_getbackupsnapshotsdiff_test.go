@@ -4,6 +4,7 @@ package dockhand
 
 import (
 	"net/http"
+	"reflect"
 	"testing"
 
 	"github.com/katbyte/pandorest/client"
@@ -14,7 +15,7 @@ func TestOperationGetBackupSnapshotsDiff(t *testing.T) {
 
 	c, s := newOperationServer(t, 200, "application/json", "{}")
 	result, err := c.GetBackupSnapshotsDiff(t.Context(), GetBackupSnapshotsDiffOptions{
-		DestinationId: new(7),
+		DestinationId: BackupDestinationID(7),
 		SnapshotA:     "v-SnapshotA",
 		SnapshotB:     "v-SnapshotB",
 	})
@@ -33,11 +34,17 @@ func TestOperationGetBackupSnapshotsDiff(t *testing.T) {
 	if result.Answer == nil || !result.Answered() {
 		t.Error("the answer was not decoded")
 	}
+	if result.GetBackupSnapshotsDiffAnswer != result.Answer {
+		t.Error("the embedded answer is not the answer")
+	}
+	if record, err := result.Record(); err != nil || !reflect.DeepEqual(record, *result.Answer) {
+		t.Errorf("Record = %+v, %v", record, err)
+	}
 
 	// an answer that does not decode is an error, with the response
 	c, _ = newOperationServer(t, 200, "application/json", "<html>")
 	result, err = c.GetBackupSnapshotsDiff(t.Context(), GetBackupSnapshotsDiffOptions{
-		DestinationId: new(7),
+		DestinationId: BackupDestinationID(7),
 		SnapshotA:     "v-SnapshotA",
 		SnapshotB:     "v-SnapshotB",
 	})
@@ -48,7 +55,7 @@ func TestOperationGetBackupSnapshotsDiff(t *testing.T) {
 	// a status the operation does not document is an error, with the response
 	c, _ = newOperationServer(t, 418, "text/plain", "no")
 	result, err = c.GetBackupSnapshotsDiff(t.Context(), GetBackupSnapshotsDiffOptions{
-		DestinationId: new(7),
+		DestinationId: BackupDestinationID(7),
 		SnapshotA:     "v-SnapshotA",
 		SnapshotB:     "v-SnapshotB",
 	})

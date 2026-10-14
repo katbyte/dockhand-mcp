@@ -4,27 +4,84 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
 // PostBackupDestinationsByIdTaskResponse is the result of PostBackupDestinationsByIdTask.
+//
+// Answer is the PostBackupDestinationsByIdTaskAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type PostBackupDestinationsByIdTaskResponse struct {
 	HttpResponse *http.Response
+	Answer       *PostBackupDestinationsByIdTaskAnswer
+	*PostBackupDestinationsByIdTaskAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostBackupDestinationsByIdTaskResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostBackupDestinationsByIdTaskAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostBackupDestinationsByIdTaskResponse) Record() (PostBackupDestinationsByIdTaskAnswer, error) {
+	if r.Answer == nil {
+		return PostBackupDestinationsByIdTaskAnswer{}, errors.New("PostBackupDestinationsByIdTask answered no PostBackupDestinationsByIdTaskAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostBackupDestinationsByIdTaskOptions holds the query and header parameters of PostBackupDestinationsByIdTask.
+type PostBackupDestinationsByIdTaskOptions struct {
+	// what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once
+	Accept string
+}
+
+// ToHeaders returns the header parameters the options set.
+func (o PostBackupDestinationsByIdTaskOptions) ToHeaders() *client.Headers {
+	out := client.Headers{}
+	if o.Accept != "" {
+		out.Append("Accept", o.Accept)
+	}
+	return &out
+}
+
+// ToQuery returns the query parameters the options set.
+func (o PostBackupDestinationsByIdTaskOptions) ToQuery() *client.QueryParams {
+	out := client.QueryParams{}
+	return &out
 }
 
 // PostBackupDestinationsByIdTask calls POST /api/backup/destinations/{id}/task. Run a restic repository maintenance task (unlock, check, prune, stats, repair-index or repair-snapshots) against a destination.
-func (c Client) PostBackupDestinationsByIdTask(ctx context.Context, id int, input PostBackupDestinationsByIdTaskRequest) (result PostBackupDestinationsByIdTaskResponse, err error) {
+func (c Client) PostBackupDestinationsByIdTask(ctx context.Context, id BackupDestinationID, input PostBackupDestinationsByIdTaskRequest, options ...PostBackupDestinationsByIdTaskOptions) (result PostBackupDestinationsByIdTaskResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostBackupDestinationsByIdTask takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostBackupDestinationsByIdTaskOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostBackupDestinationsByIdTaskAnswer = &PostBackupDestinationsByIdTaskAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
-		HTTPMethod: http.MethodPost,
-		Operation:  "PostBackupDestinationsByIdTask",
-		Path:       fmt.Sprintf("/api/backup/destinations/%d/task", id),
+		HTTPMethod:    http.MethodPost,
+		Operation:     "PostBackupDestinationsByIdTask",
+		OptionsObject: option,
+		Path:          fmt.Sprintf("/api/backup/destinations/%s/task", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -44,6 +101,13 @@ func (c Client) PostBackupDestinationsByIdTask(ctx context.Context, id int, inpu
 	if err != nil {
 		return
 	}
+
+	var answer PostBackupDestinationsByIdTaskAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
+		return
+	}
+	result.PostBackupDestinationsByIdTaskAnswer = result.Answer
 
 	return
 }

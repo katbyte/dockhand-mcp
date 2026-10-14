@@ -4,19 +4,45 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
 // PutBackupDestinationsByIdResponse is the result of PutBackupDestinationsById.
+//
+// Answer is the PutBackupDestinationsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type PutBackupDestinationsByIdResponse struct {
 	HttpResponse *http.Response
+	Answer       *PutBackupDestinationsByIdAnswer
+	*PutBackupDestinationsByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutBackupDestinationsByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutBackupDestinationsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutBackupDestinationsByIdResponse) Record() (PutBackupDestinationsByIdAnswer, error) {
+	if r.Answer == nil {
+		return PutBackupDestinationsByIdAnswer{}, errors.New("PutBackupDestinationsById answered no PutBackupDestinationsByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PutBackupDestinationsById calls PUT /api/backup/destinations/{id}. Update a backup destination, re-validating repository and flags when supplied and re-registering maintenance schedules when policies change.
-func (c Client) PutBackupDestinationsById(ctx context.Context, id int, input PutBackupDestinationsByIdRequest) (result PutBackupDestinationsByIdResponse, err error) {
+func (c Client) PutBackupDestinationsById(ctx context.Context, id BackupDestinationID, input PutBackupDestinationsByIdRequest) (result PutBackupDestinationsByIdResponse, err error) {
+	result.PutBackupDestinationsByIdAnswer = &PutBackupDestinationsByIdAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -24,7 +50,7 @@ func (c Client) PutBackupDestinationsById(ctx context.Context, id int, input Put
 		},
 		HTTPMethod: http.MethodPut,
 		Operation:  "PutBackupDestinationsById",
-		Path:       fmt.Sprintf("/api/backup/destinations/%d", id),
+		Path:       fmt.Sprintf("/api/backup/destinations/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -44,6 +70,13 @@ func (c Client) PutBackupDestinationsById(ctx context.Context, id int, input Put
 	if err != nil {
 		return
 	}
+
+	var answer PutBackupDestinationsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
+		return
+	}
+	result.PutBackupDestinationsByIdAnswer = result.Answer
 
 	return
 }

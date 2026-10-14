@@ -4,19 +4,45 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
 // PutBackupConfigsByIdResponse is the result of PutBackupConfigsById.
+//
+// Answer is the PutBackupConfigsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type PutBackupConfigsByIdResponse struct {
 	HttpResponse *http.Response
+	Answer       *PutBackupConfigsByIdAnswer
+	*PutBackupConfigsByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PutBackupConfigsByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PutBackupConfigsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PutBackupConfigsByIdResponse) Record() (PutBackupConfigsByIdAnswer, error) {
+	if r.Answer == nil {
+		return PutBackupConfigsByIdAnswer{}, errors.New("PutBackupConfigsById answered no PutBackupConfigsByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PutBackupConfigsById calls PUT /api/backup/configs/{id}. Update a backup configuration and re-register or remove its cron schedule accordingly.
-func (c Client) PutBackupConfigsById(ctx context.Context, id int, input PutBackupConfigsByIdRequest) (result PutBackupConfigsByIdResponse, err error) {
+func (c Client) PutBackupConfigsById(ctx context.Context, id BackupConfigID, input PutBackupConfigsByIdRequest) (result PutBackupConfigsByIdResponse, err error) {
+	result.PutBackupConfigsByIdAnswer = &PutBackupConfigsByIdAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -24,7 +50,7 @@ func (c Client) PutBackupConfigsById(ctx context.Context, id int, input PutBacku
 		},
 		HTTPMethod: http.MethodPut,
 		Operation:  "PutBackupConfigsById",
-		Path:       fmt.Sprintf("/api/backup/configs/%d", id),
+		Path:       fmt.Sprintf("/api/backup/configs/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -44,6 +70,13 @@ func (c Client) PutBackupConfigsById(ctx context.Context, id int, input PutBacku
 	if err != nil {
 		return
 	}
+
+	var answer PutBackupConfigsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
+		return
+	}
+	result.PutBackupConfigsByIdAnswer = result.Answer
 
 	return
 }

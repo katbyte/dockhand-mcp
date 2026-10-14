@@ -4,7 +4,7 @@ package dockhand
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -13,19 +13,36 @@ import (
 )
 
 // GetBackupSnapshotsDiffResponse is the result of GetBackupSnapshotsDiff.
+//
+// Answer is the GetBackupSnapshotsDiffAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type GetBackupSnapshotsDiffResponse struct {
 	HttpResponse *http.Response
-	Answer       json.RawMessage
+	Answer       *GetBackupSnapshotsDiffAnswer
+	*GetBackupSnapshotsDiffAnswer
 }
 
 // Answered reports whether the server answered with a body that was decoded:
 // false for a 204, or a call that failed before one came.
 func (r GetBackupSnapshotsDiffResponse) Answered() bool { return r.Answer != nil }
 
+// Record is the GetBackupSnapshotsDiffAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetBackupSnapshotsDiffResponse) Record() (GetBackupSnapshotsDiffAnswer, error) {
+	if r.Answer == nil {
+		return GetBackupSnapshotsDiffAnswer{}, errors.New("GetBackupSnapshotsDiff answered no GetBackupSnapshotsDiffAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
 // GetBackupSnapshotsDiffOptions holds the query and header parameters of GetBackupSnapshotsDiff.
 type GetBackupSnapshotsDiffOptions struct {
 	// Destination both snapshots live in
-	DestinationId *int
+	DestinationId BackupDestinationID
 
 	// The baseline snapshot id
 	SnapshotA string
@@ -43,8 +60,8 @@ func (o GetBackupSnapshotsDiffOptions) ToHeaders() *client.Headers {
 // ToQuery returns the query parameters the options set.
 func (o GetBackupSnapshotsDiffOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.DestinationId != nil {
-		out.Append("destinationId", strconv.Itoa(*o.DestinationId))
+	if o.DestinationId != 0 {
+		out.Append("destinationId", strconv.Itoa(int(o.DestinationId)))
 	}
 	if o.SnapshotA != "" {
 		out.Append("snapshotA", o.SnapshotA)
@@ -66,6 +83,7 @@ func (c Client) GetBackupSnapshotsDiff(ctx context.Context, options ...GetBackup
 		option = options[0]
 	}
 
+	result.GetBackupSnapshotsDiffAnswer = &GetBackupSnapshotsDiffAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -90,9 +108,12 @@ func (c Client) GetBackupSnapshotsDiff(ctx context.Context, options ...GetBackup
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Answer); err != nil {
+	var answer GetBackupSnapshotsDiffAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetBackupSnapshotsDiffAnswer = result.Answer
 
 	return
 }

@@ -12,7 +12,7 @@ import (
 func TestOperationGetBackupConfigs(t *testing.T) {
 	t.Parallel()
 
-	c, s := newOperationServer(t, 200, "application/json", "{}")
+	c, s := newOperationServer(t, 200, "application/json", "[{}]")
 	result, err := c.GetBackupConfigs(t.Context(), GetBackupConfigsOptions{
 		Type:   "v-Type",
 		Target: "v-Target",
@@ -57,7 +57,7 @@ func TestOperationGetBackupConfigs(t *testing.T) {
 	}
 
 	// the options may be left out, and two are refused before any request
-	c, s = newOperationServer(t, 200, "application/json", "{}")
+	c, s = newOperationServer(t, 200, "application/json", "[{}]")
 	if _, err = c.GetBackupConfigs(t.Context()); err != nil {
 		t.Errorf("without options = %v", err)
 	}

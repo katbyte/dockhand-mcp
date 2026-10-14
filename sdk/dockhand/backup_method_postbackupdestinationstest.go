@@ -4,18 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
 // PostBackupDestinationsTestResponse is the result of PostBackupDestinationsTest.
+//
+// Answer is the PostBackupDestinationsTestAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type PostBackupDestinationsTestResponse struct {
 	HttpResponse *http.Response
+	Answer       *PostBackupDestinationsTestAnswer
+	*PostBackupDestinationsTestAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostBackupDestinationsTestResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostBackupDestinationsTestAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostBackupDestinationsTestResponse) Record() (PostBackupDestinationsTestAnswer, error) {
+	if r.Answer == nil {
+		return PostBackupDestinationsTestAnswer{}, errors.New("PostBackupDestinationsTest answered no PostBackupDestinationsTestAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostBackupDestinationsTest calls POST /api/backup/destinations/test. Test a backup repository — either a saved destination (by destinationId) or inline credentials supplied for a not-yet-saved destination.
 func (c Client) PostBackupDestinationsTest(ctx context.Context, input PostBackupDestinationsTestRequest) (result PostBackupDestinationsTestResponse, err error) {
+	result.PostBackupDestinationsTestAnswer = &PostBackupDestinationsTestAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -43,6 +67,13 @@ func (c Client) PostBackupDestinationsTest(ctx context.Context, input PostBackup
 	if err != nil {
 		return
 	}
+
+	var answer PostBackupDestinationsTestAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
+		return
+	}
+	result.PostBackupDestinationsTestAnswer = result.Answer
 
 	return
 }

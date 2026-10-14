@@ -4,32 +4,52 @@ package dockhand
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
 // GetBackupDestinationsByIdResponse is the result of GetBackupDestinationsById.
+//
+// Answer is the GetBackupDestinationsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type GetBackupDestinationsByIdResponse struct {
 	HttpResponse *http.Response
-	Answer       json.RawMessage
+	Answer       *GetBackupDestinationsByIdAnswer
+	*GetBackupDestinationsByIdAnswer
 }
 
 // Answered reports whether the server answered with a body that was decoded:
 // false for a 204, or a call that failed before one came.
 func (r GetBackupDestinationsByIdResponse) Answered() bool { return r.Answer != nil }
 
+// Record is the GetBackupDestinationsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetBackupDestinationsByIdResponse) Record() (GetBackupDestinationsByIdAnswer, error) {
+	if r.Answer == nil {
+		return GetBackupDestinationsByIdAnswer{}, errors.New("GetBackupDestinationsById answered no GetBackupDestinationsByIdAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
 // GetBackupDestinationsById calls GET /api/backup/destinations/{id}. Fetch a single backup destination; decrypted cloud-credential env vars are only included for callers who can manage backups, and the password is always stripped.
-func (c Client) GetBackupDestinationsById(ctx context.Context, id int) (result GetBackupDestinationsByIdResponse, err error) {
+func (c Client) GetBackupDestinationsById(ctx context.Context, id BackupDestinationID) (result GetBackupDestinationsByIdResponse, err error) {
+	result.GetBackupDestinationsByIdAnswer = &GetBackupDestinationsByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodGet,
 		Operation:  "GetBackupDestinationsById",
-		Path:       fmt.Sprintf("/api/backup/destinations/%d", id),
+		Path:       fmt.Sprintf("/api/backup/destinations/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -46,9 +66,12 @@ func (c Client) GetBackupDestinationsById(ctx context.Context, id int) (result G
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Answer); err != nil {
+	var answer GetBackupDestinationsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetBackupDestinationsByIdAnswer = result.Answer
 
 	return
 }

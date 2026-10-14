@@ -4,19 +4,45 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
 // PostBackupDestinationsByIdRotateKeyResponse is the result of PostBackupDestinationsByIdRotateKey.
+//
+// Answer is the PostBackupDestinationsByIdRotateKeyAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type PostBackupDestinationsByIdRotateKeyResponse struct {
 	HttpResponse *http.Response
+	Answer       *PostBackupDestinationsByIdRotateKeyAnswer
+	*PostBackupDestinationsByIdRotateKeyAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostBackupDestinationsByIdRotateKeyResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostBackupDestinationsByIdRotateKeyAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostBackupDestinationsByIdRotateKeyResponse) Record() (PostBackupDestinationsByIdRotateKeyAnswer, error) {
+	if r.Answer == nil {
+		return PostBackupDestinationsByIdRotateKeyAnswer{}, errors.New("PostBackupDestinationsByIdRotateKey answered no PostBackupDestinationsByIdRotateKeyAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostBackupDestinationsByIdRotateKey calls POST /api/backup/destinations/{id}/rotate-key. Rotate the restic repository password for a destination and persist the new password.
-func (c Client) PostBackupDestinationsByIdRotateKey(ctx context.Context, id int, input PostBackupDestinationsByIdRotateKeyRequest) (result PostBackupDestinationsByIdRotateKeyResponse, err error) {
+func (c Client) PostBackupDestinationsByIdRotateKey(ctx context.Context, id BackupDestinationID, input PostBackupDestinationsByIdRotateKeyRequest) (result PostBackupDestinationsByIdRotateKeyResponse, err error) {
+	result.PostBackupDestinationsByIdRotateKeyAnswer = &PostBackupDestinationsByIdRotateKeyAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -24,7 +50,7 @@ func (c Client) PostBackupDestinationsByIdRotateKey(ctx context.Context, id int,
 		},
 		HTTPMethod: http.MethodPost,
 		Operation:  "PostBackupDestinationsByIdRotateKey",
-		Path:       fmt.Sprintf("/api/backup/destinations/%d/rotate-key", id),
+		Path:       fmt.Sprintf("/api/backup/destinations/%s/rotate-key", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -44,6 +70,13 @@ func (c Client) PostBackupDestinationsByIdRotateKey(ctx context.Context, id int,
 	if err != nil {
 		return
 	}
+
+	var answer PostBackupDestinationsByIdRotateKeyAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
+		return
+	}
+	result.PostBackupDestinationsByIdRotateKeyAnswer = result.Answer
 
 	return
 }

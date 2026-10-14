@@ -4,26 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
 // PostBackupDestinationsByIdTestResponse is the result of PostBackupDestinationsByIdTest.
+//
+// Answer is the PostBackupDestinationsByIdTestAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type PostBackupDestinationsByIdTestResponse struct {
 	HttpResponse *http.Response
+	Answer       *PostBackupDestinationsByIdTestAnswer
+	*PostBackupDestinationsByIdTestAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostBackupDestinationsByIdTestResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostBackupDestinationsByIdTestAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostBackupDestinationsByIdTestResponse) Record() (PostBackupDestinationsByIdTestAnswer, error) {
+	if r.Answer == nil {
+		return PostBackupDestinationsByIdTestAnswer{}, errors.New("PostBackupDestinationsByIdTest answered no PostBackupDestinationsByIdTestAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostBackupDestinationsByIdTest calls POST /api/backup/destinations/{id}/test. Test connectivity to a saved backup destination's repository and update its stored test status.
-func (c Client) PostBackupDestinationsByIdTest(ctx context.Context, id int) (result PostBackupDestinationsByIdTestResponse, err error) {
+func (c Client) PostBackupDestinationsByIdTest(ctx context.Context, id BackupDestinationID) (result PostBackupDestinationsByIdTestResponse, err error) {
+	result.PostBackupDestinationsByIdTestAnswer = &PostBackupDestinationsByIdTestAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
 		Operation:  "PostBackupDestinationsByIdTest",
-		Path:       fmt.Sprintf("/api/backup/destinations/%d/test", id),
+		Path:       fmt.Sprintf("/api/backup/destinations/%s/test", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -39,6 +65,13 @@ func (c Client) PostBackupDestinationsByIdTest(ctx context.Context, id int) (res
 	if err != nil {
 		return
 	}
+
+	var answer PostBackupDestinationsByIdTestAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
+		return
+	}
+	result.PostBackupDestinationsByIdTestAnswer = result.Answer
 
 	return
 }

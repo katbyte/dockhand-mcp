@@ -14,8 +14,6 @@ import (
 const (
 	// the Enterprise edition's calls answer 403 on a server with no licence
 	enterprise = "part of Dockhand's Enterprise edition, which the suite's server has no licence for"
-	// a feature a server is not set up for answers 404 Not found, in text, to every call of its
-	backupOff = "the suite's server has no backup set up, and every backup call answers 404 Not found until one is"
 	// a server with its login off has nobody logged in
 	nobody = "a server with its login off has no account to ask about: it answers that authentication is not enabled"
 	// the hub the server asks is not the suite's to keep up
@@ -43,19 +41,8 @@ var alwaysCases = map[string]sweep.Case{
 	"GetAuthLdapById":         {Path: nothing, Status: http.StatusForbidden, Why: enterprise},
 	"GetUsersByIdRoles":       {Path: nothing, Status: http.StatusForbidden, Why: enterprise},
 
-	// backups, which are not set up
-	"GetBackupConfigs":               {Status: http.StatusNotFound, Why: backupOff},
-	"GetBackupConfigsById":           {Path: nothing, Status: http.StatusNotFound, Why: backupOff},
-	"GetBackupDestinations":          {Status: http.StatusNotFound, Why: backupOff},
-	"GetBackupDestinationsById":      {Path: nothing, Status: http.StatusNotFound, Why: backupOff},
-	"GetBackupInstance":              {Status: http.StatusNotFound, Why: backupOff},
-	"GetBackupSnapshots":             {Status: http.StatusNotFound, Why: backupOff},
-	"GetBackupSnapshotsByIdBrowse":   {Path: nothing, Status: http.StatusNotFound, Why: backupOff},
-	"GetBackupSnapshotsByIdDump":     {Path: nothing, Status: http.StatusNotFound, Why: backupOff},
-	"GetBackupSnapshotsByIdMetadata": {Path: nothing, Status: http.StatusNotFound, Why: backupOff},
-	"GetBackupSnapshotsDiff":         {Status: http.StatusNotFound, Why: backupOff},
-	"GetBackupStackDirListing":       {Options: map[string]any{"Target": "local"}, Status: http.StatusNotFound, Why: backupOff},
-	"GetBackupStackPath":             {Options: map[string]any{"Target": "local"}, Status: http.StatusNotFound, Why: backupOff},
+	// a file is read out of a snapshot by its path, which is no folder's
+	"GetBackupSnapshotsByIdDump": {Options: map[string]any{"Path": "/volumes/" + sweepStack + "_data/note.txt"}},
 
 	// switched off on a server as it comes
 	"GetDocs":        {Status: http.StatusNotFound, Why: "the API's description of itself is served here only by a server started with FEAT_API_DOCS=true, as its document says; every server serves it at /openapi.json"},

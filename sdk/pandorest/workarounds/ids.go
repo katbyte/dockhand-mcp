@@ -7,7 +7,7 @@ import "github.com/katbyte/pandorest/config"
 // and property that names it.
 var ids = []config.ID{
 	// env is also what a container's variables are called where one is made, changed or written as a template: a list there, and not an id
-	{Name: "EnvironmentID", Of: []string{"GetEnvironmentsAnswer", "GetEnvironmentsByIdAnswer", "PostEnvironmentsAnswer", "PutEnvironmentsByIdAnswer", "GetDashboardStatsAnswer"}, Names: []string{"environmentId", "environmentIds", "environment_id", "envId", "targetEnvId", "env"}, Except: []string{"GetTemplatesAnswer .env", "PostContainersByIdUpdateRequest .env", "PostContainersRequest .env", "PostTemplatesComposeRequestTemplate .env"}},
+	{Name: "EnvironmentID", Of: []string{"GetEnvironmentsAnswer", "GetEnvironmentsByIdAnswer", "PostEnvironmentsAnswer", "PutEnvironmentsByIdAnswer", "GetDashboardStatsAnswer"}, Names: []string{"environmentId", "environmentIds", "environment_id", "envId", "targetEnvId", "sourceEnvironmentId", "env"}, Except: []string{"GetTemplatesAnswer .env", "PostContainersByIdUpdateRequest .env", "PostContainersRequest .env", "PostTemplatesComposeRequestTemplate .env"}},
 	{Name: "NotificationID", Of: []string{"GetNotificationsAnswer", "GetNotificationsByIdAnswer", "PostNotificationsAnswer", "PutNotificationsByIdAnswer"}, Names: []string{"notificationId"}},
 	{Name: "RegistryID", Of: []string{"GetRegistriesAnswer", "GetRegistriesByIdAnswer", "PostRegistriesAnswer", "PutRegistriesByIdAnswer"}, Names: []string{"registryId", "registry"}},
 	{Name: "UserID", Of: []string{"GetUsersAnswer", "GetUsersByIdAnswer", "PostUsersAnswer", "PutUsersByIdAnswer", "GetAuthSessionAnswerUser"}, Names: []string{"userId"}},
@@ -19,6 +19,8 @@ var ids = []config.ID{
 	{Name: "ConfigSetID", Of: []string{"GetConfigSetsAnswer", "GetConfigSetsByIdAnswer", "PostConfigSetsAnswer", "PutConfigSetsByIdAnswer"}},
 	{Name: "TagID", Of: []string{"GetTagsAnswerTags", "PostTagsAnswer"}, Names: []string{"tagIds"}},
 	{Name: "TemplateSourceID", Of: []string{"GetTemplatesSourcesAnswer", "PostTemplatesSourcesAnswer"}},
+	{Name: "BackupDestinationID", Of: []string{"GetBackupDestinationsAnswer", "GetBackupDestinationsByIdAnswer", "PostBackupDestinationsAnswer", "PutBackupDestinationsByIdAnswer"}, Names: []string{"destinationId"}},
+	{Name: "BackupConfigID", Of: []string{"GetBackupConfigsAnswer", "GetBackupConfigsByIdAnswer", "PostBackupConfigsAnswer", "PutBackupConfigsByIdAnswer"}, Names: []string{"configId"}},
 }
 
 // plain are the names that look like an id and are left as the document has them.
@@ -31,8 +33,10 @@ var plain = []string{
 	"scheduleId", "entityId",
 	// an id given by someone else: a single sign-on client's, an agent's own, a grid of the web interface's
 	"clientId", "agentId", "hawserAgentId", "gridId", "instanceId",
-	// backups, which the free server does not answer
-	"configId", "destinationId", "snapshotId", "snapshotIds",
+	// a snapshot is restic's, named by the id restic gave it or the start of it, and a run of a backup is one of the runs the schedules list
+	"snapshotId", "snapshotIds", "shortId", "executionId",
+	// who owns a file inside a snapshot
+	"uid", "gid",
 	// a token's number, met in one answer, and the name a template source goes by, which is text
 	"tokenId", "sourceId",
 	// every record's own id that is not one of the kinds above

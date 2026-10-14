@@ -4,7 +4,7 @@ package dockhand
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -14,19 +14,36 @@ import (
 )
 
 // GetBackupSnapshotsByIdMetadataResponse is the result of GetBackupSnapshotsByIdMetadata.
+//
+// Answer is the GetBackupSnapshotsByIdMetadataAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type GetBackupSnapshotsByIdMetadataResponse struct {
 	HttpResponse *http.Response
-	Answer       json.RawMessage
+	Answer       *GetBackupSnapshotsByIdMetadataAnswer
+	*GetBackupSnapshotsByIdMetadataAnswer
 }
 
 // Answered reports whether the server answered with a body that was decoded:
 // false for a 204, or a call that failed before one came.
 func (r GetBackupSnapshotsByIdMetadataResponse) Answered() bool { return r.Answer != nil }
 
+// Record is the GetBackupSnapshotsByIdMetadataAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetBackupSnapshotsByIdMetadataResponse) Record() (GetBackupSnapshotsByIdMetadataAnswer, error) {
+	if r.Answer == nil {
+		return GetBackupSnapshotsByIdMetadataAnswer{}, errors.New("GetBackupSnapshotsByIdMetadata answered no GetBackupSnapshotsByIdMetadataAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
 // GetBackupSnapshotsByIdMetadataOptions holds the query and header parameters of GetBackupSnapshotsByIdMetadata.
 type GetBackupSnapshotsByIdMetadataOptions struct {
 	// Destination the snapshot lives in
-	DestinationId *int
+	DestinationId BackupDestinationID
 }
 
 // ToHeaders returns the header parameters the options set.
@@ -38,8 +55,8 @@ func (o GetBackupSnapshotsByIdMetadataOptions) ToHeaders() *client.Headers {
 // ToQuery returns the query parameters the options set.
 func (o GetBackupSnapshotsByIdMetadataOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.DestinationId != nil {
-		out.Append("destinationId", strconv.Itoa(*o.DestinationId))
+	if o.DestinationId != 0 {
+		out.Append("destinationId", strconv.Itoa(int(o.DestinationId)))
 	}
 	return &out
 }
@@ -55,6 +72,7 @@ func (c Client) GetBackupSnapshotsByIdMetadata(ctx context.Context, id string, o
 		option = options[0]
 	}
 
+	result.GetBackupSnapshotsByIdMetadataAnswer = &GetBackupSnapshotsByIdMetadataAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -79,9 +97,12 @@ func (c Client) GetBackupSnapshotsByIdMetadata(ctx context.Context, id string, o
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Answer); err != nil {
+	var answer GetBackupSnapshotsByIdMetadataAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetBackupSnapshotsByIdMetadataAnswer = result.Answer
 
 	return
 }

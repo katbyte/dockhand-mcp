@@ -5,7 +5,7 @@ package dockhand
 // PutBackupConfigsByIdRequest is an object the document declares inline.
 type PutBackupConfigsByIdRequest struct {
 	AllVolumes       *bool                                 `json:"allVolumes,omitempty"`
-	DestinationId    int                                   `json:"destinationId,omitempty"`
+	DestinationId    BackupDestinationID                   `json:"destinationId,omitempty"`
 	Enabled          *bool                                 `json:"enabled,omitempty"`
 	Options          map[string]any                        `json:"options,omitzero"`
 	Retention        *PutBackupConfigsByIdRequestRetention `json:"retention,omitempty"`

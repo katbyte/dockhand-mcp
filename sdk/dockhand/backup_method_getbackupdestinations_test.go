@@ -12,7 +12,7 @@ import (
 func TestOperationGetBackupDestinations(t *testing.T) {
 	t.Parallel()
 
-	c, s := newOperationServer(t, 200, "application/json", "{}")
+	c, s := newOperationServer(t, 200, "application/json", "[{}]")
 	result, err := c.GetBackupDestinations(t.Context())
 	if err != nil {
 		t.Fatal(err)

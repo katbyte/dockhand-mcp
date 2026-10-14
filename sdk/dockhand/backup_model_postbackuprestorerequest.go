@@ -4,17 +4,19 @@ package dockhand
 
 // PostBackupRestoreRequest is an object the document declares inline.
 type PostBackupRestoreRequest struct {
-	ConfirmOverwrite   *bool            `json:"confirmOverwrite,omitempty"`
-	DestinationId      int              `json:"destinationId"`
-	EnvironmentId      EnvironmentID    `json:"environmentId,omitempty"`
-	Mode               string           `json:"mode,omitempty"`
-	PostRestore        string           `json:"postRestore,omitempty"`
-	RestoreSecrets     *bool            `json:"restoreSecrets,omitempty"`
-	SkipStackFiles     *bool            `json:"skipStackFiles,omitempty"`
-	SnapshotId         string           `json:"snapshotId"`
-	TargetName         string           `json:"targetName,omitempty"`
-	TargetPath         string           `json:"targetPath,omitempty"`
-	TargetType         string           `json:"targetType,omitempty"`
-	VolumeDestinations []map[string]any `json:"volumeDestinations,omitzero"`
-	Volumes            []string         `json:"volumes,omitzero"`
+	ConfirmOverwrite *bool               `json:"confirmOverwrite,omitempty"`
+	DestinationId    BackupDestinationID `json:"destinationId"`
+	EnvironmentId    EnvironmentID       `json:"environmentId,omitempty"`
+	Mode             string              `json:"mode,omitempty"`
+	PostRestore      string              `json:"postRestore,omitempty"`
+	RestoreSecrets   *bool               `json:"restoreSecrets,omitempty"`
+	SkipStackFiles   *bool               `json:"skipStackFiles,omitempty"`
+	SnapshotId       string              `json:"snapshotId"`
+	TargetName       string              `json:"targetName,omitempty"`
+	TargetPath       string              `json:"targetPath,omitempty"`
+	TargetType       string              `json:"targetType,omitempty"`
+
+	// where a volume of the snapshot is to go: the volume as the snapshot names it, whether the target is a volume or a path on the host, and the target
+	VolumeDestinations []PostBackupRestoreRequestVolumeDestinations `json:"volumeDestinations,omitzero"`
+	Volumes            []string                                     `json:"volumes,omitzero"`
 }

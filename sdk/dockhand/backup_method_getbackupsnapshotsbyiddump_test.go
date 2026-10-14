@@ -16,7 +16,7 @@ func TestOperationGetBackupSnapshotsByIdDump(t *testing.T) {
 
 	c, s := newOperationServer(t, 200, "application/octet-stream", "file bytes")
 	result, err := c.GetBackupSnapshotsByIdDump(t.Context(), "p/id", GetBackupSnapshotsByIdDumpOptions{
-		DestinationId: new(7),
+		DestinationId: BackupDestinationID(7),
 		Path:          "v-Path",
 		Type:          "v-Type",
 		Download:      "v-Download",
@@ -45,7 +45,7 @@ func TestOperationGetBackupSnapshotsByIdDump(t *testing.T) {
 	}
 	c, _ = newOperationServer(t, 200, "application/octet-stream", "file bytes")
 	result, err = c.GetBackupSnapshotsByIdDump(t.Context(), "p/id", GetBackupSnapshotsByIdDumpOptions{
-		DestinationId: new(7),
+		DestinationId: BackupDestinationID(7),
 		Path:          "v-Path",
 		Type:          "v-Type",
 		Download:      "v-Download",
@@ -58,7 +58,7 @@ func TestOperationGetBackupSnapshotsByIdDump(t *testing.T) {
 	}
 	c, _ = newOperationServer(t, 200, "application/octet-stream", "file bytes")
 	result, err = c.GetBackupSnapshotsByIdDump(t.Context(), "p/id", GetBackupSnapshotsByIdDumpOptions{
-		DestinationId: new(7),
+		DestinationId: BackupDestinationID(7),
 		Path:          "v-Path",
 		Type:          "v-Type",
 		Download:      "v-Download",
@@ -83,7 +83,7 @@ func TestOperationGetBackupSnapshotsByIdDump(t *testing.T) {
 	// a status the operation does not document is an error, with the response
 	c, _ = newOperationServer(t, 418, "text/plain", "no")
 	result, err = c.GetBackupSnapshotsByIdDump(t.Context(), "p/id", GetBackupSnapshotsByIdDumpOptions{
-		DestinationId: new(7),
+		DestinationId: BackupDestinationID(7),
 		Path:          "v-Path",
 		Type:          "v-Type",
 		Download:      "v-Download",

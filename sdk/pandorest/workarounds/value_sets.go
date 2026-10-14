@@ -14,7 +14,7 @@ func enums(group string, entries map[string]pandorest.Enum) pandorest.Workaround
 // with no zone, in whatever zone the container keeps, so a date read from it would claim more than is known. The names were held to what a real
 // 1.0.51 server answers, which the live sweep goes on doing.
 var dates = []pandorest.Workaround{
-	pandorest.UndeclaredDates(pandorest.About{Name: Service + "-dates", Service: Service, Bug: "every date is declared a plain string; the server writes RFC 3339 with and without fractions of a second, and two forms with a space where the T goes"}, "createdAt", "updatedAt", "CreatedAt", "startedAt", "triggeredAt", "completedAt", "timestamp", "expiresAt", "lastUpdated", "mtime", "publishedAt", "checkedAt", "connectedAt", "lastHeartbeat", "nextRun", "scannedAt", "lastSync", "lastLogin", "hawserLastSeen", "lastUsed", "lastChecked"),
+	pandorest.UndeclaredDates(pandorest.About{Name: Service + "-dates", Service: Service, Bug: "every date is declared a plain string; the server writes RFC 3339 with and without fractions of a second, and two forms with a space where the T goes"}, "createdAt", "updatedAt", "CreatedAt", "startedAt", "triggeredAt", "completedAt", "timestamp", "expiresAt", "lastUpdated", "mtime", "publishedAt", "checkedAt", "connectedAt", "lastHeartbeat", "nextRun", "scannedAt", "lastSync", "lastLogin", "hawserLastSeen", "lastUsed", "lastChecked", "lastTestAt", "lastBackupAt", "backupTime", "atime", "ctime"),
 	pandorest.UndeclaredUnixDates(pandorest.About{Name: Service + "-unix-dates", Service: Service, Bug: "GET /api/containers/{id}/stats declares timestamp a plain integer, and it is the moment the figures were taken, in milliseconds since 1970"}, "milliseconds", "timestamp"),
 }
 
@@ -66,7 +66,7 @@ var valueSets = []pandorest.Workaround{
 		"type": {Name: "ChangeType", Values: []string{"feature", "fix"}, In: []string{"GET /api/changelog"}},
 	}),
 	enums("schedules", map[string]pandorest.Enum{
-		"type": {Name: "ScheduleType", Values: []string{"container_update", "git_stack_sync", "system_cleanup", "env_update_check", "image_prune", "deploy_log_reconcile"}, In: []string{"GET /api/schedules schedules.type"}},
+		"type": {Name: "ScheduleType", Values: []string{"container_update", "git_stack_sync", "system_cleanup", "env_update_check", "image_prune", "deploy_log_reconcile", "backup", "repo_prune", "repo_check", "repo_verify"}, In: []string{"GET /api/schedules schedules.type"}},
 	}),
 	enums("files", map[string]pandorest.Enum{
 		"type": {Name: "FileType", Values: []string{"file", "directory", "symlink", "other"}, In: []string{"GET /api/system/files", "GET /api/containers/{id}/files", "GET /api/volumes/{name}/browse"}},

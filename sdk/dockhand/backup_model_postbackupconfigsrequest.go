@@ -5,7 +5,7 @@ package dockhand
 // PostBackupConfigsRequest is an object the document declares inline.
 type PostBackupConfigsRequest struct {
 	AllVolumes       *bool                              `json:"allVolumes,omitempty"`
-	DestinationId    int                                `json:"destinationId"`
+	DestinationId    BackupDestinationID                `json:"destinationId"`
 	Enabled          *bool                              `json:"enabled,omitempty"`
 	EnvironmentId    EnvironmentID                      `json:"environmentId,omitempty"`
 	Options          map[string]any                     `json:"options,omitzero"`

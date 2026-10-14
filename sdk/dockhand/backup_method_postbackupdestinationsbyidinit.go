@@ -4,26 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
 // PostBackupDestinationsByIdInitResponse is the result of PostBackupDestinationsByIdInit.
+//
+// Answer is the PostBackupDestinationsByIdInitAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type PostBackupDestinationsByIdInitResponse struct {
 	HttpResponse *http.Response
+	Answer       *PostBackupDestinationsByIdInitAnswer
+	*PostBackupDestinationsByIdInitAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostBackupDestinationsByIdInitResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostBackupDestinationsByIdInitAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostBackupDestinationsByIdInitResponse) Record() (PostBackupDestinationsByIdInitAnswer, error) {
+	if r.Answer == nil {
+		return PostBackupDestinationsByIdInitAnswer{}, errors.New("PostBackupDestinationsByIdInit answered no PostBackupDestinationsByIdInitAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostBackupDestinationsByIdInit calls POST /api/backup/destinations/{id}/init. Initialize the restic repository for a destination and record the resulting test status.
-func (c Client) PostBackupDestinationsByIdInit(ctx context.Context, id int) (result PostBackupDestinationsByIdInitResponse, err error) {
+func (c Client) PostBackupDestinationsByIdInit(ctx context.Context, id BackupDestinationID) (result PostBackupDestinationsByIdInitResponse, err error) {
+	result.PostBackupDestinationsByIdInitAnswer = &PostBackupDestinationsByIdInitAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodPost,
 		Operation:  "PostBackupDestinationsByIdInit",
-		Path:       fmt.Sprintf("/api/backup/destinations/%d/init", id),
+		Path:       fmt.Sprintf("/api/backup/destinations/%s/init", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -39,6 +65,13 @@ func (c Client) PostBackupDestinationsByIdInit(ctx context.Context, id int) (res
 	if err != nil {
 		return
 	}
+
+	var answer PostBackupDestinationsByIdInitAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
+		return
+	}
+	result.PostBackupDestinationsByIdInitAnswer = result.Answer
 
 	return
 }

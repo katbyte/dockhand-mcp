@@ -49,3 +49,11 @@ type TagID int
 // TemplateSourceID is a kind of id the service tells apart, which the compiler keeps from every other kind;
 // int(id) and TemplateSourceID(n) convert one value, client.IDs a list.
 type TemplateSourceID int
+
+// BackupDestinationID is a kind of id the service tells apart, which the compiler keeps from every other kind;
+// int(id) and BackupDestinationID(n) convert one value, client.IDs a list.
+type BackupDestinationID int
+
+// BackupConfigID is a kind of id the service tells apart, which the compiler keeps from every other kind;
+// int(id) and BackupConfigID(n) convert one value, client.IDs a list.
+type BackupConfigID int

@@ -23,25 +23,15 @@ const (
 )
 
 // undeclared is every GET the document declares a 200 for and says nothing of what it holds, with what the server answers there, but for the ones a
-// fix of their own gives a shape as well (the stack list, a stack's compose file, where each stack's files are kept, and the git stacks).
+// fix of their own gives a shape as well (the stack list, a stack's compose file, where each stack's files are kept, the git stacks, and the backups).
 // api-defs/README.md says which of these were seen on a real server and which could not be.
 var undeclared = map[string]string{
 	// lists and records, answered as JSON
-	"/api/docs":                           answersJSON,
-	"/api/backup/configs":                 answersJSON,
-	"/api/backup/configs/{id}":            answersJSON,
-	"/api/backup/destinations":            answersJSON,
-	"/api/backup/destinations/{id}":       answersJSON,
-	"/api/backup/snapshots":               answersJSON,
-	"/api/backup/snapshots/diff":          answersJSON,
-	"/api/backup/snapshots/{id}/browse":   answersJSON,
-	"/api/backup/snapshots/{id}/metadata": answersJSON,
-	"/api/backup/stack-dir-listing":       answersJSON,
-	"/api/backup/stack-path":              answersJSON,
-	"/api/containers/{id}":                answersJSON,
-	"/api/containers/{id}/inspect":        answersJSON,
-	"/api/profile/preferences":            answersJSON,
-	"/api/settings/theme":                 answersJSON,
+	"/api/docs":                    answersJSON,
+	"/api/containers/{id}":         answersJSON,
+	"/api/containers/{id}/inspect": answersJSON,
+	"/api/profile/preferences":     answersJSON,
+	"/api/settings/theme":          answersJSON,
 
 	// what is happening, sent as it happens until the caller hangs up
 	"/api/activity/events":             answersEvents,

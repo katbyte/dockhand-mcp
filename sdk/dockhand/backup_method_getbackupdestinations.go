@@ -4,7 +4,6 @@ package dockhand
 
 import (
 	"context"
-	"encoding/json"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
@@ -13,7 +12,7 @@ import (
 // GetBackupDestinationsResponse is the result of GetBackupDestinations.
 type GetBackupDestinationsResponse struct {
 	HttpResponse *http.Response
-	Answer       json.RawMessage
+	Answer       []GetBackupDestinationsAnswer
 }
 
 // Answered reports whether the server answered with a body that was decoded:

@@ -4,6 +4,6 @@ package dockhand
 
 // PostBackupSnapshotsBatchDeleteRequest is an object the document declares inline.
 type PostBackupSnapshotsBatchDeleteRequest struct {
-	DestinationId int      `json:"destinationId"`
-	SnapshotIds   []string `json:"snapshotIds"`
+	DestinationId BackupDestinationID `json:"destinationId"`
+	SnapshotIds   []string            `json:"snapshotIds"`
 }

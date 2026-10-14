@@ -4,18 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
 // PostBackupConfigsResponse is the result of PostBackupConfigs.
+//
+// Answer is the PostBackupConfigsAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type PostBackupConfigsResponse struct {
 	HttpResponse *http.Response
+	Answer       *PostBackupConfigsAnswer
+	*PostBackupConfigsAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostBackupConfigsResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostBackupConfigsAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostBackupConfigsResponse) Record() (PostBackupConfigsAnswer, error) {
+	if r.Answer == nil {
+		return PostBackupConfigsAnswer{}, errors.New("PostBackupConfigs answered no PostBackupConfigsAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostBackupConfigs calls POST /api/backup/configs. Create a backup configuration for a container or stack, optionally scheduled, and register its cron schedule when enabled.
 func (c Client) PostBackupConfigs(ctx context.Context, input PostBackupConfigsRequest) (result PostBackupConfigsResponse, err error) {
+	result.PostBackupConfigsAnswer = &PostBackupConfigsAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -43,6 +67,13 @@ func (c Client) PostBackupConfigs(ctx context.Context, input PostBackupConfigsRe
 	if err != nil {
 		return
 	}
+
+	var answer PostBackupConfigsAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
+		return
+	}
+	result.PostBackupConfigsAnswer = result.Answer
 
 	return
 }

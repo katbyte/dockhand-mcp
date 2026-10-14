@@ -4,7 +4,7 @@ package dockhand
 
 import (
 	"context"
-	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -14,19 +14,36 @@ import (
 )
 
 // GetBackupSnapshotsByIdBrowseResponse is the result of GetBackupSnapshotsByIdBrowse.
+//
+// Answer is the GetBackupSnapshotsByIdBrowseAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type GetBackupSnapshotsByIdBrowseResponse struct {
 	HttpResponse *http.Response
-	Answer       json.RawMessage
+	Answer       *GetBackupSnapshotsByIdBrowseAnswer
+	*GetBackupSnapshotsByIdBrowseAnswer
 }
 
 // Answered reports whether the server answered with a body that was decoded:
 // false for a 204, or a call that failed before one came.
 func (r GetBackupSnapshotsByIdBrowseResponse) Answered() bool { return r.Answer != nil }
 
+// Record is the GetBackupSnapshotsByIdBrowseAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r GetBackupSnapshotsByIdBrowseResponse) Record() (GetBackupSnapshotsByIdBrowseAnswer, error) {
+	if r.Answer == nil {
+		return GetBackupSnapshotsByIdBrowseAnswer{}, errors.New("GetBackupSnapshotsByIdBrowse answered no GetBackupSnapshotsByIdBrowseAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
 // GetBackupSnapshotsByIdBrowseOptions holds the query and header parameters of GetBackupSnapshotsByIdBrowse.
 type GetBackupSnapshotsByIdBrowseOptions struct {
 	// Destination the snapshot lives in
-	DestinationId *int
+	DestinationId BackupDestinationID
 
 	// Directory path inside the snapshot to list
 	Path string
@@ -44,8 +61,8 @@ func (o GetBackupSnapshotsByIdBrowseOptions) ToHeaders() *client.Headers {
 // ToQuery returns the query parameters the options set.
 func (o GetBackupSnapshotsByIdBrowseOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.DestinationId != nil {
-		out.Append("destinationId", strconv.Itoa(*o.DestinationId))
+	if o.DestinationId != 0 {
+		out.Append("destinationId", strconv.Itoa(int(o.DestinationId)))
 	}
 	if o.Path != "" {
 		out.Append("path", o.Path)
@@ -67,6 +84,7 @@ func (c Client) GetBackupSnapshotsByIdBrowse(ctx context.Context, id string, opt
 		option = options[0]
 	}
 
+	result.GetBackupSnapshotsByIdBrowseAnswer = &GetBackupSnapshotsByIdBrowseAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -91,9 +109,12 @@ func (c Client) GetBackupSnapshotsByIdBrowse(ctx context.Context, id string, opt
 		return
 	}
 
-	if err = resp.Unmarshal(&result.Answer); err != nil {
+	var answer GetBackupSnapshotsByIdBrowseAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
 		return
 	}
+	result.GetBackupSnapshotsByIdBrowseAnswer = result.Answer
 
 	return
 }

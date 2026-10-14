@@ -21,9 +21,15 @@
 #   <prefix>-registry      a registry of its own with a login, which the hosts push to and pull from
 #   <prefix>-vault         a secret store that speaks Vault's API, empty and unsealed, for Dockhand to load a stack's secrets from
 #   <prefix>-git           a git server with no repositories yet, for Dockhand to deploy a stack from, open and behind a login
+#   <prefix>-backups       a restic server that holds nothing yet, for Dockhand to keep backups in
 #
 # Alpha also listens on the network the containers share, without TLS, so a
 # suite can register it a third way, by address.
+#
+# Each host shares one folder with whoever deploys its stacks, at the same
+# path on both, which is how a stack's files come to be on the host's own
+# disk as they are where Dockhand runs beside its Docker: alpha with Dockhand
+# itself, and beta with its agent. A backup of a stack reads them from there.
 #
 # This script only does what dockhand-mcp cannot: run the containers. Setting
 # the server up - its first user, its login, an API token, the environments -
@@ -42,6 +48,8 @@ AGENT_IMAGE="${DOCKHAND_TEST_AGENT_IMAGE:-ghcr.io/finsys/hawser:latest}"
 REGISTRY_IMAGE="${DOCKHAND_TEST_REGISTRY_IMAGE:-registry:2}"
 # the secret store: OpenBao, which speaks Vault's API and comes from a registry of its own rather than Docker Hub
 VAULT_IMAGE="${DOCKHAND_TEST_VAULT_IMAGE:-ghcr.io/openbao/openbao:2.3.1}"
+# where backups are kept: restic's own small server, from the mirror
+BACKUP_IMAGE="${DOCKHAND_TEST_BACKUP_IMAGE:-mirror.gcr.io/restic/rest-server:0.14.0}"
 # what the suites run on the hosts: small, and from the mirror, since each host pulls it for itself
 FIXTURE_IMAGE="${DOCKHAND_TEST_FIXTURE_IMAGE:-mirror.gcr.io/library/busybox:1.37}"
 # what the suites have scanned for vulnerabilities, and what scans it: an image old enough that a scanner finds plenty in it, and the scanner this Dockhand runs unless told, both from the mirror, since a host pulls each for itself
@@ -72,6 +80,16 @@ ALPHA_SOCKET="/run/alpha/docker.sock"
 
 HOSTS="alpha beta"
 URL="http://127.0.0.1:${PORT}"
+
+# stacks_of is the folder a host shares with whoever deploys its stacks, at
+# the same path on both: Dockhand's own folder for alpha, and the agent's for
+# beta
+stacks_of() {
+  case "$1" in
+    alpha) echo /app/data/stacks ;;
+    *) echo /data/stacks ;;
+  esac
+}
 
 need() {
   for tool in "$@"; do
@@ -125,10 +143,12 @@ pull_image() {
 start_host() {
   local name="$1"
   docker volume create "${PREFIX}-run-${name}" >/dev/null
+  docker volume create "${PREFIX}-stacks-${name}" >/dev/null
   docker run -d --name "${PREFIX}-docker-${name}" --hostname "docker-${name}" --network "$NETWORK" --network-alias "docker-${name}" \
     --privileged \
     -e DOCKER_TLS_CERTDIR= \
     -v "${PREFIX}-run-${name}:/var/run" \
+    -v "${PREFIX}-stacks-${name}:$(stacks_of "$name")" \
     "$DOCKER_IMAGE" "--insecure-registry=${REGISTRY}" >/dev/null
 }
 
@@ -170,6 +190,24 @@ wait_vault() {
   echo "testenv: the secret store in ${container} did not answer within 60s" >&2
   docker logs --tail 40 "$container" >&2 || true
   exit 1
+}
+
+# start_backups runs the server backups are kept on, asking for no login:
+# nothing outside the network can reach it, and each repository on it has a
+# password of its own. It holds nothing until a suite has Dockhand make a
+# repository there.
+start_backups() {
+  docker run -d --name "${PREFIX}-backups" --hostname backups --network "$NETWORK" --network-alias backups \
+    -e DISABLE_AUTHENTICATION=1 \
+    "$BACKUP_IMAGE" >/dev/null
+}
+
+# backups_address is where the backup server is, by its address on the
+# network and not its name: a backup is run by a container on a Docker host,
+# which finds no name of this network, and the address is one Dockhand and
+# the hosts both reach.
+backups_address() {
+  docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' "${PREFIX}-backups"
 }
 
 # start_git runs the git server: .scripts/gitserver.js, run from the Dockhand
@@ -228,15 +266,20 @@ start_agent() {
     -e "TOKEN=${AGENT_TOKEN}" \
     -e "AGENT_NAME=agent-${name}" \
     -v "${PREFIX}-run-${name}:/var/run" \
+    -v "${PREFIX}-stacks-${name}:$(stacks_of "$name")" \
     "$AGENT_IMAGE" >/dev/null
 }
 
 # start_server runs Dockhand itself, with alpha's socket where an environment
-# of the socket kind can name it
+# of the socket kind can name it, the folder it shares with alpha for stacks'
+# files, and its backups switched on: they are off as Dockhand comes, and
+# every backup call answers 404 until they are on
 start_server() {
   docker run -d --name "$PREFIX" --hostname dockhand --network "$NETWORK" --network-alias dockhand \
     -p "127.0.0.1:${PORT}:3000" \
+    -e FEAT_BACKUPS_ENABLED=true \
     -v "${PREFIX}-run-alpha:/run/alpha" \
+    -v "${PREFIX}-stacks-alpha:$(stacks_of alpha)" \
     "$IMAGE" >/dev/null
 }
 
@@ -256,7 +299,7 @@ wait_server() {
 
 print_env() {
   # everything a person reads goes to stderr: stdout is what eval takes
-  echo "testenv: ${PREFIX} up (${IMAGE}), with hosts ${HOSTS} (${DOCKER_IMAGE}), an agent before beta (${AGENT_IMAGE}), a registry (${REGISTRY_IMAGE}), a secret store (${VAULT_IMAGE}) and a git server" >&2
+  echo "testenv: ${PREFIX} up (${IMAGE}), with hosts ${HOSTS} (${DOCKER_IMAGE}), an agent before beta (${AGENT_IMAGE}), a registry (${REGISTRY_IMAGE}), a secret store (${VAULT_IMAGE}), a git server and a backup server (${BACKUP_IMAGE})" >&2
   echo "export DOCKHAND_SERVER='${URL}'"
   echo "export DOCKHAND_TEST_CONTAINER='${PREFIX}'"
   echo "export DOCKHAND_TEST_NETWORK='${NETWORK}'"
@@ -279,6 +322,8 @@ print_env() {
   echo "export DOCKHAND_TEST_GIT='${GIT}'"
   echo "export DOCKHAND_TEST_GIT_USER='${GIT_USER}'"
   echo "export DOCKHAND_TEST_GIT_PASSWORD='${GIT_PASSWORD}'"
+  # the backup server, as restic names a repository on it: a suite adds a name of its own to the end
+  echo "export DOCKHAND_TEST_BACKUP='rest:http://$(backups_address):8000'"
   echo "export DOCKHAND_TEST_FIXTURE_IMAGE='${FIXTURE_IMAGE}'"
   echo "export DOCKHAND_TEST_SCANNED_IMAGE='${SCANNED_IMAGE}'"
   echo "export DOCKHAND_TEST_SCANNER_IMAGE='${SCANNER_IMAGE}'"
@@ -292,11 +337,13 @@ up() {
   pull_image "$AGENT_IMAGE"
   pull_image "$REGISTRY_IMAGE"
   pull_image "$VAULT_IMAGE"
+  pull_image "$BACKUP_IMAGE"
 
   docker network create "$NETWORK" >/dev/null
   start_registry
   start_vault
   start_git
+  start_backups
   local name
   for name in $HOSTS; do
     start_host "$name"
@@ -313,9 +360,10 @@ up() {
 }
 
 # down removes what up started, each by its own name, and nothing else: the
-# server, the registry, the secret store, the git server, the agents, the one up started and any a suite
-# started to call in, the hosts with everything that ran on them, and the
-# volumes and network they shared
+# server, the registry, the secret store, the git server, the backup server,
+# the agents, the one up started and any a suite started to call in, the
+# hosts with everything that ran on them, and the volumes and network they
+# shared
 down() {
   need docker
   local name
@@ -323,6 +371,7 @@ down() {
   docker rm -f -v "${PREFIX}-registry" >/dev/null 2>&1 || true
   docker rm -f -v "${PREFIX}-vault" >/dev/null 2>&1 || true
   docker rm -f -v "${PREFIX}-git" >/dev/null 2>&1 || true
+  docker rm -f -v "${PREFIX}-backups" >/dev/null 2>&1 || true
   for name in $HOSTS; do
     docker rm -f -v "${PREFIX}-agent-${name}" >/dev/null 2>&1 || true
     # an agent that calls in, which a suite starts for itself and takes away again unless it was cut short
@@ -331,6 +380,7 @@ down() {
   done
   for name in $HOSTS; do
     docker volume rm "${PREFIX}-run-${name}" >/dev/null 2>&1 || true
+    docker volume rm "${PREFIX}-stacks-${name}" >/dev/null 2>&1 || true
   done
   docker network rm "$NETWORK" >/dev/null 2>&1 || true
 }
@@ -366,7 +416,7 @@ spec() {
 logs() {
   need docker
   local container
-  for container in "$PREFIX" "${PREFIX}-agent-beta" "${PREFIX}-docker-alpha" "${PREFIX}-docker-beta" "${PREFIX}-registry" "${PREFIX}-vault" "${PREFIX}-git"; do
+  for container in "$PREFIX" "${PREFIX}-agent-beta" "${PREFIX}-docker-alpha" "${PREFIX}-docker-beta" "${PREFIX}-registry" "${PREFIX}-vault" "${PREFIX}-git" "${PREFIX}-backups"; do
     is_running "$container" || continue
     echo "==> ${container}" >&2
     docker logs --tail 200 "$container" >&2 || true

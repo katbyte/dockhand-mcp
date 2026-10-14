@@ -4,7 +4,6 @@ package dockhand
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -15,7 +14,7 @@ import (
 // GetBackupSnapshotsResponse is the result of GetBackupSnapshots.
 type GetBackupSnapshotsResponse struct {
 	HttpResponse *http.Response
-	Answer       json.RawMessage
+	Answer       []GetBackupSnapshotsAnswer
 }
 
 // Answered reports whether the server answered with a body that was decoded:
@@ -25,10 +24,10 @@ func (r GetBackupSnapshotsResponse) Answered() bool { return r.Answer != nil }
 // GetBackupSnapshotsOptions holds the query and header parameters of GetBackupSnapshots.
 type GetBackupSnapshotsOptions struct {
 	// Backup config id (mutually exclusive with destinationId)
-	ConfigId *int
+	ConfigId BackupConfigID
 
 	// Single destination id (mutually exclusive with configId)
-	DestinationId *int
+	DestinationId BackupDestinationID
 
 	// With configId, include every destination of the config
 	AllDestinations *bool
@@ -43,11 +42,11 @@ func (o GetBackupSnapshotsOptions) ToHeaders() *client.Headers {
 // ToQuery returns the query parameters the options set.
 func (o GetBackupSnapshotsOptions) ToQuery() *client.QueryParams {
 	out := client.QueryParams{}
-	if o.ConfigId != nil {
-		out.Append("configId", strconv.Itoa(*o.ConfigId))
+	if o.ConfigId != 0 {
+		out.Append("configId", strconv.Itoa(int(o.ConfigId)))
 	}
-	if o.DestinationId != nil {
-		out.Append("destinationId", strconv.Itoa(*o.DestinationId))
+	if o.DestinationId != 0 {
+		out.Append("destinationId", strconv.Itoa(int(o.DestinationId)))
 	}
 	if o.AllDestinations != nil {
 		out.Append("allDestinations", strconv.FormatBool(*o.AllDestinations))

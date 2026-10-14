@@ -4,26 +4,83 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
 // PostBackupConfigsByIdRunResponse is the result of PostBackupConfigsByIdRun.
+//
+// Answer is the PostBackupConfigsByIdRunAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type PostBackupConfigsByIdRunResponse struct {
 	HttpResponse *http.Response
+	Answer       *PostBackupConfigsByIdRunAnswer
+	*PostBackupConfigsByIdRunAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostBackupConfigsByIdRunResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostBackupConfigsByIdRunAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostBackupConfigsByIdRunResponse) Record() (PostBackupConfigsByIdRunAnswer, error) {
+	if r.Answer == nil {
+		return PostBackupConfigsByIdRunAnswer{}, errors.New("PostBackupConfigsByIdRun answered no PostBackupConfigsByIdRunAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostBackupConfigsByIdRunOptions holds the query and header parameters of PostBackupConfigsByIdRun.
+type PostBackupConfigsByIdRunOptions struct {
+	// what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once
+	Accept string
+}
+
+// ToHeaders returns the header parameters the options set.
+func (o PostBackupConfigsByIdRunOptions) ToHeaders() *client.Headers {
+	out := client.Headers{}
+	if o.Accept != "" {
+		out.Append("Accept", o.Accept)
+	}
+	return &out
+}
+
+// ToQuery returns the query parameters the options set.
+func (o PostBackupConfigsByIdRunOptions) ToQuery() *client.QueryParams {
+	out := client.QueryParams{}
+	return &out
 }
 
 // PostBackupConfigsByIdRun calls POST /api/backup/configs/{id}/run. Trigger a manual backup run for a configuration, streaming progress as a Server-Sent Events job.
-func (c Client) PostBackupConfigsByIdRun(ctx context.Context, id int) (result PostBackupConfigsByIdRunResponse, err error) {
+func (c Client) PostBackupConfigsByIdRun(ctx context.Context, id BackupConfigID, options ...PostBackupConfigsByIdRunOptions) (result PostBackupConfigsByIdRunResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostBackupConfigsByIdRun takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostBackupConfigsByIdRunOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostBackupConfigsByIdRunAnswer = &PostBackupConfigsByIdRunAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
-		HTTPMethod: http.MethodPost,
-		Operation:  "PostBackupConfigsByIdRun",
-		Path:       fmt.Sprintf("/api/backup/configs/%d/run", id),
+		HTTPMethod:    http.MethodPost,
+		Operation:     "PostBackupConfigsByIdRun",
+		OptionsObject: option,
+		Path:          fmt.Sprintf("/api/backup/configs/%s/run", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -39,6 +96,13 @@ func (c Client) PostBackupConfigsByIdRun(ctx context.Context, id int) (result Po
 	if err != nil {
 		return
 	}
+
+	var answer PostBackupConfigsByIdRunAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
+		return
+	}
+	result.PostBackupConfigsByIdRunAnswer = result.Answer
 
 	return
 }

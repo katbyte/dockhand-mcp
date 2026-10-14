@@ -4,27 +4,84 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
 // PostBackupDestinationsByIdVerifyResponse is the result of PostBackupDestinationsByIdVerify.
+//
+// Answer is the PostBackupDestinationsByIdVerifyAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type PostBackupDestinationsByIdVerifyResponse struct {
 	HttpResponse *http.Response
+	Answer       *PostBackupDestinationsByIdVerifyAnswer
+	*PostBackupDestinationsByIdVerifyAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostBackupDestinationsByIdVerifyResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostBackupDestinationsByIdVerifyAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostBackupDestinationsByIdVerifyResponse) Record() (PostBackupDestinationsByIdVerifyAnswer, error) {
+	if r.Answer == nil {
+		return PostBackupDestinationsByIdVerifyAnswer{}, errors.New("PostBackupDestinationsByIdVerify answered no PostBackupDestinationsByIdVerifyAnswer")
+	}
+
+	return *r.Answer, nil
+}
+
+// PostBackupDestinationsByIdVerifyOptions holds the query and header parameters of PostBackupDestinationsByIdVerify.
+type PostBackupDestinationsByIdVerifyOptions struct {
+	// what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once
+	Accept string
+}
+
+// ToHeaders returns the header parameters the options set.
+func (o PostBackupDestinationsByIdVerifyOptions) ToHeaders() *client.Headers {
+	out := client.Headers{}
+	if o.Accept != "" {
+		out.Append("Accept", o.Accept)
+	}
+	return &out
+}
+
+// ToQuery returns the query parameters the options set.
+func (o PostBackupDestinationsByIdVerifyOptions) ToQuery() *client.QueryParams {
+	out := client.QueryParams{}
+	return &out
 }
 
 // PostBackupDestinationsByIdVerify calls POST /api/backup/destinations/{id}/verify. Verify the integrity of a destination's backups by reading a data subset, streaming progress as a Server-Sent Events job.
-func (c Client) PostBackupDestinationsByIdVerify(ctx context.Context, id int, input PostBackupDestinationsByIdVerifyRequest) (result PostBackupDestinationsByIdVerifyResponse, err error) {
+func (c Client) PostBackupDestinationsByIdVerify(ctx context.Context, id BackupDestinationID, input PostBackupDestinationsByIdVerifyRequest, options ...PostBackupDestinationsByIdVerifyOptions) (result PostBackupDestinationsByIdVerifyResponse, err error) {
+	if len(options) > 1 {
+		err = fmt.Errorf("PostBackupDestinationsByIdVerify takes one options struct at most, not %d", len(options))
+		return
+	}
+	var option PostBackupDestinationsByIdVerifyOptions
+	if len(options) == 1 {
+		option = options[0]
+	}
+
+	result.PostBackupDestinationsByIdVerifyAnswer = &PostBackupDestinationsByIdVerifyAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
-		HTTPMethod: http.MethodPost,
-		Operation:  "PostBackupDestinationsByIdVerify",
-		Path:       fmt.Sprintf("/api/backup/destinations/%d/verify", id),
+		HTTPMethod:    http.MethodPost,
+		Operation:     "PostBackupDestinationsByIdVerify",
+		OptionsObject: option,
+		Path:          fmt.Sprintf("/api/backup/destinations/%s/verify", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -44,6 +101,13 @@ func (c Client) PostBackupDestinationsByIdVerify(ctx context.Context, id int, in
 	if err != nil {
 		return
 	}
+
+	var answer PostBackupDestinationsByIdVerifyAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
+		return
+	}
+	result.PostBackupDestinationsByIdVerifyAnswer = result.Answer
 
 	return
 }

@@ -76,6 +76,7 @@ var All = []pandorest.Workaround{
 	preferenceAnswers{},
 	secretProviderAnswers{},
 	gitAnswers{},
+	backupAnswers{},
 	jobAccept{},
 	unsaidFlags{},
 }

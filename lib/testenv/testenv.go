@@ -114,6 +114,10 @@ type World struct {
 	Git         string
 	GitUser     string
 	GitPassword string
+	// Backups is where the Dockhand and the hosts find the server the suites keep backups on, as restic names a repository there: a suite adds a
+	// name of its own to the end. It is by the server's address and not its name, since a backup is run by a container on a host, which finds no
+	// name of the network the hosts share
+	Backups string
 
 	// Environments are the numbers Dockhand gave alpha and beta
 	Environments map[string]dockhand.EnvironmentID
@@ -161,6 +165,7 @@ func OpenBare(ctx context.Context) (*World, error) {
 		Git:          environment.Get("TEST_GIT"),
 		GitUser:      environment.Get("TEST_GIT_USER"),
 		GitPassword:  environment.Get("TEST_GIT_PASSWORD"),
+		Backups:      environment.Get("TEST_BACKUP"),
 		Environments: map[string]dockhand.EnvironmentID{},
 		hosts:        map[string]string{},
 		container:    environment.Get("TEST_CONTAINER"),
@@ -599,4 +604,34 @@ func (w *World) Unlay(ctx context.Context, dir string) error {
 	_, err := w.inDockhand(ctx, "rm -rf '"+dir+"'", "")
 
 	return err
+}
+
+// BackupsByName is the backup server by its name on the network, which the Dockhand finds and a container on a host does not: for showing what
+// becomes of a backup to somewhere only Dockhand reaches.
+func (w *World) BackupsByName() string { return "rest:http://" + w.container + "-backups:8000" }
+
+// MirrorBackupImage has the Dockhand run its backups from the mirror's copy of the helper image where a host can pull that, as the suites do with
+// every image a host pulls for itself: Docker Hub turns a CI runner away for what its shared address has pulled. A mirror that does not have the
+// image yet, as it may not for a day after a release, leaves the setting as it was.
+func (w *World) MirrorBackupImage(ctx context.Context) error {
+	const mirror = "mirror.gcr.io/"
+
+	settings, err := w.Dock.GetSettingsGeneral(ctx)
+	if err != nil {
+		return fmt.Errorf("the image backups are run from could not be read: %w", err)
+	}
+	image := settings.Answer.DefaultBackupImage
+	if image == "" || strings.HasPrefix(image, mirror) {
+		return nil
+	}
+	for host := range w.hosts {
+		if _, err := w.Docker(ctx, host, "pull", "-q", mirror+image); err != nil {
+			return nil //nolint:nilerr // the mirror is behind: the image is pulled from where Dockhand names it
+		}
+	}
+	if _, err := w.Dock.SaveGeneralSettings(ctx, map[string]any{"defaultBackupImage": mirror + image}); err != nil {
+		return fmt.Errorf("the image backups are run from could not be set to the mirror's: %w", err)
+	}
+
+	return nil
 }

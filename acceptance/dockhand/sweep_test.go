@@ -95,6 +95,29 @@ func sweepFixtures(t *testing.T) sweep.Fixtures {
 		t.Fatal(err)
 	}
 
+	// and somewhere backups are kept, with the sweep's container backed up there twice: two snapshots, for the reads that look into one and
+	// compare two
+	if err := world.MirrorBackupImage(ctx); err != nil {
+		t.Fatal(err)
+	}
+	backupsGone(t, sweepStack)
+	kept, err := c.PostBackupDestinations(t.Context(), dockhand.PostBackupDestinationsRequest{Name: sweepStack, Repository: repositoryOn(world.Backups, sweepStack), Password: backupPassword})
+	if err != nil {
+		t.Fatal(err)
+	}
+	backup, err := c.PostBackupConfigs(t.Context(), dockhand.PostBackupConfigsRequest{DestinationId: kept.Answer.Id, TargetName: container.Name, Type: "container", EnvironmentId: env})
+	if err != nil {
+		t.Fatal(err)
+	}
+	var snapshots [2]string
+	for i := range snapshots {
+		ran, err := c.PostBackupConfigsByIdRun(t.Context(), backup.Answer.Id)
+		if err != nil || ran.Answer.SnapshotId == "" {
+			t.Fatalf("backing the sweep's container up = %+v, %v", ran.Answer, err)
+		}
+		snapshots[i] = ran.Answer.SnapshotId
+	}
+
 	fixtures := sweep.Fixtures{
 		Path: map[string]string{
 			"environments/id": strconv.Itoa(int(env)),
@@ -111,6 +134,10 @@ func sweepFixtures(t *testing.T) sweep.Fixtures {
 			"auto-update/containerName": container.Name,
 			"container-tags/name":       container.Name,
 			"container-icons/name":      container.Name,
+			// the sweep's backup: where it is kept, what is backed up, and the later of its two snapshots
+			"backup/destinations/id": strconv.Itoa(int(kept.Answer.Id)),
+			"backup/configs/id":      strconv.Itoa(int(backup.Answer.Id)),
+			"snapshots/id":           snapshots[1],
 		},
 		Options: map[string]string{
 			"containers": container.Id,
@@ -121,8 +148,12 @@ func sweepFixtures(t *testing.T) sweep.Fixtures {
 			"tag":        "1.37",
 			"term":       "busybox",
 			"registry":   "1",
+			// the stack whose folder a backup would read
+			"target": sweepStack,
 		},
-		Always: map[string]string{"env": strconv.Itoa(int(env))},
+		// what a call is given whenever it takes it, required or not: the host, and for the reads of a snapshot where the sweep's backup is kept
+		// and its two snapshots, without which each answers that it was not told
+		Always: map[string]string{"env": strconv.Itoa(int(env)), "destinationId": strconv.Itoa(int(kept.Answer.Id)), "snapshotA": snapshots[0], "snapshotB": snapshots[1]},
 	}
 
 	// with its login on the server has a user: the administrator the stage made

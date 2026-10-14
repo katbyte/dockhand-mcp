@@ -13,7 +13,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupConfigID"
           }
         }
       ],
@@ -28,6 +29,13 @@
           }
         }
       ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteBackupConfigsByIdAnswer"
+        }
+      },
       "ExpectedStatusCodes": [
         200
       ]
@@ -43,10 +51,18 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
           }
         }
       ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteBackupDestinationsByIdAnswer"
+        }
+      },
       "ExpectedStatusCodes": [
         200
       ]
@@ -74,7 +90,8 @@
           "Description": "Destination holding the snapshot (required) (from GET /api/backup/destinations)",
           "Required": true,
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
           }
         },
         {
@@ -88,6 +105,13 @@
           }
         }
       ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "DeleteBackupSnapshotsByIdAnswer"
+        }
+      },
       "ExpectedStatusCodes": [
         200
       ]
@@ -131,7 +155,11 @@
       "Response": {
         "ContentType": "application/json",
         "Type": {
-          "Type": "RawObject"
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetBackupConfigsAnswer"
+          }
         }
       },
       "ExpectedStatusCodes": [
@@ -149,14 +177,16 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupConfigID"
           }
         }
       ],
       "Response": {
         "ContentType": "application/json",
         "Type": {
-          "Type": "RawObject"
+          "Type": "Reference",
+          "ReferenceName": "GetBackupConfigsByIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -172,7 +202,11 @@
       "Response": {
         "ContentType": "application/json",
         "Type": {
-          "Type": "RawObject"
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetBackupDestinationsAnswer"
+          }
         }
       },
       "ExpectedStatusCodes": [
@@ -190,14 +224,16 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
           }
         }
       ],
       "Response": {
         "ContentType": "application/json",
         "Type": {
-          "Type": "RawObject"
+          "Type": "Reference",
+          "ReferenceName": "GetBackupDestinationsByIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -234,7 +270,8 @@
           "In": "Query",
           "Description": "Backup config id (mutually exclusive with destinationId)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupConfigID"
           }
         },
         {
@@ -243,7 +280,8 @@
           "In": "Query",
           "Description": "Single destination id (mutually exclusive with configId)",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
           }
         },
         {
@@ -259,7 +297,11 @@
       "Response": {
         "ContentType": "application/json",
         "Type": {
-          "Type": "RawObject"
+          "Type": "List",
+          "NestedItem": {
+            "Type": "Reference",
+            "ReferenceName": "GetBackupSnapshotsAnswer"
+          }
         }
       },
       "ExpectedStatusCodes": [
@@ -288,7 +330,8 @@
           "In": "Query",
           "Description": "Destination the snapshot lives in",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
           }
         },
         {
@@ -314,7 +357,8 @@
       "Response": {
         "ContentType": "application/json",
         "Type": {
-          "Type": "RawObject"
+          "Type": "Reference",
+          "ReferenceName": "GetBackupSnapshotsByIdBrowseAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -343,7 +387,8 @@
           "In": "Query",
           "Description": "Destination the snapshot lives in",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
           }
         },
         {
@@ -406,14 +451,16 @@
           "In": "Query",
           "Description": "Destination the snapshot lives in",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
           }
         }
       ],
       "Response": {
         "ContentType": "application/json",
         "Type": {
-          "Type": "RawObject"
+          "Type": "Reference",
+          "ReferenceName": "GetBackupSnapshotsByIdMetadataAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -433,7 +480,8 @@
           "In": "Query",
           "Description": "Destination both snapshots live in",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
           }
         },
         {
@@ -458,7 +506,8 @@
       "Response": {
         "ContentType": "application/json",
         "Type": {
-          "Type": "RawObject"
+          "Type": "Reference",
+          "ReferenceName": "GetBackupSnapshotsDiffAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -496,7 +545,8 @@
       "Response": {
         "ContentType": "application/json",
         "Type": {
-          "Type": "RawObject"
+          "Type": "Reference",
+          "ReferenceName": "GetBackupStackDirListingAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -534,7 +584,8 @@
       "Response": {
         "ContentType": "application/json",
         "Type": {
-          "Type": "RawObject"
+          "Type": "Reference",
+          "ReferenceName": "GetBackupStackPathAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -554,6 +605,13 @@
           "ReferenceName": "PostBackupConfigsRequest"
         }
       },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupConfigsAnswer"
+        }
+      },
       "ExpectedStatusCodes": [
         201
       ]
@@ -569,10 +627,29 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupConfigID"
           }
         }
       ],
+      "Options": [
+        {
+          "Name": "Accept",
+          "Field": "Accept",
+          "In": "Header",
+          "Description": "what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupConfigsByIdRunAnswer"
+        }
+      },
       "ExpectedStatusCodes": [
         200
       ]
@@ -588,10 +665,18 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupConfigID"
           }
         }
       ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupConfigsByIdStopAnswer"
+        }
+      },
       "ExpectedStatusCodes": [
         200
       ]
@@ -609,6 +694,13 @@
           "ReferenceName": "PostBackupDestinationsRequest"
         }
       },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupDestinationsAnswer"
+        }
+      },
       "ExpectedStatusCodes": [
         201
       ]
@@ -624,10 +716,18 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
           }
         }
       ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupDestinationsByIdInitAnswer"
+        }
+      },
       "ExpectedStatusCodes": [
         200
       ]
@@ -643,7 +743,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
           }
         }
       ],
@@ -652,6 +753,13 @@
         "Type": {
           "Type": "Reference",
           "ReferenceName": "PostBackupDestinationsByIdRotateKeyRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupDestinationsByIdRotateKeyAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -669,7 +777,19 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "Accept",
+          "Field": "Accept",
+          "In": "Header",
+          "Description": "what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once",
+          "Type": {
+            "Type": "String"
           }
         }
       ],
@@ -678,6 +798,13 @@
         "Type": {
           "Type": "Reference",
           "ReferenceName": "PostBackupDestinationsByIdTaskRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupDestinationsByIdTaskAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -695,10 +822,18 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
           }
         }
       ],
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupDestinationsByIdTestAnswer"
+        }
+      },
       "ExpectedStatusCodes": [
         200
       ]
@@ -714,7 +849,19 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
+          }
+        }
+      ],
+      "Options": [
+        {
+          "Name": "Accept",
+          "Field": "Accept",
+          "In": "Header",
+          "Description": "what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once",
+          "Type": {
+            "Type": "String"
           }
         }
       ],
@@ -723,6 +870,13 @@
         "Type": {
           "Type": "Reference",
           "ReferenceName": "PostBackupDestinationsByIdVerifyRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupDestinationsByIdVerifyAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -742,6 +896,13 @@
           "ReferenceName": "PostBackupDestinationsTestRequest"
         }
       },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupDestinationsTestAnswer"
+        }
+      },
       "ExpectedStatusCodes": [
         200
       ]
@@ -752,11 +913,29 @@
       "Method": "POST",
       "Path": "/api/backup/restore",
       "Description": "Restore a backup snapshot in-place or to a new location, streaming progress as a Server-Sent Events job",
+      "Options": [
+        {
+          "Name": "Accept",
+          "Field": "Accept",
+          "In": "Header",
+          "Description": "what the caller will take for an answer. Left out, the call waits for the work and answers how it went; AcceptJob has it answered with the id of a job at once",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ],
       "Request": {
         "ContentType": "application/json",
         "Type": {
           "Type": "Reference",
           "ReferenceName": "PostBackupRestoreRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupRestoreAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -776,6 +955,13 @@
           "ReferenceName": "PostBackupRestorePreviewRequest"
         }
       },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupRestorePreviewAnswer"
+        }
+      },
       "ExpectedStatusCodes": [
         200
       ]
@@ -791,6 +977,13 @@
         "Type": {
           "Type": "Reference",
           "ReferenceName": "PostBackupRestoreStopRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupRestoreStopAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -810,6 +1003,13 @@
           "ReferenceName": "PostBackupSnapshotsBatchDeleteRequest"
         }
       },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PostBackupSnapshotsBatchDeleteAnswer"
+        }
+      },
       "ExpectedStatusCodes": [
         200
       ]
@@ -825,7 +1025,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupConfigID"
           }
         }
       ],
@@ -834,6 +1035,13 @@
         "Type": {
           "Type": "Reference",
           "ReferenceName": "PutBackupConfigsByIdRequest"
+        }
+      },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutBackupConfigsByIdAnswer"
         }
       },
       "ExpectedStatusCodes": [
@@ -851,7 +1059,8 @@
           "Name": "id",
           "Argument": "id",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
           }
         }
       ],
@@ -862,12 +1071,631 @@
           "ReferenceName": "PutBackupDestinationsByIdRequest"
         }
       },
+      "Response": {
+        "ContentType": "application/json",
+        "Type": {
+          "Type": "Reference",
+          "ReferenceName": "PutBackupDestinationsByIdAnswer"
+        }
+      },
       "ExpectedStatusCodes": [
         200
       ]
     }
   ],
   "Models": [
+    {
+      "Name": "DeleteBackupConfigsByIdAnswer",
+      "Fields": [
+        {
+          "Name": "Snapshots",
+          "JsonName": "snapshots",
+          "Description": "with deleteSnapshots: how many of its snapshots were removed",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "DeleteBackupConfigsByIdAnswerSnapshots"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "DeleteBackupConfigsByIdAnswerSnapshots",
+      "Description": "with deleteSnapshots: how many of its snapshots were removed",
+      "Fields": [
+        {
+          "Name": "Deleted",
+          "JsonName": "deleted",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Skipped",
+          "JsonName": "skipped",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "DeleteBackupDestinationsByIdAnswer",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "DeleteBackupSnapshotsByIdAnswer",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetBackupConfigsAnswer",
+      "Fields": [
+        {
+          "Name": "AllVolumes",
+          "JsonName": "allVolumes",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "DestinationId",
+          "JsonName": "destinationId",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Description": "the environment the container or stack is on; null for one saved with none, which cannot be run",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "BackupConfigID"
+          }
+        },
+        {
+          "Name": "LastBackupAt",
+          "JsonName": "lastBackupAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "LastBackupStatus",
+          "JsonName": "lastBackupStatus",
+          "Description": "success, warning, skipped or failed; null for one never run",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Options",
+          "JsonName": "options",
+          "Description": "more of how it is backed up, as JSON written out as text; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Retention",
+          "JsonName": "retention",
+          "Description": "how many snapshots are kept, as JSON written out as text: keepLast, keepDaily, keepWeekly, keepMonthly, keepYearly; null to keep every one",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Schedule",
+          "JsonName": "schedule",
+          "Description": "when it runs by itself, as cron; null or empty for one that only runs when asked",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SelectedVolumes",
+          "JsonName": "selectedVolumes",
+          "Description": "the volumes to back up when not all of them, as a JSON list written out as text; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "StopBeforeBackup",
+          "JsonName": "stopBeforeBackup",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Tags",
+          "JsonName": "tags",
+          "Description": "as a JSON list written out as text; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TargetName",
+          "JsonName": "targetName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Description": "container or stack, as it was given: any other word is kept and then backs up nothing",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetBackupConfigsByIdAnswer",
+      "Fields": [
+        {
+          "Name": "AllVolumes",
+          "JsonName": "allVolumes",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "DestinationId",
+          "JsonName": "destinationId",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Description": "the environment the container or stack is on; null for one saved with none, which cannot be run",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "BackupConfigID"
+          }
+        },
+        {
+          "Name": "LastBackupAt",
+          "JsonName": "lastBackupAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "LastBackupStatus",
+          "JsonName": "lastBackupStatus",
+          "Description": "success, warning, skipped or failed; null for one never run",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Options",
+          "JsonName": "options",
+          "Description": "more of how it is backed up, as JSON written out as text; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Retention",
+          "JsonName": "retention",
+          "Description": "how many snapshots are kept, as JSON written out as text: keepLast, keepDaily, keepWeekly, keepMonthly, keepYearly; null to keep every one",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Schedule",
+          "JsonName": "schedule",
+          "Description": "when it runs by itself, as cron; null or empty for one that only runs when asked",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SelectedVolumes",
+          "JsonName": "selectedVolumes",
+          "Description": "the volumes to back up when not all of them, as a JSON list written out as text; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "StopBeforeBackup",
+          "JsonName": "stopBeforeBackup",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Tags",
+          "JsonName": "tags",
+          "Description": "as a JSON list written out as text; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TargetName",
+          "JsonName": "targetName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Description": "container or stack, as it was given: any other word is kept and then backs up nothing",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetBackupDestinationsAnswer",
+      "Fields": [
+        {
+          "Name": "BackupFlags",
+          "JsonName": "backupFlags",
+          "Description": "more that restic is given for a backup; left out of the list",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "EnvVars",
+          "JsonName": "envVars",
+          "Description": "what the store is signed in to with, by the names restic reads them under; sent where one destination is read, made or changed, and left out of the list",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Flags",
+          "JsonName": "flags",
+          "Description": "the flags of a backup and of a restore together, as JSON written out as text; null for none. Sent, it is taken as the flags of a backup",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HasCacert",
+          "JsonName": "hasCacert",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "HasTlsClientCert",
+          "JsonName": "hasTlsClientCert",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "HostPath",
+          "JsonName": "hostPath",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
+          }
+        },
+        {
+          "Name": "LastTestAt",
+          "JsonName": "lastTestAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "LastTestError",
+          "JsonName": "lastTestError",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LastTestStatus",
+          "JsonName": "lastTestStatus",
+          "Description": "how the last try of it went: success, failed or needs_init; null for one never tried",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Policies",
+          "JsonName": "policies",
+          "Description": "how the store is looked after by itself, as JSON written out as text: whether and when it is pruned, checked and verified",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Repository",
+          "JsonName": "repository",
+          "Description": "where the backups are kept, as restic names it: a folder's path, or an address that opens with rest:, s3:, b2:, azure: or gs:",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "RestoreFlags",
+          "JsonName": "restoreFlags",
+          "Description": "more that restic is given for a restore; left out of the list",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetBackupDestinationsByIdAnswer",
+      "Fields": [
+        {
+          "Name": "BackupFlags",
+          "JsonName": "backupFlags",
+          "Description": "more that restic is given for a backup; left out of the list",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "EnvVars",
+          "JsonName": "envVars",
+          "Description": "what the store is signed in to with, by the names restic reads them under; sent where one destination is read, made or changed, and left out of the list",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Flags",
+          "JsonName": "flags",
+          "Description": "the flags of a backup and of a restore together, as JSON written out as text; null for none. Sent, it is taken as the flags of a backup",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HasCacert",
+          "JsonName": "hasCacert",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "HasTlsClientCert",
+          "JsonName": "hasTlsClientCert",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "HostPath",
+          "JsonName": "hostPath",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
+          }
+        },
+        {
+          "Name": "LastTestAt",
+          "JsonName": "lastTestAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "LastTestError",
+          "JsonName": "lastTestError",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LastTestStatus",
+          "JsonName": "lastTestStatus",
+          "Description": "how the last try of it went: success, failed or needs_init; null for one never tried",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Policies",
+          "JsonName": "policies",
+          "Description": "how the store is looked after by itself, as JSON written out as text: whether and when it is pruned, checked and verified",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Repository",
+          "JsonName": "repository",
+          "Description": "where the backups are kept, as restic names it: a folder's path, or an address that opens with rest:, s3:, b2:, azure: or gs:",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "RestoreFlags",
+          "JsonName": "restoreFlags",
+          "Description": "more that restic is given for a restore; left out of the list",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        }
+      ]
+    },
     {
       "Name": "GetBackupInstanceAnswer",
       "Fields": [
@@ -878,6 +1706,866 @@
             "Type": "String"
           },
           "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "GetBackupSnapshotsAnswer",
+      "Fields": [
+        {
+          "Name": "Hostname",
+          "JsonName": "hostname",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Paths",
+          "JsonName": "paths",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "ShortId",
+          "JsonName": "shortId",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Tags",
+          "JsonName": "tags",
+          "Description": "what Dockhand marked it with: its own instance, the configuration, the environment, container or stack, and the name",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Time",
+          "JsonName": "time",
+          "Description": "when it was taken, as restic writes it",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetBackupSnapshotsByIdBrowseAnswer",
+      "Fields": [
+        {
+          "Name": "Entries",
+          "JsonName": "entries",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetBackupSnapshotsByIdBrowseAnswerEntries"
+            }
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetBackupSnapshotsByIdBrowseAnswerEntries",
+      "Fields": [
+        {
+          "Name": "Atime",
+          "JsonName": "atime",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "Ctime",
+          "JsonName": "ctime",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "Gid",
+          "JsonName": "gid",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Inode",
+          "JsonName": "inode",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Mode",
+          "JsonName": "mode",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Mtime",
+          "JsonName": "mtime",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Permissions",
+          "JsonName": "permissions",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Size",
+          "JsonName": "size",
+          "Description": "bytes, for a file",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Description": "dir or file, in restic's words",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Uid",
+          "JsonName": "uid",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetBackupSnapshotsByIdMetadataAnswer",
+      "Fields": [
+        {
+          "Name": "BackupTime",
+          "JsonName": "backupTime",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "Container",
+          "JsonName": "container",
+          "Description": "for a container: Docker's own record of it as it was, with its variables and labels taken out",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "Any"
+            }
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HasStackFiles",
+          "JsonName": "hasStackFiles",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Stack",
+          "JsonName": "stack",
+          "Description": "for a stack: the files that were taken with it",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "GetBackupSnapshotsByIdMetadataAnswerStack"
+          }
+        },
+        {
+          "Name": "TargetName",
+          "JsonName": "targetName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Version",
+          "JsonName": "version",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Volumes",
+          "JsonName": "volumes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetBackupSnapshotsByIdMetadataAnswerVolumes"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetBackupSnapshotsByIdMetadataAnswerStack",
+      "Description": "for a stack: the files that were taken with it",
+      "Fields": [
+        {
+          "Name": "ComposeFileName",
+          "JsonName": "composeFileName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ExcludedBindDirs",
+          "JsonName": "excludedBindDirs",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "FileList",
+          "JsonName": "fileList",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetBackupSnapshotsByIdMetadataAnswerStackFileList"
+            }
+          }
+        },
+        {
+          "Name": "SecretKeys",
+          "JsonName": "secretKeys",
+          "Description": "the names of the stack's secrets, never their values",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetBackupSnapshotsByIdMetadataAnswerStackFileList",
+      "Fields": [
+        {
+          "Name": "Bytes",
+          "JsonName": "bytes",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Path",
+          "JsonName": "path",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetBackupSnapshotsByIdMetadataAnswerVolumes",
+      "Fields": [
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Source",
+          "JsonName": "source",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetBackupSnapshotsDiffAnswer",
+      "Fields": [
+        {
+          "Name": "Added",
+          "JsonName": "added",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "MetadataChanged",
+          "JsonName": "metadataChanged",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Modified",
+          "JsonName": "modified",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Raw",
+          "JsonName": "raw",
+          "Description": "what restic printed, a JSON line for each change",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Removed",
+          "JsonName": "removed",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetBackupStackDirListingAnswer",
+      "Fields": [
+        {
+          "Name": "ComposeFile",
+          "JsonName": "composeFile",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Entries",
+          "JsonName": "entries",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetBackupStackDirListingAnswerEntries"
+            }
+          }
+        },
+        {
+          "Name": "HostPath",
+          "JsonName": "hostPath",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Kind",
+          "JsonName": "kind",
+          "Description": "candidate or listed for a folder that was found, tar for a stack only its compose file is known of, unknown or helper-failed with the reason",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LocalStackDir",
+          "JsonName": "localStackDir",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Reason",
+          "JsonName": "reason",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetBackupStackDirListingAnswerEntries",
+      "Fields": [
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Size",
+          "JsonName": "size",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetBackupStackPathAnswer",
+      "Fields": [
+        {
+          "Name": "ComposeFile",
+          "JsonName": "composeFile",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Entries",
+          "JsonName": "entries",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "GetBackupStackPathAnswerEntries"
+            }
+          }
+        },
+        {
+          "Name": "HostPath",
+          "JsonName": "hostPath",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Kind",
+          "JsonName": "kind",
+          "Description": "candidate or listed for a folder that was found, tar for a stack only its compose file is known of, unknown or helper-failed with the reason",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LocalStackDir",
+          "JsonName": "localStackDir",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Reason",
+          "JsonName": "reason",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "GetBackupStackPathAnswerEntries",
+      "Fields": [
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Size",
+          "JsonName": "size",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupConfigsAnswer",
+      "Fields": [
+        {
+          "Name": "AllVolumes",
+          "JsonName": "allVolumes",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "DestinationId",
+          "JsonName": "destinationId",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Description": "the environment the container or stack is on; null for one saved with none, which cannot be run",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "BackupConfigID"
+          }
+        },
+        {
+          "Name": "LastBackupAt",
+          "JsonName": "lastBackupAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "LastBackupStatus",
+          "JsonName": "lastBackupStatus",
+          "Description": "success, warning, skipped or failed; null for one never run",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Options",
+          "JsonName": "options",
+          "Description": "more of how it is backed up, as JSON written out as text; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Retention",
+          "JsonName": "retention",
+          "Description": "how many snapshots are kept, as JSON written out as text: keepLast, keepDaily, keepWeekly, keepMonthly, keepYearly; null to keep every one",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Schedule",
+          "JsonName": "schedule",
+          "Description": "when it runs by itself, as cron; null or empty for one that only runs when asked",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SelectedVolumes",
+          "JsonName": "selectedVolumes",
+          "Description": "the volumes to back up when not all of them, as a JSON list written out as text; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "StopBeforeBackup",
+          "JsonName": "stopBeforeBackup",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Tags",
+          "JsonName": "tags",
+          "Description": "as a JSON list written out as text; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TargetName",
+          "JsonName": "targetName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Description": "container or stack, as it was given: any other word is kept and then backs up nothing",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupConfigsByIdRunAnswer",
+      "Fields": [
+        {
+          "Name": "Code",
+          "JsonName": "code",
+          "Description": "for one that failed, the kind of failure: VALIDATION, RESTIC or UNKNOWN",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ExecutionId",
+          "JsonName": "executionId",
+          "Description": "the run, among those GET /api/schedules/executions lists",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "JobId",
+          "JsonName": "jobId",
+          "Description": "the job the backup runs as, for a caller that asked for one: GET /api/jobs/{id} then answers the rest as its result",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Reason",
+          "JsonName": "reason",
+          "Description": "for one that was skipped, why: Backup cancelled for one that was stopped",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Retention",
+          "JsonName": "retention",
+          "Description": "applied when older snapshots were looked through for ones to drop, none when the backup keeps every one",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SnapshotId",
+          "JsonName": "snapshotId",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Description": "success, warning, skipped or error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Summary",
+          "JsonName": "summary",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostBackupConfigsByIdRunAnswerSummary"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupConfigsByIdRunAnswerSummary",
+      "Fields": [
+        {
+          "Name": "DataAdded",
+          "JsonName": "dataAdded",
+          "Description": "bytes the store grew by",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "FilesChanged",
+          "JsonName": "filesChanged",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "FilesNew",
+          "JsonName": "filesNew",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "FilesUnmodified",
+          "JsonName": "filesUnmodified",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "SnapshotId",
+          "JsonName": "snapshotId",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TotalBytesProcessed",
+          "JsonName": "totalBytesProcessed",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "TotalFilesProcessed",
+          "JsonName": "totalFilesProcessed",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupConfigsByIdStopAnswer",
+      "Fields": [
+        {
+          "Name": "Stopped",
+          "JsonName": "stopped",
+          "Description": "whether anything was running to stop",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
         }
       ]
     },
@@ -895,7 +2583,8 @@
           "Name": "DestinationId",
           "JsonName": "destinationId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
           },
           "Required": true
         },
@@ -1024,6 +2713,179 @@
       ]
     },
     {
+      "Name": "PostBackupDestinationsAnswer",
+      "Fields": [
+        {
+          "Name": "BackupFlags",
+          "JsonName": "backupFlags",
+          "Description": "more that restic is given for a backup; left out of the list",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "EnvVars",
+          "JsonName": "envVars",
+          "Description": "what the store is signed in to with, by the names restic reads them under; sent where one destination is read, made or changed, and left out of the list",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Flags",
+          "JsonName": "flags",
+          "Description": "the flags of a backup and of a restore together, as JSON written out as text; null for none. Sent, it is taken as the flags of a backup",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HasCacert",
+          "JsonName": "hasCacert",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "HasTlsClientCert",
+          "JsonName": "hasTlsClientCert",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "HostPath",
+          "JsonName": "hostPath",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
+          }
+        },
+        {
+          "Name": "LastTestAt",
+          "JsonName": "lastTestAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "LastTestError",
+          "JsonName": "lastTestError",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LastTestStatus",
+          "JsonName": "lastTestStatus",
+          "Description": "how the last try of it went: success, failed or needs_init; null for one never tried",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Policies",
+          "JsonName": "policies",
+          "Description": "how the store is looked after by itself, as JSON written out as text: whether and when it is pruned, checked and verified",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Repository",
+          "JsonName": "repository",
+          "Description": "where the backups are kept, as restic names it: a folder's path, or an address that opens with rest:, s3:, b2:, azure: or gs:",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "RestoreFlags",
+          "JsonName": "restoreFlags",
+          "Description": "more that restic is given for a restore; left out of the list",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupDestinationsByIdInitAnswer",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Message",
+          "JsonName": "message",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupDestinationsByIdRotateKeyAnswer",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
       "Name": "PostBackupDestinationsByIdRotateKeyRequest",
       "Fields": [
         {
@@ -1045,6 +2907,77 @@
       ]
     },
     {
+      "Name": "PostBackupDestinationsByIdTaskAnswer",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "JobId",
+          "JsonName": "jobId",
+          "Description": "the job the work runs as, for a caller that asked for one",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Output",
+          "JsonName": "output",
+          "Description": "what restic printed",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Stats",
+          "JsonName": "stats",
+          "Description": "for the stats task: what the store holds",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostBackupDestinationsByIdTaskAnswerStats"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupDestinationsByIdTaskAnswerStats",
+      "Description": "for the stats task: what the store holds",
+      "Fields": [
+        {
+          "Name": "Snapshots",
+          "JsonName": "snapshots",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "TotalFiles",
+          "JsonName": "totalFiles",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "TotalSize",
+          "JsonName": "totalSize",
+          "Type": {
+            "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
       "Name": "PostBackupDestinationsByIdTaskRequest",
       "Fields": [
         {
@@ -1054,6 +2987,76 @@
             "Type": "String"
           },
           "Required": true
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupDestinationsByIdTestAnswer",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NeedsInit",
+          "JsonName": "needsInit",
+          "Description": "nothing answered as a repository there: one not made yet, and one that could not be reached, read alike",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Description": "for a saved destination: success, failed or needs_init",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupDestinationsByIdVerifyAnswer",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "JobId",
+          "JsonName": "jobId",
+          "Description": "the job the work runs as, for a caller that asked for one",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Output",
+          "JsonName": "output",
+          "Description": "what restic printed",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
         }
       ]
     },
@@ -1158,6 +3161,41 @@
       ]
     },
     {
+      "Name": "PostBackupDestinationsTestAnswer",
+      "Fields": [
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "NeedsInit",
+          "JsonName": "needsInit",
+          "Description": "nothing answered as a repository there: one not made yet, and one that could not be reached, read alike",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Description": "for a saved destination: success, failed or needs_init",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
       "Name": "PostBackupDestinationsTestRequest",
       "Fields": [
         {
@@ -1171,7 +3209,8 @@
           "Name": "DestinationId",
           "JsonName": "destinationId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
           }
         },
         {
@@ -1208,13 +3247,340 @@
       ]
     },
     {
+      "Name": "PostBackupRestoreAnswer",
+      "Fields": [
+        {
+          "Name": "Code",
+          "JsonName": "code",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "ExecutionId",
+          "JsonName": "executionId",
+          "Type": {
+            "Type": "Integer"
+          }
+        },
+        {
+          "Name": "JobId",
+          "JsonName": "jobId",
+          "Description": "the job the restore runs as, for a caller that asked for one",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "PostRestore",
+          "JsonName": "postRestore",
+          "Description": "what was done with the container or stack once its data was back",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostBackupRestoreAnswerPostRestore"
+          }
+        },
+        {
+          "Name": "RestoredVolumes",
+          "JsonName": "restoredVolumes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Status",
+          "JsonName": "status",
+          "Description": "success, warning or error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TargetPath",
+          "JsonName": "targetPath",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupRestoreAnswerPostRestore",
+      "Description": "what was done with the container or stack once its data was back",
+      "Fields": [
+        {
+          "Name": "Action",
+          "JsonName": "action",
+          "Description": "none, start or recreate",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Ok",
+          "JsonName": "ok",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupRestorePreviewAnswer",
+      "Fields": [
+        {
+          "Name": "BackupTime",
+          "JsonName": "backupTime",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "Error",
+          "JsonName": "error",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HasMetadata",
+          "JsonName": "hasMetadata",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "HasStackFiles",
+          "JsonName": "hasStackFiles",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "SnapshotId",
+          "JsonName": "snapshotId",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SourceEnvironmentId",
+          "JsonName": "sourceEnvironmentId",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
+          }
+        },
+        {
+          "Name": "SourceSecretKeys",
+          "JsonName": "sourceSecretKeys",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Targets",
+          "JsonName": "targets",
+          "Description": "with includeTargets: where each volume and the stack's files would be written",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostBackupRestorePreviewAnswerTargets"
+          }
+        },
+        {
+          "Name": "VolumeSources",
+          "JsonName": "volumeSources",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "VolumeTypes",
+          "JsonName": "volumeTypes",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Volumes",
+          "JsonName": "volumes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupRestorePreviewAnswerTargets",
+      "Description": "with includeTargets: where each volume and the stack's files would be written",
+      "Fields": [
+        {
+          "Name": "HelperOk",
+          "JsonName": "helperOk",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "StackFiles",
+          "JsonName": "stackFiles",
+          "Description": "where a stack's files would be written; null for a snapshot that holds none",
+          "Type": {
+            "Type": "Reference",
+            "ReferenceName": "PostBackupRestorePreviewAnswerTargetsStackFiles"
+          }
+        },
+        {
+          "Name": "Unresolved",
+          "JsonName": "unresolved",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostBackupRestorePreviewAnswerTargetsUnresolved"
+            }
+          }
+        },
+        {
+          "Name": "Volumes",
+          "JsonName": "volumes",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "Reference",
+              "ReferenceName": "PostBackupRestorePreviewAnswerTargetsVolumes"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupRestorePreviewAnswerTargetsStackFiles",
+      "Description": "where a stack's files would be written; null for a snapshot that holds none",
+      "Fields": [
+        {
+          "Name": "HasData",
+          "JsonName": "hasData",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TargetDir",
+          "JsonName": "targetDir",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "WillWrite",
+          "JsonName": "willWrite",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupRestorePreviewAnswerTargetsUnresolved",
+      "Fields": [
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Reason",
+          "JsonName": "reason",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupRestorePreviewAnswerTargetsVolumes",
+      "Fields": [
+        {
+          "Name": "HasData",
+          "JsonName": "hasData",
+          "Description": "what is there now: has-data, empty or missing",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Key",
+          "JsonName": "key",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Origin",
+          "JsonName": "origin",
+          "Description": "how the target was come by: in-place-metadata, loose-files or clone",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Target",
+          "JsonName": "target",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Description": "volume or bind",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
       "Name": "PostBackupRestorePreviewRequest",
       "Fields": [
         {
           "Name": "DestinationId",
           "JsonName": "destinationId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
           },
           "Required": true
         },
@@ -1294,10 +3660,12 @@
         {
           "Name": "VolumeDestinations",
           "JsonName": "volumeDestinations",
+          "Description": "where a volume of the snapshot is to go: the volume as the snapshot names it, and the volume or the path on the host to put it in",
           "Type": {
-            "Type": "Dictionary",
+            "Type": "List",
             "NestedItem": {
-              "Type": "Any"
+              "Type": "Reference",
+              "ReferenceName": "PostBackupRestorePreviewRequestVolumeDestinations"
             }
           }
         },
@@ -1309,6 +3677,25 @@
             "NestedItem": {
               "Type": "String"
             }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupRestorePreviewRequestVolumeDestinations",
+      "Fields": [
+        {
+          "Name": "Target",
+          "JsonName": "target",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Volume",
+          "JsonName": "volume",
+          "Type": {
+            "Type": "String"
           }
         }
       ]
@@ -1327,7 +3714,8 @@
           "Name": "DestinationId",
           "JsonName": "destinationId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
           },
           "Required": true
         },
@@ -1399,13 +3787,12 @@
         {
           "Name": "VolumeDestinations",
           "JsonName": "volumeDestinations",
+          "Description": "where a volume of the snapshot is to go: the volume as the snapshot names it, whether the target is a volume or a path on the host, and the target",
           "Type": {
             "Type": "List",
             "NestedItem": {
-              "Type": "Dictionary",
-              "NestedItem": {
-                "Type": "Any"
-              }
+              "Type": "Reference",
+              "ReferenceName": "PostBackupRestoreRequestVolumeDestinations"
             }
           }
         },
@@ -1417,6 +3804,53 @@
             "NestedItem": {
               "Type": "String"
             }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupRestoreRequestVolumeDestinations",
+      "Fields": [
+        {
+          "Name": "Kind",
+          "JsonName": "kind",
+          "Description": "volume or path",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Target",
+          "JsonName": "target",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Volume",
+          "JsonName": "volume",
+          "Type": {
+            "Type": "String"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PostBackupRestoreStopAnswer",
+      "Fields": [
+        {
+          "Name": "Stopped",
+          "JsonName": "stopped",
+          "Description": "whether anything was running to stop",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
           }
         }
       ]
@@ -1442,13 +3876,47 @@
       ]
     },
     {
+      "Name": "PostBackupSnapshotsBatchDeleteAnswer",
+      "Fields": [
+        {
+          "Name": "Deleted",
+          "JsonName": "deleted",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Skipped",
+          "JsonName": "skipped",
+          "Description": "the ones that are not this Dockhand's, or are not there",
+          "Type": {
+            "Type": "List",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Success",
+          "JsonName": "success",
+          "Type": {
+            "Type": "Boolean"
+          }
+        }
+      ]
+    },
+    {
       "Name": "PostBackupSnapshotsBatchDeleteRequest",
       "Fields": [
         {
           "Name": "DestinationId",
           "JsonName": "destinationId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
           },
           "Required": true
         },
@@ -1466,6 +3934,141 @@
       ]
     },
     {
+      "Name": "PutBackupConfigsByIdAnswer",
+      "Fields": [
+        {
+          "Name": "AllVolumes",
+          "JsonName": "allVolumes",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "DestinationId",
+          "JsonName": "destinationId",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
+          }
+        },
+        {
+          "Name": "Enabled",
+          "JsonName": "enabled",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "EnvironmentId",
+          "JsonName": "environmentId",
+          "Description": "the environment the container or stack is on; null for one saved with none, which cannot be run",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "EnvironmentID"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "BackupConfigID"
+          }
+        },
+        {
+          "Name": "LastBackupAt",
+          "JsonName": "lastBackupAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "LastBackupStatus",
+          "JsonName": "lastBackupStatus",
+          "Description": "success, warning, skipped or failed; null for one never run",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Options",
+          "JsonName": "options",
+          "Description": "more of how it is backed up, as JSON written out as text; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Retention",
+          "JsonName": "retention",
+          "Description": "how many snapshots are kept, as JSON written out as text: keepLast, keepDaily, keepWeekly, keepMonthly, keepYearly; null to keep every one",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Schedule",
+          "JsonName": "schedule",
+          "Description": "when it runs by itself, as cron; null or empty for one that only runs when asked",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "SelectedVolumes",
+          "JsonName": "selectedVolumes",
+          "Description": "the volumes to back up when not all of them, as a JSON list written out as text; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "StopBeforeBackup",
+          "JsonName": "stopBeforeBackup",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "Tags",
+          "JsonName": "tags",
+          "Description": "as a JSON list written out as text; null for none",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "TargetName",
+          "JsonName": "targetName",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Type",
+          "JsonName": "type",
+          "Description": "container or stack, as it was given: any other word is kept and then backs up nothing",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        }
+      ]
+    },
+    {
       "Name": "PutBackupConfigsByIdRequest",
       "Fields": [
         {
@@ -1479,7 +4082,8 @@
           "Name": "DestinationId",
           "JsonName": "destinationId",
           "Type": {
-            "Type": "Integer"
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
           }
         },
         {
@@ -1579,6 +4183,134 @@
           "JsonName": "keepYearly",
           "Type": {
             "Type": "Integer"
+          }
+        }
+      ]
+    },
+    {
+      "Name": "PutBackupDestinationsByIdAnswer",
+      "Fields": [
+        {
+          "Name": "BackupFlags",
+          "JsonName": "backupFlags",
+          "Description": "more that restic is given for a backup; left out of the list",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "CreatedAt",
+          "JsonName": "createdAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "EnvVars",
+          "JsonName": "envVars",
+          "Description": "what the store is signed in to with, by the names restic reads them under; sent where one destination is read, made or changed, and left out of the list",
+          "Type": {
+            "Type": "Dictionary",
+            "NestedItem": {
+              "Type": "String"
+            }
+          }
+        },
+        {
+          "Name": "Flags",
+          "JsonName": "flags",
+          "Description": "the flags of a backup and of a restore together, as JSON written out as text; null for none. Sent, it is taken as the flags of a backup",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "HasCacert",
+          "JsonName": "hasCacert",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "HasTlsClientCert",
+          "JsonName": "hasTlsClientCert",
+          "Type": {
+            "Type": "Boolean"
+          }
+        },
+        {
+          "Name": "HostPath",
+          "JsonName": "hostPath",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Id",
+          "JsonName": "id",
+          "Type": {
+            "Type": "ID",
+            "ReferenceName": "BackupDestinationID"
+          }
+        },
+        {
+          "Name": "LastTestAt",
+          "JsonName": "lastTestAt",
+          "Type": {
+            "Type": "DateTime"
+          }
+        },
+        {
+          "Name": "LastTestError",
+          "JsonName": "lastTestError",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "LastTestStatus",
+          "JsonName": "lastTestStatus",
+          "Description": "how the last try of it went: success, failed or needs_init; null for one never tried",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Name",
+          "JsonName": "name",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Policies",
+          "JsonName": "policies",
+          "Description": "how the store is looked after by itself, as JSON written out as text: whether and when it is pruned, checked and verified",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "Repository",
+          "JsonName": "repository",
+          "Description": "where the backups are kept, as restic names it: a folder's path, or an address that opens with rest:, s3:, b2:, azure: or gs:",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "RestoreFlags",
+          "JsonName": "restoreFlags",
+          "Description": "more that restic is given for a restore; left out of the list",
+          "Type": {
+            "Type": "String"
+          }
+        },
+        {
+          "Name": "UpdatedAt",
+          "JsonName": "updatedAt",
+          "Type": {
+            "Type": "DateTime"
           }
         }
       ]

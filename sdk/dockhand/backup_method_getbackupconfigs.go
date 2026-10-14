@@ -4,7 +4,6 @@ package dockhand
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -15,7 +14,7 @@ import (
 // GetBackupConfigsResponse is the result of GetBackupConfigs.
 type GetBackupConfigsResponse struct {
 	HttpResponse *http.Response
-	Answer       json.RawMessage
+	Answer       []GetBackupConfigsAnswer
 }
 
 // Answered reports whether the server answered with a body that was decoded:

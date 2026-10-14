@@ -1234,6 +1234,22 @@
         {
           "Name": "ScheduleTypeDeployLogReconcile",
           "Value": "deploy_log_reconcile"
+        },
+        {
+          "Name": "ScheduleTypeBackup",
+          "Value": "backup"
+        },
+        {
+          "Name": "ScheduleTypeRepoPrune",
+          "Value": "repo_prune"
+        },
+        {
+          "Name": "ScheduleTypeRepoCheck",
+          "Value": "repo_check"
+        },
+        {
+          "Name": "ScheduleTypeRepoVerify",
+          "Value": "repo_verify"
         }
       ]
     }

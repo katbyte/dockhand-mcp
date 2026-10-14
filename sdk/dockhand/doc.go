@@ -38,7 +38,7 @@
 //
 // # Ids
 //
-// EnvironmentID, NotificationID, RegistryID, UserID, RoleID, GitRepositoryID, GitCredentialID, GitStackID, SecretProviderID, ConfigSetID, TagID, TemplateSourceID are kinds of id the package tells apart, each a bare named type over
+// EnvironmentID, NotificationID, RegistryID, UserID, RoleID, GitRepositoryID, GitCredentialID, GitStackID, SecretProviderID, ConfigSetID, TagID, TemplateSourceID, BackupDestinationID, BackupConfigID are kinds of id the package tells apart, each a bare named type over
 // the int or string the document declares, so that one kind where another goes
 // does not compile. Where an id sits among the options it is held by value and
 // sent when not zero. int(id) and SeriesID(n) convert one value, client.IDs and
@@ -86,6 +86,7 @@
 //   - dockhand-preference-answers
 //   - dockhand-secret-provider-answers
 //   - dockhand-git-answers
+//   - dockhand-backup-answers
 //   - dockhand-job-accept
 //   - dockhand-unsaid-flags
 //   - dockhand-dates

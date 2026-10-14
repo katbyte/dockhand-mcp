@@ -4,26 +4,52 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
 // DeleteBackupDestinationsByIdResponse is the result of DeleteBackupDestinationsById.
+//
+// Answer is the DeleteBackupDestinationsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type DeleteBackupDestinationsByIdResponse struct {
 	HttpResponse *http.Response
+	Answer       *DeleteBackupDestinationsByIdAnswer
+	*DeleteBackupDestinationsByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteBackupDestinationsByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteBackupDestinationsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteBackupDestinationsByIdResponse) Record() (DeleteBackupDestinationsByIdAnswer, error) {
+	if r.Answer == nil {
+		return DeleteBackupDestinationsByIdAnswer{}, errors.New("DeleteBackupDestinationsById answered no DeleteBackupDestinationsByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // DeleteBackupDestinationsById calls DELETE /api/backup/destinations/{id}. Delete a backup destination and unregister all its maintenance and dependent backup-config schedules.
-func (c Client) DeleteBackupDestinationsById(ctx context.Context, id int) (result DeleteBackupDestinationsByIdResponse, err error) {
+func (c Client) DeleteBackupDestinationsById(ctx context.Context, id BackupDestinationID) (result DeleteBackupDestinationsByIdResponse, err error) {
+	result.DeleteBackupDestinationsByIdAnswer = &DeleteBackupDestinationsByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
 		},
 		HTTPMethod: http.MethodDelete,
 		Operation:  "DeleteBackupDestinationsById",
-		Path:       fmt.Sprintf("/api/backup/destinations/%d", id),
+		Path:       fmt.Sprintf("/api/backup/destinations/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -39,6 +65,13 @@ func (c Client) DeleteBackupDestinationsById(ctx context.Context, id int) (resul
 	if err != nil {
 		return
 	}
+
+	var answer DeleteBackupDestinationsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
+		return
+	}
+	result.DeleteBackupDestinationsByIdAnswer = result.Answer
 
 	return
 }

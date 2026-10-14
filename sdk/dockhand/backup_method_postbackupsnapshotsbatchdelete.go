@@ -4,18 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
 // PostBackupSnapshotsBatchDeleteResponse is the result of PostBackupSnapshotsBatchDelete.
+//
+// Answer is the PostBackupSnapshotsBatchDeleteAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type PostBackupSnapshotsBatchDeleteResponse struct {
 	HttpResponse *http.Response
+	Answer       *PostBackupSnapshotsBatchDeleteAnswer
+	*PostBackupSnapshotsBatchDeleteAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostBackupSnapshotsBatchDeleteResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostBackupSnapshotsBatchDeleteAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostBackupSnapshotsBatchDeleteResponse) Record() (PostBackupSnapshotsBatchDeleteAnswer, error) {
+	if r.Answer == nil {
+		return PostBackupSnapshotsBatchDeleteAnswer{}, errors.New("PostBackupSnapshotsBatchDelete answered no PostBackupSnapshotsBatchDeleteAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostBackupSnapshotsBatchDelete calls POST /api/backup/snapshots/batch-delete. Forget and prune several snapshots from one destination in a single restic forget --prune, with per-snapshot ownership and environment access gates.
 func (c Client) PostBackupSnapshotsBatchDelete(ctx context.Context, input PostBackupSnapshotsBatchDeleteRequest) (result PostBackupSnapshotsBatchDeleteResponse, err error) {
+	result.PostBackupSnapshotsBatchDeleteAnswer = &PostBackupSnapshotsBatchDeleteAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -43,6 +67,13 @@ func (c Client) PostBackupSnapshotsBatchDelete(ctx context.Context, input PostBa
 	if err != nil {
 		return
 	}
+
+	var answer PostBackupSnapshotsBatchDeleteAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
+		return
+	}
+	result.PostBackupSnapshotsBatchDeleteAnswer = result.Answer
 
 	return
 }

@@ -4,18 +4,42 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"net/http"
 
 	"github.com/katbyte/pandorest/client"
 )
 
 // PostBackupRestoreStopResponse is the result of PostBackupRestoreStop.
+//
+// Answer is the PostBackupRestoreStopAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type PostBackupRestoreStopResponse struct {
 	HttpResponse *http.Response
+	Answer       *PostBackupRestoreStopAnswer
+	*PostBackupRestoreStopAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r PostBackupRestoreStopResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the PostBackupRestoreStopAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r PostBackupRestoreStopResponse) Record() (PostBackupRestoreStopAnswer, error) {
+	if r.Answer == nil {
+		return PostBackupRestoreStopAnswer{}, errors.New("PostBackupRestoreStop answered no PostBackupRestoreStopAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // PostBackupRestoreStop calls POST /api/backup/restore/stop. Cancel a running restore — kills the restore helper for a given snapshotId, or all restore helpers when snapshotId is omitted.
 func (c Client) PostBackupRestoreStop(ctx context.Context, input PostBackupRestoreStopRequest) (result PostBackupRestoreStopResponse, err error) {
+	result.PostBackupRestoreStopAnswer = &PostBackupRestoreStopAnswer{}
 	opts := client.RequestOptions{
 		ContentType: "application/json",
 		ExpectedStatusCodes: []int{
@@ -43,6 +67,13 @@ func (c Client) PostBackupRestoreStop(ctx context.Context, input PostBackupResto
 	if err != nil {
 		return
 	}
+
+	var answer PostBackupRestoreStopAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
+		return
+	}
+	result.PostBackupRestoreStopAnswer = result.Answer
 
 	return
 }

@@ -12,10 +12,10 @@ import (
 func TestOperationGetBackupSnapshots(t *testing.T) {
 	t.Parallel()
 
-	c, s := newOperationServer(t, 200, "application/json", "{}")
+	c, s := newOperationServer(t, 200, "application/json", "[{}]")
 	result, err := c.GetBackupSnapshots(t.Context(), GetBackupSnapshotsOptions{
-		ConfigId:        new(7),
-		DestinationId:   new(7),
+		ConfigId:        BackupConfigID(7),
+		DestinationId:   BackupDestinationID(7),
 		AllDestinations: new(true),
 	})
 	if err != nil {
@@ -37,8 +37,8 @@ func TestOperationGetBackupSnapshots(t *testing.T) {
 	// an answer that does not decode is an error, with the response
 	c, _ = newOperationServer(t, 200, "application/json", "<html>")
 	result, err = c.GetBackupSnapshots(t.Context(), GetBackupSnapshotsOptions{
-		ConfigId:        new(7),
-		DestinationId:   new(7),
+		ConfigId:        BackupConfigID(7),
+		DestinationId:   BackupDestinationID(7),
 		AllDestinations: new(true),
 	})
 	if err == nil || client.StatusCode(err) != 0 || result.HttpResponse == nil {
@@ -48,8 +48,8 @@ func TestOperationGetBackupSnapshots(t *testing.T) {
 	// a status the operation does not document is an error, with the response
 	c, _ = newOperationServer(t, 418, "text/plain", "no")
 	result, err = c.GetBackupSnapshots(t.Context(), GetBackupSnapshotsOptions{
-		ConfigId:        new(7),
-		DestinationId:   new(7),
+		ConfigId:        BackupConfigID(7),
+		DestinationId:   BackupDestinationID(7),
 		AllDestinations: new(true),
 	})
 	if client.StatusCode(err) != 418 || result.HttpResponse == nil {
@@ -57,7 +57,7 @@ func TestOperationGetBackupSnapshots(t *testing.T) {
 	}
 
 	// the options may be left out, and two are refused before any request
-	c, s = newOperationServer(t, 200, "application/json", "{}")
+	c, s = newOperationServer(t, 200, "application/json", "[{}]")
 	if _, err = c.GetBackupSnapshots(t.Context()); err != nil {
 		t.Errorf("without options = %v", err)
 	}

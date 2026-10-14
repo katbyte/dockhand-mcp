@@ -383,3 +383,55 @@ func (c Client) ForgetGitRepositoryCredential(ctx context.Context, id int) (resu
 
 	return result, nil
 }
+
+// ForgetBackupConfigSchedule has a backup configuration run only when it is asked to, and says what it keeps from then on. PutBackupConfigsById
+// cannot: it leaves an empty schedule out of what it sends, and Dockhand keeps the one it is not sent. What to keep is always sent beside it, since
+// Dockhand left to itself drops it when a schedule goes and keeps it when there was none to go: nil keeps every snapshot, which only a
+// configuration with no schedule can.
+func (c Client) ForgetBackupConfigSchedule(ctx context.Context, id BackupConfigID, keep *PutBackupConfigsByIdRequestRetention) (result PutBackupConfigsByIdResponse, err error) {
+	fields := map[string]any{"schedule": "", "retention": nil}
+	if keep != nil {
+		fields["retention"] = keep
+	}
+
+	var model PutBackupConfigsByIdAnswer
+	resp, err := c.sendExactly(ctx, http.MethodPut, fmt.Sprintf("/api/backup/configs/%d", id), fields, &model)
+	if resp != nil {
+		result.HttpResponse = resp.Response
+	}
+	if err != nil {
+		return result, err
+	}
+	result.Answer = &model
+
+	return result, nil
+}
+
+// BackupDestinationFlags names which of the flags a backup destination gives restic are to be forgotten: the ones for a backup, and the ones for a
+// restore.
+type BackupDestinationFlags struct {
+	Backup, Restore bool
+}
+
+// ForgetBackupDestinationFlags takes the flags named away from a backup destination, which then gives restic none of them. PutBackupDestinationsById
+// cannot: it leaves an empty value out of what it sends, and Dockhand keeps what it is not sent.
+func (c Client) ForgetBackupDestinationFlags(ctx context.Context, id BackupDestinationID, which BackupDestinationFlags) (result PutBackupDestinationsByIdResponse, err error) {
+	forgotten := map[string]string{}
+	for field, named := range map[string]bool{"backupFlags": which.Backup, "restoreFlags": which.Restore} {
+		if named {
+			forgotten[field] = ""
+		}
+	}
+
+	var model PutBackupDestinationsByIdAnswer
+	resp, err := c.sendExactly(ctx, http.MethodPut, fmt.Sprintf("/api/backup/destinations/%d", id), forgotten, &model)
+	if resp != nil {
+		result.HttpResponse = resp.Response
+	}
+	if err != nil {
+		return result, err
+	}
+	result.Answer = &model
+
+	return result, nil
+}

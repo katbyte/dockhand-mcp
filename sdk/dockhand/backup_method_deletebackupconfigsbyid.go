@@ -4,16 +4,40 @@ package dockhand
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/katbyte/pandorest/client"
 )
 
 // DeleteBackupConfigsByIdResponse is the result of DeleteBackupConfigsById.
+//
+// Answer is the DeleteBackupConfigsByIdAnswer answered, nil when the server answered none (a 204), which
+// Answered tells. The same record is embedded, so res.Answer.Name may be read as
+// res.Name; when nothing was answered the embedded record is a zero one, so that
+// read is empty rather than a panic. Only the method sets the two; a response built
+// by hand sets both or neither.
 type DeleteBackupConfigsByIdResponse struct {
 	HttpResponse *http.Response
+	Answer       *DeleteBackupConfigsByIdAnswer
+	*DeleteBackupConfigsByIdAnswer
+}
+
+// Answered reports whether the server answered with a body that was decoded:
+// false for a 204, or a call that failed before one came.
+func (r DeleteBackupConfigsByIdResponse) Answered() bool { return r.Answer != nil }
+
+// Record is the DeleteBackupConfigsByIdAnswer answered, as a value to change and write back, or an
+// error when the server answered none.
+func (r DeleteBackupConfigsByIdResponse) Record() (DeleteBackupConfigsByIdAnswer, error) {
+	if r.Answer == nil {
+		return DeleteBackupConfigsByIdAnswer{}, errors.New("DeleteBackupConfigsById answered no DeleteBackupConfigsByIdAnswer")
+	}
+
+	return *r.Answer, nil
 }
 
 // DeleteBackupConfigsByIdOptions holds the query and header parameters of DeleteBackupConfigsById.
@@ -38,7 +62,7 @@ func (o DeleteBackupConfigsByIdOptions) ToQuery() *client.QueryParams {
 }
 
 // DeleteBackupConfigsById calls DELETE /api/backup/configs/{id}. Delete a backup configuration and unregister its schedule, optionally forgetting its snapshots too.
-func (c Client) DeleteBackupConfigsById(ctx context.Context, id int, options ...DeleteBackupConfigsByIdOptions) (result DeleteBackupConfigsByIdResponse, err error) {
+func (c Client) DeleteBackupConfigsById(ctx context.Context, id BackupConfigID, options ...DeleteBackupConfigsByIdOptions) (result DeleteBackupConfigsByIdResponse, err error) {
 	if len(options) > 1 {
 		err = fmt.Errorf("DeleteBackupConfigsById takes one options struct at most, not %d", len(options))
 		return
@@ -48,6 +72,7 @@ func (c Client) DeleteBackupConfigsById(ctx context.Context, id int, options ...
 		option = options[0]
 	}
 
+	result.DeleteBackupConfigsByIdAnswer = &DeleteBackupConfigsByIdAnswer{}
 	opts := client.RequestOptions{
 		ExpectedStatusCodes: []int{
 			http.StatusOK,
@@ -55,7 +80,7 @@ func (c Client) DeleteBackupConfigsById(ctx context.Context, id int, options ...
 		HTTPMethod:    http.MethodDelete,
 		Operation:     "DeleteBackupConfigsById",
 		OptionsObject: option,
-		Path:          fmt.Sprintf("/api/backup/configs/%d", id),
+		Path:          fmt.Sprintf("/api/backup/configs/%s", url.PathEscape(strconv.Itoa(int(id)))),
 	}
 
 	req, err := c.Client.NewRequest(ctx, opts)
@@ -71,6 +96,13 @@ func (c Client) DeleteBackupConfigsById(ctx context.Context, id int, options ...
 	if err != nil {
 		return
 	}
+
+	var answer DeleteBackupConfigsByIdAnswer
+	result.Answer = &answer
+	if err = resp.Unmarshal(result.Answer); err != nil {
+		return
+	}
+	result.DeleteBackupConfigsByIdAnswer = result.Answer
 
 	return
 }

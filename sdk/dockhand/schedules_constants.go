@@ -45,6 +45,10 @@ const (
 	ScheduleTypeEnvUpdateCheck     ScheduleType = "env_update_check"
 	ScheduleTypeImagePrune         ScheduleType = "image_prune"
 	ScheduleTypeDeployLogReconcile ScheduleType = "deploy_log_reconcile"
+	ScheduleTypeBackup             ScheduleType = "backup"
+	ScheduleTypeRepoPrune          ScheduleType = "repo_prune"
+	ScheduleTypeRepoCheck          ScheduleType = "repo_check"
+	ScheduleTypeRepoVerify         ScheduleType = "repo_verify"
 )
 
 // PossibleValuesForScheduleType returns every value of ScheduleType.
@@ -56,6 +60,10 @@ func PossibleValuesForScheduleType() []string {
 		string(ScheduleTypeEnvUpdateCheck),
 		string(ScheduleTypeImagePrune),
 		string(ScheduleTypeDeployLogReconcile),
+		string(ScheduleTypeBackup),
+		string(ScheduleTypeRepoPrune),
+		string(ScheduleTypeRepoCheck),
+		string(ScheduleTypeRepoVerify),
 	}
 }
 
