@@ -73,7 +73,7 @@ func TestRegisterAllKinds(t *testing.T) {
 	}
 }
 
-// The surface is 16 tools: 8 that read, 7 that write and 1 that deletes. A tool added, merged, removed or moved between kinds changes these on
+// The surface is 225 tools: 96 that read, 93 that write and 36 that delete. A tool added, merged, removed or moved between kinds changes these on
 // purpose, and this is where that is said.
 func TestSurfaceSize(t *testing.T) {
 	t.Parallel()
@@ -83,8 +83,8 @@ func TestSurfaceSize(t *testing.T) {
 	for _, kind := range kinds {
 		counts[kind]++
 	}
-	if len(kinds) != 203 || counts["read"] != 86 || counts["write"] != 84 || counts["delete"] != 33 {
-		t.Errorf("surface = %d tools: %v, want 203 with 86 read, 84 write, 33 delete", len(kinds), counts)
+	if len(kinds) != 225 || counts["read"] != 96 || counts["write"] != 93 || counts["delete"] != 36 {
+		t.Errorf("surface = %d tools: %v, want 225 with 96 read, 93 write, 36 delete", len(kinds), counts)
 	}
 }
 

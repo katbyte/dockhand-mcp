@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- 22 tools for Dockhand's backups, in a group of their own (`backups`): where backups are kept, what is backed up and when, what was taken, and getting it back
+- run a backup now or stop one, with how it went answered or followed as a job
+- look into a snapshot before trusting it: its files, what changed since the one before, and one file read or saved
+- restore to where it was, to a folder or to other volumes; replacing what is there asks to be confirmed, and nothing is started afterwards unless asked
+- check, prune and repair a destination, and change its password
+- the Go client knows what every backup call answers
+
 ## 0.1.0 (2026-10-12)
 
 First release: an MCP server, a command-line tool and a Go client for Dockhand.

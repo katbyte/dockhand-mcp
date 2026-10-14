@@ -153,6 +153,15 @@ var Toolsets = map[string][]string{
 		"secret_provider_list", "secret_provider_test", "secret_provider_keys",
 		"secret_provider_create", "secret_provider_edit", "secret_provider_delete",
 	},
+	// backups, which a Dockhand has only when it was started with them on: the destinations it keeps them in and whether each is sound, the backups
+	// of containers and stacks with when each last ran, and the snapshots they took, each one looked into, read from, compared and fetched to this
+	// machine; with --enable-write save and change a destination and look after its repository, make, change and run a backup, and restore a
+	// snapshot beside what is there; and with --enable-delete remove a destination, a backup or a snapshot, and restore over what is there
+	"backups": {
+		"backup_destination_list", "backup_destination_test", "backup_destination_check", "backup_list", "backup_snapshot_list", "backup_snapshot_get", "backup_snapshot_files", "backup_snapshot_read", "backup_snapshot_diff", "backup_snapshot_download",
+		"backup_destination_create", "backup_destination_edit", "backup_destination_task", "backup_destination_rotate_key", "backup_create", "backup_edit", "backup_run", "backup_stop", "backup_restore",
+		"backup_destination_delete", "backup_delete", "backup_snapshot_delete",
+	},
 	// stacks deployed from git: the credentials Dockhand signs in to a git server with, the repositories it keeps, and the git stacks made from them,
 	// each with the commit it runs from and whether its branch has a newer one; with --enable-write save and change a credential and a repository,
 	// make a git stack, change how one is kept, fetch its repository and deploy it; and with --enable-delete remove a credential or a repository, or
@@ -180,7 +189,7 @@ var Toolsets = map[string][]string{
 }
 
 // ToolsetOrder is the order a listing shows the sets in: the base first.
-var ToolsetOrder = []string{mcpregistry.Core, "audit", "manage", "containers", "files", "updates", "stacks", "resources", "setup", "schedules", "registries", "notifications", "vulnerabilities", "users", "settings", "secrets", "git", "templates", "tags"}
+var ToolsetOrder = []string{mcpregistry.Core, "audit", "manage", "containers", "files", "updates", "stacks", "resources", "setup", "schedules", "registries", "notifications", "vulnerabilities", "users", "settings", "secrets", "backups", "git", "templates", "tags"}
 
 // EssentialTools is the curated preset selected by --allow-tools essential: enough to see what the Dockhand is, which hosts it manages, what runs on
 // them and what a container has written.
@@ -375,9 +384,29 @@ var toolHints = map[string]mcpregistry.Hints{
 	// a file's permissions and owner are set over the ones it had; given again it changes nothing
 	"container_file_perms": {Idempotent: true},
 	// nothing in the container is changed: a file is written on the machine the tool runs on, and one that is there is never written over
-	"container_file_download": {WritesHere: true},
-	"icon_download":           {WritesHere: true},
-	"image_export":            {WritesHere: true},
+	"container_file_download":  {WritesHere: true},
+	"icon_download":            {WritesHere: true},
+	"image_export":             {WritesHere: true},
+	"backup_snapshot_download": {WritesHere: true},
+	// a destination is added, with the repository Dockhand makes there when there is none, and nothing that was there is changed; a second by the
+	// same name is refused
+	"backup_destination_create": {Additive: true},
+	// what Dockhand keeps for a destination is set over what it kept, which can leave every backup to it failing; given again it changes nothing
+	"backup_destination_edit": {Idempotent: true},
+	// restic clears out or mends a repository, which changes what it holds, each time it is asked
+	"backup_destination_task": {},
+	// a repository's password is replaced, and the one it had no longer opens it; given again the current password is no longer the one it has
+	"backup_destination_rotate_key": {},
+	// a backup is added, and nothing is backed up by saving it; a second of the same thing to the same destination is refused
+	"backup_create": {Additive: true},
+	// what Dockhand keeps for a backup is set over what it kept; given again it changes nothing
+	"backup_edit": {Idempotent: true},
+	// a snapshot is added, and the older ones the backup no longer keeps are removed, each time it is asked
+	"backup_run": {},
+	// a backup or a restore that is running is ended part way; with nothing running it changes nothing
+	"backup_stop": {Idempotent: true},
+	// a snapshot's data is written to a host, and in place it replaces everything the volumes held
+	"backup_restore": {},
 	// a stack is added, and nothing that was there is changed; a name that is taken is refused
 	"stack_create": {Additive: true},
 	// what Dockhand keeps for a stack is replaced with what is given; given again it changes nothing more
@@ -467,6 +496,9 @@ func queueTools(r *registry) {
 	registerSettingsTools(r)
 	registerPreferenceTools(r)
 	registerSecretProviderTools(r)
+	registerBackupDestinationTools(r)
+	registerBackupTools(r)
+	registerBackupSnapshotTools(r)
 	registerGitTools(r)
 	registerGitStackTools(r)
 	registerExportTools(r)
