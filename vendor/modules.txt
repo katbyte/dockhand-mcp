@@ -9,16 +9,17 @@ github.com/go-viper/mapstructure/v2/internal/errors
 # github.com/google/jsonschema-go v0.4.3
 ## explicit; go 1.23.0
 github.com/google/jsonschema-go/jsonschema
-# github.com/gookit/color v1.6.1
+# github.com/gookit/color v1.6.3
 ## explicit; go 1.18
 github.com/gookit/color
 # github.com/inconshreveable/mousetrap v1.1.0
 ## explicit; go 1.18
 github.com/inconshreveable/mousetrap
-# github.com/katbyte/go-kt v0.6.4
-## explicit; go 1.26
-github.com/katbyte/go-kt/chttp
+# github.com/katbyte/go-kt v0.8.0
+## explicit; go 1.27.0
 github.com/katbyte/go-kt/clog
+github.com/katbyte/go-kt/httpc
+github.com/katbyte/go-kt/httpd
 github.com/katbyte/go-kt/internal/addresses
 github.com/katbyte/go-kt/mcp/acctest
 github.com/katbyte/go-kt/mcp/registry
@@ -28,7 +29,7 @@ github.com/katbyte/go-kt/parallel
 github.com/katbyte/go-kt/test/env
 github.com/katbyte/go-kt/test/replayproxy
 github.com/katbyte/go-kt/version
-# github.com/katbyte/pandorest v0.8.2
+# github.com/katbyte/pandorest v0.13.3
 ## explicit; go 1.27.0
 github.com/katbyte/pandorest
 github.com/katbyte/pandorest/client
@@ -38,6 +39,7 @@ github.com/katbyte/pandorest/differ
 github.com/katbyte/pandorest/generator
 github.com/katbyte/pandorest/importer
 github.com/katbyte/pandorest/importer/workarounds
+github.com/katbyte/pandorest/jsonrpc
 github.com/katbyte/pandorest/openapi
 github.com/katbyte/pandorest/sweep
 # github.com/modelcontextprotocol/go-sdk v1.8.0
@@ -121,15 +123,15 @@ github.com/yosida95/uritemplate/v3
 # go.yaml.in/yaml/v3 v3.0.5
 ## explicit; go 1.16
 go.yaml.in/yaml/v3
-# golang.org/x/oauth2 v0.35.0
-## explicit; go 1.24.0
+# golang.org/x/oauth2 v0.37.0
+## explicit; go 1.26.0
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
 # golang.org/x/sync v0.24.0
 ## explicit; go 1.26.0
 golang.org/x/sync/errgroup
-# golang.org/x/sys v0.41.0
-## explicit; go 1.24.0
+# golang.org/x/sys v0.49.0
+## explicit; go 1.26.0
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
 golang.org/x/sys/windows

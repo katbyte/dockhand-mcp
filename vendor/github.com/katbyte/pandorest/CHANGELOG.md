@@ -1,3 +1,72 @@
+## v0.13.3 (2026-10-20)
+
+- **A bare `make` formats and builds.** It used to stop at the first rule, which builds a lint tool.
+
+## v0.13.2 (2026-10-19)
+
+- **More of the repositories' checks pass on the generated code.** Neighbouring arguments of one type are written together, a document's own "Deprecated, ..." wording becomes Go's, an error no longer opens with the operation's name, and a list of records in a test is written the short way.
+- **The package doc names Bytes's argument as the method does.**
+
+## v0.13.1 (2026-10-18)
+
+- **A grouped package's tests pass staticcheck.** Their options live in another package, so every deprecated option a generated test set was a finding. The line now says why it is set.
+
+## v0.13.0 (2026-10-18)
+
+- **The generated code passes the linters.** A repository can turn off the generated-code exclusion and lint the package it checks in like the rest of its code. Every method and test file moves on regenerate; nothing a caller wrote changes. Three checks stay for the repository to exclude for the package, as [docs/generated-code.md](docs/generated-code.md) says.
+- **pandorest lints what it writes.** `make lint-generated` renders the test packages and lints them the same way, and CI runs it.
+
+## v0.12.0 (2026-10-18)
+
+- **A missing id's answer is checked, not just noted.** The sweep's `MissingIDs` now takes, per kind, the id, the GET to probe through and the answer wanted (`"404"`, or `"nothing"`), and fails the run when the server answers anything else, so a server that changes what a missing id gets fails CI instead of changing a line in the log. A service's file moves from `"ItemID": "000"` to `"ItemID": {ID: "000", Operation: "GetItem", Want: "404"}`.
+- **Uncalled can count through one client's field.** With two services in one repository a call to one's `GetItems` counted for the other's. `generator.UncalledOn(defs, root, "emby")` counts only what is reached through that field.
+- **A service can say its text answers are short.** With `TextAnswers` set, an answer labelled `text/plain` is read whole into a string and closed, instead of being left open in the response for the caller, who mostly never read it and so held the connection for good. One declared binary, or made a file by a workaround, stays a file.
+- **A generated list test answers in the list's own names.** The shared test server always wrote the first list's items and total names, so every list of a service's second paging shape read an empty page and its Complete and Each tests failed. Each test now hands the server the names its list answers with. The call in every generated list test gains those two names.
+
+## v0.11.0 (2026-10-14)
+
+- **The client is on go-kt v0.8.0, where chttp is now httpc.** Nothing about it changes, but a repository that takes go-kt v0.8.0 needs this release for the client to compile, so pandorest moves first and the generated packages follow.
+
+## v0.10.0 (2026-10-14)
+
+- **A service whose pages count from 0 can say so.** `FirstPage: new(0)` beside `ByPage` in a paging shape starts the pager at page 0 and counts the pages loaded from there. Unset is 1, as before.
+- **A generated test fills a list of ids with the kind's example.** It used `a` and `b`, or 1 and 2, so with a shape on the kind the method refused its own test's call before sending it. A list is now the example twice over, as a single id already was.
+- **The package doc names its own id kind.** The Ids section's example read `SeriesID(n)` in every package, so Radarr's said a name it does not have. It now names the package's first kind over its own base, `MovieID(n)` or `ItemID(s)`.
+
+## v0.9.1 (2026-10-13)
+
+- **A union member keeps every kind the document sends to it.** Where several kinds name one record, such as a mirror, a stripe and the raidz levels all being one vdev, one kind was kept at random, so two runs of the generator differed and a record of the other kinds was refused. Every kind is kept, in order, and a record of any of them is that member.
+- **`check` finds a call's method under its short name.** In a package per namespace it reported every method of a JSON-RPC service missing, since it looked for the full name. It now looks on each group's own client for the name the method is generated under, so one group's `Query` does not stand for another's.
+
+## v0.9.0 (2026-10-13)
+
+- **A server with no OpenAPI document can be generated from its own method list.** TrueNAS is retiring its REST API and describes its JSON-RPC methods instead. The config says `Document: config.JSONRPCDocument`, and each method becomes a call with its arguments in order, grouped by namespace.
+- **The package never sees a socket.** The repository writes the connection and hands it to `New` as a `client.Caller`. A refusal from the server is a `client.CallError` with its code, name and reason.
+- **Method names drop their namespace in a package per namespace.** `pool.query` is `c.Pool.Query`. The response type keeps the whole name.
+- **A record written out many times is one model, and an enum met in many places is one type.** Both are folded by what they hold, and named by the words their places share. A group named `Service` goes in `Service.group.json`.
+- **A query has three forms.** `Query` answers the list, `QueryOne` the first match and `QueryCount` how many. The two flags that choose the form are gone from the options, since the method sets them.
+- **A value that is one of several records can be a type of its own.** With `TypedUnions` on, it hands the record over as the member asked for and says which kind came. Off, it stays raw JSON, so no repository moves.
+- **A method that answers a file, or takes one, works.** It gets a `To` form that writes the file out, or takes files as readers at the end. The connection carries the file through `client.Downloader` and `client.Uploader`.
+- **A job's call can be had without the wait.** `<Name>Call` answers the method name and arguments for a connection that starts a job and follows it.
+- **The read sweep walks a service of calls.** Each read is called through the generated client, every answer judged as it came, and a refusal held to the error name its case expects.
+- **A program can read what each operation is.** Every package has `Operations`, a table of each operation with its method and path, its group, whether it changes nothing, runs as a job, is a query form, or carries a file. A repository regenerating on this version gains the one file.
+- **A flag in a record a call sends is left out unless set.** Changing a scrub's threshold no longer switches the scrub off.
+- **A list sent unset goes as an empty list.** The server reads null as no list at all.
+- **A method counts as a read by the roles that may call it.** `ReadRole` names the role, `Reads` and `NotReads` the exceptions, and the import refuses a name that is no method.
+- **A field can be held as a Go type the workaround names.** `NamedTypes` puts any type on any field. `client.Secret[T]` is the one for a value the server hides behind `********`, and prints as `***` so a logged record gives nothing away.
+- **An open field can be given a shape.** `DeclaredShapes` puts a declared record on a field the document leaves empty.
+- **Query filters are written for you.** `client.Where`, `client.Filters` and `client.AnyOf` build the nested lists the server reads.
+- **A date written as `{"$date": milliseconds}` is read and written.** `client.DateObjectMillis` names the form.
+- **An enum's empty value is named `Empty`, and a value whose plain name another has is spelled out.** `!data` beside `data` becomes `NotData`.
+
+## v0.8.3 (2026-10-12)
+
+- **`KeepNull` reaches an answer declared inline.** It was checked before the operations were read, and an inline answer is a model only once its operation is, so a document with no components could name nothing. Dockhand's registry test answer.
+- **The import says when a text parameter named like a list is typed as one id.** Emby's `ExcludeItemIds` carries several ids in one text value, which only `Joined` says, and by name it came out as a single id with nothing said. The line names each such parameter and where it is.
+- **A service's `Notes` come before the Ids heading in `doc.go`**, where they landed under it and read as part of it.
+- **`Of` reads a model whose id is spelt `Id`.** Emby and Jellyfin capitalise theirs, and the lookup wanted the exact lower-case name, so the kind was refused as naming a model with no id. Embyfin got past it with a `Base` beside `Of`; that can go.
+- **The generated test of a joined list sets one form.** `JoinedLists` puts a list beside its string under one name on the wire, and the test set both on one call and then expected each alone, so every such test failed; on Emby that was 70 across 21 packages. The test now sets the string alone.
+
 ## v0.8.2 (2026-10-12)
 
 - **A name in both `Names` and `Joined` imports.** Prowlarr's `tags` is a joined string parameter and a field of fifteen models; v0.8.1 claimed the parameter by name first and then refused the `Joined` entry as reaching nothing, and without the entry refused the parameter as a string. The parameter is claimed as joined before it is claimed by name.

@@ -17,7 +17,12 @@ import (
 
 var pathParamRe = regexp.MustCompile(`\{([^}]+)\}`)
 
-const acceptHeader = "Accept"
+const (
+	acceptHeader = "Accept"
+	// textPlain is the media type of a short text answer, and binaryFormat the schema format that makes one a download instead.
+	textPlain    = "text/plain"
+	binaryFormat = "binary"
+)
 
 // importOperations builds every operation, grouped by tag.
 func (im *importer) importOperations() map[string]*definitions.Group {
@@ -56,6 +61,14 @@ func (im *importer) importOperations() map[string]*definitions.Group {
 			// a command the operation queues is an operation of its own, with the same request fixed to the command's name
 			commands := im.commandOperations(where, &o, op)
 			g.Operations = append(g.Operations, o)
+			// a query's one-record and count forms are operations of their own over the same method
+			for _, f := range im.queryForms(&o) {
+				if prev, ok := names[f.Name]; ok {
+					im.fail(fmt.Sprintf("%s: its %s form makes the method %s, which %s makes too", where, f.Call.Form, f.Name, prev))
+				}
+				names[f.Name] = where + " " + f.Call.Form
+				g.Operations = append(g.Operations, f)
+			}
 			for _, c := range commands {
 				if prev, ok := names[c.Name]; ok {
 					im.fail(fmt.Sprintf("%s: the command %s makes the method %s, which %s makes too", where, c.Command, c.Name, prev))
@@ -146,6 +159,9 @@ func (im *importer) pathName(method, path string) string {
 }
 
 func (im *importer) operation(method, path string, op *openapi.Operation) definitions.Operation {
+	if method == openapi.MethodCall {
+		return im.callOperation(path, op)
+	}
 	want := im.pathName(method, path)
 	switch {
 	case op.Name != "":
@@ -375,8 +391,9 @@ func (im *importer) responseBody(method, path, owner string, op *openapi.Operati
 			if other == "" {
 				other = openapi.SortedKeys(resp.Content)[0]
 			}
-			// text a workaround says is short enough to hold: read whole, where any other answer that is not JSON is a file
-			if resp.Content[other].Text {
+			// text a workaround says is short enough to hold, or text/plain on a service that says its text answers are short, is read
+			// whole, where any other answer that is not JSON is a file; a text/plain declared binary is a download, and stays one
+			if media := resp.Content[other]; media.Text || (im.cfg.TextAnswers && other == textPlain && (media.Schema == nil || media.Schema.Format != binaryFormat)) {
 				return &definitions.Body{ContentType: other, Type: definitions.TypeRef{Type: definitions.String}}
 			}
 			return &definitions.Body{ContentType: other, Type: definitions.TypeRef{Type: definitions.RawFile}}
@@ -423,7 +440,7 @@ func (im *importer) responseType(s *openapi.Schema, owner string) definitions.Ty
 	if s == nil {
 		return raw
 	}
-	if s.Type == openapi.TypeString && s.Format == "binary" {
+	if s.Type == openapi.TypeString && s.Format == binaryFormat {
 		return raw
 	}
 	if s.RefName() == "" && (s.Type == openapi.TypeObject || s.Type == "") && len(s.Properties) == 0 {
@@ -565,6 +582,7 @@ func (im *importer) pageable(o *definitions.Operation, paging *config.Paging) (p
 		StartIndexOption: start,
 		LimitOption:      limit,
 		ByPage:           paging.ByPage,
+		FirstPage:        paging.FirstPage,
 		ItemsField:       items.Name,
 		TotalField:       total.Name,
 		ItemType:         *items.Type.NestedItem,

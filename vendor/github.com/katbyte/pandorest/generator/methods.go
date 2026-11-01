@@ -22,6 +22,11 @@ func (g *gen) methodFile(o *definitions.Operation) string {
 
 	var b strings.Builder
 	g.writeResponse(&b, o, responseType)
+	if o.Call != nil {
+		g.writeCallMethod(&b, o, responseType)
+
+		return g.fileHeader(b.String())
+	}
 	if len(o.Options) > 0 {
 		g.declare(optionsType, "operation "+o.Name)
 		g.writeOptions(&b, o, optionsType)
@@ -63,6 +68,11 @@ func (g *gen) operationFile(o *definitions.Operation) string {
 // types package's.
 func (g *gen) groupMethodFile(o *definitions.Operation) string {
 	var b strings.Builder
+	if o.Call != nil {
+		g.writeCallMethod(&b, o, g.typeName(o.Name+"Response"))
+
+		return g.fileHeader(b.String())
+	}
 	g.writeMethod(&b, o, g.typeName(o.Name+"Response"), g.typeName(o.Name+"Options"))
 	if o.Pageable != nil {
 		g.writeCompleteMethod(&b, o, g.typeName(o.Name+"Options"))
@@ -95,7 +105,7 @@ func (g *gen) responseModel(o *definitions.Operation) (typ string, pointer bool)
 	case definitions.List, definitions.Dictionary, definitions.RawObject, definitions.Any:
 		return g.goType(t), false
 	case definitions.Reference:
-		if m := g.models[t.ReferenceName]; m != nil && len(m.Union) > 0 {
+		if m := g.models[t.ReferenceName]; m != nil && len(m.Union) > 0 && len(m.Members) == 0 {
 			return t.ReferenceName, false
 		}
 	default:
@@ -123,19 +133,31 @@ func (g *gen) writeResponse(b *strings.Builder, o *definitions.Operation, respon
 		g.checkEmbedded(o)
 	}
 	typ, _ := g.responseModel(o)
-	fmt.Fprintf(b, "type %s struct {\n\tHttpResponse *http.Response\n", responseType)
+	var fields []string
+	if o.Call == nil {
+		// a call has no response beyond its answer
+		fields = append(fields, "\tHttpResponse *http.Response\n")
+	}
 	if typ != "" {
-		fmt.Fprintf(b, "\tAnswer %s\n", typ)
+		fields = append(fields, fmt.Sprintf("\tAnswer %s\n", typ))
 	}
 	if embedded != "" {
-		fmt.Fprintf(b, "\t*%s\n", embedded)
+		fields = append(fields, fmt.Sprintf("\t*%s\n", embedded))
 	}
-	b.WriteString("}\n\n")
-	if typ != "" {
+	if len(fields) == 0 {
+		// a call that answers nothing
+		fmt.Fprintf(b, "type %s struct{}\n\n", responseType)
+	} else {
+		fmt.Fprintf(b, "type %s struct {\n%s}\n\n", responseType, strings.Join(fields, ""))
+	}
+	switch {
+	case typ != "" && o.Call != nil:
+		fmt.Fprintf(b, "// Answered reports whether the server answered and the answer was decoded:\n// false for a call that failed.\nfunc (r %s) Answered() bool { return r.Answer != nil }\n\n", responseType)
+	case typ != "":
 		fmt.Fprintf(b, "// Answered reports whether the server answered with a body that was decoded:\n// false for a 204, or a call that failed before one came.\nfunc (r %s) Answered() bool { return r.Answer != nil }\n\n", responseType)
 	}
 	if embedded != "" {
-		fmt.Fprintf(b, "// Record is the %[2]s answered, as a value to change and write back, or an\n// error when the server answered none.\nfunc (r %[1]s) Record() (%[2]s, error) {\n\tif r.Answer == nil {\n\t\treturn %[2]s{}, errors.New(\"%[3]s answered no %[2]s\")\n\t}\n\n\treturn *r.Answer, nil\n}\n\n", responseType, embedded, o.Name)
+		fmt.Fprintf(b, "// Record is the %[2]s answered, as a value to change and write back, or an\n// error when the server answered none.\nfunc (r %[1]s) Record() (%[2]s, error) {\n\tif r.Answer == nil {\n\t\treturn %[2]s{}, errors.New(\"no %[2]s answered by %[3]s\")\n\t}\n\n\treturn *r.Answer, nil\n}\n\n", responseType, embedded, o.Name)
 	}
 	if file {
 		fmt.Fprintf(b, readerMethods, responseType)
@@ -156,7 +178,7 @@ const readerMethods = `// Reader is the file's body, for the caller to read and 
 // answer, so a deferred Close is always safe. The body stays readable after
 // the result goes out of scope, and has no size or time limit of the client's:
 // the caller's context is the one bound on a slow read.
-func (r %[1]s) Reader() (io.ReadCloser, string) {
+func (r %[1]s) Reader() (body io.ReadCloser, contentType string) {
 	if r.HttpResponse == nil || r.HttpResponse.Body == nil {
 		return http.NoBody, ""
 	}
@@ -200,14 +222,14 @@ func (r %[1]s) WriteTo(w io.Writer) (int64, error) {
 	return client.Copy(w, r.HttpResponse.Body)
 }
 
-// Bytes reads the file whole, up to max bytes, and closes the body: a file
-// over max is a client.TooLargeError rather than cut short without a word.
-func (r %[1]s) Bytes(max int64) ([]byte, error) {
+// Bytes reads the file whole, up to limit bytes, and closes the body: a file
+// over the limit is a client.TooLargeError rather than cut short without a word.
+func (r %[1]s) Bytes(limit int64) ([]byte, error) {
 	if r.HttpResponse == nil || r.HttpResponse.Body == nil {
 		return nil, errors.New("no answer to read")
 	}
 
-	return client.ReadAtMost(r.HttpResponse.Body, max)
+	return client.ReadAtMost(r.HttpResponse.Body, limit)
 }
 
 `
@@ -272,13 +294,21 @@ func (g *gen) writeOptions(b *strings.Builder, o *definitions.Operation, options
 		{definitions.InHeader, "ToHeaders", "Headers"},
 		{definitions.InQuery, "ToQuery", "QueryParams"},
 	} {
-		fmt.Fprintf(b, "// %s returns the %s the options set.\n", in.method, strings.ToLower(in.where)+" parameters")
-		fmt.Fprintf(b, "func (o %s) %s() *client.%s {\n\tout := client.%s{}\n", optionsType, in.method, in.typ, in.typ)
+		var set strings.Builder
 		for _, opt := range o.Options {
 			if opt.In == in.where {
-				b.WriteString(g.appendOption(o, opt))
+				set.WriteString(g.appendOption(o, opt))
 			}
 		}
+		fmt.Fprintf(b, "// %s returns the %s the options set.\n", in.method, strings.ToLower(in.where)+" parameters")
+		if set.Len() == 0 {
+			// no option of this kind: nothing to build up
+			fmt.Fprintf(b, "func (o %s) %s() *client.%s {\n\treturn &client.%s{}\n}\n\n", optionsType, in.method, in.typ, in.typ)
+
+			continue
+		}
+		fmt.Fprintf(b, "func (o %s) %s() *client.%s {\n\tout := client.%s{}\n", optionsType, in.method, in.typ, in.typ)
+		b.WriteString(set.String())
 		b.WriteString("\treturn &out\n}\n\n")
 	}
 }
@@ -343,54 +373,69 @@ func (g *gen) appendOption(o *definitions.Operation, opt definitions.Option) str
 }
 
 // pathExpression renders the path with each placeholder filled from its
-// escaped argument.
+// escaped argument, the pieces joined with +.
 func (g *gen) pathExpression(o *definitions.Operation) string {
 	if len(o.PathParameters) == 0 {
-		return fmt.Sprintf("%q", o.Path)
+		return strconv.Quote(o.Path)
 	}
 	byName := map[string]definitions.PathParameter{}
 	for _, p := range o.PathParameters {
 		byName[p.Name] = p
 	}
-	var format strings.Builder
-	var args []string
+	var parts []string
 	rest := o.Path
 	for rest != "" {
 		open := strings.IndexByte(rest, '{')
 		closeIdx := strings.IndexByte(rest, '}')
 		if open < 0 || closeIdx < open {
-			format.WriteString(strings.ReplaceAll(rest, "%", "%%"))
+			parts = append(parts, strconv.Quote(rest))
 			break
 		}
-		format.WriteString(strings.ReplaceAll(rest[:open], "%", "%%"))
+		if open > 0 {
+			parts = append(parts, strconv.Quote(rest[:open]))
+		}
 		p := byName[rest[open+1:closeIdx]]
 		switch p.Type.Type {
-		case definitions.Integer, definitions.Integer64:
-			format.WriteString("%d")
-			args = append(args, p.Argument)
+		case definitions.Integer:
+			parts = append(parts, "strconv.Itoa("+p.Argument+")")
+		case definitions.Integer64:
+			parts = append(parts, "strconv.FormatInt("+p.Argument+", 10)")
 		case definitions.Double:
-			format.WriteString("%s")
-			args = append(args, "strconv.FormatFloat("+p.Argument+", 'f', -1, 64)")
+			parts = append(parts, "strconv.FormatFloat("+p.Argument+", 'f', -1, 64)")
 		case definitions.Reference:
-			format.WriteString("%s")
-			args = append(args, "url.PathEscape(string("+p.Argument+"))")
+			parts = append(parts, "url.PathEscape(string("+p.Argument+"))")
 		case definitions.DateTime, definitions.Date:
-			format.WriteString("%s")
-			args = append(args, "url.PathEscape("+p.Argument+g.dateAs(o, p.Name)+")")
+			parts = append(parts, "url.PathEscape("+p.Argument+g.dateAs(o, p.Name)+")")
 		case definitions.UnixSeconds, definitions.UnixMillis:
-			format.WriteString("%s")
-			args = append(args, p.Argument+".String()")
+			parts = append(parts, p.Argument+".String()")
 		case definitions.ID:
-			format.WriteString("%s")
-			args = append(args, "url.PathEscape("+g.idText(p.Type.ReferenceName, p.Argument)+")")
+			parts = append(parts, "url.PathEscape("+g.idText(p.Type.ReferenceName, p.Argument)+")")
 		default:
-			format.WriteString("%s")
-			args = append(args, "url.PathEscape("+p.Argument+")")
+			parts = append(parts, "url.PathEscape("+p.Argument+")")
 		}
 		rest = rest[closeIdx+1:]
 	}
 
-	return fmt.Sprintf("fmt.Sprintf(%q, %s)", format.String(), strings.Join(args, ", "))
+	return strings.Join(parts, " + ")
+}
+
+// signature joins a method's parameters, writing neighbours of one type together (id, index string) as gofmt's readers and
+// gocritic's paramTypeCombine expect.
+func signature(params ...string) string {
+	var out []string
+	for _, p := range params {
+		cut := strings.LastIndex(p, " ")
+		name, typ := p[:cut], p[cut+1:]
+		if n := len(out); n > 0 {
+			if prevCut := strings.LastIndex(out[n-1], " "); out[n-1][prevCut+1:] == typ && !strings.HasPrefix(typ, "...") {
+				out[n-1] = out[n-1][:prevCut] + ", " + name + " " + typ
+				continue
+			}
+		}
+		out = append(out, p)
+	}
+
+	return strings.Join(out, ", ")
 }
 
 // arguments renders the method's parameters after ctx, and the call that
@@ -488,7 +533,7 @@ func (g *gen) optionsVar(o *definitions.Operation) string {
 // variadic call was given, or the struct an inlined argument fills, refusing
 // more than one before any request is made.
 func (g *gen) writeOptionsPrelude(b *strings.Builder, o *definitions.Operation, method, optionsType string) {
-	g.writeOptionsPreludeFailing(b, o, method, optionsType, func(expr string) string { return "err = " + expr + "\n\t\treturn" })
+	g.writeOptionsPreludeFailing(b, o, method, optionsType, func(expr string) string { return "return result, " + expr })
 }
 
 // writeOptionsPreludeFailing is writeOptionsPrelude with fail saying how a
@@ -505,11 +550,11 @@ func (g *gen) writeOptionsPreludeFailing(b *strings.Builder, o *definitions.Oper
 		case opt.Type.Type == definitions.List:
 			fmt.Fprintf(b, "\tif len(%s) > 0 {\n\t\toption.%s = %s\n\t}\n\n", arg, opt.Field, arg)
 		default:
-			fmt.Fprintf(b, "\tif len(%s) > 1 {\n\t\t%s\n\t}\n", arg, fail(fmt.Sprintf("fmt.Errorf(\"%s takes one %s at most, not %%d\", len(%s))", method, arg, arg)))
+			fmt.Fprintf(b, "\tif len(%s) > 1 {\n\t\t%s\n\t}\n", arg, fail(fmt.Sprintf("fmt.Errorf(\"at most one %s for %s, not %%d\", len(%s))", arg, method, arg)))
 			fmt.Fprintf(b, "\tif len(%s) == 1 {\n\t\toption.%s = %s\n\t}\n\n", arg, opt.Field, held(opt, arg+"[0]"))
 		}
 	case g.optional(o):
-		fmt.Fprintf(b, "\tif len(options) > 1 {\n\t\t%s\n\t}\n", fail(fmt.Sprintf("fmt.Errorf(\"%s takes one options struct at most, not %%d\", len(options))", method)))
+		fmt.Fprintf(b, "\tif len(options) > 1 {\n\t\t%s\n\t}\n", fail(fmt.Sprintf("fmt.Errorf(\"at most one options struct for %s, not %%d\", len(options))", method)))
 		fmt.Fprintf(b, "\tvar option %s\n\tif len(options) == 1 {\n\t\toption = options[0]\n\t}\n\n", optionsType)
 	}
 }
@@ -540,26 +585,59 @@ func (g *gen) writeWaitForCommand(b *strings.Builder, o *definitions.Operation) 
 	b.WriteString("// runs out, and answers it as it stands: a command that failed is an error carrying what the server said, wrapping\n// client.ErrCommandFailed, and one still running when wait ran out wraps client.ErrCommandRunning, for a caller that takes\n// that as an answer. For a command queued by its own method, <Name>AndWait does both at once.\n")
 	fmt.Fprintf(b, "func (c Client) WaitForCommand(ctx context.Context, id %s, wait time.Duration) (result %s, err error) {\n", g.goType(get.PathParameters[0].Type), g.typeName(get.Name+"Response"))
 	b.WriteString("\tdeadline := time.Now().Add(wait)\n\tfor {\n")
-	fmt.Fprintf(b, "\t\tresult, err = c.%s(ctx, id)\n\t\tif err != nil || result.Answer == nil {\n\t\t\treturn\n\t\t}\n", get.Name)
-	fmt.Fprintf(b, "\t\tstatus := string(result.Answer.%s)\n", g.fieldFor(answer, set.Status))
+	fmt.Fprintf(b, "\t\tresult, err = c.%s(ctx, id)\n\t\tif err != nil || result.Answer == nil {\n\t\t\treturn result, err\n\t\t}\n", get.Name)
+	fmt.Fprintf(b, "\t\tstatus := %s\n", g.asText(answer, g.fieldFor(answer, set.Status)))
 	if len(set.Failed) > 0 {
 		// what the server said of it: its message, and its exception where the answer has one, since a server may put the useful part there
-		said := `""`
+		var parts []string
 		if message != "" {
-			said = "string(result.Answer." + message + ")"
+			parts = append(parts, g.asText(answer, message))
 		}
 		if exception := g.fieldFor(answer, "exception"); exception != "" {
-			said = "strings.TrimSpace(strings.Join([]string{" + said + ", string(result.Answer." + exception + ")}, \" \"))"
+			parts = append(parts, g.asText(answer, exception))
+		}
+		said := `""`
+		switch len(parts) {
+		case 1:
+			said = parts[0]
+		case 2:
+			said = "strings.TrimSpace(" + parts[0] + " + \" \" + " + parts[1] + ")"
 		}
 		format, args := "the command %v %s: %s: %w", "id, status, "+said
 		if name := g.fieldFor(answer, "name"); name != "" {
-			format, args = "the command %v %s %s: %s: %w", "id, string(result.Answer."+name+"), status, "+said
+			format, args = "the command %v %s %s: %s: %w", "id, "+g.asText(answer, name)+", status, "+said
 		}
-		fmt.Fprintf(b, "\t\tif slices.Contains(%s, status) {\n\t\t\terr = fmt.Errorf(%q, %s, client.ErrCommandFailed)\n\t\t\treturn\n\t\t}\n", goStrings(set.Failed), format, args)
+		fmt.Fprintf(b, "\t\tif slices.Contains(%s, status) {\n\t\t\treturn result, fmt.Errorf(%q, %s, client.ErrCommandFailed)\n\t\t}\n", goStrings(set.Failed), format, args)
 	}
-	fmt.Fprintf(b, "\t\tif slices.Contains(%s, status) {\n\t\t\treturn\n\t\t}\n", goStrings(set.Finished))
-	b.WriteString("\t\tif time.Now().After(deadline) {\n\t\t\terr = fmt.Errorf(\"the command %v is still %s after %s: %w\", id, status, wait, client.ErrCommandRunning)\n\t\t\treturn\n\t\t}\n")
-	b.WriteString("\t\tselect {\n\t\tcase <-ctx.Done():\n\t\t\terr = ctx.Err()\n\t\t\treturn\n\t\tcase <-time.After(CommandPoll):\n\t\t}\n\t}\n}\n")
+	fmt.Fprintf(b, "\t\tif slices.Contains(%s, status) {\n\t\t\treturn result, nil\n\t\t}\n", goStrings(set.Finished))
+	b.WriteString("\t\tif time.Now().After(deadline) {\n\t\t\treturn result, fmt.Errorf(\"the command %v is still %s after %s: %w\", id, status, wait, client.ErrCommandRunning)\n\t\t}\n")
+	b.WriteString("\t\tselect {\n\t\tcase <-ctx.Done():\n\t\t\treturn result, ctx.Err()\n\t\tcase <-time.After(CommandPoll):\n\t\t}\n\t}\n}\n")
+}
+
+// asText is the expression reading a model's field as a string: the field itself when it is one, converted when it is an enum or
+// another type of string.
+func (g *gen) asText(model, field string) string {
+	expr := "result.Answer." + field
+	if g.heldAs(model, field) == "string" {
+		return expr
+	}
+
+	return "string(" + expr + ")"
+}
+
+// heldAs is the Go type a model holds a field by, or "" when the model has no such field.
+func (g *gen) heldAs(model, field string) string {
+	m := g.models[model]
+	if m == nil {
+		return ""
+	}
+	for i := range m.Fields {
+		if m.Fields[i].Name == field {
+			return g.fieldType(m, &m.Fields[i])
+		}
+	}
+
+	return ""
 }
 
 // writeAndWait writes a command's AndWait: queued by its own method, then waited for.
@@ -576,9 +654,14 @@ func (g *gen) writeAndWait(b *strings.Builder, o *definitions.Operation) {
 	g.declare("Client."+method, "operation "+o.Name)
 	fmt.Fprintf(b, "\n// %s queues the %s command and waits for it as WaitForCommand does, answering it as it stands.\n", method, o.Command)
 	fmt.Fprintf(b, "func (c Client) %s(ctx context.Context, input %s, wait time.Duration) (result %s, err error) {\n", method, g.goType(o.Request.Type), g.typeName(get.Name+"Response"))
-	fmt.Fprintf(b, "\tqueued, err := c.%s(ctx, input)\n\tif err != nil {\n\t\treturn\n\t}\n", o.Name)
-	fmt.Fprintf(b, "\tif queued.Answer == nil {\n\t\terr = errors.New(\"%s answered no command to wait for\")\n\t\treturn\n\t}\n\n", o.Name)
-	fmt.Fprintf(b, "\treturn c.WaitForCommand(ctx, %s(queued.Answer.%s), wait)\n}\n", g.goType(get.PathParameters[0].Type), g.fieldFor(o.Response.Type.ReferenceName, "id"))
+	fmt.Fprintf(b, "\tqueued, err := c.%s(ctx, input)\n\tif err != nil {\n\t\treturn result, err\n\t}\n", o.Name)
+	fmt.Fprintf(b, "\tif queued.Answer == nil {\n\t\treturn result, errors.New(\"no command to wait for answered by %s\")\n\t}\n\n", o.Name)
+	// the id as the poll takes it, converted only when the answer holds it as something else
+	id, idType := "queued.Answer."+g.fieldFor(o.Response.Type.ReferenceName, "id"), g.goType(get.PathParameters[0].Type)
+	if g.heldAs(o.Response.Type.ReferenceName, g.fieldFor(o.Response.Type.ReferenceName, "id")) != idType {
+		id = idType + "(" + id + ")"
+	}
+	fmt.Fprintf(b, "\treturn c.WaitForCommand(ctx, %s, wait)\n}\n", id)
 }
 
 // queueing is the operation that queues a command's operation: the same method and path, holding the command set.
@@ -634,7 +717,7 @@ func (g *gen) writeShapeChecks(b *strings.Builder, o *definitions.Operation) {
 	for i := range o.PathParameters {
 		p := &o.PathParameters[i]
 		if p.Type.Type == definitions.ID && g.idShape(p.Type.ReferenceName) != "" {
-			fmt.Fprintf(b, "\tif err = %s.Check(); err != nil {\n\t\treturn\n\t}\n", p.Argument)
+			fmt.Fprintf(b, "\tif err := %s.Check(); err != nil {\n\t\treturn result, err\n\t}\n", p.Argument)
 			wrote = true
 		}
 	}
@@ -644,10 +727,10 @@ func (g *gen) writeShapeChecks(b *strings.Builder, o *definitions.Operation) {
 		field := ov + "." + opt.Field
 		switch {
 		case opt.Type.Type == definitions.ID && g.idShape(opt.Type.ReferenceName) != "":
-			fmt.Fprintf(b, "\tif %s {\n\t\tif err = %s.Check(); err != nil {\n\t\t\treturn\n\t\t}\n\t}\n", g.idCondition(opt.Type.ReferenceName, field), field)
+			fmt.Fprintf(b, "\tif %s {\n\t\tif err := %s.Check(); err != nil {\n\t\t\treturn result, err\n\t\t}\n\t}\n", g.idCondition(opt.Type.ReferenceName, field), field)
 			wrote = true
 		case opt.Type.Type == definitions.List && opt.Type.NestedItem != nil && opt.Type.NestedItem.Type == definitions.ID && g.idShape(opt.Type.NestedItem.ReferenceName) != "":
-			fmt.Fprintf(b, "\tfor _, id := range %s {\n\t\tif err = id.Check(); err != nil {\n\t\t\treturn\n\t\t}\n\t}\n", field)
+			fmt.Fprintf(b, "\tfor _, id := range %s {\n\t\tif err := id.Check(); err != nil {\n\t\t\treturn result, err\n\t\t}\n\t}\n", field)
 			wrote = true
 		}
 	}
@@ -671,12 +754,28 @@ var httpMethods = map[string]string{
 	"GET": "http.MethodGet", "POST": "http.MethodPost", "PUT": "http.MethodPut", "DELETE": "http.MethodDelete", "PATCH": "http.MethodPatch",
 }
 
+// statusNames are the net/http constants whose names are not their status text run together.
 var statusNames = map[int]string{
-	http.StatusOK: "http.StatusOK", http.StatusCreated: "http.StatusCreated", http.StatusAccepted: "http.StatusAccepted",
-	http.StatusNoContent: "http.StatusNoContent", http.StatusPartialContent: "http.StatusPartialContent",
-	http.StatusBadRequest:       "http.StatusBadRequest",
-	http.StatusMovedPermanently: "http.StatusMovedPermanently", http.StatusFound: "http.StatusFound", http.StatusSeeOther: "http.StatusSeeOther",
-	http.StatusNotModified: "http.StatusNotModified", http.StatusTemporaryRedirect: "http.StatusTemporaryRedirect", http.StatusPermanentRedirect: "http.StatusPermanentRedirect",
+	http.StatusNonAuthoritativeInfo: "http.StatusNonAuthoritativeInfo", http.StatusProxyAuthRequired: "http.StatusProxyAuthRequired", http.StatusTeapot: "http.StatusTeapot",
+}
+
+// statusName is the net/http constant for a status code, as Go source, or the number for one the package does not name.
+func statusName(code int) string {
+	if name, ok := statusNames[code]; ok {
+		return name
+	}
+	text := http.StatusText(code)
+	if text == "" {
+		return strconv.Itoa(code)
+	}
+
+	return "http.Status" + strings.Map(func(r rune) rune {
+		if unicode.IsLetter(r) || unicode.IsDigit(r) {
+			return r
+		}
+
+		return -1
+	}, text)
 }
 
 func (g *gen) writeMethod(b *strings.Builder, o *definitions.Operation, responseType, optionsType string) {
@@ -699,7 +798,7 @@ func (g *gen) writeMethod(b *strings.Builder, o *definitions.Operation, response
 		b.WriteString("//\n// Deprecated: the document marks this operation deprecated.\n")
 	}
 	fmt.Fprintf(b, "func (c Client) %s(%s) (result %s, err error) {\n",
-		o.Name, strings.Join(append([]string{"ctx context.Context"}, params...), ", "), responseType)
+		o.Name, signature(append([]string{"ctx context.Context"}, params...)...), responseType)
 	g.writeOptionsPrelude(b, o, o.Name, optionsType)
 	g.writeShapeChecks(b, o)
 	if o.Command != "" {
@@ -721,11 +820,7 @@ func (g *gen) writeMethod(b *strings.Builder, o *definitions.Operation, response
 	}
 	b.WriteString("\t\tExpectedStatusCodes: []int{\n")
 	for _, code := range o.ExpectedStatusCodes {
-		name, ok := statusNames[code]
-		if !ok {
-			name = strconv.Itoa(code)
-		}
-		fmt.Fprintf(b, "\t\t\t%s,\n", name)
+		fmt.Fprintf(b, "\t\t\t%s,\n", statusName(code))
 	}
 	b.WriteString("\t\t},\n")
 	fmt.Fprintf(b, "\t\tHTTPMethod: %s,\n", httpMethods[o.Method])
@@ -739,41 +834,41 @@ func (g *gen) writeMethod(b *strings.Builder, o *definitions.Operation, response
 	}
 	b.WriteString("\t}\n\n")
 
-	b.WriteString("\treq, err := c.Client.NewRequest(ctx, opts)\n\tif err != nil {\n\t\treturn\n\t}\n\n")
+	b.WriteString("\treq, err := c.Client.NewRequest(ctx, opts)\n\tif err != nil {\n\t\treturn result, err\n\t}\n\n")
 	if o.Request != nil {
 		if o.Request.Type.Type == definitions.RawFile {
-			b.WriteString("\tif err = req.SetBody(input, contentType); err != nil {\n\t\treturn\n\t}\n\n")
+			b.WriteString("\tif err := req.SetBody(input, contentType); err != nil {\n\t\treturn result, err\n\t}\n\n")
 		} else {
-			b.WriteString("\tif err = req.Marshal(input); err != nil {\n\t\treturn\n\t}\n\n")
+			b.WriteString("\tif err := req.Marshal(input); err != nil {\n\t\treturn result, err\n\t}\n\n")
 		}
 	}
 
 	b.WriteString("\tvar resp *client.Response\n\tresp, err = req.Execute(ctx)\n")
 	b.WriteString("\tif resp != nil {\n\t\tresult.HttpResponse = resp.Response\n\t}\n")
-	b.WriteString("\tif err != nil {\n\t\treturn\n\t}\n\n")
+	b.WriteString("\tif err != nil {\n\t\treturn result, err\n\t}\n\n")
 
 	if typ, pointer := g.responseModel(o); typ != "" {
 		if slices.Contains(o.ExpectedStatusCodes, http.StatusNoContent) {
 			// a 204 is a null result: no model
-			b.WriteString("\tif resp.StatusCode == http.StatusNoContent {\n\t\treturn\n\t}\n\n")
+			b.WriteString("\tif resp.StatusCode == http.StatusNoContent {\n\t\treturn result, nil\n\t}\n\n")
 		}
 		switch {
 		case o.Response.Text():
 			// text is held as it was sent, whatever the server calls it
 			b.WriteString("\tvar answer string\n\tresult.Answer = &answer\n")
-			b.WriteString("\tif err = resp.Text(result.Answer); err != nil {\n\t\treturn\n\t}\n\n")
+			b.WriteString("\tif err := resp.Text(result.Answer); err != nil {\n\t\treturn result, err\n\t}\n\n")
 		case pointer:
 			fmt.Fprintf(b, "\tvar answer %s\n\tresult.Answer = &answer\n", strings.TrimPrefix(typ, "*"))
-			b.WriteString("\tif err = resp.Unmarshal(result.Answer); err != nil {\n\t\treturn\n\t}\n")
+			b.WriteString("\tif err := resp.Unmarshal(result.Answer); err != nil {\n\t\treturn result, err\n\t}\n")
 			if embedded := g.embedded(o); embedded != "" {
 				fmt.Fprintf(b, "\tresult.%s = result.Answer\n", embeddedField(embedded))
 			}
 			b.WriteString("\n")
 		default:
-			b.WriteString("\tif err = resp.Unmarshal(&result.Answer); err != nil {\n\t\treturn\n\t}\n\n")
+			b.WriteString("\tif err := resp.Unmarshal(&result.Answer); err != nil {\n\t\treturn result, err\n\t}\n\n")
 		}
 	}
-	b.WriteString("\treturn\n}\n")
+	b.WriteString("\treturn result, nil\n}\n")
 }
 
 // writeCompleteResult declares the result of a list's pager.
@@ -806,7 +901,7 @@ func (g *gen) writeCompleteMethod(b *strings.Builder, o *definitions.Operation, 
 		fmt.Fprintf(b, "// %s calls %s page by page from options.%s until every\n", method, o.Name, p.StartIndexOption)
 		fmt.Fprintf(b, "// result is loaded. options.%s is the page size, client.DefaultPageSize when\n// unset.\n", p.LimitOption)
 	}
-	fmt.Fprintf(b, "func (c Client) %s(%s) (result %s, err error) {\n", method, strings.Join(append([]string{"ctx context.Context"}, params...), ", "), resultType)
+	fmt.Fprintf(b, "func (c Client) %s(%s) (result %s, err error) {\n", method, signature(append([]string{"ctx context.Context"}, params...)...), resultType)
 	g.writeOptionsPrelude(b, o, method, optionsType)
 	ov := g.optionsVar(o)
 	writePageSetup(b, p, ov, "\t")
@@ -814,10 +909,10 @@ func (g *gen) writeCompleteMethod(b *strings.Builder, o *definitions.Operation, 
 	fmt.Fprintf(b, "\t\tvar page %s\n", g.typeName(o.Name+"Response"))
 	fmt.Fprintf(b, "\t\tpage, err = c.%s(%s)\n", o.Name, strings.Join(append([]string{"ctx"}, call...), ", "))
 	b.WriteString("\t\tresult.LatestHttpResponse = page.HttpResponse\n")
-	b.WriteString("\t\tif err != nil {\n\t\t\terr = fmt.Errorf(\"loading results: %w\", err)\n\t\t\treturn\n\t\t}\n")
-	fmt.Fprintf(b, "\t\tif page.Answer == nil || len(page.Answer.%s) == 0 {\n\t\t\treturn\n\t\t}\n", p.ItemsField)
+	b.WriteString("\t\tif err != nil {\n\t\t\treturn result, fmt.Errorf(\"loading results: %w\", err)\n\t\t}\n")
+	fmt.Fprintf(b, "\t\tif page.Answer == nil || len(page.Answer.%s) == 0 {\n\t\t\treturn result, nil\n\t\t}\n", p.ItemsField)
 	fmt.Fprintf(b, "\t\tresult.Items = append(result.Items, page.Answer.%s...)\n", p.ItemsField)
-	writePageEnd(b, p, ov, "\t\t", "len(result.Items)")
+	writePageEnd(b, p, ov, "\t\t", "len(result.Items)", "return result, nil")
 	b.WriteString("\t}\n}\n")
 }
 
@@ -834,7 +929,7 @@ func (g *gen) writeEachMethod(b *strings.Builder, o *definitions.Operation, opti
 	b.WriteString("// loop that stops ends the paging:\n//\n")
 	fmt.Fprintf(b, "//\tfor item, err := range c.%s(ctx) {\n//\t\tif err != nil {\n//\t\t\treturn err\n//\t\t}\n//\t\tif found(item) {\n//\t\t\tbreak\n//\t\t}\n//\t}\n//\n", method)
 	fmt.Fprintf(b, "// An error is the last pair handed out, with a zero %s. The pages are asked for as %sComplete asks for them.\n", strings.TrimPrefix(itemType, "*"), o.Name)
-	fmt.Fprintf(b, "func (c Client) %s(%s) iter.Seq2[%s, error] {\n", method, strings.Join(append([]string{"ctx context.Context"}, params...), ", "), itemType)
+	fmt.Fprintf(b, "func (c Client) %s(%s) iter.Seq2[%s, error] {\n", method, signature(append([]string{"ctx context.Context"}, params...)...), itemType)
 	fmt.Fprintf(b, "\treturn func(yield func(%s, error) bool) {\n", itemType)
 	fmt.Fprintf(b, "\t\tvar zero %s\n", itemType)
 	g.writeOptionsPreludeFailing(b, o, method, optionsType, func(expr string) string { return "yield(zero, " + expr + ")\n\t\t\treturn" })
@@ -847,11 +942,11 @@ func (g *gen) writeEachMethod(b *strings.Builder, o *definitions.Operation, opti
 	fmt.Fprintf(b, "\t\t\tpage, err := c.%s(%s)\n", o.Name, strings.Join(append([]string{"ctx"}, call...), ", "))
 	b.WriteString("\t\t\tif err != nil {\n\t\t\t\tyield(zero, fmt.Errorf(\"loading results: %w\", err))\n\t\t\t\treturn\n\t\t\t}\n")
 	fmt.Fprintf(b, "\t\t\tif page.Answer == nil || len(page.Answer.%s) == 0 {\n\t\t\t\treturn\n\t\t\t}\n", p.ItemsField)
-	fmt.Fprintf(b, "\t\t\tfor _, item := range page.Answer.%s {\n\t\t\t\tif !yield(item, nil) {\n\t\t\t\t\treturn\n\t\t\t\t}\n\t\t\t}\n", p.ItemsField)
+	fmt.Fprintf(b, "\t\t\tfor i := range page.Answer.%[1]s {\n\t\t\t\tif !yield(page.Answer.%[1]s[i], nil) {\n\t\t\t\t\treturn\n\t\t\t\t}\n\t\t\t}\n", p.ItemsField)
 	if p.ByPage && p.LimitOption == "" {
 		fmt.Fprintf(b, "\t\t\tloaded += len(page.Answer.%s)\n", p.ItemsField)
 	}
-	writePageEnd(b, p, ov, "\t\t\t", "loaded")
+	writePageEnd(b, p, ov, "\t\t\t", "loaded", "return")
 	b.WriteString("\t\t}\n\t}\n}\n")
 }
 
@@ -866,36 +961,48 @@ func writePageSetup(b *strings.Builder, p *definitions.Pageable, ov, in string) 
 		fmt.Fprintf(b, "%s%s.%s = &limit\n", in, ov, p.LimitOption)
 	}
 	if p.ByPage {
-		fmt.Fprintf(b, "%[3]snumber := 1\n%[3]sif %[2]s.%[1]s != nil && *%[2]s.%[1]s > 0 {\n%[3]s\tnumber = *%[2]s.%[1]s\n%[3]s}\n", p.StartIndexOption, ov, in)
+		fmt.Fprintf(b, "%[3]snumber := %[4]d\n%[3]sif %[2]s.%[1]s != nil && *%[2]s.%[1]s > 0 {\n%[3]s\tnumber = *%[2]s.%[1]s\n%[3]s}\n", p.StartIndexOption, ov, in, p.First())
 		fmt.Fprintf(b, "%s%s.%s = &number\n", in, ov, p.StartIndexOption)
 	} else {
-		fmt.Fprintf(b, "%[3]sstart := 0\n%[3]sif %[2]s.%[1]s != nil {\n%[3]s\tstart = *%[2]s.%[1]s\n%[3]s}\n", p.StartIndexOption, ov, in)
+		fmt.Fprintf(b, "%[3]sstart := 0\n%[3]sif %[2]s.%[1]s != nil && *%[2]s.%[1]s > 0 {\n%[3]s\tstart = *%[2]s.%[1]s\n%[3]s}\n", p.StartIndexOption, ov, in)
 	}
 }
 
 // writePageEnd writes how a walk ends after a page, and moves to the next:
 // a short page is the last, and so is reaching the total when the server
 // reports one. loaded is the expression for how many results the walk has
-// handed out, which the walk by page number without a page size compares.
-func writePageEnd(b *strings.Builder, p *definitions.Pageable, ov, in, loaded string) {
+// handed out, which the walk by page number without a page size compares; ret is the return statement that ends the walk.
+func writePageEnd(b *strings.Builder, p *definitions.Pageable, ov, in, loaded, ret string) {
 	switch {
 	case p.ByPage && p.LimitOption == "":
 		fmt.Fprintf(b, "%s// the first page says how long a page is; a shorter one is the last, and\n", in)
 		fmt.Fprintf(b, "%s// so is the page that reaches the total, when the server reports one\n", in)
 		fmt.Fprintf(b, "%[2]sif limit == 0 {\n%[2]s\tlimit = len(page.Answer.%[1]s)\n%[2]s}\n", p.ItemsField, in)
-		fmt.Fprintf(b, "%[3]sif len(page.Answer.%[1]s) < limit || page.Answer.%[2]s > 0 && %[4]s >= page.Answer.%[2]s {\n%[3]s\treturn\n%[3]s}\n", p.ItemsField, p.TotalField, in, loaded)
+		fmt.Fprintf(b, "%[3]sif len(page.Answer.%[1]s) < limit || page.Answer.%[2]s > 0 && %[4]s >= page.Answer.%[2]s {\n%[3]s\t%[5]s\n%[3]s}\n", p.ItemsField, p.TotalField, in, loaded, ret)
 		fmt.Fprintf(b, "%snumber++\n", in)
 	case p.ByPage:
 		fmt.Fprintf(b, "%s// a short page is the last; so is the page that reaches the total, when\n", in)
 		fmt.Fprintf(b, "%s// the server reports one\n", in)
-		fmt.Fprintf(b, "%[3]sif len(page.Answer.%[1]s) < limit || page.Answer.%[2]s > 0 && number*limit >= page.Answer.%[2]s {\n%[3]s\treturn\n%[3]s}\n", p.ItemsField, p.TotalField, in)
+		fmt.Fprintf(b, "%[3]sif len(page.Answer.%[1]s) < limit || page.Answer.%[2]s > 0 && %[4]s*limit >= page.Answer.%[2]s {\n%[3]s\t%[5]s\n%[3]s}\n", p.ItemsField, p.TotalField, in, pagesLoaded(p), ret)
 		// options holds a pointer to number, so the next call asks for the next page
 		fmt.Fprintf(b, "%snumber++\n", in)
 	default:
 		fmt.Fprintf(b, "%[4]sstart += len(page.Answer.%[1]s)\n%[4]s%[2]s.%[3]s = &start\n", p.ItemsField, ov, p.StartIndexOption, in)
 		fmt.Fprintf(b, "%s// a short page is the last; so is reaching the total, when the server\n", in)
 		fmt.Fprintf(b, "%s// reports one (a list may report 0 whatever it holds)\n", in)
-		fmt.Fprintf(b, "%[3]sif len(page.Answer.%[1]s) < limit || page.Answer.%[2]s > 0 && start >= page.Answer.%[2]s {\n%[3]s\treturn\n%[3]s}\n", p.ItemsField, p.TotalField, in)
+		fmt.Fprintf(b, "%[3]sif len(page.Answer.%[1]s) < limit || page.Answer.%[2]s > 0 && start >= page.Answer.%[2]s {\n%[3]s\t%[4]s\n%[3]s}\n", p.ItemsField, p.TotalField, in, ret)
+	}
+}
+
+// pagesLoaded is how many pages a walk by number has loaded once it holds page number, as Go source: the number itself when pages count from 1.
+func pagesLoaded(p *definitions.Pageable) string {
+	switch first := p.First(); {
+	case first == 1:
+		return "number"
+	case first < 1:
+		return fmt.Sprintf("(number+%d)", 1-first)
+	default:
+		return fmt.Sprintf("(number-%d)", first-1)
 	}
 }
 

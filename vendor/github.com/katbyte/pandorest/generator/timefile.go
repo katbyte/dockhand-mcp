@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -54,7 +55,7 @@ var (
 	failingUnread = unread{"type %[1]s struct{ time.Time }\n", "\treturn err\n"}
 	keepingUnread = unread{
 		"type %[1]s struct {\n\ttime.Time\n\t// Unread is the text of a date no layout read, which is held as zero.\n\tUnread string\n}\n\n// UnreadDate is the text of a date no layout read, or \"\".\nfunc (t %[1]s) UnreadDate() string { return t.Unread }\n",
-		"\tvar unread *client.UnreadDateError\n\tif errors.As(err, &unread) {\n\t\t// a date no layout reads is kept as its text and held as zero (KeepUnread)\n\t\tt.Unread = unread.Text\n\n\t\treturn nil\n\t}\n\n\treturn err\n",
+		"\tif unread, ok := errors.AsType[*client.UnreadDateError](err); ok {\n\t\t// a date no layout reads is kept as its text and held as zero (KeepUnread)\n\t\tt.Unread = unread.Text\n\n\t\treturn nil\n\t}\n\n\treturn err\n",
 	}
 )
 
@@ -66,6 +67,13 @@ func dateType(name, what, title string, layouts []string, u unread) string {
 	}
 	lower := strings.ToLower(name)
 	decl, unread := u.decl, u.handle
+	// a service that writes a date as {"$date": milliseconds} goes through the base client's forms, which know that layout;
+	// any other keeps the plain ones, so its time.go does not move
+	marshal, text := "json.Marshal(t.Format(%[4]sLayouts[0]))", "t.Format(%[4]sLayouts[0])"
+	asLayout := "t.Format(layout)"
+	if slices.Contains(layouts, dateObjectMillis) {
+		marshal, text, asLayout = "client.MarshalTime(t.Time, %[4]sLayouts[0])", "client.FormatTime(t.Time, %[4]sLayouts[0])", "client.FormatTime(t.Time, layout)"
+	}
 
 	return fmt.Sprintf(`// %[1]s is %[2]s as %[3]s writes it: read from any of %[4]sLayouts, written in the first, and
 // left out of a body or a query when zero, which is what a null or an empty date reads as.
@@ -80,7 +88,7 @@ func (t %[1]s) MarshalJSON() ([]byte, error) {
 		return []byte("null"), nil
 	}
 
-	return json.Marshal(t.Format(%[4]sLayouts[0]))
+	return `+marshal+`
 }
 
 // UnmarshalJSON reads the date in any of the layouts; null and "" are zero.
@@ -94,7 +102,7 @@ func (t *%[1]s) UnmarshalJSON(data []byte) error {
 }
 
 // String is the date in the first layout, which is how a query carries it.
-func (t %[1]s) String() string { return t.Format(%[4]sLayouts[0]) }
+func (t %[1]s) String() string { return `+text+` }
 
 // As is the date in the layout given, or in the first when none is: what a query carries for a
 // parameter the service's own file picks a layout for (client.Service.SendDateAs).
@@ -103,7 +111,7 @@ func (t %[1]s) As(layout string) string {
 		return t.String()
 	}
 
-	return t.Format(layout)
+	return `+asLayout+`
 }
 
 `, name, what, title, lower, strings.Join(quoted, ", "))
