@@ -36,6 +36,16 @@ const (
 	OperationIDNaming Naming = "operationId"
 )
 
+// Document is what kind of document a service vendors.
+type Document string
+
+const (
+	// OpenAPIDocument is an OpenAPI 3 document, which is the default.
+	OpenAPIDocument Document = "openapi"
+	// JSONRPCDocument is a server's description of its JSON-RPC methods, as the jsonrpc package reads it.
+	JSONRPCDocument Document = "jsonrpc"
+)
+
 // ID is one kind of id. Name is the type's (SeriesID). Of names the models
 // the kind is the id of (SeriesResource): their Id is the kind, so is every
 // bare path {id} whose operation answers or takes one of them, and the base
@@ -118,6 +128,9 @@ type Paging struct {
 	// index: Sonarr's page and pageSize, answering records and
 	// totalRecords.
 	ByPage bool
+	// FirstPage is the number of the first page, for a service whose pages count from 0 (Audiobookshelf's page and limit): FirstPage: new(0).
+	// Unset is 1. It needs ByPage.
+	FirstPage *int
 }
 
 // Service is one server API.
@@ -148,6 +161,22 @@ type Service struct {
 	// Dir is the directory the documents and definitions are in; empty is
 	// DefaultDir.
 	Dir string
+	// Document is what kind of document the service vendors: empty, or OpenAPIDocument, is an OpenAPI document named
+	// <name>-openapi-<version>.json; JSONRPCDocument is a server's description of its JSON-RPC methods (TrueNAS's answer to
+	// core.get_methods) named <name>-methods-<version>.json, from which each method becomes a call with its arguments in
+	// order, grouped by its namespace, and the package takes a client.Caller the repository writes over its connection.
+	Document Document
+	// ReadRole, for a JSON-RPC service, names the role a method must allow for it to count as a read, which the sweep's read-only
+	// run and a caller that changes nothing go by (TrueNAS's READONLY_ADMIN); Reads names the methods that are reads without the
+	// role, and NotReads those that carry it and are not, each by the method's name as the server takes it. A name in either
+	// that is no method of the document fails the import.
+	ReadRole string
+	Reads    []string
+	NotReads []string
+	// TypedUnions makes a value that is one of several records a type of its own, naming its members, which the caller asks
+	// for one of (As<Member>) and tells apart by the field the records name themselves by where the document says which;
+	// without it such a value is raw JSON for the caller to decode.
+	TypedUnions bool
 	// Naming picks how method names are built.
 	Naming Naming
 	// TagSuffix is trimmed from tag names to make group names ("Service"
@@ -242,6 +271,12 @@ type Service struct {
 	// there is the same JSON. Without it such a response is a file, which
 	// is what text/css listed beside JSON is on Jellyfin.
 	PreferJSON bool
+	// TextAnswers reads an answer the document labels text/plain whole into a string, closed and handed back as the answer,
+	// rather than as a file left open for the caller: Audiobookshelf answers "OK" to most writes, and a caller that never
+	// reads such a body holds its connection for good. A text/plain answer declared binary stays a file, as does one the
+	// File workaround declares, and a text/plain listed beside JSON is PreferJSON's to settle. Without it only the Text
+	// workaround makes an answer text.
+	TextAnswers bool
 	// ExpectSameShape counts a status outside 2xx as one an operation
 	// expects when the document gives it the success answer's shape: a
 	// failure that still answers in full, as Sonarr's test-all answers 400
@@ -460,7 +495,7 @@ func (s Service) Versions() ([]string, error) {
 	versions := make([]string, 0, len(matches))
 	for _, m := range matches {
 		base := filepath.Base(m)
-		versions = append(versions, strings.TrimSuffix(strings.TrimPrefix(base, s.Name+"-openapi-"), ".json"))
+		versions = append(versions, strings.TrimSuffix(strings.TrimPrefix(base, s.Name+"-"+s.documentWord()+"-"), ".json"))
 	}
 	slices.SortFunc(versions, CompareVersions)
 
@@ -469,7 +504,16 @@ func (s Service) Versions() ([]string, error) {
 
 // SpecPath is where the service's document of one version is vendored.
 func (s Service) SpecPath(version string) string {
-	return filepath.Join(cmp.Or(s.Dir, DefaultDir), s.Name+"-openapi-"+version+".json")
+	return filepath.Join(cmp.Or(s.Dir, DefaultDir), s.Name+"-"+s.documentWord()+"-"+version+".json")
+}
+
+// documentWord is the word in a vendored document's name that says what kind it is.
+func (s Service) documentWord() string {
+	if s.Document == JSONRPCDocument {
+		return "methods"
+	}
+
+	return "openapi"
 }
 
 // DefinitionsPath is where one version's definitions are checked in.
